@@ -6,3 +6,6 @@ https://www.ushpa.org//USHPA/Pilot_Resources/Flying_Sites/Member/flying-sites.as
 
 More ideas Perplexity AI search:
 https://www.perplexity.ai/search/263a8e06-9712-48c9-9d29-7381006a6a6d
+
+Competitions:
+https://civlcomps.org/
