@@ -1,73 +1,131 @@
-# React + TypeScript + Vite
+# POI Map
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A multi-provider interactive map application built with React, MapLibre GL JS, and PostGIS. Browse points of interest on a configurable basemap with clustering, viewport-driven loading, and a detail drawer.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **14 basemap providers** — OpenFreeMap (default), Stadia Maps, Stamen Terrain, CARTO, OpenTopoMap, Thunderforest (premium)
+- **Config-driven provider registry** — add a new provider by adding one object to an array
+- **Viewport-driven POI loading** — debounced fetch on pan/zoom, backed by PostGIS spatial queries
+- **Built-in clustering** — MapLibre's native supercluster with expandable clusters
+- **POI detail drawer** — click a point to see name, category, description
+- **Provider persistence** — choice saved to `localStorage` + URL `?basemap=` param
+- **Reload-on-switch** — simplest strategy, avoids `setStyle()` edge cases
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, TypeScript, Vite 8, Tailwind CSS v4 |
+| Map | MapLibre GL JS 5.24, react-map-gl/maplibre 8.x |
+| Data | TanStack Query 5 |
+| Backend | Node 22, Fastify 5 |
+| Database | PostgreSQL 16 + PostGIS 3.4 |
 
-## Expanding the ESLint configuration
+## Quick Start
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js 22+
+- PostgreSQL 16+ with PostGIS extension
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 1. Install dependencies
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+cd server && npm install && cd ..
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Set up the database
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# Create the database
+createdb poi_map
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Run migrations (creates tables + indexes)
+cd server && npm run migrate
+
+# Seed sample data (~1000 POIs across 22 cities)
+npm run seed
+cd ..
 ```
+
+### 3. Start the servers
+
+```bash
+# Terminal 1: API server (port 3000)
+cd server && npm run dev
+
+# Terminal 2: Frontend dev server (port 5173, proxies /api to :3000)
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173).
+
+### Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/poi_map` | PostgreSQL connection string |
+| `PORT` | `3000` | API server port |
+| `THUNDERFOREST_API_KEY` | — | Required for premium Thunderforest tiles |
+
+## Project Structure
+
+```
+├── src/
+│   ├── basemap/
+│   │   ├── providers.ts          # Provider registry (14 providers)
+│   │   ├── useBasemap.ts         # Selection + persistence hook
+│   │   └── BasemapSwitcher.tsx   # Dropdown UI
+│   ├── map/
+│   │   ├── MapView.tsx           # Main map component
+│   │   ├── PoiLayer.tsx          # GeoJSON source + cluster layers
+│   │   ├── PoiDrawer.tsx         # Detail side panel
+│   │   └── usePoiSelection.ts   # Selection state
+│   ├── auth/
+│   │   ├── useEntitlements.ts    # Stub (wire to real auth later)
+│   │   └── usePremiumKey.ts      # Stub (wire to credentials endpoint)
+│   └── lib/
+│       └── useDebouncedValue.ts
+├── server/
+│   ├── src/
+│   │   ├── index.ts              # Fastify entry point
+│   │   ├── db.ts                 # PostgreSQL pool
+│   │   ├── routes/pois.ts        # GET /pois, GET /pois/:id
+│   │   ├── routes/me.ts          # GET /me (stub)
+│   │   └── routes/credentials.ts # GET /providers/:id/credentials (stub)
+│   ├── migrations/
+│   │   └── 0001_pois.sql
+│   └── src/seed.ts
+└── .cursor/plans/
+    └── new-map-app.md            # Full implementation plan
+```
+
+## Adding a New Provider
+
+Add an entry to the `PROVIDERS` array in `src/basemap/providers.ts`:
+
+```ts
+{
+  id: 'my-provider',
+  label: 'My Provider',
+  kind: 'vector',        // or 'raster'
+  tier: 'free',           // or 'premium'
+  maxZoom: 20,
+  attribution: '© ...',
+  getStyle: () => 'https://tiles.example.com/styles/my-style.json',
+}
+```
+
+To change the default, set `DEFAULT_PROVIDER_ID`.
+
+## API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/pois?bbox=w,s,e,n&zoom=N&category=X` | POIs in bounding box (GeoJSON) |
+| `GET` | `/pois/:id` | POI detail |
+| `GET` | `/me` | User profile + allowed providers |
+| `GET` | `/providers/:id/credentials` | Provider API key (premium only) |
+| `GET` | `/health` | Health check |
