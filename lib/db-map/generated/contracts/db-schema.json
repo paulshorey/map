@@ -1,0 +1,118 @@
+{
+  "pois": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "category",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "description",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "photo_url",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "address",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "website",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "hours",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "lng",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "lat",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "user_preferences": [
+    {
+      "column": "user_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "basemap_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "last_center_lng",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "last_center_lat",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "last_zoom",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "updated_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "users": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "display_name",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "tier",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "is_guest",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ]
+}
