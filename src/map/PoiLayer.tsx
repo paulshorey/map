@@ -1,3 +1,5 @@
+'use client';
+
 import { Source, Layer } from 'react-map-gl/maplibre';
 import { useQuery } from '@tanstack/react-query';
 import { useDebouncedValue } from '../lib/useDebouncedValue';

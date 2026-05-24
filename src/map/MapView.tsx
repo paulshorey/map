@@ -1,3 +1,6 @@
+'use client';
+
+import type { GeoJSONSource } from 'maplibre-gl';
 import {
   Map,
   NavigationControl,
@@ -82,7 +85,7 @@ export function MapView() {
       if (feature.properties?.cluster_id != null) {
         const source = map.getSource('pois');
         if (source && 'getClusterExpansionZoom' in source) {
-          (source as maplibregl.GeoJSONSource).getClusterExpansionZoom(
+          (source as GeoJSONSource).getClusterExpansionZoom(
             feature.properties.cluster_id,
           ).then((expZoom) => {
             const geom = feature.geometry;

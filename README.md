@@ -17,10 +17,9 @@ A multi-provider interactive map application built with React, MapLibre GL JS, a
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, TypeScript, Vite 8, Tailwind CSS v4 |
+| App | Next.js 15, React 19, TypeScript, Tailwind CSS v4 |
 | Map | MapLibre GL JS 5.24, react-map-gl/maplibre 8.x |
 | Data | TanStack Query 5 |
-| Backend | Node 22, Fastify 5 |
 | Database | PostgreSQL 16 + PostGIS 3.4 |
 
 ## Quick Start
@@ -34,7 +33,6 @@ A multi-provider interactive map application built with React, MapLibre GL JS, a
 
 ```bash
 npm install
-cd server && npm install && cd ..
 ```
 
 ### 2. Set up the database
@@ -44,31 +42,25 @@ cd server && npm install && cd ..
 createdb poi_map
 
 # Run migrations (creates tables + indexes + guest user)
-cd server && npm run migrate
+npm run migrate
 
-# Seed sample data (~1000 POIs across 22 cities)
+# Seed sample data
 npm run seed
-cd ..
 ```
 
-### 3. Start the servers
+### 3. Start the dev server
 
 ```bash
-# Terminal 1: API server (port 3000)
-cd server && npm run dev
-
-# Terminal 2: Frontend dev server (port 5173, proxies /api to :3000)
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+Open [http://localhost:3000](http://localhost:3000).
 
 ### Environment Variables
 
 | Variable | Default | Description |
 |---|---|---|
 | `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/poi_map` | PostgreSQL connection string |
-| `PORT` | `3000` | API server port |
 | `THUNDERFOREST_API_KEY` | — | Required for premium Thunderforest tiles |
 
 ## Architecture
@@ -81,7 +73,7 @@ The app uses a **guest-first** approach:
 2. The guest user has `tier: "free"` with access to all free basemap providers
 3. User preferences (basemap choice, last viewport) are persisted to the database via `PATCH /api/me/preferences`
 4. No login screen is shown — the map loads immediately
-5. When real auth is added later (Supabase Auth, Clerk, etc.), the `resolveUserId()` function in each route switches from returning `'guest'` to extracting the real user ID from a JWT/session cookie
+5. When real auth is added later (Supabase Auth, Clerk, etc.), the `resolveUserId()` function in `src/lib/auth.ts` switches from returning `'guest'` to extracting the real user ID from a JWT/session cookie
 6. Guest preferences can be merged into the authenticated user's profile at that point
 
 ### Entitlement Model
@@ -97,6 +89,16 @@ The server computes `allowedProviders` from the tier and returns it in `/api/me`
 
 ```
 ├── src/
+│   ├── app/
+│   │   ├── layout.tsx            # Root layout + providers
+│   │   ├── page.tsx              # Home page (dynamic map import)
+│   │   ├── globals.css           # Tailwind + global styles
+│   │   ├── providers.tsx         # QueryClient + AuthProvider
+│   │   └── api/                  # Next.js Route Handlers
+│   │       ├── pois/             # GET /api/pois, GET /api/pois/:id
+│   │       ├── me/               # GET /api/me, PATCH /api/me/preferences
+│   │       ├── providers/        # GET /api/providers/:id/credentials
+│   │       └── health/           # GET /api/health
 │   ├── auth/
 │   │   ├── types.ts              # User, UserPreferences, UserTier types
 │   │   ├── AuthContext.ts        # React context definition
@@ -115,20 +117,16 @@ The server computes `allowedProviders` from the tier and returns it in `/api/me`
 │   │   ├── PoiDrawer.tsx         # Detail side panel
 │   │   └── usePoiSelection.ts   # Selection state
 │   └── lib/
+│       ├── db.ts                 # PostgreSQL pool (singleton)
+│       ├── auth.ts               # resolveUserId + tier helpers
 │       └── useDebouncedValue.ts
-├── server/
-│   ├── src/
-│   │   ├── index.ts              # Fastify entry point
-│   │   ├── db.ts                 # PostgreSQL pool
-│   │   ├── routes/pois.ts        # GET /pois, GET /pois/:id
-│   │   ├── routes/me.ts          # GET /me, PATCH /me/preferences
-│   │   └── routes/credentials.ts # GET /providers/:id/credentials
-│   ├── migrations/
-│   │   ├── 0001_pois.sql         # POIs table + indexes
-│   │   └── 0002_users.sql        # Users + preferences tables + guest user
-│   └── src/seed.ts               # POI seed data
-└── .cursor/plans/
-    └── new-map-app.md            # Full implementation plan
+├── migrations/
+│   ├── 0001_pois.sql             # POIs table + indexes
+│   ├── 0002_users.sql            # Users + preferences tables + guest user
+│   └── 0003_poi_details.sql      # POI address, website, hours columns
+└── scripts/
+    ├── migrate.ts                # Migration runner
+    └── seed.ts                   # POI seed data
 ```
 
 ## Adding a New Provider
@@ -154,7 +152,7 @@ To change the default, update `DEFAULT_PROVIDER_ID`.
 When you're ready to add real auth, the changes are minimal:
 
 1. **Install your auth provider** (Supabase Auth, Clerk, etc.)
-2. **Update `resolveUserId()`** in `server/src/routes/me.ts` and `credentials.ts` to extract the real user ID from the request (JWT, session cookie, etc.)
+2. **Update `resolveUserId()`** in `src/lib/auth.ts` to extract the real user ID from the request (JWT, session cookie, etc.)
 3. **Create real users** in the `users` table when they sign up
 4. **Merge guest preferences** into the new user's row on first login
 5. **Update `AuthProvider.tsx`** to include auth headers in the `/api/me` fetch
@@ -165,9 +163,9 @@ The frontend auth hooks (`useAuth`, `useEntitlements`, `usePremiumKey`) already 
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/pois?bbox=w,s,e,n&zoom=N&category=X` | POIs in bounding box (GeoJSON) |
-| `GET` | `/pois/:id` | POI detail |
-| `GET` | `/me` | User profile + tier + allowed providers + preferences |
-| `PATCH` | `/me/preferences` | Update user preferences (basemap, viewport) |
-| `GET` | `/providers/:id/credentials` | Provider API key (premium only, 403 for free) |
-| `GET` | `/health` | Health check |
+| `GET` | `/api/pois?bbox=w,s,e,n&zoom=N&category=X` | POIs in bounding box (GeoJSON) |
+| `GET` | `/api/pois/:id` | POI detail |
+| `GET` | `/api/me` | User profile + tier + allowed providers + preferences |
+| `PATCH` | `/api/me/preferences` | Update user preferences (basemap, viewport) |
+| `GET` | `/api/providers/:id/credentials` | Provider API key (premium only, 403 for free) |
+| `GET` | `/api/health` | Health check |

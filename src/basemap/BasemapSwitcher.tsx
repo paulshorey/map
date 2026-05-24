@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
 import { useBasemap, type ProviderWithLock } from './useBasemap';
 
