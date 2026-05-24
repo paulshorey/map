@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from './auth/AuthProvider';
 import { MapView } from './map/MapView';
 
 const queryClient = new QueryClient({
@@ -13,7 +14,9 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <MapView />
+      <AuthProvider>
+        <MapView />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

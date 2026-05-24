@@ -1,17 +1,21 @@
 import type { FastifyInstance } from 'fastify';
+import { pool } from '../db.js';
+
+function resolveUserId(_req: { headers: Record<string, string | string[] | undefined> }): string {
+  return 'guest';
+}
 
 export async function credentialsRoutes(app: FastifyInstance) {
-  /**
-   * Stub credentials endpoint. When auth + entitlements are wired (Phase 7),
-   * this checks the user's tier and returns the provider API key only for
-   * premium users. The key is stored server-side as an env var.
-   */
   app.get('/providers/:providerId/credentials', async (req, reply) => {
     const { providerId } = req.params as { providerId: string };
+    const userId = resolveUserId(req);
 
-    // TODO: check auth + tier
-    const tier = 'free';
-    if (tier !== 'premium') {
+    const { rows } = await pool.query(
+      'SELECT tier FROM users WHERE id = $1',
+      [userId],
+    );
+
+    if (!rows[0] || rows[0].tier !== 'premium') {
       return reply.code(403).send({ error: 'Premium subscription required' });
     }
 

@@ -1,13 +1,24 @@
+import { useQuery } from '@tanstack/react-query';
 import { PROVIDERS } from '../basemap/providers';
+import { useAuth } from './useAuth';
 
-/**
- * Stub premium key hook. When auth is wired up (Phase 7), this will
- * lazily fetch credentials from GET /providers/:id/credentials for
- * premium providers. Returns null for free providers.
- */
 export function usePremiumKey(providerId: string): string | null {
+  const { user } = useAuth();
   const provider = PROVIDERS.find((p) => p.id === providerId);
-  if (!provider || provider.tier === 'free') return null;
-  // TODO: fetch from /providers/:id/credentials when auth is wired
-  return null;
+  const isPremiumProvider = provider?.tier === 'premium';
+  const isPremiumUser = user?.tier === 'premium';
+
+  const { data } = useQuery({
+    queryKey: ['provider-credentials', providerId],
+    queryFn: async () => {
+      const r = await fetch(`/api/providers/${providerId}/credentials`);
+      if (!r.ok) return null;
+      const json = await r.json();
+      return (json.apiKey as string) ?? null;
+    },
+    enabled: isPremiumProvider && isPremiumUser,
+    staleTime: 5 * 60_000,
+  });
+
+  return data ?? null;
 }
