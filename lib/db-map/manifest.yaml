@@ -1,0 +1,14 @@
+database: postgres
+env_var: DB_MAP_URL
+owners:
+  - apps/map
+source_of_truth:
+  migrations: ./migrations
+  schema_snapshot: ./schema/current.sql
+  app_contracts: ./contracts/map-app.ts
+  query_contracts: ./queries
+generated_artifacts:
+  - ./generated/typescript
+  - ./generated/contracts
+compatibility:
+  policy: additive-first

@@ -1,51 +1,27 @@
 {
-  "name": "poi-map",
+  "name": "map",
   "private": true,
-  "version": "0.0.0",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint .",
-    "migrate": "tsx scripts/migrate.ts",
-    "seed": "tsx scripts/seed.ts",
-    "build:mobile": "tsx scripts/build-capacitor.ts",
-    "cap:sync": "npm run build:mobile",
-    "cap:ios": "npm run build:mobile && npx cap open ios",
-    "cap:android": "npm run build:mobile && npx cap open android",
-    "cap:add:ios": "npx cap add ios",
-    "cap:add:android": "npx cap add android"
-  },
-  "dependencies": {
-    "@capacitor/android": "^8.3.4",
-    "@capacitor/app": "^8.1.0",
-    "@capacitor/core": "^8.3.4",
-    "@capacitor/ios": "^8.3.4",
-    "@capacitor/keyboard": "^8.0.3",
-    "@capacitor/splash-screen": "^8.0.1",
-    "@capacitor/status-bar": "^8.0.2",
-    "@tanstack/react-query": "^5.100.14",
-    "maplibre-gl": "^5.24.0",
-    "next": "^15.3.3",
-    "pg": "^8.13.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "react-map-gl": "^8.1.1"
+    "build": "turbo run build",
+    "build:map": "pnpm --filter map build",
+    "db:migrate": "pnpm --filter @lib/db-map db:migrate",
+    "db:migrate:baseline": "pnpm --filter @lib/db-map db:migrate:baseline",
+    "db:verify": "pnpm --filter @lib/db-map db:verify",
+    "db:seed": "pnpm --filter @lib/db-map db:seed",
+    "verify:db-contracts": "pnpm --filter @lib/db-map check-types",
+    "verify:map": "pnpm --filter map verify",
+    "verify": "pnpm run verify:db-contracts && pnpm run verify:map",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.3.4",
-    "@eslint/js": "^10.0.1",
-    "@tailwindcss/postcss": "^4.3.0",
-    "@types/node": "^24.12.3",
-    "@types/pg": "^8.11.0",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "eslint": "^10.3.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "globals": "^17.6.0",
-    "tailwindcss": "^4.3.0",
-    "tsx": "^4.19.0",
-    "typescript": "~6.0.2",
-    "typescript-eslint": "^8.59.2"
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.5",
+    "typescript": "5.8.3"
+  },
+  "packageManager": "pnpm@10.28.1",
+  "engines": {
+    "node": ">=20"
   }
 }

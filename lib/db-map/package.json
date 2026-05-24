@@ -1,0 +1,38 @@
+{
+  "name": "@lib/db-map",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./contracts/map-app": "./contracts/map-app.ts",
+    "./db/postgres": "./lib/db/postgres.ts",
+    "./generated/*": "./generated/*",
+    "./generated/typescript/db-types": "./generated/typescript/db-types.ts",
+    "./sql/pois": "./sql/pois.ts",
+    "./sql/users": "./sql/users.ts",
+    "./sql/*": "./sql/*.ts"
+  },
+  "scripts": {
+    "app:contract:check": "node scripts/generate-app-contract.mjs --check",
+    "app:contract:generate": "node scripts/generate-app-contract.mjs --write",
+    "check-types": "tsc --noEmit && pnpm app:contract:check",
+    "db:schema:snapshot": "bash scripts/snapshot-schema.sh",
+    "db:types:generate": "node scripts/generate-types.mjs",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:verify": "node scripts/verify-contract.mjs",
+    "db:migrate:baseline": "node scripts/baseline.mjs",
+    "db:migration:new": "node scripts/new-migration.mjs",
+    "db:sync": "pnpm db:migrate && pnpm db:schema:snapshot && pnpm db:types:generate && pnpm app:contract:generate",
+    "db:seed": "tsx scripts/seed.ts"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@lib/config": "workspace:*",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.0",
+    "typescript": "5.8.3"
+  }
+}
