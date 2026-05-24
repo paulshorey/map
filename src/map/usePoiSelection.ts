@@ -2,19 +2,24 @@ import { useState, useCallback, useEffect, type RefObject } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { MapRef } from 'react-map-gl/maplibre';
 
-interface PoiDetail {
+export interface PoiDetail {
   id: string;
   name: string;
   category: string;
   description?: string;
+  address?: string;
+  website?: string;
+  hours?: string;
   photo_url?: string;
+  lat?: number;
+  lng?: number;
   geometry: GeoJSON.Point;
 }
 
 export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const { data: selectedPoi } = useQuery({
+  const { data: selectedPoi, isLoading } = useQuery({
     queryKey: ['poi-detail', selectedId],
     queryFn: async () => {
       const r = await fetch(`/api/pois/${selectedId}`);
@@ -29,16 +34,20 @@ export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
     const map = mapRef.current?.getMap();
     if (!map || !selectedId) return;
 
-    map.setFeatureState(
-      { source: 'pois', id: selectedId },
-      { selected: true },
-    );
+    try {
+      map.setFeatureState(
+        { source: 'pois', id: selectedId },
+        { selected: true },
+      );
+    } catch {
+      // source may not exist yet
+    }
 
     return () => {
       try {
         map.removeFeatureState({ source: 'pois', id: selectedId });
       } catch {
-        // source may not exist yet
+        // source may have been removed
       }
     };
   }, [mapRef, selectedId]);
@@ -54,6 +63,7 @@ export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
   return {
     selectedId,
     selectedPoi: selectedPoi ?? null,
+    isLoadingPoi: isLoading && !!selectedId,
     selectPoi,
     clearSelection,
   };

@@ -18,8 +18,8 @@ import { PoiDrawer } from './PoiDrawer';
 import { usePoiSelection } from './usePoiSelection';
 import { useDebouncedValue } from '../lib/useDebouncedValue';
 
-const DEFAULT_CENTER: [number, number] = [-98.5, 39.8];
-const DEFAULT_ZOOM = 4;
+const DEFAULT_CENTER: [number, number] = [10, 20];
+const DEFAULT_ZOOM = 2;
 
 export function MapView() {
   const { provider } = useBasemap();
@@ -29,10 +29,11 @@ export function MapView() {
 
   const initialViewState = useMemo(() => {
     const prefs = user?.preferences;
+    const hasPrefs = prefs?.lastCenter != null && prefs?.lastZoom != null;
     return {
-      longitude: prefs?.lastCenter?.[0] ?? DEFAULT_CENTER[0],
-      latitude: prefs?.lastCenter?.[1] ?? DEFAULT_CENTER[1],
-      zoom: prefs?.lastZoom ?? DEFAULT_ZOOM,
+      longitude: hasPrefs ? prefs.lastCenter![0] : DEFAULT_CENTER[0],
+      latitude: hasPrefs ? prefs.lastCenter![1] : DEFAULT_CENTER[1],
+      zoom: hasPrefs ? prefs.lastZoom! : DEFAULT_ZOOM,
     };
   }, [user?.preferences]);
 
@@ -40,7 +41,7 @@ export function MapView() {
   const [bbox, setBbox] = useState<Bbox | null>(null);
   const [zoom, setZoom] = useState(initialViewState.zoom);
 
-  const { selectedPoi, selectPoi, clearSelection } = usePoiSelection(mapRef);
+  const { selectedPoi, isLoadingPoi, selectPoi, clearSelection } = usePoiSelection(mapRef);
 
   const [pendingViewport, setPendingViewport] = useState<{
     center: [number, number];
@@ -62,8 +63,7 @@ export function MapView() {
     if (!map) return;
     const b = map.getBounds();
     setBbox([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
-    const z = Math.round(map.getZoom());
-    setZoom(z);
+    setZoom(Math.round(map.getZoom()));
 
     const center = map.getCenter();
     setPendingViewport({
@@ -152,7 +152,13 @@ export function MapView() {
 
       <UserMenu />
 
-      {selectedPoi && (
+      {isLoadingPoi && (
+        <div className="absolute top-0 right-0 z-20 h-full w-96 max-w-full bg-white shadow-2xl border-l border-gray-200 flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+
+      {selectedPoi && !isLoadingPoi && (
         <PoiDrawer poi={selectedPoi} onClose={clearSelection} />
       )}
     </div>

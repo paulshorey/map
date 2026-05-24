@@ -18,29 +18,57 @@ export async function poisRoutes(app: FastifyInstance) {
     const z = Number(zoom) || 0;
     const limit = z < 6 ? 500 : 5000;
 
-    const { rows } = await pool.query(
-      `
-      SELECT jsonb_build_object(
-        'type', 'FeatureCollection',
-        'features', COALESCE(jsonb_agg(feature), '[]'::jsonb)
-      ) AS geojson
-      FROM (
+    // At very low zoom / wide bboxes, skip the spatial filter to avoid
+    // PostGIS antipodal edge errors with geography ST_MakeEnvelope.
+    const isWorldView = (e - w) > 300 || (n - s) > 160;
+
+    let queryText: string;
+    let queryParams: (string | number | null)[];
+
+    if (isWorldView) {
+      queryText = `
         SELECT jsonb_build_object(
-          'type', 'Feature',
-          'id', id,
-          'geometry', ST_AsGeoJSON(geom::geometry, 6)::jsonb,
-          'properties', jsonb_build_object(
-            'id', id, 'name', name, 'category', category, 'photo_url', photo_url
-          )
-        ) AS feature
-        FROM pois
-        WHERE geom && ST_MakeEnvelope($1, $2, $3, $4, 4326)::geography
-          AND ($5::text IS NULL OR category = $5)
-        LIMIT $6
-      ) sub
-      `,
-      [w, s, e, n, category ?? null, limit],
-    );
+          'type', 'FeatureCollection',
+          'features', COALESCE(jsonb_agg(feature), '[]'::jsonb)
+        ) AS geojson
+        FROM (
+          SELECT jsonb_build_object(
+            'type', 'Feature',
+            'id', id,
+            'geometry', ST_AsGeoJSON(geom::geometry, 6)::jsonb,
+            'properties', jsonb_build_object(
+              'id', id, 'name', name, 'category', category, 'photo_url', photo_url
+            )
+          ) AS feature
+          FROM pois
+          WHERE ($1::text IS NULL OR category = $1)
+          LIMIT $2
+        ) sub`;
+      queryParams = [category ?? null, limit];
+    } else {
+      queryText = `
+        SELECT jsonb_build_object(
+          'type', 'FeatureCollection',
+          'features', COALESCE(jsonb_agg(feature), '[]'::jsonb)
+        ) AS geojson
+        FROM (
+          SELECT jsonb_build_object(
+            'type', 'Feature',
+            'id', id,
+            'geometry', ST_AsGeoJSON(geom::geometry, 6)::jsonb,
+            'properties', jsonb_build_object(
+              'id', id, 'name', name, 'category', category, 'photo_url', photo_url
+            )
+          ) AS feature
+          FROM pois
+          WHERE geom && ST_MakeEnvelope($1, $2, $3, $4, 4326)::geography
+            AND ($5::text IS NULL OR category = $5)
+          LIMIT $6
+        ) sub`;
+      queryParams = [w, s, e, n, category ?? null, limit];
+    }
+
+    const { rows } = await pool.query(queryText, queryParams);
 
     reply
       .header('cache-control', 'public, max-age=30, stale-while-revalidate=300')
@@ -51,7 +79,8 @@ export async function poisRoutes(app: FastifyInstance) {
     const { id } = req.params as { id: string };
 
     const { rows } = await pool.query(
-      `SELECT id, name, category, description, photo_url,
+      `SELECT id, name, category, description, address, website, hours, photo_url,
+              ST_X(geom::geometry) AS lng, ST_Y(geom::geometry) AS lat,
               ST_AsGeoJSON(geom::geometry, 6)::jsonb AS geometry
        FROM pois WHERE id = $1`,
       [id],
