@@ -15,12 +15,12 @@ A multi-provider interactive map application built with React, MapLibre GL JS, a
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| App | Next.js 15, React 19, TypeScript, Tailwind CSS v4 |
-| Map | MapLibre GL JS 5.24, react-map-gl/maplibre 8.x |
-| Data | TanStack Query 5 |
-| Database | PostgreSQL 16 + PostGIS 3.4 |
+| Layer    | Technology                                        |
+| -------- | ------------------------------------------------- |
+| App      | Next.js 15, React 19, TypeScript, Tailwind CSS v4 |
+| Map      | MapLibre GL JS 5.24, react-map-gl/maplibre 8.x    |
+| Data     | TanStack Query 5                                  |
+| Database | PostgreSQL 16 + PostGIS 3.4                       |
 
 ## Quick Start
 
@@ -58,11 +58,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/poi_map` | PostgreSQL connection string |
-| `THUNDERFOREST_API_KEY` | — | Required for premium Thunderforest tiles |
-| `NEXT_PUBLIC_API_URL` | — | Remote API origin for Capacitor mobile builds (e.g. `https://poi-map.example.com`) |
+| Variable                | Default                                                 | Description                                                                        |
+| ----------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `DB_MAP_URL`            | `postgresql://postgres:postgres@localhost:5432/poi_map` | PostgreSQL connection string                                                       |
+| `THUNDERFOREST_API_KEY` | —                                                       | Required for premium Thunderforest tiles                                           |
+| `NEXT_PUBLIC_API_URL`   | —                                                       | Remote API origin for Capacitor mobile builds (e.g. `https://poi-map.example.com`) |
 
 ## Mobile (Capacitor)
 
@@ -72,12 +72,12 @@ This app supports **web**, **iOS**, and **Android** from one codebase using [Cap
 
 Your Vite app (`gopass/apps/webapp`) builds a static `dist/` folder that Capacitor wraps in a native WebView. Next.js can do the same, but with an important constraint:
 
-| | Vite + Capacitor | Next.js + Capacitor |
-|---|---|---|
-| Build output | `dist/` | `out/` (static export) |
-| API routes | External backend (`VITE_API_BASE_URL`) | Same — API routes cannot run inside the native shell |
-| Web deployment | Static hosting | Full Next.js server (`npm run build && npm start`) |
-| Mobile deployment | `cap sync` copies static assets | Same workflow |
+|                   | Vite + Capacitor                       | Next.js + Capacitor                                  |
+| ----------------- | -------------------------------------- | ---------------------------------------------------- |
+| Build output      | `dist/`                                | `out/` (static export)                               |
+| API routes        | External backend (`VITE_API_BASE_URL`) | Same — API routes cannot run inside the native shell |
+| Web deployment    | Static hosting                         | Full Next.js server (`npm run build && npm start`)   |
+| Mobile deployment | `cap sync` copies static assets        | Same workflow                                        |
 
 Capacitor has **no Node.js server at runtime** — only static HTML/JS/CSS in a WebView. The Next.js `/api/*` route handlers stay on a deployed server; the mobile app calls them via `NEXT_PUBLIC_API_URL`.
 
@@ -119,12 +119,12 @@ The native app loads from your dev server instead of the static `out/` bundle.
 
 ### Scripts
 
-| Script | Description |
-|---|---|
+| Script                 | Description                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
 | `npm run build:mobile` | Static export to `out/` + `cap sync` (temporarily excludes `/api` routes from the build) |
-| `npm run cap:sync` | Alias for `build:mobile` |
-| `npm run cap:ios` | Build, sync, open Xcode |
-| `npm run cap:android` | Build, sync, open Android Studio |
+| `npm run cap:sync`     | Alias for `build:mobile`                                                                 |
+| `npm run cap:ios`      | Build, sync, open Xcode                                                                  |
+| `npm run cap:android`  | Build, sync, open Android Studio                                                         |
 
 ## Architecture
 
@@ -224,11 +224,11 @@ The frontend auth hooks (`useAuth`, `useEntitlements`, `usePremiumKey`) already 
 
 ## API Endpoints
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/pois?bbox=w,s,e,n&zoom=N&category=X` | POIs in bounding box (GeoJSON) |
-| `GET` | `/api/pois/:id` | POI detail |
-| `GET` | `/api/me` | User profile + tier + allowed providers + preferences |
-| `PATCH` | `/api/me/preferences` | Update user preferences (basemap, viewport) |
-| `GET` | `/api/providers/:id/credentials` | Provider API key (premium only, 403 for free) |
-| `GET` | `/api/health` | Health check |
+| Method  | Path                                       | Description                                           |
+| ------- | ------------------------------------------ | ----------------------------------------------------- |
+| `GET`   | `/api/pois?bbox=w,s,e,n&zoom=N&category=X` | POIs in bounding box (GeoJSON)                        |
+| `GET`   | `/api/pois/:id`                            | POI detail                                            |
+| `GET`   | `/api/me`                                  | User profile + tier + allowed providers + preferences |
+| `PATCH` | `/api/me/preferences`                      | Update user preferences (basemap, viewport)           |
+| `GET`   | `/api/providers/:id/credentials`           | Provider API key (premium only, 403 for free)         |
+| `GET`   | `/api/health`                              | Health check                                          |
