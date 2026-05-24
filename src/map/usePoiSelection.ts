@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, type RefObject } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { MapRef } from 'react-map-gl/maplibre';
+import { apiUrl } from '@/lib/config';
 
 export interface PoiDetail {
   id: string;
@@ -22,7 +23,7 @@ export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
   const { data: selectedPoi, isLoading } = useQuery({
     queryKey: ['poi-detail', selectedId],
     queryFn: async () => {
-      const r = await fetch(`/api/pois/${selectedId}`);
+      const r = await fetch(apiUrl(`/api/pois/${selectedId}`));
       if (!r.ok) throw new Error('POI detail fetch failed');
       return r.json() as Promise<PoiDetail>;
     },

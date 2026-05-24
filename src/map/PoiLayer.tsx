@@ -2,6 +2,7 @@
 
 import { Source, Layer } from 'react-map-gl/maplibre';
 import { useQuery } from '@tanstack/react-query';
+import { apiUrl } from '@/lib/config';
 import { useDebouncedValue } from '../lib/useDebouncedValue';
 
 export type Bbox = [number, number, number, number];
@@ -19,7 +20,7 @@ export function PoiLayer({ bbox, zoom }: Props) {
     queryFn: async () => {
       const [w, s, e, n] = debounced;
       const r = await fetch(
-        `/api/pois?bbox=${w},${s},${e},${n}&zoom=${zoom}`,
+        apiUrl(`/api/pois?bbox=${w},${s},${e},${n}&zoom=${zoom}`),
       );
       if (!r.ok) throw new Error('POI fetch failed');
       return r.json() as Promise<GeoJSON.FeatureCollection>;

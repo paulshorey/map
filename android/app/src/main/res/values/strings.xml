@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">POI Map</string>
+    <string name="title_activity_main">POI Map</string>
+    <string name="package_name">com.poimap.app</string>
+    <string name="custom_url_scheme">com.poimap.app</string>
+</resources>

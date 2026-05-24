@@ -7,6 +7,7 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
+import { apiUrl } from '@/lib/config';
 import type { User, UserPreferences } from './types';
 import { AuthContext } from './AuthContext';
 
@@ -23,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     async function load() {
       try {
-        const res = await fetch('/api/me');
+        const res = await fetch(apiUrl('/api/me'));
         if (!res.ok) throw new Error('Failed to load user');
         const data: User = await res.json();
         if (!cancelled) setUser(data);
@@ -44,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const merged = { ...current.preferences, ...prefs };
       setUser((prev) => prev ? { ...prev, preferences: merged } : prev);
 
-      fetch('/api/me/preferences', {
+      fetch(apiUrl('/api/me/preferences'), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(prefs),

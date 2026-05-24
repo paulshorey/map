@@ -62,6 +62,69 @@ Open [http://localhost:3000](http://localhost:3000).
 |---|---|---|
 | `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/poi_map` | PostgreSQL connection string |
 | `THUNDERFOREST_API_KEY` | — | Required for premium Thunderforest tiles |
+| `NEXT_PUBLIC_API_URL` | — | Remote API origin for Capacitor mobile builds (e.g. `https://poi-map.example.com`) |
+
+## Mobile (Capacitor)
+
+This app supports **web**, **iOS**, and **Android** from one codebase using [Capacitor 8](https://capacitorjs.com/).
+
+### How it differs from Vite + Capacitor
+
+Your Vite app (`gopass/apps/webapp`) builds a static `dist/` folder that Capacitor wraps in a native WebView. Next.js can do the same, but with an important constraint:
+
+| | Vite + Capacitor | Next.js + Capacitor |
+|---|---|---|
+| Build output | `dist/` | `out/` (static export) |
+| API routes | External backend (`VITE_API_BASE_URL`) | Same — API routes cannot run inside the native shell |
+| Web deployment | Static hosting | Full Next.js server (`npm run build && npm start`) |
+| Mobile deployment | `cap sync` copies static assets | Same workflow |
+
+Capacitor has **no Node.js server at runtime** — only static HTML/JS/CSS in a WebView. The Next.js `/api/*` route handlers stay on a deployed server; the mobile app calls them via `NEXT_PUBLIC_API_URL`.
+
+### Prerequisites
+
+- Xcode (iOS) and/or Android Studio (Android)
+- A deployed instance of this app (or local dev server) for the mobile app to reach `/api/*`
+
+### One-time setup
+
+```bash
+npm install
+npm run cap:add:ios      # if ios/ does not exist yet
+npm run cap:add:android  # if android/ does not exist yet
+```
+
+### Build for mobile
+
+Set `NEXT_PUBLIC_API_URL` to your deployed backend, then sync:
+
+```bash
+NEXT_PUBLIC_API_URL=https://your-deployed-app.example.com npm run cap:sync
+```
+
+Open the native IDE:
+
+```bash
+npm run cap:ios       # builds, syncs, opens Xcode
+npm run cap:android   # builds, syncs, opens Android Studio
+```
+
+### Live reload during development
+
+1. Start the Next.js dev server: `npm run dev`
+2. Uncomment the `server.url` block in `capacitor.config.ts` and set your machine's LAN IP (e.g. `http://192.168.1.10:3000`)
+3. Run `npx cap run ios` or `npx cap run android`
+
+The native app loads from your dev server instead of the static `out/` bundle.
+
+### Scripts
+
+| Script | Description |
+|---|---|
+| `npm run build:mobile` | Static export to `out/` + `cap sync` (temporarily excludes `/api` routes from the build) |
+| `npm run cap:sync` | Alias for `build:mobile` |
+| `npm run cap:ios` | Build, sync, open Xcode |
+| `npm run cap:android` | Build, sync, open Android Studio |
 
 ## Architecture
 

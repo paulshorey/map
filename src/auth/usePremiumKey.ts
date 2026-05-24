@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { apiUrl } from '@/lib/config';
 import { PROVIDERS } from '../basemap/providers';
 import { useAuth } from './useAuth';
 
@@ -11,7 +12,7 @@ export function usePremiumKey(providerId: string): string | null {
   const { data } = useQuery({
     queryKey: ['provider-credentials', providerId],
     queryFn: async () => {
-      const r = await fetch(`/api/providers/${providerId}/credentials`);
+      const r = await fetch(apiUrl(`/api/providers/${providerId}/credentials`));
       if (!r.ok) return null;
       const json = await r.json();
       return (json.apiKey as string) ?? null;
