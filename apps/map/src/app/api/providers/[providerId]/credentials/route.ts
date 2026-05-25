@@ -21,7 +21,7 @@ export async function GET(
     thunderforest: process.env.THUNDERFOREST_API_KEY,
   };
 
-  const providerBase = providerId.split('-')[0];
+  const providerBase = providerId.split('-')[0]!;
   const apiKey = keyMap[providerBase];
 
   if (!apiKey) {

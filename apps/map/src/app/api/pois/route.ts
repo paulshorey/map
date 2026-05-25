@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const [w, s, e, n] = parts;
+  const [w, s, e, n] = parts as [number, number, number, number];
   const z = Number(zoom) || 0;
   const limit = z < 6 ? 500 : 5000;
   const isWorldView = e - w > 300 || n - s > 160;

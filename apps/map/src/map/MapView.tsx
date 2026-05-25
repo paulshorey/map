@@ -81,6 +81,7 @@ export function MapView() {
       if (!map || !e.features?.length) return;
 
       const feature = e.features[0];
+      if (!feature) return;
 
       if (feature.properties?.cluster_id != null) {
         const source = map.getSource('pois');
