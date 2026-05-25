@@ -1,0 +1,131 @@
+[
+  {
+    "name": "Green Tortoise Hostel Seattle",
+    "category": "Hostel",
+    "lng": -122.3426,
+    "lat": 47.6091,
+    "description": "World-famous social hostel directly across from Pike Place Market. Bunk dorms year-round, private rooms in fall/winter. Free breakfast, communal kitchen, laundry, nightly social events (pub crawls Fridays), 24/7 staff. 30 rooms, sleeps up to 150.",
+    "address": "105 Pike St, Seattle, WA 98101",
+    "website": "https://greentortoise.net",
+    "hours": "24/7 reception"
+  },
+  {
+    "name": "American Hotel Hostel",
+    "category": "Hostel",
+    "lng": -122.3243,
+    "lat": 47.5988,
+    "description": "Seattle's largest hostel in the historic Chinatown-International District, renovated 2009. Dorms and private rooms, communal kitchen, lounge spaces, laundry, library/game room, free WiFi, regular social events. Near Amtrak, Greyhound, stadiums.",
+    "address": "520 S King St, Seattle, WA 98104",
+    "website": "https://americanhotel.com",
+    "hours": "24/7 reception"
+  },
+  {
+    "name": "Hostel Fish Seattle",
+    "category": "Hostel",
+    "lng": -122.3512,
+    "lat": 47.6152,
+    "description": "Premium hostel in Seattle's Belltown neighborhood, blocks from Space Needle and Pike Place Market. Communal lounge, bunk dorm rooms, free WiFi. Front desk open 7am–3am.",
+    "address": "2327 2nd Ave, Seattle, WA 98121",
+    "website": "https://hostelfish.com/seattle",
+    "hours": "Check-in 3pm–11pm"
+  },
+  {
+    "name": "City Hostel Seattle",
+    "category": "Hostel",
+    "lng": -122.3510,
+    "lat": 47.6153,
+    "description": "Art-themed hostel in a renovated 1920s building in Belltown — each dorm room painted by a different local Seattle artist (47+ murals). Small on-site movie theatre, communal spaces. Between Space Needle and Pike Place Market.",
+    "address": "2327 2nd Ave, Seattle, WA 98121",
+    "website": "https://www.cityhostelseattle.com",
+    "hours": "24/7"
+  },
+  {
+    "name": "HotelHotel Hostel",
+    "category": "Hostel",
+    "lng": -122.3496,
+    "lat": 47.6516,
+    "description": "Small, community-focused hostel in Seattle's artsy Fremont neighborhood. Free breakfast, free WiFi, free linens, full communal kitchen, bike rentals, polaroid camera rental. Near Woodland Park Zoo and Seattle Center.",
+    "address": "3515 Fremont Ave N, Seattle, WA 98103",
+    "website": "https://www.hotelhotelhostel.com",
+    "hours": "Check-in from 2pm"
+  },
+  {
+    "name": "North Cascades Mountain Hostel",
+    "category": "Hostel",
+    "lng": -120.1844,
+    "lat": 48.4780,
+    "description": "Adventure basecamp in downtown Winthrop, Methow Valley. Bunk dorms, private rooms, and deluxe private cabins with deck views of the Cascades. Fully stocked communal kitchens, laundry, free WiFi, dog-friendly. HI USA referral hostel. Near hiking, biking, skiing, rock climbing.",
+    "address": "209 Castle Ave, Winthrop, WA 98862",
+    "website": "http://www.ncascadesmtnhostel.com",
+    "hours": "Check-in from 4pm"
+  },
+  {
+    "name": "San Juan Island Hostel",
+    "category": "Hostel",
+    "lng": -123.0173,
+    "lat": 48.5328,
+    "description": "3 blocks from the ferry terminal in Friday Harbor. Shared dorm rooms, private dorms, group dorm, full communal kitchen, free WiFi, free parking. Night manager on site. Walking distance to whale watch tours, kayak rentals. No guests under 14. Max 14-night stay.",
+    "address": "425 Argyle Ave, Friday Harbor, WA 98250",
+    "website": "https://www.sanjuanislandhostel.com",
+    "hours": "Reception 9am–6pm daily"
+  },
+  {
+    "name": "Wayfarer's Rest",
+    "category": "Hostel",
+    "lng": -123.0162,
+    "lat": 48.5333,
+    "description": "Budget hostel 4 blocks from the ferry terminal in Friday Harbor, operating since 1999. Two fully equipped communal kitchens, dorm rooms from ~$30/night. NOTE: Hostelz.com previously flagged as closed — call ahead to confirm current status.",
+    "address": "35 Malcolm St, Friday Harbor, WA 98250",
+    "hours": "Contact for availability"
+  },
+  {
+    "name": "Golden Tree Hostel",
+    "category": "Hostel",
+    "lng": -122.9032,
+    "lat": 48.7007,
+    "description": "Beautifully renovated 1893 pioneer farmhouse hostel on Orcas Island, Eastsound. Communal and private rooms, manicured garden, outdoor communal kitchen, pizza oven, free WiFi. 2 minutes walk to Eastsound town center. Dorm beds from ~$69.",
+    "address": "1159 North Beach Rd, Eastsound, WA 98245",
+    "website": "https://goldentreehostel.com",
+    "hours": "Check-in from 3pm"
+  },
+  {
+    "name": "Rain Forest Hostel",
+    "category": "Hostel",
+    "lng": -124.2980,
+    "lat": 47.7220,
+    "description": "Remote hostel on 17 acres between Ruby Beach and the Hoh Rain Forest, 22 miles south of Forks on Hwy 101. Dorm bunks, full communal kitchen, deck, library, laundry. Payment by donation (~$10/person suggested), cash only. One of the most authentic, community-oriented hostels in the PNW.",
+    "address": "169312 Hwy 101, Forks, WA 98331",
+    "website": "http://www.rainforesthostel.com",
+    "hours": "Contact ahead: (360) 374-2270"
+  },
+  {
+    "name": "The Society Hotel Bingen",
+    "category": "Hostel",
+    "lng": -121.4723,
+    "lat": 45.7218,
+    "description": "Converted 1908 schoolhouse in the Columbia River Gorge. Two 24-bed bunk rooms (triple-stacked), each bunk with privacy curtain, reading light, power outlet, lockable storage. Communal spaces, underground spa with saltwater soaking pool, cold plunge, hot tub, bar & café, 20 private cabins. Budget bunk-room travelers get full spa access.",
+    "address": "210 N Cedar St, Bingen, WA 98605",
+    "website": "https://bingen.thesocietyhotel.com",
+    "hours": "Check-in 4pm–11pm"
+  },
+  {
+    "name": "ToadLily House International Hostel",
+    "category": "Hostel",
+    "lng": -123.4298,
+    "lat": 48.1181,
+    "description": "House-style international hostel in Port Angeles, gateway to Olympic National Park. Main dorm with 3 bunk beds, upstairs room for groups of 3, private rooms available. Communal kitchen, showers, laundry, free WiFi, free parking, bike parking. Pet-friendly. Doorbell rings to host's cell for late arrivals.",
+    "address": "105 E 5th St, Port Angeles, WA 98362",
+    "website": "https://www.hostelworld.com/hostels/p/64668/toadlily-house-international-hostel/",
+    "hours": "Reception 8am–10pm"
+  },
+  {
+    "name": "Brewster Hall",
+    "category": "Hostel",
+    "lng": -117.5766,
+    "lat": 47.4876,
+    "description": "Hostel-style communal lodging in Cheney, WA (20 min west of Spokane). Community kitchen and lounge, free WiFi, laundry, meeting rooms, 24-hr check-in, luggage storage. Short-term and extended stays. Only budget-communal option in Eastern WA.",
+    "address": "404 2nd St, Cheney, WA 99004",
+    "website": "https://www.brewsterhall.com",
+    "hours": "24-hr check-in"
+  }
+]
