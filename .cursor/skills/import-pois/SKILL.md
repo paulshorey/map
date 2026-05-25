@@ -37,14 +37,16 @@ Convert places into structured data and insert them into the PostgreSQL `pois` t
 
 ### Categories
 
-Pick the best fit: `Park`, `Historic Site`, `Museum`, `Viewpoint`, `Restaurant`, `Shop`, `Cafe`, `Beach`, `Trail`, `Flying Site`
+Pick the best fit: `Park`, `Historic Site`, `Museum`, `Viewpoint`, `Restaurant`, `Shop`, `Cafe`, `Beach`, `Trail`, `Flying Site`, `Hostel`
 
 New categories are allowed when none of these fit.
 
 ## CLI Options
 
+**Important:** Use absolute paths when running from the repo root (pnpm resolves relative paths from `lib/db-map/`).
+
 ```bash
-pnpm db:import:json <file> [--category "Name"] [--dry-run] [--replace]
+pnpm db:import:json /absolute/path/to/file.json [--category "Name"] [--dry-run] [--replace]
 ```
 
 | Flag | Effect |
@@ -56,7 +58,7 @@ pnpm db:import:json <file> [--category "Name"] [--dry-run] [--replace]
 If all items share a category, omit `category` from the JSON and pass it via CLI:
 
 ```bash
-pnpm db:import:json docs/import-data/sites.json --category "Flying Site" --dry-run
+pnpm db:import:json /workspace/docs/import-data/sites.json --category "Flying Site" --dry-run
 ```
 
 ## Coordinate Rules
@@ -81,7 +83,7 @@ export DB_MAP_URL="postgresql://postgres:postgres@localhost:5432/poi_map"
 For `.kml` files from Google Maps "My Maps":
 
 ```bash
-pnpm db:import:kml path/to/file.kml --category "Flying Site" --dry-run
+pnpm db:import:kml /workspace/path/to/file.kml --category "Flying Site" --dry-run
 ```
 
 ## Example
@@ -112,8 +114,8 @@ Write `docs/import-data/sf-cafes.json`:
 ```
 
 ```bash
-pnpm db:import:json docs/import-data/sf-cafes.json --category "Cafe" --dry-run
-pnpm db:import:json docs/import-data/sf-cafes.json --category "Cafe"
+pnpm db:import:json /workspace/docs/import-data/sf-cafes.json --category "Cafe" --dry-run
+pnpm db:import:json /workspace/docs/import-data/sf-cafes.json --category "Cafe"
 ```
 
 ## Reference Files
