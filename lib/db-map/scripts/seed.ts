@@ -591,7 +591,7 @@ async function seed() {
 
   for (const poi of POIS) {
     values.push(
-      `($${idx}, $${idx + 1}, $${idx + 2}, $${idx + 3}, $${idx + 4}, $${idx + 5}, $${idx + 6}, ST_SetSRID(ST_MakePoint($${idx + 7}, $${idx + 8}), 4326)::geography)`,
+      `($${idx}, $${idx + 1}, $${idx + 2}, $${idx + 3}, $${idx + 4}, $${idx + 5}, $${idx + 6}, $${idx + 7}, $${idx + 8})`,
     );
     params.push(
       poi.name,
@@ -609,7 +609,7 @@ async function seed() {
 
   await getDb().query('DELETE FROM pois');
   await getDb().query(
-    `INSERT INTO pois (name, category, description, address, website, hours, photo_url, geom)
+    `INSERT INTO pois (name, category, description, address, website, hours, photo_url, lng, lat)
      VALUES ${values.join(', ')}`,
     params,
   );

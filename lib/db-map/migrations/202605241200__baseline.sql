@@ -1,7 +1,6 @@
 -- 202605241200__baseline.sql
--- Initial POI map schema: PostGIS, POIs, users, and guest seed data.
-
-CREATE EXTENSION IF NOT EXISTS postgis;
+-- Initial POI map schema: POIs, users, and guest seed data.
+-- Uses plain lat/lng columns (no PostGIS dependency).
 
 CREATE TABLE public.pois (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -12,11 +11,12 @@ CREATE TABLE public.pois (
   address text,
   website text,
   hours text,
-  geom geography(POINT, 4326) NOT NULL,
+  lng double precision NOT NULL,
+  lat double precision NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX pois_geom_gix ON public.pois USING gist (geom);
+CREATE INDEX pois_coords_idx ON public.pois (lng, lat);
 CREATE INDEX pois_category_idx ON public.pois (category);
 
 CREATE TABLE public.users (

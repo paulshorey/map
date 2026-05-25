@@ -27,7 +27,10 @@ export async function listPoisGeoJson(
         SELECT jsonb_build_object(
           'type', 'Feature',
           'id', id,
-          'geometry', ST_AsGeoJSON(geom::geometry, 6)::jsonb,
+          'geometry', jsonb_build_object(
+            'type', 'Point',
+            'coordinates', jsonb_build_array(lng, lat)
+          ),
           'properties', jsonb_build_object(
             'id', id, 'name', name, 'category', category, 'photo_url', photo_url
           )
@@ -51,13 +54,16 @@ export async function listPoisGeoJson(
       SELECT jsonb_build_object(
         'type', 'Feature',
         'id', id,
-        'geometry', ST_AsGeoJSON(geom::geometry, 6)::jsonb,
+        'geometry', jsonb_build_object(
+          'type', 'Point',
+          'coordinates', jsonb_build_array(lng, lat)
+        ),
         'properties', jsonb_build_object(
           'id', id, 'name', name, 'category', category, 'photo_url', photo_url
         )
       ) AS feature
       FROM pois
-      WHERE geom && ST_MakeEnvelope($1, $2, $3, $4, 4326)::geography
+      WHERE lng >= $1 AND lat >= $2 AND lng <= $3 AND lat <= $4
         AND ($5::text IS NULL OR category = $5)
       LIMIT $6
     ) sub`,
@@ -70,8 +76,8 @@ export async function listPoisGeoJson(
 export async function getPoiById(db: Pool, id: string) {
   const { rows } = await db.query(
     `SELECT id, name, category, description, address, website, hours, photo_url,
-            ST_X(geom::geometry) AS lng, ST_Y(geom::geometry) AS lat,
-            ST_AsGeoJSON(geom::geometry, 6)::jsonb AS geometry
+            lng, lat,
+            jsonb_build_object('type', 'Point', 'coordinates', jsonb_build_array(lng, lat)) AS geometry
      FROM pois WHERE id = $1`,
     [id],
   );

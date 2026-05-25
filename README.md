@@ -1,12 +1,12 @@
 # POI Map
 
-A multi-provider interactive map application built with React, MapLibre GL JS, and PostGIS. Browse points of interest on a configurable basemap with clustering, viewport-driven loading, and a detail drawer.
+A multi-provider interactive map application built with React, MapLibre GL JS, and PostgreSQL. Browse points of interest on a configurable basemap with clustering, viewport-driven loading, and a detail drawer.
 
 ## Features
 
 - **14 basemap providers** — OpenFreeMap (default), Stadia Maps, Stamen Terrain, CARTO, OpenTopoMap, Thunderforest (premium)
 - **Config-driven provider registry** — add a new provider by adding one object to an array
-- **Viewport-driven POI loading** — debounced fetch on pan/zoom, backed by PostGIS spatial queries
+- **Viewport-driven POI loading** — debounced fetch on pan/zoom, backed by bounding box spatial queries
 - **Built-in clustering** — MapLibre's native supercluster with expandable clusters
 - **POI detail drawer** — click a point to see name, category, description
 - **Provider persistence** — choice saved to server, `localStorage`, and URL `?basemap=` param
@@ -20,7 +20,7 @@ A multi-provider interactive map application built with React, MapLibre GL JS, a
 | App      | Next.js 15, React 19, TypeScript, Tailwind CSS v4 |
 | Map      | MapLibre GL JS 5.24, react-map-gl/maplibre 8.x    |
 | Data     | TanStack Query 5                                  |
-| Database | PostgreSQL 16 + PostGIS 3.4                       |
+| Database | PostgreSQL 16+ (no extensions required)            |
 
 ## Monorepo Layout
 
@@ -42,7 +42,7 @@ A multi-provider interactive map application built with React, MapLibre GL JS, a
 
 - Node.js 20+
 - pnpm 10+
-- PostgreSQL 16+ with PostGIS extension
+- PostgreSQL 16+
 
 ### 1. Install dependencies
 
