@@ -1,0 +1,470 @@
+[
+  {
+    "name": "HI San Francisco Downtown",
+    "category": "Hostel",
+    "lat": 37.7859,
+    "lng": -122.4094,
+    "address": "312 Mason St, San Francisco, CA 94102",
+    "description": "Former 1909 hotel; cable cars nearby; free breakfast; 24-hr communal kitchen.",
+    "website": "https://www.hiusa.org/find-hostels/california/san-francisco-312-mason-street"
+  },
+  {
+    "name": "HI San Francisco Fisherman's Wharf",
+    "category": "Hostel",
+    "lat": 37.8057,
+    "lng": -122.4286,
+    "address": "Building 240, Fort Mason, San Francisco, CA 94123",
+    "description": "Inside Golden Gate NRA; waterfront national park location; free parking; movie room and fireplace lounge.",
+    "website": "https://www.hiusa.org/find-hostels/california/san-francisco-building240-fortmason"
+  },
+  {
+    "name": "HI Marin Headlands",
+    "category": "Hostel",
+    "lat": 37.8304,
+    "lng": -122.5278,
+    "address": "Fort Barry, Sausalito, CA 94965",
+    "description": "Former 1907 U.S. Army barracks inside Golden Gate NRA; two kitchens, yoga room, wood-burning stove.",
+    "website": "https://www.hiusa.org/find-hostels/california/sausalito-fort-barry"
+  },
+  {
+    "name": "HI Point Montara Lighthouse Hostel",
+    "category": "Hostel",
+    "lat": 37.5369,
+    "lng": -122.5194,
+    "address": "8800 Cabrillo Hwy, Montara, CA 94037",
+    "description": "1875 lighthouse converted to hostel; 25 miles south of SF; hot tub; communal kitchen.",
+    "website": "https://www.hiusa.org/find-hostels/california/montara-8800-cabrillo-highway"
+  },
+  {
+    "name": "HI Pigeon Point Lighthouse Hostel",
+    "category": "Hostel",
+    "lat": 37.1822,
+    "lng": -122.3959,
+    "address": "210 Pigeon Point Rd, Pescadero, CA 94060",
+    "description": "115-ft active lighthouse; 50 miles south of SF; cliff setting; shared kitchens; hot tub; sleeps 50.",
+    "website": "https://www.hiusa.org/find-hostels/california/pescadero-210-pigeon-point-road"
+  },
+  {
+    "name": "Green Tortoise Hostel",
+    "category": "Hostel",
+    "lat": 37.7989,
+    "lng": -122.4074,
+    "address": "494 Broadway, San Francisco, CA 94133",
+    "description": "Iconic SF institution in North Beach/Little Italy; free breakfast; sauna; pool table; live music events; 24-hr desk.",
+    "website": "https://www.greentortoisesf.com"
+  },
+  {
+    "name": "Adelaide Hostel",
+    "category": "Hostel",
+    "lat": 37.7864,
+    "lng": -122.4108,
+    "address": "5 Isadora Duncan Lane, San Francisco, CA 94102",
+    "description": "Tucked in alley 2 blocks from Union Square; voted best SF hostel 2021; pod-style dorms; 24-hr desk.",
+    "website": "https://www.adelaidehostelsanfrancisco.com"
+  },
+  {
+    "name": "Orange Village Hostel",
+    "category": "Hostel",
+    "lat": 37.7857,
+    "lng": -122.4133,
+    "address": "411 O'Farrell St, San Francisco, CA 94102",
+    "description": "Union Square/Tenderloin; free breakfast; communal kitchen; 24-hr reception; male, female, and mixed dorms.",
+    "website": "https://www.orangevillagehostel.com"
+  },
+  {
+    "name": "Amsterdam Hostel San Francisco",
+    "category": "Hostel",
+    "lat": 37.7872,
+    "lng": -122.4151,
+    "address": "749 Taylor St, San Francisco, CA 94102",
+    "description": "3 blocks from Union Square; private ensuite options; communal kitchen; cable car access.",
+    "website": "https://www.hostelsf.com"
+  },
+  {
+    "name": "Chapter San Francisco",
+    "category": "Hostel",
+    "lat": 37.7837,
+    "lng": -122.4225,
+    "address": "1533 Franklin St, San Francisco, CA 94109",
+    "description": "Pacific Heights/Civic Center area; communal kitchen; social atmosphere; 40 rooms across 4 floors.",
+    "website": "https://www.chaptersanfrancisco.com"
+  },
+  {
+    "name": "Samesun San Francisco",
+    "category": "Hostel",
+    "lat": 37.8005,
+    "lng": -122.4228,
+    "address": "1475 Lombard St, San Francisco, CA 94123",
+    "description": "Marina District near Ghirardelli Square; continental breakfast; 24-hr desk.",
+    "website": "https://samesun.com/san-francisco-hostel/"
+  },
+  {
+    "name": "HI Los Angeles Santa Monica",
+    "category": "Hostel",
+    "lat": 34.0159,
+    "lng": -118.4955,
+    "address": "1436 2nd St, Santa Monica, CA 90401",
+    "description": "Two blocks from the beach; 4- and 6-bed dorms; fireplace lobby; no alcohol policy.",
+    "website": "https://www.hiusa.org/find-hostels/california/santa-monica-1436-2nd-street"
+  },
+  {
+    "name": "ITH Hermosa Beach Surf Hostel LAX",
+    "category": "Hostel",
+    "lat": 33.8617,
+    "lng": -118.3994,
+    "address": "Pier Plaza, Hermosa Beach, CA 90254",
+    "description": "Opened 1996; 20 min south of LAX; surfing/beach focus; free breakfast; communal kitchen.",
+    "website": "https://ithhostels.com/ith-hermosa-beach-surf-hostel-lax/"
+  },
+  {
+    "name": "Samesun Hollywood",
+    "category": "Hostel",
+    "lat": 34.1015,
+    "lng": -118.3406,
+    "address": "6820 Hollywood Blvd, Los Angeles, CA 90028",
+    "description": "On the Hollywood Walk of Fame; large common room overlooking the boulevard; free breakfast; laundry.",
+    "website": "https://samesun.com/hollywood-hostel/"
+  },
+  {
+    "name": "Samesun Venice Beach",
+    "category": "Hostel",
+    "lat": 33.9882,
+    "lng": -118.4717,
+    "address": "25 Windward Ave, Venice, CA 90291",
+    "description": "On Venice Boardwalk; ocean views from common room; guest kitchen; dorms and privates; free breakfast.",
+    "website": "https://samesun.com/venice-beach-hostel/"
+  },
+  {
+    "name": "Banana Bungalow Hollywood",
+    "category": "Hostel",
+    "lat": 34.1019,
+    "lng": -118.3255,
+    "address": "5920 Hollywood Blvd, Hollywood, CA 90028",
+    "description": "Converted motel; gated courtyard; beach shuttle; one of the most social LA hostels.",
+    "website": "https://www.hostelworld.com/hostels/p/11182/banana-bungalow-hollywood/"
+  },
+  {
+    "name": "Banana Bungalow West Hollywood",
+    "category": "Hostel",
+    "lat": 34.0836,
+    "lng": -118.3611,
+    "address": "603 N Fairfax Ave, Los Angeles, CA 90036",
+    "description": "Beverly Grove/West Hollywood area; hostel dorms and private rooms.",
+    "website": "https://www.hostelworld.com/hostels/p/11182/banana-bungalow-hollywood/"
+  },
+  {
+    "name": "USA Hostels Hollywood",
+    "category": "Hostel",
+    "lat": 34.1002,
+    "lng": -118.3348,
+    "address": "1624 Schrader Blvd, Hollywood, CA 90028",
+    "description": "Half block from Walk of Fame; free breakfast; communal kitchen; free beach shuttle 3x/week; adults-only.",
+    "website": "https://usahostels.com/locations/hollywood/"
+  },
+  {
+    "name": "Orange Drive Hostel",
+    "category": "Hostel",
+    "lat": 34.1013,
+    "lng": -118.337,
+    "address": "1764 N Orange Dr, Hollywood, CA 90028",
+    "description": "Heart of Hollywood; 2-min walk to Chinese Theater and Walk of Fame; adults-only; 24-hr access.",
+    "website": "https://orangedrivehostel.com"
+  },
+  {
+    "name": "The Rumi Hostel",
+    "category": "Hostel",
+    "lat": 34.0601,
+    "lng": -118.3089,
+    "address": "820 S Oxford Ave, Koreatown, Los Angeles, CA 90005",
+    "description": "Koreatown; free breakfast; communal kitchen; garden; adults-only; Metro accessible.",
+    "website": "https://www.hotels.com/ho1846327776/the-rumi-hostel-los-angeles-united-states-of-america/"
+  },
+  {
+    "name": "STAY OPEN Venice Beach",
+    "category": "Hostel",
+    "lat": 33.9876,
+    "lng": -118.4716,
+    "address": "11 Brooks Ave Unit B, Venice, CA 90291",
+    "description": "1-min walk to Venice Beach; co-working space; pod-style beds; bike rental; 24-hr staff.",
+    "website": "https://www.hostelworld.com/hostels/p/311673/stay-open-venice-beach/"
+  },
+  {
+    "name": "PodShare Hollywood",
+    "category": "Hostel",
+    "lat": 34.0997,
+    "lng": -118.3267,
+    "address": "1631 Cosmo St, Los Angeles, CA 90028",
+    "description": "Open-plan pod beds; shared kitchen and communal space; TV/Netflix at each pod; 24-hr access.",
+    "website": "https://www.podshare.com"
+  },
+  {
+    "name": "PodShare DTLA",
+    "category": "Hostel",
+    "lat": 34.0519,
+    "lng": -118.2344,
+    "address": "100 S Vignes St, Los Angeles, CA 90012",
+    "description": "Arts District; open-plan pod beds; shared kitchen; communal space; Metro accessible.",
+    "website": "https://www.podshare.com"
+  },
+  {
+    "name": "PodShare Los Feliz",
+    "category": "Hostel",
+    "lat": 34.0887,
+    "lng": -118.2938,
+    "address": "4534 Fountain Ave, Los Angeles, CA 90029",
+    "description": "Los Feliz neighborhood; open pod beds; communal kitchen and social space.",
+    "website": "https://www.podshare.com"
+  },
+  {
+    "name": "HI San Diego Downtown",
+    "category": "Hostel",
+    "lat": 32.7118,
+    "lng": -117.1618,
+    "address": "521 Market St, San Diego, CA 92101",
+    "description": "Gaslamp Quarter; 150 beds; free pancake breakfast; shared kitchen; game room; dorms and private rooms.",
+    "website": "https://www.hiusa.org/find-hostels/california/san-diego-521-market-street"
+  },
+  {
+    "name": "ITH San Diego Adventure Hostel",
+    "category": "Hostel",
+    "lat": 32.7244,
+    "lng": -117.168,
+    "address": "230 W Cedar St, San Diego, CA 92101",
+    "description": "Little Italy/Downtown; nightly social events (karaoke, games); communal kitchen.",
+    "website": "https://ithhostels.com/ith-san-diego-adventure-hostel/"
+  },
+  {
+    "name": "ITH San Diego Beach Bungalow Surf Hostel",
+    "category": "Hostel",
+    "lat": 32.797,
+    "lng": -117.2525,
+    "address": "707 Reed Ave, San Diego, CA 92109",
+    "description": "Directly on Pacific Beach boardwalk; outdoor deck; surfboard/wetsuit rentals; female-only and co-ed dorms.",
+    "website": "https://ithhostels.com/ith-beach-bungalow-surf-hostel/"
+  },
+  {
+    "name": "ITH Mission Beach Backpacker Hostel",
+    "category": "Hostel",
+    "lat": 32.7678,
+    "lng": -117.2534,
+    "address": "3204 Mission Blvd, San Diego, CA 92109",
+    "description": "Mission Beach; steps from beach; free pancake breakfast; nightly social events.",
+    "website": "https://ithhostels.com/ith-mission-beach-backpacker-hostel/"
+  },
+  {
+    "name": "Samesun Ocean Beach",
+    "category": "Hostel",
+    "lat": 32.7469,
+    "lng": -117.25,
+    "address": "4961 Newport Ave, San Diego, CA 92107",
+    "description": "Ocean Beach neighborhood; shared kitchen; terrace; free breakfast; 24-hr front desk; 5.0-rated on Expedia.",
+    "website": "https://samesun.com/ocean-beach-hostel/"
+  },
+  {
+    "name": "Gaslamp Hostel",
+    "category": "Hostel",
+    "lat": 32.7108,
+    "lng": -117.1601,
+    "address": "726 5th Ave, San Diego, CA 92101",
+    "description": "Gaslamp Quarter; eclectic decor; nightly social events; near San Diego Convention Center.",
+    "website": "https://www.gaslamphostel.com"
+  },
+  {
+    "name": "Lucky D's Hostel",
+    "category": "Hostel",
+    "lat": 32.7126,
+    "lng": -117.1556,
+    "address": "615 8th Ave, San Diego, CA 92101",
+    "description": "East Village/Gaslamp; free evening meals 3x/week; free WiFi and linen; no curfew.",
+    "website": "https://luckydshostel.com"
+  },
+  {
+    "name": "Stay Classy Hostel",
+    "category": "Hostel",
+    "lat": 32.7131,
+    "lng": -117.1619,
+    "address": "1455 Market St, San Diego, CA 92101",
+    "description": "Pod-style beds with memory foam and privacy curtains; adults-only; East Village.",
+    "website": "https://stayclassy.info"
+  },
+  {
+    "name": "Hostel on 3rd",
+    "category": "Hostel",
+    "lat": 32.7113,
+    "lng": -117.1621,
+    "address": "542 3rd Ave, San Diego, CA 92101",
+    "description": "Gaslamp Quarter; 1912 historic building; free breakfast; pool table; near Petco Park.",
+    "website": "https://www.hostelworld.com/hostels/p/69711/hostel-on-3rd/"
+  },
+  {
+    "name": "California Dreams Hostel Pacific Beach",
+    "category": "Hostel",
+    "lat": 32.7934,
+    "lng": -117.2484,
+    "address": "743 Emerald St, San Diego, CA 92109",
+    "description": "Independent; 3-min walk to Pacific Beach; strong community atmosphere; opened 2017.",
+    "website": "https://pacific.californiadreamshostel.com"
+  },
+  {
+    "name": "Santa Cruz Hostel",
+    "category": "Hostel",
+    "lat": 36.9623,
+    "lng": -122.018,
+    "address": "321 Main St, Santa Cruz, CA 95060",
+    "description": "Historic 1870s Carmelita Cottages on Beach Hill; nonprofit; 10,000+ guests/year; close to the Boardwalk.",
+    "website": "https://web.santacruzchamber.org/Accommodations/Santa-Cruz-Hostel-1464"
+  },
+  {
+    "name": "Monterey Hostel",
+    "category": "Hostel",
+    "lat": 36.6002,
+    "lng": -121.8947,
+    "address": "778 Hawthorne St, Monterey, CA 93940",
+    "description": "Lighthouse District; nonprofit 501c3; reopened March 2024; ~50 beds; 4 dorm + 9 private rooms; accessible.",
+    "website": "https://montereyhostel.com"
+  },
+  {
+    "name": "Hostel Obispo",
+    "category": "Hostel",
+    "lat": 35.2834,
+    "lng": -120.6596,
+    "address": "1617 Santa Rosa St, San Luis Obispo, CA 93401",
+    "description": "Victorian house; 5-min walk from downtown SLO; 1 block from Amtrak; dorms and private rooms.",
+    "website": "https://visitslo.com/places-to-stay/hotels/hostel-obispo/"
+  },
+  {
+    "name": "ITH Santa Barbara Surf Hostel",
+    "category": "Hostel",
+    "lat": 34.4137,
+    "lng": -119.6908,
+    "address": "134 Chapala St, Santa Barbara, CA 93101",
+    "description": "Steps from beach and Stearns Wharf; Funk Zone location; communal vibe; 30 rooms.",
+    "website": "https://ithhostels.com/ith-santa-barbara-surf-hostel/"
+  },
+  {
+    "name": "Bridge Street Inn",
+    "category": "Hostel",
+    "lat": 35.5644,
+    "lng": -121.0799,
+    "address": "4314 Bridge St, Cambria, CA 93428",
+    "description": "Small hostel-style inn on the Central Coast between Hearst Castle and Big Sur.",
+    "website": "https://www.hostelworld.com/hostels/north-america/usa/cambria/"
+  },
+  {
+    "name": "HI Sacramento Hostel",
+    "category": "Hostel",
+    "lat": 38.5779,
+    "lng": -121.4964,
+    "address": "925 H St, Sacramento, CA 95814",
+    "description": "Beautifully restored Victorian mansion downtown; communal kitchen; outdoor patio; game room; limited parking.",
+    "website": "https://www.hiusa.org/find-hostels/california/sacramento-925-h-street"
+  },
+  {
+    "name": "Grateful Dreams Lodging",
+    "category": "Hostel",
+    "lat": 40.8665,
+    "lng": -124.0828,
+    "address": "860 D St, Arcata, CA 95521",
+    "description": "Near Cal Poly Humboldt; shared kitchen; sun terrace; karaoke; communal lounge; adults-only. Verify status before booking.",
+    "website": "https://www.hostelz.com/hostel/504558-Grateful-Dreams-Lodging"
+  },
+  {
+    "name": "The Hostel California (Bishop)",
+    "category": "Hostel",
+    "lat": 37.3635,
+    "lng": -118.3953,
+    "address": "Downtown Bishop, CA 93514",
+    "description": "Boutique art hostel for climbers, hikers, and backpackers; 18+; communal spaces; gateway to Sierra Nevada routes.",
+    "website": "https://www.thehostelca.com"
+  },
+  {
+    "name": "Yosemite Bug Rustic Mountain Resort",
+    "category": "Hostel",
+    "lat": 37.5749,
+    "lng": -119.9699,
+    "address": "6979 Hwy 140, Midpines, CA 95345",
+    "description": "27 miles from Yosemite Valley; 50-acre forested hillside; hostel bunks, tent cabins, private rooms; restaurant and spa on site; former 1930s scout camp.",
+    "website": "https://www.yosemitebug.com"
+  },
+  {
+    "name": "Yosemite International Hostel",
+    "category": "Hostel",
+    "lat": 37.8559,
+    "lng": -120.2279,
+    "address": "Downtown Groveland, CA 95321",
+    "description": "30 min from Yosemite north entrance (Hwy 120); only hostel on the northern gateway; dorms and private rooms.",
+    "website": "http://yosemitehostels.com"
+  },
+  {
+    "name": "Jackass Hostel",
+    "category": "Hostel",
+    "lat": 37.2315,
+    "lng": -119.4838,
+    "address": "North Fork, CA 93643",
+    "description": "27 miles from Yosemite south entrance; rustic mountain hostel; full kitchen; dorm bunks; tent sites; communal fire pit; adults 18+. As of 2026 listed for sale — verify current status.",
+    "website": "https://www.jackasshostel.com"
+  },
+  {
+    "name": "Mellow Mountain Hostel",
+    "category": "Hostel",
+    "lat": 38.9311,
+    "lng": -119.9793,
+    "address": "4081 Cedar Ave, South Lake Tahoe, CA 96150",
+    "description": "54 beds; 5-min walk to Heavenly Gondola; 4- and 8-bed dorms; female-only option; full communal kitchen; foosball.",
+    "website": "https://mellowmountainhostel.com"
+  },
+  {
+    "name": "ITH Big Bear Lake Mountain Hostel & Lodge",
+    "category": "Hostel",
+    "lat": 34.2439,
+    "lng": -116.9117,
+    "address": "657 Modoc Dr, Big Bear Lake, CA 92315",
+    "description": "Hillside overlooking the lake; free breakfast; private rooms, co-ed dorms, cabins; no curfew.",
+    "website": "https://ithhostels.com/ith-big-bear-lake-mountain-hostel-lodge/"
+  },
+  {
+    "name": "Big Bear Hostel",
+    "category": "Hostel",
+    "lat": 34.2432,
+    "lng": -116.9052,
+    "address": "527 Knickerbocker Rd, Big Bear Lake, CA 92315",
+    "description": "Mixed and female-only dorm rooms; private rooms sleep 1–8; near lake and village; group rentals available.",
+    "website": "https://www.bigbearhostel.com"
+  },
+  {
+    "name": "Sleepy Forest Hostel",
+    "category": "Hostel",
+    "lat": 34.2389,
+    "lng": -116.9023,
+    "address": "400 S Eureka Dr, Big Bear Lake, CA 92315",
+    "description": "Adults-only; budget-focused; communal facilities; central Big Bear location.",
+    "website": "https://www.bigbear.com/directory/sleepy-forest-cottages/"
+  },
+  {
+    "name": "Bodhi House Joshua Tree",
+    "category": "Hostel",
+    "lat": 34.1347,
+    "lng": -116.0543,
+    "address": "72943 Manana Dr, Twentynine Palms, CA 92277",
+    "description": "12 min from Joshua Tree NP north entrance; 3 private rooms + 1 ensuite; shared kitchen and living room.",
+    "website": "https://bodhihouse29.wordpress.com"
+  },
+  {
+    "name": "Field Station Joshua Tree",
+    "category": "Hostel",
+    "lat": 34.1251,
+    "lng": -116.4019,
+    "address": "Yucca Valley, CA 92284",
+    "description": "20 min from JTNP entrance; converted Travelodge opened May 2024; pool; communal spaces; bunk-bed options; gear shop; boutique basecamp communal ethos.",
+    "website": "https://www.fieldstation.com/joshua-tree"
+  },
+  {
+    "name": "ITH Coyote Ranch Joshua Tree",
+    "category": "Hostel",
+    "lat": 34.0633,
+    "lng": -116.3245,
+    "address": "Joshua Tree, CA 92252",
+    "description": "ITH brand; desert-themed; communal spaces; near Joshua Tree National Park west entrance.",
+    "website": "https://ithhostels.com"
+  }
+]

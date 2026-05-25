@@ -11,3 +11,17 @@ This is a mono-repo. Apps go into ./apps and libraries go into ./lib folder.
 
 - apps/map - the main app, uses Capacitor framework to build web, ios, and android apps
 - lib/db-map - database migrations, contracts, and types
+
+## Database
+
+PostgreSQL 18. Connection via `DB_MAP_URL` env var.
+
+### After making schema changes
+
+When a code change requires a new migration, run the sync pipeline and commit the generated files in the same PR:
+
+```bash
+cd lib/db-map && pnpm db:sync
+```
+
+This migrates the database, snapshots the schema, and regenerates TypeScript types and contracts. The updated files in `schema/` and `generated/` must be committed alongside the migration.

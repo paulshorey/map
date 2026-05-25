@@ -80,6 +80,14 @@ CREATE TABLE public.users (
 
 
 --
+-- Name: pois pois_coords_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pois
+    ADD CONSTRAINT pois_coords_unique UNIQUE (lng, lat);
+
+
+--
 -- Name: pois pois_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -108,13 +116,6 @@ ALTER TABLE ONLY public.users
 --
 
 CREATE INDEX pois_category_idx ON public.pois USING btree (category);
-
-
---
--- Name: pois_coords_idx; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX pois_coords_idx ON public.pois USING btree (lng, lat);
 
 
 --
