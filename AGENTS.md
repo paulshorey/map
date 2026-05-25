@@ -18,13 +18,10 @@ PostgreSQL 18. Connection via `DB_MAP_URL` env var.
 
 ### After making schema changes
 
-When a code change requires a new migration, run the full sync pipeline and commit the generated files in the same PR:
+When a code change requires a new migration, run the sync pipeline and commit the generated files in the same PR:
 
 ```bash
-pnpm db:migrate
-cd lib/db-map && bash scripts/snapshot-schema.sh
-cd lib/db-map && node scripts/generate-types.mjs
-cd lib/db-map && node scripts/generate-app-contract.mjs --write
+cd lib/db-map && pnpm db:sync
 ```
 
-This updates `schema/current.sql`, `generated/typescript/db-types.ts`, and `generated/contracts/`. These generated files must be committed alongside the migration.
+This migrates the database, snapshots the schema, and regenerates TypeScript types and contracts. The updated files in `schema/` and `generated/` must be committed alongside the migration.
