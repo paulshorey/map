@@ -80,19 +80,19 @@ CREATE TABLE public.users (
 
 
 --
--- Name: pois pois_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pois
-    ADD CONSTRAINT pois_pkey PRIMARY KEY (id);
-
-
---
 -- Name: pois pois_coords_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.pois
     ADD CONSTRAINT pois_coords_unique UNIQUE (lng, lat);
+
+
+--
+-- Name: pois pois_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pois
+    ADD CONSTRAINT pois_pkey PRIMARY KEY (id);
 
 
 --
@@ -129,4 +129,5 @@ ALTER TABLE ONLY public.user_preferences
 --
 -- PostgreSQL database dump complete
 --
+
 
