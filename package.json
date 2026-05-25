@@ -1,9 +1,9 @@
 {
-  "name": "map",
+  "name": "map-workspace",
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "build:map": "pnpm --filter map build",
+    "build:map": "pnpm --filter ./apps/map build",
     "db:migrate": "pnpm --filter @lib/db-map db:migrate",
     "db:migrate:baseline": "pnpm --filter @lib/db-map db:migrate:baseline",
     "db:verify": "pnpm --filter @lib/db-map db:verify",
@@ -11,7 +11,7 @@
     "db:import:kml": "pnpm --filter @lib/db-map db:import:kml --",
     "db:import:json": "pnpm --filter @lib/db-map db:import:json --",
     "verify:db-contracts": "pnpm --filter @lib/db-map check-types",
-    "verify:map": "pnpm --filter map verify",
+    "verify:map": "pnpm --filter ./apps/map verify",
     "verify": "pnpm run verify:db-contracts && pnpm run verify:map",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
