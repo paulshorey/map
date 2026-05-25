@@ -26,6 +26,7 @@ This is a mono-repo. Apps go into ./apps and libraries go into ./lib folder.
 - **DB_MAP_URL** must be available to the Next.js process. Place a `.env` file in `apps/map/` with the `DB_MAP_URL` connection string (see `.env.example` for the default value). Next.js loads `.env` from its own CWD, which is `apps/map/` when launched via turbo — a root-level `.env` alone is **not** sufficient.
 - The `pnpm-workspace.yaml` includes `onlyBuiltDependencies` for `esbuild` and `sharp` to avoid the interactive `pnpm approve-builds` prompt.
 - The app uses a **guest-first** auth model — no login is required. `GET /api/me` returns a built-in guest user.
+- **pg_dump v18** is available at `/usr/lib/postgresql/18/bin/pg_dump` (installed from PGDG apt repo). Used by `lib/db-map/scripts/snapshot-schema.sh` for database schema snapshots.
 
 ### Common commands
 
