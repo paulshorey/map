@@ -3,13 +3,13 @@
  * that convert unstructured text into the structured NewPoi[] format.
  *
  * Usage:
- *   pnpm db:import:json <file.json> [--replace] [--dry-run]
+ *   pnpm db:import:json <file.json> [--category "Flying Site"] [--replace] [--dry-run]
  *
  * The JSON file must contain an array of objects matching the NewPoi schema:
  *   [
  *     {
  *       "name": "Place Name",          // required
- *       "category": "Park",            // required
+ *       "category": "Park",            // required (unless --category is used)
  *       "lng": -73.9654,               // required (longitude, -180 to 180)
  *       "lat": 40.7829,               // required (latitude, -90 to 90)
  *       "description": "...",          // optional
@@ -21,8 +21,9 @@
  *   ]
  *
  * Options:
- *   --replace   Delete all existing POIs before importing
- *   --dry-run   Validate and print summary without writing to the database
+ *   --category <name>   Set category for POIs missing one, or override all categories
+ *   --replace           Delete all existing POIs before importing
+ *   --dry-run           Validate and print summary without writing to the database
  */
 
 import { readFileSync } from "node:fs";
@@ -39,12 +40,15 @@ interface ValidationError {
 function parseArgs() {
   const args = process.argv.slice(2);
   let filePath = "";
+  let category: string | undefined;
   let replace = false;
   let dryRun = false;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]!;
-    if (arg === "--replace") {
+    if (arg === "--category" && args[i + 1]) {
+      category = args[++i]!;
+    } else if (arg === "--replace") {
       replace = true;
     } else if (arg === "--dry-run") {
       dryRun = true;
@@ -55,15 +59,15 @@ function parseArgs() {
 
   if (!filePath) {
     console.error(
-      "Usage: pnpm db:import:json <file.json> [--replace] [--dry-run]",
+      "Usage: pnpm db:import:json <file.json> [--category <name>] [--replace] [--dry-run]",
     );
     process.exit(1);
   }
 
-  return { filePath: resolve(filePath), replace, dryRun };
+  return { filePath: resolve(filePath), category, replace, dryRun };
 }
 
-function validatePoi(obj: unknown, index: number): { poi?: NewPoi; error?: ValidationError } {
+function validatePoi(obj: unknown, index: number, defaultCategory?: string): { poi?: NewPoi; error?: ValidationError } {
   const errors: string[] = [];
 
   if (obj == null || typeof obj !== "object") {
@@ -76,8 +80,12 @@ function validatePoi(obj: unknown, index: number): { poi?: NewPoi; error?: Valid
     errors.push("Missing or empty 'name'");
   }
 
-  if (typeof record.category !== "string" || !record.category.trim()) {
-    errors.push("Missing or empty 'category'");
+  const category = (typeof record.category === "string" && record.category.trim())
+    ? record.category.trim()
+    : defaultCategory;
+
+  if (!category) {
+    errors.push("Missing or empty 'category' (provide per-item or use --category flag)");
   }
 
   if (typeof record.lng !== "number" || isNaN(record.lng)) {
@@ -98,7 +106,7 @@ function validatePoi(obj: unknown, index: number): { poi?: NewPoi; error?: Valid
 
   const poi: NewPoi = {
     name: (record.name as string).trim(),
-    category: (record.category as string).trim(),
+    category: category!,
     lng: record.lng as number,
     lat: record.lat as number,
     description: typeof record.description === "string" ? record.description.trim() || null : null,
@@ -112,9 +120,12 @@ function validatePoi(obj: unknown, index: number): { poi?: NewPoi; error?: Valid
 }
 
 async function main() {
-  const { filePath, replace, dryRun } = parseArgs();
+  const { filePath, category, replace, dryRun } = parseArgs();
 
   console.log(`Reading JSON file: ${filePath}`);
+  if (category) {
+    console.log(`Default/override category: "${category}"`);
+  }
   const raw = readFileSync(filePath, "utf-8");
 
   let data: unknown;
@@ -136,7 +147,7 @@ async function main() {
   const validationErrors: ValidationError[] = [];
 
   for (let i = 0; i < data.length; i++) {
-    const result = validatePoi(data[i], i);
+    const result = validatePoi(data[i], i, category);
     if (result.poi) {
       valid.push(result.poi);
     } else if (result.error) {

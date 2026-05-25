@@ -106,6 +106,9 @@ The file must be a JSON array of `NewPoi` objects:
 # Validate and import:
 pnpm db:import:json path/to/pois.json
 
+# Specify category for all items (items can omit "category" in the JSON):
+pnpm db:import:json path/to/pois.json --category "Flying Site"
+
 # Preview only (no database write):
 pnpm db:import:json path/to/pois.json --dry-run
 
@@ -148,6 +151,9 @@ Here's a prompt template you can give an AI agent:
 > Write the full array to `docs/import-data/my-import.json`.
 >
 > Then run: `pnpm db:import:json docs/import-data/my-import.json --dry-run`
+>
+> If all items share the same category, you can omit `category` from the JSON and use the flag instead:
+> `pnpm db:import:json docs/import-data/my-import.json --category "Flying Site" --dry-run`
 >
 > If the dry-run looks correct, run without `--dry-run` to save to the database.
 
