@@ -1,3 +1,7 @@
 packages:
-  - "apps/*"
-  - "lib/*"
+  - apps/*
+  - lib/*
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp

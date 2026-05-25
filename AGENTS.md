@@ -1,9 +1,12 @@
-# Map app
+# POI Map
 
-It shows a world map with many points of interest. User clicks a point to see more information about that POI.
+Interactive map app — users browse points of interest and click for details.
 
-Front-end - NextJS React, renders the map and UI
-Back-end - NextJS app router API, connects to the database and fetches points of interest
+- `apps/map` — Next.js 15 + Capacitor (web, iOS, Android)
+- `lib/db-map` — PostgreSQL migrations, SQL queries, contracts
+- `lib/config` — shared tsconfig presets
+
+Dev server: `pnpm dev` (port 3000). Guest auth, no login required.
 
 ## Codebase
 
@@ -18,9 +21,13 @@ This is a mono-repo. Apps go into ./apps and libraries go into ./lib folder.
 - docs/ - save random other documentation here (as .md files)
 - docs/pois/{category}/ - information about points of interest, sources, and downloaded .kml files
 
-## Database
+## Environment variables
 
-PostgreSQL 18. Connection via `DB_MAP_URL` env var.
+This project does not use .env files. Instead, all environment variables are preconfigured in the shell environment. The .env.example only serves to show the developer which env vars are used by the project, to make sure they are available in the shell.
+
+Database connection string in `DB_MAP_URL` env var.
+
+## Database
 
 After making a change requiring database migration, run the sync pipeline and commit the generated files in the same PR:
 
