@@ -88,6 +88,14 @@ ALTER TABLE ONLY public.pois
 
 
 --
+-- Name: pois pois_coords_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pois
+    ADD CONSTRAINT pois_coords_unique UNIQUE (lng, lat);
+
+
+--
 -- Name: user_preferences user_preferences_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -111,13 +119,6 @@ CREATE INDEX pois_category_idx ON public.pois USING btree (category);
 
 
 --
--- Name: pois_coords_idx; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX pois_coords_idx ON public.pois USING btree (lng, lat);
-
-
---
 -- Name: user_preferences user_preferences_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -128,5 +129,4 @@ ALTER TABLE ONLY public.user_preferences
 --
 -- PostgreSQL database dump complete
 --
-
 

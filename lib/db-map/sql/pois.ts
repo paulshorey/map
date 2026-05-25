@@ -75,6 +75,16 @@ export async function insertPois(
   return { inserted: totalInserted, failed: allFailures };
 }
 
+const UPSERT_SUFFIX = `
+ON CONFLICT (lng, lat) DO UPDATE SET
+  name = EXCLUDED.name,
+  category = EXCLUDED.category,
+  description = EXCLUDED.description,
+  address = EXCLUDED.address,
+  website = EXCLUDED.website,
+  hours = EXCLUDED.hours,
+  photo_url = EXCLUDED.photo_url`;
+
 async function insertBatch(db: Pool, batch: NewPoi[]): Promise<number> {
   const values: string[] = [];
   const params: (string | number | null)[] = [];
@@ -100,7 +110,7 @@ async function insertBatch(db: Pool, batch: NewPoi[]): Promise<number> {
 
   const result = await db.query(
     `INSERT INTO pois (name, category, description, address, website, hours, photo_url, lng, lat)
-     VALUES ${values.join(", ")}`,
+     VALUES ${values.join(", ")}${UPSERT_SUFFIX}`,
     params,
   );
   return result.rowCount ?? batch.length;
@@ -109,7 +119,7 @@ async function insertBatch(db: Pool, batch: NewPoi[]): Promise<number> {
 async function insertSingle(db: Pool, poi: NewPoi): Promise<void> {
   await db.query(
     `INSERT INTO pois (name, category, description, address, website, hours, photo_url, lng, lat)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)${UPSERT_SUFFIX}`,
     [
       poi.name,
       poi.category,
