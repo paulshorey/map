@@ -14,18 +14,11 @@ This is a mono-repo. Apps go into ./apps and libraries go into ./lib folder.
 
 ## Database
 
-PostgreSQL 18. Connection string is in `DB_MAP_URL` environment variable.
+PostgreSQL 18. Connection via `DB_MAP_URL` env var.
 
-### Commands
+### After making schema changes
 
-From the repo root:
-
-- `pnpm db:migrate` — apply pending migrations
-- `pnpm db:seed` — seed sample POIs (destructive: replaces all POIs)
-- `pnpm db:import:kml /absolute/path/to/file.kml --category "Name" --dry-run` — import from KML
-- `pnpm db:import:json /absolute/path/to/file.json --category "Name" --dry-run` — import from JSON
-
-The full sync pipeline (after writing a new migration):
+When a code change requires a new migration, run the full sync pipeline and commit the generated files in the same PR:
 
 ```bash
 pnpm db:migrate
@@ -34,19 +27,4 @@ cd lib/db-map && node scripts/generate-types.mjs
 cd lib/db-map && node scripts/generate-app-contract.mjs --write
 ```
 
-Or from `lib/db-map`: `pnpm db:sync`
-
-### PostgreSQL client tools (pg_dump, psql)
-
-The schema snapshot script (`lib/db-map/scripts/snapshot-schema.sh`) requires `pg_dump` matching the server's major version. The server runs **PostgreSQL 18**.
-
-If `pg_dump` is missing or the wrong version, install from the PGDG apt repository:
-
-```bash
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt-get update
-sudo apt-get install -y postgresql-client-18
-```
-
-After installing, the version-checking script at `scripts/check-postgres-client-version.sh` will find the correct binary at `/usr/lib/postgresql/18/bin/pg_dump`.
+This updates `schema/current.sql`, `generated/typescript/db-types.ts`, and `generated/contracts/`. These generated files must be committed alongside the migration.
