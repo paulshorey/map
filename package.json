@@ -8,6 +8,8 @@
     "db:migrate:baseline": "pnpm --filter @lib/db-map db:migrate:baseline",
     "db:verify": "pnpm --filter @lib/db-map db:verify",
     "db:seed": "pnpm --filter @lib/db-map db:seed",
+    "db:import:kml": "pnpm --filter @lib/db-map db:import:kml --",
+    "db:import:json": "pnpm --filter @lib/db-map db:import:json --",
     "verify:db-contracts": "pnpm --filter @lib/db-map check-types",
     "verify:map": "pnpm --filter map verify",
     "verify": "pnpm run verify:db-contracts && pnpm run verify:map",

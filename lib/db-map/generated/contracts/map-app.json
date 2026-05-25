@@ -1,0 +1,255 @@
+{
+  "models": {
+    "PoiFeatureProperties": {
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "category",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "photo_url",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        }
+      ]
+    },
+    "PoiDetailRecord": {
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "category",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "address",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "website",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "hours",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "photo_url",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "lng",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "lat",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "geometry",
+          "optional": false,
+          "kind": "model",
+          "type": "unknown",
+          "nullable": false
+        }
+      ]
+    },
+    "UserPreferencesRecord": {
+      "fields": [
+        {
+          "name": "basemapId",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "lastCenter",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "number"
+          },
+          "nullable": true
+        },
+        {
+          "name": "lastZoom",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": true
+        }
+      ]
+    },
+    "UserSessionResponse": {
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "displayName",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "tier",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "isGuest",
+          "optional": false,
+          "kind": "scalar",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "allowedProviders",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        },
+        {
+          "name": "preferences",
+          "optional": false,
+          "kind": "model",
+          "type": "UserPreferencesRecord",
+          "nullable": false
+        }
+      ]
+    },
+    "UpdatePreferencesRequest": {
+      "fields": [
+        {
+          "name": "basemapId",
+          "optional": true,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "lastCenter",
+          "optional": true,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "number"
+          },
+          "nullable": true
+        },
+        {
+          "name": "lastZoom",
+          "optional": true,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": true
+        }
+      ]
+    },
+    "UpdatePreferencesResponse": {
+      "fields": [
+        {
+          "name": "ok",
+          "optional": false,
+          "kind": "scalar",
+          "type": "boolean",
+          "nullable": false
+        }
+      ]
+    },
+    "ProviderCredentialsResponse": {
+      "fields": [
+        {
+          "name": "apiKey",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        }
+      ]
+    },
+    "ErrorResponse": {
+      "fields": [
+        {
+          "name": "error",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        }
+      ]
+    }
+  }
+}

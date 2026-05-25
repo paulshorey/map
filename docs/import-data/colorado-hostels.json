@@ -1,0 +1,288 @@
+[
+  {
+    "name": "11th Avenue Hostel",
+    "category": "Hostel",
+    "lng": -104.98765,
+    "lat": 39.73307,
+    "description": "Denver's oldest hostel, built in 1903, fully renovated 2022. Dorms and private rooms, on-site café, communal kitchen, guided city tours, bar crawls. 24/7 staff.",
+    "address": "1112 N Broadway Ave, Denver, CO 80203",
+    "website": "https://www.11thavenuehostel.com"
+  },
+  {
+    "name": "Hostel Fish",
+    "category": "Hostel",
+    "lng": -104.98861,
+    "lat": 39.75606,
+    "description": "Upscale boutique hostel in the historic Airedale Building, 2 blocks from Coors Field. Dorms and private suites, nightclub/bar, terrace, arcade/game room. 'Of backpackers, by backpackers.'",
+    "address": "1217 20th St, Denver, CO 80202",
+    "website": "https://www.hostelfish.com"
+  },
+  {
+    "name": "Ember Hostel",
+    "category": "Hostel",
+    "lng": -104.98398,
+    "lat": 39.73141,
+    "description": "9,000 sq ft historic Capitol Hill mansion. Co-ed and female-only dorms, outdoor hot tub, firepit, regular events including Red Rocks excursions, yoga, movie nights. Rated 3rd best hostel in USA by Hostelworld (2025). Adults 18+ only.",
+    "address": "857 N Grant St, Denver, CO 80203",
+    "website": "https://www.emberhostels.com"
+  },
+  {
+    "name": "A-Lodge Boulder",
+    "category": "Hostel",
+    "lng": -105.29872,
+    "lat": 40.01745,
+    "description": "7-acre adventure lodge on Fourmile Creek, 2 miles from Pearl St. Hostel bunks, hotel rooms, tent/vehicle camping, 3BR cabin. Seasonal pool, year-round hot tub, saloon, on-site trails, slackline park.",
+    "address": "91 Fourmile Canyon Dr, Boulder, CO 80302",
+    "website": "https://a-lodge.com"
+  },
+  {
+    "name": "A-Lodge Lyons",
+    "category": "Hostel",
+    "lng": -105.27342,
+    "lat": 40.22178,
+    "description": "Adventure lodging in downtown Lyons, next to Oskar Blues Brewery. Hotel rooms, 2BR suite, and bunk family rooms. Gateway to St. Vrain Canyon climbing and RMNP south approach.",
+    "address": "338 W Main St, Lyons, CO 80540",
+    "website": "https://a-lodge.com"
+  },
+  {
+    "name": "Estes Park Adventure Hostel",
+    "category": "Hostel",
+    "lng": -105.52143,
+    "lat": 40.37603,
+    "description": "Walking distance to historic downtown Estes Park and Aerial Tramway, 5 min from RMNP entrance. Host greets guests on arrival. Adults 18+ only.",
+    "address": "341 Moraine Ave, Estes Park, CO 80517"
+  },
+  {
+    "name": "Shadowcliff Mountain Lodge & Retreat Center",
+    "category": "Hostel",
+    "lng": -105.83426,
+    "lat": 40.25372,
+    "description": "Nonprofit seasonal lodge (late May–late September) on western edge of Rocky Mountain National Park. Hostel bunk sections (men's/women's), lodge rooms, 3 cabins. Hand-built by volunteers since 1959. Closed Oct–May.",
+    "address": "105 County Rd 663, Grand Lake, CO 80447",
+    "website": "https://shadowcliff.org",
+    "hours": "Seasonal: late May through late September only"
+  },
+  {
+    "name": "The Bivvi Hostel — Breckenridge",
+    "category": "Hostel",
+    "lng": -106.03843,
+    "lat": 39.47985,
+    "description": "One of Colorado's best-known ski-town hostels. Indoor hot tub, free breakfast, bar, ski/snowboard/bike storage, dorms and private rooms. Walking distance to downtown Breckenridge. Books fast in ski season.",
+    "address": "9511 CO-9, Breckenridge, CO 80424",
+    "website": "https://thebivvi.com"
+  },
+  {
+    "name": "Fireside Inn & Hostel",
+    "category": "Hostel",
+    "lng": -106.04418,
+    "lat": 39.48427,
+    "description": "B&B and hostel hybrid in downtown Breckenridge. Dorm beds with shared bathrooms alongside B&B suites with private baths. Owner-operated, warm community feel.",
+    "address": "114 N French St, Breckenridge, CO 80424",
+    "website": "http://www.firesideinn.com"
+  },
+  {
+    "name": "Bunk House Lodge",
+    "category": "Hostel",
+    "lng": -106.05211,
+    "lat": 39.50318,
+    "description": "LGBTQ+-welcoming hostel 2 miles north of downtown Breckenridge. Custom pod-style bunk beds, continental breakfast, bar, board games. Adults 21+ only. 420-friendly.",
+    "address": "13203 CO Hwy 9, Breckenridge, CO 80424",
+    "website": "https://www.bunkhouselodge.com"
+  },
+  {
+    "name": "Treeline Hostel",
+    "category": "Hostel",
+    "lng": -106.06361,
+    "lat": 39.17135,
+    "description": "Highest-elevation hostel in North America at 10,578 ft. 4 private rooms + 2 bunk rooms, capacity 24. Large communal kitchen, ski/bike storage, free parking. 16 miles south of Breckenridge (free ski bus).",
+    "address": "12 S Main St, Alma, CO 80420"
+  },
+  {
+    "name": "The Block Hotel & Commons",
+    "category": "Hostel",
+    "lng": -106.06557,
+    "lat": 39.63276,
+    "description": "Formerly 'The Pad', Silverthorne's boutique ski hostel. Bunk dorms, private rooms, rooftop hot tub, bar, communal kitchen. River views, free ski bus to Breckenridge/Copper/A-Basin/Loveland. Daily events: trivia, yoga, dance.",
+    "address": "491 Rainbow Drive, Silverthorne, CO 80498",
+    "website": "https://theblocksilverthorne.com"
+  },
+  {
+    "name": "The Bunkhouse (Vail Valley)",
+    "category": "Hostel",
+    "lng": -106.43021,
+    "lat": 39.57747,
+    "description": "38-bed boutique hostel in Minturn, 12 min from Vail — the only boutique hostel in the Vail Valley. Custom sound-isolated pod bunks with USB/power outlets. 24-hr communal kitchen, free coffee, beer/wine service, free summer concerts.",
+    "address": "175 Williams St #102, Minturn, CO 81645",
+    "website": "https://vailbunkhouse.com"
+  },
+  {
+    "name": "Glenwood Springs Hostel",
+    "category": "Hostel",
+    "lng": -107.32462,
+    "lat": 39.54886,
+    "description": "Long-established hostel in downtown Glenwood Springs. NOTE: Property appeared for sale in 2026 — verify operating status before booking.",
+    "address": "1021 Grand Ave, Glenwood Springs, CO 81601",
+    "website": "http://hostelcolorado.com"
+  },
+  {
+    "name": "St. Moritz Lodge (Hostel Rooms)",
+    "category": "Hostel",
+    "lng": -106.82436,
+    "lat": 39.18719,
+    "description": "Aspen's only bunk option. 13 'private hostel' rooms with shared bathrooms. All lodge amenities: free breakfast, heated pool, steam room, free ski shuttle. Budget end of a full lodge — not a pure backpacker hostel.",
+    "address": "334 W Hyman Ave, Aspen, CO 81611",
+    "website": "https://www.stmoritzlodge.com"
+  },
+  {
+    "name": "Simple Lodge & Hostel",
+    "category": "Hostel",
+    "lng": -106.00118,
+    "lat": 38.53551,
+    "description": "Owner-operated, hosts live on-site. Downtown Salida, 1 block from the Arkansas River. Bunk beds ~$22–25/night, private rooms, communal kitchen, free bikes. Capacity ~20+.",
+    "address": "224 E 1st St, Salida, CO 81201",
+    "website": "https://simplelodge.com",
+    "hours": "Reception 4:00 PM–7:00 PM; call 12:00–20:00"
+  },
+  {
+    "name": "The Salida Inn & Hostel",
+    "category": "Hostel",
+    "lng": -106.00396,
+    "lat": 38.53468,
+    "description": "Small inn and hostel with private access to the Arkansas River. Private rooms and a bunkroom. Friendly, social atmosphere. Minutes from downtown Salida.",
+    "address": "225 Grand Ave, Salida, CO 81201",
+    "website": "https://thesalidahostel.com"
+  },
+  {
+    "name": "Inn the Clouds Hostel & Inn",
+    "category": "Hostel",
+    "lng": -106.29240,
+    "lat": 39.24899,
+    "description": "Claims 'highest hostel in the USA' — Leadville is the highest incorporated US city. Male-only and female-only dorm sections plus private rooms. Full communal kitchen, gear storage (skis/bikes/packs), pet-friendly.",
+    "address": "500 E 7th St, Leadville, CO 80461",
+    "website": "https://www.stayintheclouds.com"
+  },
+  {
+    "name": "Colorado Trail Hostel",
+    "category": "Hostel",
+    "lng": -106.29453,
+    "lat": 39.24678,
+    "description": "Victorian home bunkhouse designed on European hostel model, ~$25/night. Stocked communal kitchen, shared living spaces. Serves Colorado Trail and 14er hikers. Call ahead to confirm current operations.",
+    "address": "127 E 8th St, Leadville, CO 80461"
+  },
+  {
+    "name": "The Wanderlust Hostel",
+    "category": "Hostel",
+    "lng": -106.92473,
+    "lat": 38.54558,
+    "description": "Year-round hostel near downtown Gunnison, 28 miles from Crested Butte. Free bikes, communal kitchen, game room, garden, BBQ grills, laundry. Bunk rates from $25–57/night. Pet-friendly for a fee.",
+    "address": "221 N Boulevard St, Gunnison, CO 81230",
+    "website": "https://thewanderlusthostel.com"
+  },
+  {
+    "name": "RMBL 365 (formerly Crested Butte Hostel)",
+    "category": "Hostel",
+    "lng": -106.98689,
+    "lat": 38.87029,
+    "description": "Sold to Rocky Mountain Biological Laboratory (RMBL) in October 2025. Operating as RMBL 365 science hub while continuing public hostel beds and the town's only commercial laundry. Verify booking under new nonprofit management.",
+    "address": "615 Teocalli Ave, Crested Butte, CO 81224",
+    "website": "https://www.rmbl.org"
+  },
+  {
+    "name": "Raven's Rest Hostel",
+    "category": "Hostel",
+    "lng": -107.31264,
+    "lat": 38.02877,
+    "description": "Budget bunk hostel (~$25/night) in Lake City, key Colorado Trail and CDT resupply stop. WARNING: Reddit posts from June 2024 report website down, possible closure. Verify before traveling.",
+    "address": "207 Gunnison Ave, Lake City, CO 81235"
+  },
+  {
+    "name": "The Bivvi Hostel — Telluride (Placerville)",
+    "category": "Hostel",
+    "lng": -108.05438,
+    "lat": 38.04623,
+    "description": "14-bedroom boutique hostel/lodge near Telluride along the San Miguel River. Bar, free continental breakfast, hot tubs, pool table, ski/board storage, free parking. Fly fishing on-site.",
+    "address": "22332 CO-145, Placerville, CO 81430",
+    "website": "https://thebivvi.com"
+  },
+  {
+    "name": "Mine Shaft Inn",
+    "category": "Hostel",
+    "lng": -108.02985,
+    "lat": 37.68604,
+    "description": "Historic Victorian hotel and hostel, 30 min from Telluride in Rico, surrounded by San Juan National Forest. Full kitchen access for all guests, free breakfast buffet, library, fireplace lounge. Community-oriented for hikers, skiers, cyclists.",
+    "address": "20 S Glasgow Ave, Rico, CO 81332",
+    "website": "https://ricomineshaftinn.com"
+  },
+  {
+    "name": "Dolores Bike Hostel",
+    "category": "Hostel",
+    "lng": -108.50191,
+    "lat": 37.47373,
+    "description": "Boutique adventure hostel in downtown Dolores (Four Corners area). Bunk rooms, private rooms, 5-person family suite. Sauna and cold plunge, bar, yoga, book club. Near Mesa Verde NP. All travelers welcome.",
+    "address": "507 Central Ave, Dolores, CO 81323",
+    "website": "https://www.doloresbikehostel.com"
+  },
+  {
+    "name": "The Junction Hotel & Hostel",
+    "category": "Hostel",
+    "lng": -107.87995,
+    "lat": 37.27538,
+    "description": "Hotel/motel complex with dedicated hostel rooms, shared kitchen, communal lounge, pool access. Near Purgatory Resort, mountain biking, Animas River. Adults 21+ only.",
+    "address": "2202 Main Ave, Durango, CO 81301",
+    "website": "https://www.junctiondurango.com"
+  },
+  {
+    "name": "The Avon Hotel & Hostel",
+    "category": "Hostel",
+    "lng": -107.66407,
+    "lat": 37.81242,
+    "description": "Historic hotel built 1904, renovated 2017–18. 14 guestrooms, live music venue, bar and café. Budget/hostel-style rooms alongside standard hotel accommodations. San Juan Mountain adventure base.",
+    "address": "144 E 10th St, Silverton, CO 81433",
+    "website": "https://www.avonsilverton.com"
+  },
+  {
+    "name": "Kendall Mountain Lodge (fka Blair Street Hostel)",
+    "category": "Hostel",
+    "lng": -107.66216,
+    "lat": 37.81373,
+    "description": "9-room property on historic Blair Street in Silverton. Ski-in/out, BBQ/picnic area, 24-hr reception. Previously listed as Blair Street Hostel on some booking platforms.",
+    "address": "1025 Blair St, Silverton, CO 81433",
+    "website": "https://kendallmountainlodge.com"
+  },
+  {
+    "name": "Divide Rider's Hostel",
+    "category": "Hostel",
+    "lng": -106.34854,
+    "lat": 37.67633,
+    "description": "Remote cabin hostel for 10 guests, 16 miles from Wolf Creek Ski Area. Rustic, art-filled, well-equipped kitchen. WARNING: No recent web presence found as of 2026 (last confirmed active ~2019). Call/email before traveling.",
+    "address": "14473 US-160, Del Norte, CO 81132"
+  },
+  {
+    "name": "The Local Nomad",
+    "category": "Hostel",
+    "lng": -107.60261,
+    "lat": 38.87313,
+    "description": "Downtown Paonia hostel with private rooms (no dorm bunks), shared bathrooms, fully equipped communal kitchen, art room, yard, balcony hammocks. Walkable to shops, galleries, live music. Rates $60–120/night.",
+    "address": "302 2nd St, Paonia, CO 81428",
+    "website": "https://paoniahostel.com"
+  },
+  {
+    "name": "Two Bridges Lodge",
+    "category": "Hostel",
+    "lng": -105.47583,
+    "lat": 39.41097,
+    "description": "Riverside resort that opens seasonal hostel-style beds for Colorado Trail hikers/cyclists each summer. Sauna, steam room, cold plunge, private fly fishing. 1 hour from Denver. Seasonal only — confirm availability.",
+    "address": "59786 US Hwy 285, Bailey, CO 80421",
+    "website": "https://www.twobridgeslodge.com",
+    "hours": "Seasonal summer hostel beds only"
+  },
+  {
+    "name": "RAD Hostel",
+    "category": "Hostel",
+    "lng": -104.81663,
+    "lat": 38.88254,
+    "description": "Award-winning community hostel with mission 'to cure loneliness.' 6 dorm rooms (up to 12-person), 8 private rooms, car camping. Daily events: bonfires, community dinners, group hikes to Garden of the Gods, live music, game nights. Free breakfast, bikes, laundry.",
+    "address": "3844 N Nevada Ave, Colorado Springs, CO 80907",
+    "website": "https://radhostel.com"
+  }
+]
