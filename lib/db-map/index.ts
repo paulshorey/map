@@ -1,7 +1,7 @@
 export { getDb } from "./lib/db/postgres";
 
 export { listPoisGeoJson, getPoiById, insertPois } from "./sql/pois";
-export type { NewPoi, InsertPoisOptions } from "./sql/pois";
+export type { NewPoi, InsertPoisOptions, InsertPoisResult, InsertFailure } from "./sql/pois";
 export {
   getUserWithPreferences,
   getUserTier,

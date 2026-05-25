@@ -265,10 +265,15 @@ async function main() {
     return;
   }
 
-  const count = await insertPois(getDb(), pois, { replace });
-  console.log(
-    `Inserted ${count} POIs into the database.${replace ? " (replaced existing data)" : ""}`,
-  );
+  const result = await insertPois(getDb(), pois, { replace });
+
+  console.log(`\nInserted ${result.inserted} POIs into the database.${replace ? " (replaced existing data)" : ""}`);
+  if (result.failed.length > 0) {
+    console.warn(`⚠ ${result.failed.length} POIs failed to insert:`);
+    for (const f of result.failed) {
+      console.warn(`  [${f.index}] "${f.name}": ${f.error}`);
+    }
+  }
   await getDb().end();
 }
 

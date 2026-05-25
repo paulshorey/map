@@ -192,10 +192,33 @@ async function main() {
     return;
   }
 
-  const count = await insertPois(getDb(), valid, { replace });
-  console.log(
-    `\nInserted ${count} POIs into the database.${replace ? " (replaced existing data)" : ""}`,
-  );
+  const result = await insertPois(getDb(), valid, { replace });
+
+  // Final reconciliation report
+  console.log("\n══════════════════════════════════════");
+  console.log("  IMPORT RESULTS");
+  console.log("══════════════════════════════════════");
+  console.log(`  Total in file:        ${data.length}`);
+  console.log(`  Passed validation:    ${valid.length}`);
+  console.log(`  Failed validation:    ${validationErrors.length}`);
+  console.log(`  Inserted to DB:       ${result.inserted}`);
+  console.log(`  Failed DB insert:     ${result.failed.length}`);
+  console.log("══════════════════════════════════════");
+
+  if (result.failed.length > 0) {
+    console.warn("\n⚠ The following POIs failed to insert:");
+    for (const f of result.failed) {
+      console.warn(`  [${f.index}] "${f.name}": ${f.error}`);
+    }
+  }
+
+  if (result.inserted === valid.length) {
+    console.log(`\n✓ All ${result.inserted} valid POIs were successfully inserted.${replace ? " (replaced existing data)" : ""}`);
+  } else {
+    console.warn(`\n⚠ Only ${result.inserted} of ${valid.length} valid POIs were inserted. Fix the failures above and re-import.`);
+    process.exit(1);
+  }
+
   await getDb().end();
 }
 
