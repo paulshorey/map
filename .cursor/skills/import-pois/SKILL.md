@@ -55,11 +55,19 @@ New categories are allowed when none of these fit.
 
 ## Step 3: Write the File and Run
 
+Save the validated JSON to `docs/import-data/` using a descriptive kebab-case filename:
+
+```
+docs/import-data/<region-or-topic>-<category>.json
+```
+
+Examples: `colorado-hostels.json`, `nyc-cafes.json`, `ushpa-flying-sites.json`
+
 ```bash
 mkdir -p docs/import-data
 ```
 
-Write the validated JSON array to a file, then run:
+Then run:
 
 ```bash
 # Always dry-run first:
