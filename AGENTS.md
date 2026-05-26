@@ -17,9 +17,23 @@ This is a mono-repo. Apps go into ./apps and libraries go into ./lib folder.
 
 ## Documentation
 
-- .cursor/plans/ - save any implementation plans here (for new features, fixes, or research)
-- docs/ - save random other documentation here (as .md files)
-- docs/pois/{category}/ - information about points of interest, sources, and downloaded .kml files
+- `.cursor/plans/` — implementation plans (features, fixes, research)
+- `docs/` — POI source files, import staging, research notes — see `docs/AGENTS.md`
+- `docs/pois/{category}/` — KML sources and notes per POI category
+
+### Folder guides (AGENTS.md)
+
+| Path | Topic |
+| --- | --- |
+| `apps/map/` | Next.js app, Capacitor, Railway deploy |
+| `apps/map/src/` | Source layout and key flows |
+| `apps/map/src/app/` | Pages and API routes |
+| `apps/map/src/auth/` | User session and entitlements |
+| `apps/map/src/basemap/` | Tile providers |
+| `apps/map/src/map/` | MapLibre map and POI UI |
+| `apps/map/src/lib/` | Shared helpers |
+| `lib/db-map/` | Migrations, SQL, contracts |
+| `lib/` | Monorepo libraries overview |
 
 ## Environment variables
 
