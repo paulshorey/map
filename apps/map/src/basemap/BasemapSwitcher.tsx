@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { useBasemap, type ProviderWithLock } from './useBasemap';
+import { useState, useRef, useEffect } from "react";
+import { useBasemap, type ProviderWithLock } from "./useBasemap";
 
 export function BasemapSwitcher() {
   const { providerId, switchProvider, allProviders } = useBasemap();
@@ -16,24 +16,21 @@ export function BasemapSwitcher() {
       }
     }
     function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === "Escape") setOpen(false);
     }
-    document.addEventListener('mousedown', handleClick);
-    document.addEventListener('keydown', handleKey);
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
     return () => {
-      document.removeEventListener('mousedown', handleClick);
-      document.removeEventListener('keydown', handleKey);
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
     };
   }, [open]);
 
-  const freeProviders = allProviders.filter((p) => p.tier === 'free');
-  const premiumProviders = allProviders.filter((p) => p.tier === 'premium');
+  const freeProviders = allProviders.filter((p) => p.tier === "free");
+  const premiumProviders = allProviders.filter((p) => p.tier === "premium");
 
   return (
-    <div
-      ref={panelRef}
-      className="absolute bottom-6 left-3 z-10"
-    >
+    <div ref={panelRef} className="absolute bottom-2 left-2 z-10">
       {open && (
         <div className="mb-2 w-64 rounded-xl bg-white shadow-xl border border-gray-200 overflow-hidden">
           <div className="px-3 py-2 border-b border-gray-100">
@@ -96,10 +93,10 @@ function ProviderGroup({
           disabled={p.locked}
           className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors cursor-pointer ${
             p.id === activeId
-              ? 'bg-blue-50 text-blue-700 font-medium'
+              ? "bg-blue-50 text-blue-700 font-medium"
               : p.locked
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-gray-700 hover:bg-gray-50'
+                ? "text-gray-400 cursor-not-allowed"
+                : "text-gray-700 hover:bg-gray-50"
           }`}
         >
           {p.id === activeId && (

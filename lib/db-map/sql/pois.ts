@@ -207,6 +207,13 @@ export async function listPoisGeoJson(
   return rows[0]?.geojson ?? { type: "FeatureCollection", features: [] };
 }
 
+export async function listPoiCategories(db: Pool): Promise<string[]> {
+  const { rows } = await db.query(
+    `SELECT DISTINCT category FROM pois ORDER BY category`,
+  );
+  return rows.map((row) => row.category as string);
+}
+
 export async function getPoiById(db: Pool, id: string) {
   const { rows } = await db.query(
     `SELECT id, name, category, description, address, website, hours, photo_url,

@@ -240,6 +240,20 @@
         }
       ]
     },
+    "PoiCategoriesResponse": {
+      "fields": [
+        {
+          "name": "categories",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        }
+      ]
+    },
     "ErrorResponse": {
       "fields": [
         {

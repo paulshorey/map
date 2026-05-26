@@ -48,6 +48,10 @@ export interface ProviderCredentialsResponse {
   apiKey: string;
 }
 
+export interface PoiCategoriesResponse {
+  categories: Array<string>;
+}
+
 export interface ErrorResponse {
   error: string;
 }

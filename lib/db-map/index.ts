@@ -1,6 +1,11 @@
 export { getDb } from "./lib/db/postgres";
 
-export { listPoisGeoJson, getPoiById, insertPois } from "./sql/pois";
+export {
+  listPoisGeoJson,
+  listPoiCategories,
+  getPoiById,
+  insertPois,
+} from "./sql/pois";
 export type { NewPoi, InsertPoisOptions, InsertPoisResult, InsertFailure } from "./sql/pois";
 export {
   getUserWithPreferences,
@@ -23,5 +28,6 @@ export type {
   UpdatePreferencesResponse,
   UserPreferencesRecord,
   UserSessionResponse,
+  PoiCategoriesResponse,
   ErrorResponse,
 } from "./contracts/map-app";

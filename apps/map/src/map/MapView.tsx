@@ -1,6 +1,6 @@
 'use client';
 
-import type { GeoJSONSource } from 'maplibre-gl';
+import maplibregl, { type GeoJSONSource } from 'maplibre-gl';
 import {
   Map,
   NavigationControl,
@@ -16,7 +16,9 @@ import { useAuth } from '../auth/useAuth';
 import { usePremiumKey } from '../auth/usePremiumKey';
 import { UserMenu } from '../auth/UserMenu';
 import { BasemapSwitcher } from '../basemap/BasemapSwitcher';
+import { CategorySwitcher } from './CategorySwitcher';
 import { PoiLayer, type Bbox } from './PoiLayer';
+import { usePoiCategory } from './usePoiCategory';
 import { PoiDrawer } from './PoiDrawer';
 import { usePoiSelection } from './usePoiSelection';
 import { useDebouncedValue } from '../lib/useDebouncedValue';
@@ -24,8 +26,55 @@ import { useDebouncedValue } from '../lib/useDebouncedValue';
 const DEFAULT_CENTER: [number, number] = [10, 20];
 const DEFAULT_ZOOM = 2;
 
+/**
+ * Reduce prominence of country/city/place labels on vector basemaps.
+ * Targets symbol layers whose id suggests they render place names.
+ */
+/** Collapse compact attribution to the info icon (MapLibre defaults to expanded). */
+function collapseAttribution(map: maplibregl.Map): boolean {
+  const el = map
+    .getContainer()
+    .querySelector<HTMLDetailsElement>('.maplibregl-ctrl-attrib.maplibregl-compact');
+  if (!el?.classList.contains('maplibregl-compact-show')) return !!el;
+  el.classList.remove('maplibregl-compact-show');
+  el.setAttribute('open', '');
+  return true;
+}
+
+function softenLabels(map: maplibregl.Map) {
+  const style = map.getStyle();
+  if (!style?.layers) return;
+
+  const placeLabelPattern =
+    /place|country|city|town|village|state|capital|continent|label|locality/i;
+
+  for (const layer of style.layers) {
+    if (layer.type !== 'symbol') continue;
+    if (!placeLabelPattern.test(layer.id)) continue;
+
+    const currentSize = map.getLayoutProperty(layer.id, 'text-size');
+    if (currentSize != null) {
+      if (typeof currentSize === 'number') {
+        map.setLayoutProperty(layer.id, 'text-size', Math.round(currentSize * 0.7));
+      } else if (typeof currentSize === 'object' && currentSize.stops) {
+        const scaled = {
+          ...currentSize,
+          stops: currentSize.stops.map((s: [number, number]) => [s[0], Math.round(s[1] * 0.7)]),
+        };
+        map.setLayoutProperty(layer.id, 'text-size', scaled);
+      }
+    }
+
+    map.setPaintProperty(layer.id, 'text-color', 'rgba(60, 60, 60, 0.7)');
+    map.setPaintProperty(layer.id, 'text-halo-color', 'rgba(255, 255, 255, 0.5)');
+    map.setPaintProperty(layer.id, 'text-halo-width', 1);
+  }
+}
+
 export function MapView() {
   const { provider } = useBasemap();
+  const { category, categories, isLoading: categoriesLoading, selectCategory } =
+    usePoiCategory();
   const { user, loading, updatePreferences } = useAuth();
   const key = usePremiumKey(provider.id);
   const style = provider.getStyle({ apiKey: key ?? undefined });
@@ -74,6 +123,27 @@ export function MapView() {
       zoom: map.getZoom(),
     });
   }, []);
+
+  const handleMapLoad = useCallback(() => {
+    updateViewport();
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+
+    if (!collapseAttribution(map)) {
+      const onData = () => {
+        if (collapseAttribution(map)) {
+          map.off('sourcedata', onData);
+          map.off('styledata', onData);
+        }
+      };
+      map.on('sourcedata', onData);
+      map.on('styledata', onData);
+    }
+
+    if (provider.kind === 'vector') {
+      softenLabels(map);
+    }
+  }, [updateViewport, provider.kind]);
 
   const handleClick = useCallback(
     (e: MapLayerMouseEvent) => {
@@ -124,7 +194,7 @@ export function MapView() {
         initialViewState={initialViewState}
         maxZoom={provider.maxZoom}
         mapStyle={style}
-        onLoad={updateViewport}
+        onLoad={handleMapLoad}
         onMoveEnd={updateViewport}
         onClick={handleClick}
         interactiveLayerIds={['clusters', 'poi-points']}
@@ -151,9 +221,15 @@ export function MapView() {
         />
         <AttributionControl compact />
         <BasemapSwitcher />
-        {bbox && <PoiLayer bbox={bbox} zoom={zoom} />}
+        {bbox && <PoiLayer bbox={bbox} zoom={zoom} category={category} />}
       </Map>
 
+      <CategorySwitcher
+        category={category}
+        categories={categories}
+        isLoading={categoriesLoading}
+        onSelect={selectCategory}
+      />
       <UserMenu />
 
       {isLoadingPoi && (
