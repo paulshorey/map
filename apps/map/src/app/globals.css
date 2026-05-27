@@ -9,3 +9,28 @@ body {
   overflow: hidden;
   font-family: system-ui, -apple-system, sans-serif;
 }
+
+/* POI drawer: sanitized HTML descriptions (BHGC imports, etc.) */
+.poi-description h2:first-child {
+  display: none;
+}
+
+.poi-description ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.poi-description li {
+  margin: 0.25rem 0;
+}
+
+.poi-description a {
+  color: #2563eb;
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+.poi-description a:hover {
+  color: #1d4ed8;
+}

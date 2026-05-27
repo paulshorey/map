@@ -1,5 +1,6 @@
 'use client';
 
+import { HtmlDescription } from '@/components/HtmlDescription';
 import { useEffect, useRef } from 'react';
 
 interface Props {
@@ -72,9 +73,7 @@ export function PoiDrawer({ poi, onClose }: Props) {
         <div className="p-5 space-y-4">
           {/* Description */}
           {poi.description && (
-            <p className="text-sm text-gray-600 leading-relaxed">
-              {poi.description}
-            </p>
+            <HtmlDescription html={poi.description} />
           )}
 
           {/* Detail rows */}
