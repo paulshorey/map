@@ -25,6 +25,8 @@ import { useDebouncedValue } from '../lib/useDebouncedValue';
 
 const DEFAULT_CENTER: [number, number] = [10, 20];
 const DEFAULT_ZOOM = 2;
+const POI_INTERACTIVE_LAYERS = ['clusters', 'cluster-count', 'poi-points'];
+const MAP_DEFAULT_CURSOR = 'crosshair';
 
 /**
  * Reduce prominence of country/city/place labels on vector basemaps.
@@ -92,6 +94,7 @@ export function MapView() {
   const mapRef = useRef<MapRef>(null);
   const [bbox, setBbox] = useState<Bbox | null>(null);
   const [zoom, setZoom] = useState(initialViewState.zoom);
+  const [cursor, setCursor] = useState(MAP_DEFAULT_CURSOR);
 
   const { selectedPoi, isLoadingPoi, selectPoi, clearSelection } = usePoiSelection(mapRef);
 
@@ -145,6 +148,14 @@ export function MapView() {
     }
   }, [updateViewport, provider.kind]);
 
+  const handleMouseMove = useCallback((e: MapLayerMouseEvent) => {
+    setCursor(e.features?.length ? 'pointer' : MAP_DEFAULT_CURSOR);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setCursor(MAP_DEFAULT_CURSOR);
+  }, []);
+
   const handleClick = useCallback(
     (e: MapLayerMouseEvent) => {
       const map = mapRef.current?.getMap();
@@ -196,8 +207,13 @@ export function MapView() {
         mapStyle={style}
         onLoad={handleMapLoad}
         onMoveEnd={updateViewport}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onDragStart={() => setCursor('grabbing')}
+        onDragEnd={() => setCursor(MAP_DEFAULT_CURSOR)}
         onClick={handleClick}
-        interactiveLayerIds={['clusters', 'poi-points']}
+        cursor={cursor}
+        interactiveLayerIds={POI_INTERACTIVE_LAYERS}
         attributionControl={false}
         transformRequest={(url: string) => {
           if (

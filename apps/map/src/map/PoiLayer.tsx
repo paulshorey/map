@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { apiUrl } from "@/lib/config";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
 
-const POI_CLUSTER_COLOR = "#f4b644";
+const POI_CLUSTER_COLOR = "#f7a917";
+// const POI_CLUSTER_COLOR = "#f4b644";
 const POI_SINGLE_COLOR = "#f7a917";
 // const POI_SINGLE_COLOR = "#ffa500";
 
@@ -43,8 +44,9 @@ export function PoiLayer({ bbox, zoom, category }: Props) {
       type="geojson"
       data={data ?? { type: "FeatureCollection", features: [] }}
       cluster
-      clusterRadius={50}
-      clusterMaxZoom={14}
+      clusterRadius={20}
+      clusterMaxZoom={10}
+      clusterMinPoints={3}
       promoteId="id"
     >
       <Layer
@@ -56,11 +58,13 @@ export function PoiLayer({ bbox, zoom, category }: Props) {
           "circle-radius": [
             "step",
             ["get", "point_count"],
+            10,
+            10,
+            13,
+            100,
             16,
-            50,
-            22,
-            200,
-            28,
+            1000,
+            19,
           ],
           "circle-stroke-width": 1,
           "circle-stroke-color": "#fff",
@@ -94,7 +98,7 @@ export function PoiLayer({ bbox, zoom, category }: Props) {
             "case",
             ["boolean", ["feature-state", "selected"], false],
             1,
-            0.85,
+            0.95,
           ],
         }}
       />
