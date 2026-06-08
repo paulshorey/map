@@ -132,6 +132,8 @@ export function MapView() {
     const map = mapRef.current?.getMap();
     if (!map) return;
 
+    map.touchZoomRotate.disableRotation();
+
     if (!collapseAttribution(map)) {
       const onData = () => {
         if (collapseAttribution(map)) {
@@ -204,6 +206,9 @@ export function MapView() {
         ref={mapRef}
         initialViewState={initialViewState}
         maxZoom={provider.maxZoom}
+        dragRotate={false}
+        touchPitch={false}
+        maxPitch={0}
         mapStyle={style}
         onLoad={handleMapLoad}
         onMoveEnd={updateViewport}
@@ -229,7 +234,7 @@ export function MapView() {
         }}
         style={{ width: '100%', height: '100%' }}
       >
-        <NavigationControl position="top-right" />
+        <NavigationControl position="top-right" showCompass={false} />
         <GeolocateControl
           position="top-right"
           positionOptions={{ enableHighAccuracy: true }}
