@@ -45,12 +45,12 @@ Current compact sizing — circles stay small and grow only enough for the count
 "circle-radius": ["step", ["get", "point_count"], 11, 10, 12, 100, 13, 1000, 14]
 ```
 
-| Count | Radius (px) |
-|-------|-------------|
-| 3–9   | 11          |
-| 10–99 | 12          |
-| 100–999 | 13        |
-| 1000+ | 14          |
+| Count   | Radius (px) |
+| ------- | ----------- |
+| 3–9     | 11          |
+| 10–99   | 12          |
+| 100–999 | 13          |
+| 1000+   | 14          |
 
 Use a **fixed** radius for uniform tiny clusters: `"circle-radius": 12`.
 
@@ -65,34 +65,34 @@ Previous (large) sizing for reference: `16, 50, 22, 200, 28`.
 The default cursor is **app-controlled**, not fixed by MapLibre. MapLibre's CSS sets `grab` on `.maplibre-gl-canvas`, but the Map `cursor` prop writes an inline style on the canvas and wins.
 
 ```tsx
-const MAP_DEFAULT_CURSOR = 'crosshair';
-const POI_INTERACTIVE_LAYERS = ['clusters', 'cluster-count', 'poi-points'];
+const MAP_DEFAULT_CURSOR = "crosshair";
+const POI_INTERACTIVE_LAYERS = ["clusters", "cluster-count", "poi-points"];
 
 const [cursor, setCursor] = useState(MAP_DEFAULT_CURSOR);
 
 const handleMouseMove = (e) => {
-  setCursor(e.features?.length ? 'pointer' : MAP_DEFAULT_CURSOR);
+  setCursor(e.features?.length ? "pointer" : MAP_DEFAULT_CURSOR);
 };
 
 <Map
   cursor={cursor}
   onMouseMove={handleMouseMove}
   onMouseLeave={() => setCursor(MAP_DEFAULT_CURSOR)}
-  onDragStart={() => setCursor('grabbing')}
+  onDragStart={() => setCursor("grabbing")}
   onDragEnd={() => setCursor(MAP_DEFAULT_CURSOR)}
   interactiveLayerIds={POI_INTERACTIVE_LAYERS}
-/>
+/>;
 ```
 
 Change `MAP_DEFAULT_CURSOR` to any CSS cursor value (`default`, `grab`, `crosshair`, etc.).
 
 Include `cluster-count` in `interactiveLayerIds` so the count label shows `pointer` too (symbol layer sits above the circle).
 
-| Cursor | When |
-|--------|------|
+| Cursor                | When                      |
+| --------------------- | ------------------------- |
 | `crosshair` (default) | Empty map — pan/zoom area |
-| `pointer` | Over POI or cluster |
-| `grabbing` | Actively dragging the map |
+| `pointer`             | Over POI or cluster       |
+| `grabbing`            | Actively dragging the map |
 
 ## Single POI appearance
 
@@ -110,11 +110,11 @@ Include `cluster-count` in `interactiveLayerIds` so the count label shows `point
 
 ## Related files
 
-| File                         | Role                                                                        |
-| ---------------------------- | --------------------------------------------------------------------------- |
-| `PoiLayer.tsx`               | GeoJSON source, clustering props, layer paint                               |
+| File                         | Role                                                             |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `PoiLayer.tsx`               | GeoJSON source, clustering props, layer paint                    |
 | `MapView.tsx`                | Cluster click → zoom expansion; hover cursor; interactive layers |
-| `apps/map/src/map/AGENTS.md` | Map module overview                                                         |
+| `apps/map/src/map/AGENTS.md` | Map module overview                                              |
 
 ## Tuning workflow
 
