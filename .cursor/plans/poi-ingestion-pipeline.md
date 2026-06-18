@@ -39,7 +39,7 @@ rest of the plan reflects them; this section is the single place to read them qu
 1. **Licensing — ignore for the POC.** Do **not** gate ingestion or display on licensing.
    Use the best available data and **publish source content verbatim**. Copyrighted content
    will be reviewed/rewritten later, *per category, per source*, once we know which sources
-   permit redistribution. → We still **store** `license`/`attribution` on `sources` as
+   permit redistribution. → We still **store** `license`/`attribution` on `research_sources` as
    metadata to fill in later, but nothing enforces it now. No "enrichment-only" source class.
 
 2. **Global from day one, ingested in chunks.** Coverage is worldwide, but we never ingest
@@ -53,7 +53,7 @@ rest of the plan reflects them; this section is the single place to read them qu
 3. **LLM always auto-decides — no human review.** We have no resources for a human review
    queue. The gray-zone tie-breaker is the LLM, and it is **forced to a binary answer**
    (same → merge, otherwise → new POI). There is no `review` state and no review UI. (An
-   optional developer-only `match_overrides` escape hatch remains, for correcting a wrong
+   optional developer-only `research_match_overrides` escape hatch remains, for correcting a wrong
    merge in code/SQL after the fact — it is *not* a review workflow.)
 
 4. **Prefer verbatim text; aggregate with AI only when sources disagree.** Keep the best
@@ -73,7 +73,7 @@ Current state (verified in the repo):
 
 - **One flat table** `pois` (`lib/db-map/migrations/202605241200__baseline.sql`): `name`,
   `category` (a free-text string), `lng`, `lat`, plus a few optional text columns. (This table
-  is renamed to `pois_canonical` in §4.3; a new `pois_research` staging table is added for raw
+  is renamed to `canonical_pois` in §4.3; a new `research_pois` staging table is added for raw
   source data.)
 - **Category is a single string column** with a btree index — no way to put one place in
   multiple categories, no way to rename a category without rewriting every row, no
@@ -106,28 +106,28 @@ This is the single most important decision, and it matches the user's instinct e
 
 ```
                  EXTRACT          NORMALIZE / GEOCODE        MATCH / MERGE          PUBLISH
-  raw files  ───────────▶  pois_research  ───────────▶  (conflation)  ───────▶  pois_canonical
+  raw files  ───────────▶  research_pois  ───────────▶  (conflation)  ───────▶  canonical_pois
  (CSV/JSON/                (one row per source           clustering of          (one row per real
   JSONL/KML)               record, kept forever)         duplicates              place; the only
                                                                                   table the app reads)
 ```
 
-- **Raw / research layer — `pois_research`**: one row per record **per source**, kept
+- **Raw / research layer — `research_pois`**: one row per record **per source**, kept
   forever, never shown on the map. This is the data-science workspace where we compare,
   normalize, and de-duplicate. Re-ingesting a source updates these rows in place (keyed by
   the source's own id), so the same source never inflates anything.
-- **Canonical / validated layer — `pois_canonical`**: one row per **real place**, built by
-  merging a cluster of `pois_research` rows. This is the *only* table the map API reads. It
+- **Canonical / validated layer — `canonical_pois`**: one row per **real place**, built by
+  merging a cluster of `research_pois` rows. This is the *only* table the map API reads. It
   carries the merged/best attributes, the multi-category memberships, the popularity score,
   and the per-field provenance (which source each published field came from).
 
 **Source attribution runs through both layers (see [§4.4](#44-attribution--provenance)):**
 
-- Every `pois_research` row is attributed to exactly one source via `source_id`
+- Every `research_pois` row is attributed to exactly one source via `source_id`
   (+ `source_record_id` = the source's own id for that record).
-- Each `pois_research` row points at its merged place via the `canonical_poi_id` foreign key —
+- Each `research_pois` row points at its merged place via the `canonical_poi_id` foreign key —
   so the full set of sources behind any canonical POI is a single join, popularity is a
-  `COUNT(DISTINCT source_id)` over that set, and `pois_canonical.field_provenance` records
+  `COUNT(DISTINCT source_id)` over that set, and `canonical_pois.field_provenance` records
   *which* source supplied each individual published field. That last part is what the future
   per-source licensing review will need to edit/omit content source by source.
 
@@ -187,6 +187,58 @@ All changes ship as timestamped migrations in `lib/db-map/migrations/`, followed
 `cd lib/db-map && pnpm db:sync` to refresh `schema/current.sql`, generated types, and
 contracts (per `AGENTS.md`).
 
+### Naming convention & the "do we duplicate everything?" question
+
+Tables are prefixed by the stage they belong to:
+
+- **`research_*`** — the internal working set used to compare and combine raw data. Not shown
+  to users. (These tables persist — `research_pois` is kept forever — but they're back-of-house
+  machinery, not the published product.)
+- **`canonical_*`** — the final, user-facing dataset the map app reads.
+
+**Only POIs need both a `research_` and a `canonical_` copy.** That duality exists *solely*
+because POIs are the one thing we de-duplicate (many raw rows → one merged place). Every other
+table exists **once**, on whichever side it serves — we do **not** create a research+canonical
+pair for sources, categories, etc.
+
+### Schema at a glance
+
+| Table | Stage | One row per… | Purpose | Key relationships |
+|---|---|---|---|---|
+| `research_sources` | research | data source | Registry of every source (slug, license, attribution, `trust` weight). Where raw data comes from; also the target of canonical attribution. | referenced by `research_pois.source_id`; surfaced for `canonical_pois` credits |
+| `research_pois` | research | **(source, record)** | Raw, normalized, geocoded, embedded staging rows. The de-dup workspace; kept forever. | `source_id → research_sources`; `canonical_poi_id → canonical_pois` (its match result) |
+| `research_category_aliases` | research | raw string → category | Maps messy source category strings (`caravan`, `garden:type=botanical`) to a canonical category during normalization. | `category_id → canonical_categories` |
+| `research_geocode_cache` | research | geocoded query | Cached forward-geocoding results so re-runs are free and rate-limits respected. | standalone cache |
+| `research_match_decisions` | research | match decision | Audit log of every merge/new decision (score, signals, LLM reason) for tuning & explainability. | `research_id → research_pois`; `candidate_poi_id → canonical_pois` |
+| `research_match_overrides` | research | corrected pair | Developer force-same / force-different rules the matcher must always obey. | references two `research_pois` rows |
+| `canonical_pois` | canonical | **real place** | The merged, best-of POIs the app shows. Carries merged fields, `attributes`, `field_provenance`, `popularity`. | parent of `canonical_poi_categories`; pointed at by `research_pois.canonical_poi_id` |
+| `canonical_categories` | canonical | category | The taxonomy the app filters by (stable slug, display name, `parent_id` hierarchy). Code-owned seed. | self-ref `parent_id`; linked via `canonical_poi_categories` |
+| `canonical_poi_categories` | canonical | (place, category) | Many-to-many: a place can be in multiple categories. | `poi_id → canonical_pois`; `category_id → canonical_categories` |
+
+```
+        research (back-of-house)                         canonical (user-facing)
+  ┌───────────────────┐                            ┌──────────────────────────┐
+  │ research_sources  │◀─ source_id ──┐            │ canonical_categories      │◀─┐
+  └───────────────────┘               │            │  (taxonomy, parent_id)    │  │ category_id
+            ▲ category attribution    │            └──────────────────────────┘  │
+            │ (join via research_pois)│                        ▲ poi_id           │
+  ┌───────────────────┐               │            ┌──────────────────────────┐  │
+  │ research_pois      │── canonical_poi_id ──────▶ │ canonical_pois            │──┘
+  │ (raw, per source)  │   (the match link)         │ (merged real places)      │
+  └───────────────────┘                            └──────────────────────────┘
+     ▲          ▲                                     via canonical_poi_categories (M:N)
+     │          │ category_id
+     │   ┌──────────────────────────┐
+     │   │ research_category_aliases │── category_id ─▶ canonical_categories
+     │   └──────────────────────────┘
+     │ research_id / record_a,b
+  ┌───────────────────────────┐   ┌───────────────────────────┐   ┌────────────────────────┐
+  │ research_match_decisions   │   │ research_match_overrides   │   │ research_geocode_cache │
+  └───────────────────────────┘   └───────────────────────────┘   └────────────────────────┘
+```
+
+Sections 4.1–4.6 below define each table in detail.
+
 ### 4.0 Extensions
 
 ```sql
@@ -200,10 +252,10 @@ CREATE EXTENSION IF NOT EXISTS vector;      -- pgvector, embedding similarity
 > `<->` KNN). Railway Postgres supports the PostGIS image. The app's read path can keep using
 > plain `lng`/`lat` columns (kept alongside `geom`), so `listPoisGeoJson` barely changes.
 
-### 4.1 `sources` — provenance & licensing
+### 4.1 `research_sources` — source registry, provenance & licensing
 
 ```sql
-CREATE TABLE sources (
+CREATE TABLE research_sources (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   slug          text UNIQUE NOT NULL,        -- 'osm', 'bgci', 'wikidata', 'thedyrt', 'ridb'
   name          text NOT NULL,
@@ -223,16 +275,16 @@ CREATE TABLE sources (
 
 `trust` orders field precedence during merge (government/official > Wikidata > OSM > scrape).
 
-### 4.2 `pois_research` — the raw research layer
+### 4.2 `research_pois` — the raw research layer
 
-> Renamed from the working name `source_records`. One row per **(source, record)**; this is
-> where source attribution begins — `source_id` ties every research row to exactly one entry
-> in `sources`, and `source_record_id` preserves that source's own id for the record.
+> The raw research layer. One row per **(source, record)**; this is where source attribution
+> begins — `source_id` ties every research row to exactly one entry in `research_sources`, and
+> `source_record_id` preserves that source's own id for the record.
 
 ```sql
-CREATE TABLE pois_research (
+CREATE TABLE research_pois (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  source_id       uuid NOT NULL REFERENCES sources(id),  -- ← attribution: which source this row came from
+  source_id       uuid NOT NULL REFERENCES research_sources(id),  -- ← attribution: which source this row came from
   source_record_id text NOT NULL,            -- the source's OWN id (osm_id, wikidata_id, bgci_id, dyrt id)
   ingest_category text,                       -- which dump/run this came from, e.g. 'botanical_garden'
 
@@ -260,7 +312,7 @@ CREATE TABLE pois_research (
   content_embedding vector(384),              -- name + locality + category embedding
   content_hash    text,                       -- hash of normalized fields; skip work if unchanged
 
-  canonical_poi_id uuid REFERENCES pois_canonical(id) ON DELETE SET NULL, -- ← the match result / attribution link
+  canonical_poi_id uuid REFERENCES canonical_pois(id) ON DELETE SET NULL, -- ← the match result / attribution link
   match_status    text NOT NULL DEFAULT 'pending', -- pending|matched|new (no 'review' — Decision 3)
   match_score     real,
   match_method    text,                       -- 'strong_id'|'auto'|'llm'|'override'|'new'
@@ -272,26 +324,26 @@ CREATE TABLE pois_research (
   UNIQUE (source_id, source_record_id)        -- ← idempotency anchor
 );
 
-CREATE INDEX pois_research_geom_gix   ON pois_research USING gist (geom);
-CREATE INDEX pois_research_name_trgm  ON pois_research USING gin (name_normalized gin_trgm_ops);
-CREATE INDEX pois_research_embed_hnsw ON pois_research USING hnsw (content_embedding vector_cosine_ops);
-CREATE INDEX pois_research_canon_idx  ON pois_research (canonical_poi_id); -- ← fast "all sources for this POI"
-CREATE INDEX pois_research_status_idx ON pois_research (match_status);
+CREATE INDEX research_pois_geom_gix   ON research_pois USING gist (geom);
+CREATE INDEX research_pois_name_trgm  ON research_pois USING gin (name_normalized gin_trgm_ops);
+CREATE INDEX research_pois_embed_hnsw ON research_pois USING hnsw (content_embedding vector_cosine_ops);
+CREATE INDEX research_pois_canon_idx  ON research_pois (canonical_poi_id); -- ← fast "all sources for this POI"
+CREATE INDEX research_pois_status_idx ON research_pois (match_status);
 ```
 
 The `UNIQUE (source_id, source_record_id)` constraint is what makes re-ingestion safe: the
 same record from the same source always lands on the same row (upsert), so nothing
 duplicates and popularity never double-counts.
 
-### 4.3 `pois_canonical` — the canonical / validated layer (revised)
+### 4.3 `canonical_pois` — the canonical / validated layer (revised)
 
-> Renamed from the working name `pois`. Migration path: `ALTER TABLE pois RENAME TO
-> pois_canonical`, then add the new columns below. (The existing rows are also seeded into
-> `pois_research` under a `manual`/`legacy` source so today's data keeps its attribution — see
-> Phase 0.)
+> The canonical / validated layer (today's `pois` table). Migration path: `ALTER TABLE pois
+> RENAME TO canonical_pois`, then add the new columns below. (The existing rows are also seeded
+> into `research_pois` under a `manual`/`legacy` source so today's data keeps its attribution —
+> see Phase 0.)
 
 ```sql
-CREATE TABLE pois_canonical (
+CREATE TABLE canonical_pois (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name          text NOT NULL,
   description   text,
@@ -305,14 +357,14 @@ CREATE TABLE pois_canonical (
   geom          geography(Point, 4326) NOT NULL,
   attributes    jsonb NOT NULL DEFAULT '{}', -- category-specific structured fields (see below)
   field_provenance jsonb NOT NULL DEFAULT '{}', -- per-field source attribution (see §4.4)
-  popularity    integer NOT NULL DEFAULT 1,  -- COUNT(DISTINCT source_id) over pois_research for this POI
+  popularity    integer NOT NULL DEFAULT 1,  -- COUNT(DISTINCT source_id) over research_pois for this POI
   status        text NOT NULL DEFAULT 'published', -- 'published' | 'draft' | 'hidden'
   created_at    timestamptz NOT NULL DEFAULT now(),
   updated_at    timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX pois_canonical_geom_gix  ON pois_canonical USING gist (geom);
-CREATE INDEX pois_canonical_name_trgm ON pois_canonical USING gin ((lower(name)) gin_trgm_ops);
+CREATE INDEX canonical_pois_geom_gix  ON canonical_pois USING gist (geom);
+CREATE INDEX canonical_pois_name_trgm ON canonical_pois USING gin ((lower(name)) gin_trgm_ops);
 ```
 
 > **Drop `UNIQUE (lng, lat)`.** Distinct real places can legitimately be a few meters apart
@@ -322,7 +374,7 @@ CREATE INDEX pois_canonical_name_trgm ON pois_canonical USING gin ((lower(name))
 > path accordingly (legacy direct-import becomes a staging write — see §9).
 
 > **Category leaves the table** entirely (see §7). The old `pois.category` string column is
-> replaced by the `poi_categories` join.
+> replaced by the `canonical_poi_categories` join.
 
 **Why `attributes jsonb` instead of more columns:** gardens carry `area_ha`,
 `accreditation_level`, `visitors_annual`; campgrounds carry `electric`, `sewer`,
@@ -335,7 +387,7 @@ validated per-category by a JSON schema we keep in `lib/db-map/contracts/`).
 
 Source attribution is a first-class concern (it drives popularity, the displayed "data from…"
 credit, and the future per-source licensing review). It works at two levels and needs **no
-extra link table** — the `pois_research.canonical_poi_id` foreign key already records exactly
+extra link table** — the `research_pois.canonical_poi_id` foreign key already records exactly
 which raw rows compose each canonical POI.
 
 **Set-level attribution (which sources contributed at all).** A single join answers it:
@@ -343,22 +395,22 @@ which raw rows compose each canonical POI.
 ```sql
 -- every source behind a canonical POI, and the popularity count
 SELECT s.slug, s.name, s.license, s.attribution
-FROM pois_research r
-JOIN sources s ON s.id = r.source_id
+FROM research_pois r
+JOIN research_sources s ON s.id = r.source_id
 WHERE r.canonical_poi_id = $poi_id
 GROUP BY s.id;
 
 -- popularity (recomputed on every merge; same source twice ≠ +1)
-UPDATE pois_canonical p
+UPDATE canonical_pois p
 SET popularity = (
   SELECT COUNT(DISTINCT r.source_id)
-  FROM pois_research r WHERE r.canonical_poi_id = p.id
+  FROM research_pois r WHERE r.canonical_poi_id = p.id
 )
 WHERE p.id = $poi_id;
 ```
 
 **Field-level attribution (which source supplied each published value).** Stored on
-`pois_canonical.field_provenance` as JSON mapping each merged field to the winning source and
+`canonical_pois.field_provenance` as JSON mapping each merged field to the winning source and
 the exact research row it came from:
 
 ```jsonc
@@ -372,24 +424,24 @@ the exact research row it came from:
 ```
 
 This is what makes the deferred licensing pass tractable: to review/edit/omit content from one
-source, query `field_provenance` for that source's slug (or `pois_research.source_id`) and you
+source, query `field_provenance` for that source's slug (or `research_pois.source_id`) and you
 get every canonical field — and every raw row — that depends on it, without re-running the
-pipeline. The app's POI-detail read path can also use it (plus `sources.attribution`) to render
+pipeline. The app's POI-detail read path can also use it (plus `research_sources.attribution`) to render
 the correct credits.
 
 ### 4.5 Categories (see §7 for the model)
 
-`categories`, `category_aliases`, `poi_categories` (the last links `pois_canonical` ↔
-`categories`).
+`canonical_categories`, `research_category_aliases`, `canonical_poi_categories` (the last links
+`canonical_pois` ↔ `canonical_categories`).
 
 ### 4.6 Audit & override tables (reproducibility + correcting AI mistakes)
 
 ```sql
 -- every match decision, so we can tune thresholds and explain merges
-CREATE TABLE match_decisions (
+CREATE TABLE research_match_decisions (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  research_id   uuid NOT NULL REFERENCES pois_research(id) ON DELETE CASCADE,
-  candidate_poi_id uuid REFERENCES pois_canonical(id) ON DELETE SET NULL,
+  research_id   uuid NOT NULL REFERENCES research_pois(id) ON DELETE CASCADE,
+  candidate_poi_id uuid REFERENCES canonical_pois(id) ON DELETE SET NULL,
   score         real,
   signals       jsonb,        -- {name_sim, distance_m, embed_cos, shared_ids:[...]}
   decision      text NOT NULL,-- 'merge' | 'new'  (LLM is forced binary — Decision 3)
@@ -399,17 +451,17 @@ CREATE TABLE match_decisions (
 );
 
 -- OPTIONAL developer-only overrides the algorithm must ALWAYS respect (not a review queue)
-CREATE TABLE match_overrides (
+CREATE TABLE research_match_overrides (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  record_a      uuid NOT NULL REFERENCES pois_research(id) ON DELETE CASCADE,
-  record_b      uuid REFERENCES pois_research(id) ON DELETE CASCADE,
+  record_a      uuid NOT NULL REFERENCES research_pois(id) ON DELETE CASCADE,
+  record_b      uuid REFERENCES research_pois(id) ON DELETE CASCADE,
   rule          text NOT NULL,  -- 'force_same' | 'force_different'
   note          text,
   created_at    timestamptz NOT NULL DEFAULT now()
 );
 
 -- geocode cache (cost & rate-limit control)
-CREATE TABLE geocode_cache (
+CREATE TABLE research_geocode_cache (
   query_norm    text PRIMARY KEY,  -- normalized "name, city, region, country"
   lat           double precision,
   lng           double precision,
@@ -419,7 +471,7 @@ CREATE TABLE geocode_cache (
 );
 ```
 
-`match_overrides` is essential: when the AI inevitably merges two distinct places or splits
+`research_match_overrides` is essential: when the AI inevitably merges two distinct places or splits
 one, an operator records a `force_same`/`force_different` pair and every future run honors it.
 
 ---
@@ -437,7 +489,7 @@ of them; a re-pull of an existing source flows through the same steps and self-h
   `wikipedia.ts`, `arbnet.ts`, `ridb.ts`, `thedyrt.ts`, `uscampgrounds.ts`).
 - **Stream-parse** large files — several inputs are 11–78 MB (`csv-parse` streaming, `ndjson`
   for JSONL). Never `JSON.parse` a 78 MB file into memory.
-- Map each record to the common `pois_research` shape; keep the entire original row in
+- Map each record to the common `research_pois` shape; keep the entire original row in
   `raw` (jsonb) for later re-derivation.
 - **Upsert by `(source_id, source_record_id)`**: insert new, update `last_seen_at` +
   changed fields on existing, set `is_stale = true` for rows not present in this pull.
@@ -452,7 +504,7 @@ of them; a re-pull of an existing source flows through the same steps and self-h
   already documents this heuristic); range-check; set `geom`.
 - **Address:** split into city/region/country_code where possible.
 - **website_domain / phone:** normalize to comparable forms (strong-ID signals).
-- **Category mapping:** map `raw_category` → canonical category via `category_aliases`
+- **Category mapping:** map `raw_category` → canonical category via `research_category_aliases`
   (§7). Unmapped raw categories are reported, not guessed, so the **developer** can extend the
   code-owned alias seed (Decision 5).
 
@@ -462,7 +514,7 @@ of them; a re-pull of an existing source flows through the same steps and self-h
   give city not lat/lng), forward-geocode `"name, city, region, country"`.
 - Use **LocationIQ** (recommended in `docs/search/location-api.md`: 5,000 req/day free,
   Nominatim-compatible, commercial-OK with attribution). Provider is pluggable.
-- **Cache every lookup** in `geocode_cache` keyed by normalized query — re-runs cost nothing,
+- **Cache every lookup** in `research_geocode_cache` keyed by normalized query — re-runs cost nothing,
   and we respect rate limits.
 - Records that can't be geocoded get `geocode_status = 'failed'` and are **parked** (not
   matched, not published) until coordinates appear. They still count as research data.
@@ -485,7 +537,7 @@ consistent, publishable state and a run can stop/resume at any point (see
 [execution model](#execution-model-long-running--resumable)).
 
 When a record attaches to (or creates) a canonical POI, that POI is rebuilt from all
-`pois_research` rows that share its `canonical_poi_id`, and `field_provenance` is updated to
+`research_pois` rows that share its `canonical_poi_id`, and `field_provenance` is updated to
 record which source won each field (§4.4):
 
 - **Field precedence by source `trust`** for structured fields (coords, name, website,
@@ -544,7 +596,7 @@ checkpointed loops**, not one-shot batch jobs:
 
 For each `source_record` not yet confidently matched:
 
-**Step A — Overrides first.** If a `match_overrides` rule touches this record, obey it
+**Step A — Overrides first.** If a `research_match_overrides` rule touches this record, obey it
 absolutely (force_same → that cluster; force_different → never merge those).
 
 **Step B — Strong-ID match.** If the record shares any strong identifier with an existing
@@ -557,7 +609,7 @@ category-tuned radius using PostGIS:
 
 ```sql
 SELECT id, name, geom, ... 
-FROM pois_canonical
+FROM canonical_pois
 WHERE ST_DWithin(geom, $rec_geom, $radius_m)
 ORDER BY geom <-> $rec_geom
 LIMIT 25;
@@ -587,12 +639,12 @@ candidates are ever scored.
   fields (names, address, distance, category, websites) and ask for a **binary** "same place?
   {yes|no} + one-line reason". `yes` → merge; `no` → new. The LLM is **forced to choose** —
   there is no `unsure`/review state and **no human queue**. `method = 'llm'`; the rationale is
-  stored in `match_decisions.llm_reason`.
+  stored in `research_match_decisions.llm_reason`.
 - LLM usage is **capped to the gray band only** → bounded cost (the deterministic bands and
   strong-ID shortcut handle the vast majority), and it avoids the "LLM is hard to quantify"
   problem because the model never decides the easy cases.
 
-**Step F — Record** the decision + all signals in `match_decisions` (tuning + explainability).
+**Step F — Record** the decision + all signals in `research_match_decisions` (tuning + explainability).
 
 **Tuning loop (now our primary safety net).** With no human review, the **golden set** is how
 we keep quality honest. Maintain a small set of hand-labeled same/different pairs drawn from
@@ -600,7 +652,7 @@ the real dumps (e.g. the obvious Kew duplicates across BGCI/OSM/Wikidata/Wikiped
 matching against it to measure **precision/recall** whenever we change weights, thresholds, or
 the LLM prompt. This turns "is the matcher good?" into a number — essential because the LLM is
 the last line of defense. When it gets something wrong in production, fix it with a
-`match_overrides` rule (developer, in code/SQL) and, ideally, add the pair to the golden set.
+`research_match_overrides` rule (developer, in code/SQL) and, ideally, add the pair to the golden set.
 
 **Cluster transitivity.** Matches are pairwise; collapse them with union-find so A≡B and
 B≡C ⇒ one cluster {A,B,C} → one canonical POI.
@@ -621,11 +673,11 @@ The user gave three concrete requirements; this model satisfies all of them.
 ### Schema
 
 ```sql
-CREATE TABLE categories (
+CREATE TABLE canonical_categories (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   slug          text UNIQUE NOT NULL,     -- STABLE id, never changes: 'free_flight', 'rv'
   display_name  text NOT NULL,            -- shown in UI, freely renamable
-  parent_id     uuid REFERENCES categories(id), -- hierarchy (campground → rv/tent/backpacker)
+  parent_id     uuid REFERENCES canonical_categories(id), -- hierarchy (campground → rv/tent/backpacker)
   description   text,
   icon          text,
   color         text,
@@ -635,17 +687,17 @@ CREATE TABLE categories (
 );
 
 -- raw source strings → canonical category (drives Stage-2 categorization)
-CREATE TABLE category_aliases (
+CREATE TABLE research_category_aliases (
   alias         text NOT NULL,            -- 'garden:type=botanical', 'caravan', 'paragliding'
-  category_id   uuid NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
-  source_id     uuid REFERENCES sources(id), -- NULL = applies to all sources
+  category_id   uuid NOT NULL REFERENCES canonical_categories(id) ON DELETE CASCADE,
+  source_id     uuid REFERENCES research_sources(id), -- NULL = applies to all sources
   PRIMARY KEY (alias, category_id, source_id)
 );
 
 -- a place can be in many categories
-CREATE TABLE poi_categories (
-  poi_id        uuid NOT NULL REFERENCES pois_canonical(id) ON DELETE CASCADE,
-  category_id   uuid NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+CREATE TABLE canonical_poi_categories (
+  poi_id        uuid NOT NULL REFERENCES canonical_pois(id) ON DELETE CASCADE,
+  category_id   uuid NOT NULL REFERENCES canonical_categories(id) ON DELETE CASCADE,
   is_primary    boolean NOT NULL DEFAULT false,
   PRIMARY KEY (poi_id, category_id)
 );
@@ -653,12 +705,12 @@ CREATE TABLE poi_categories (
 
 ### How it satisfies each requirement
 
-- **Multiple categories per place** → `poi_categories` many-to-many. A flying site row can be
+- **Multiple categories per place** → `canonical_poi_categories` many-to-many. A flying site row can be
   linked to `free_flight`, `hang_gliding`, `paragliding`, and `gliderport` simultaneously.
 - **Rename a category** ("flying site" → "free flight") → update `categories.display_name`.
   The **slug stays `free_flight`**, so every link and alias keeps working; nothing else
   changes. (If we want the old name to keep mapping incoming data, add it to
-  `category_aliases`.)
+  `research_category_aliases`.)
 - **Similar-but-distinct + overlap** (garden / arboretum / sculpture park; indoor/outdoor;
   public/private) → model each as its own category, use `parent_id` for grouping (e.g.
   `arboretum` and `botanical_garden` under a `gardens` parent), and let a place hold multiple
@@ -679,7 +731,7 @@ recursive CTE.
 ### Unmapped-category report
 
 Stage 2 emits any `raw_category` that has no alias, so the team continuously extends
-`category_aliases` instead of silently dropping or misfiling data.
+`research_category_aliases` instead of silently dropping or misfiling data.
 
 ---
 
@@ -697,7 +749,7 @@ this safe by construction.
   source). Exactly the user's definition: *popularity = how many sources it appears in*,
   un-normalized, used only to sort search results.
 - **Re-merge after algorithm/threshold/prompt improvements:** because raw rows are intact,
-  re-run match+merge to rebuild canonical POIs without re-fetching anything. `match_overrides`
+  re-run match+merge to rebuild canonical POIs without re-fetching anything. `research_match_overrides`
   keep developer corrections sticky across re-runs.
 - **Scheduling (later):** wrap `ingest:run` in a cron/worker (Railway scheduled job or GitHub
   Action) per source on its own cadence. Incremental `content_hash` checks keep repeat runs
@@ -712,15 +764,15 @@ if it grows). Proposed `package.json` scripts (mirroring existing `db:import:*` 
 
 | Command | Purpose |
 |---|---|
-| `ingest:extract <source> <file>` | Adapter → upsert `pois_research` (streamed, idempotent) |
+| `ingest:extract <source> <file>` | Adapter → upsert `research_pois` (streamed, idempotent) |
 | `ingest:normalize [--source S]` | Clean names/coords/address, map categories |
 | `ingest:geocode [--limit N]` | Fill missing coords via LocationIQ + cache |
 | `ingest:embed` | Compute embeddings for changed rows |
 | `ingest:match [--dry-run] [--auto-threshold] [--limit N] [--resume] [--no-llm]` | Per-record conflation **and** canonical rebuild (Stage 5+6); LLM auto-decides the gray zone |
 | `ingest:report` | Reconciliation + QA stats |
 | `ingest:run <source> <file>` | Orchestrate all of the above for one category × source chunk |
-| `ingest:override <a> <b> same\|different` | Developer-only: write a `match_overrides` rule (not a review queue) |
-| `ingest:taxonomy:seed` | Seed/refresh `categories` + `category_aliases` from the committed taxonomy source file |
+| `ingest:override <a> <b> same\|different` | Developer-only: write a `research_match_overrides` rule (not a review queue) |
+| `ingest:taxonomy:seed` | Seed/refresh `canonical_categories` + `research_category_aliases` from the committed taxonomy source file |
 
 Shared building blocks to maintain:
 
@@ -734,14 +786,14 @@ Shared building blocks to maintain:
 - **`geocode/`** — pluggable provider client + cache.
 - **`taxonomy.ts`** — the committed, code-owned category/alias seed (Decision 5).
 - **Migrate the existing skill/scripts:** `db:import:json` / `db:import:kml` become thin
-  adapters that write into **`pois_research`** (source `slug` from a flag) instead of
-  straight into `pois_canonical`. Update `.cursor/skills/import-pois/SKILL.md` and
-  `lib/db-map/IMPORTING.md` to the new staging-first flow. The old direct-to-`pois_canonical`
+  adapters that write into **`research_pois`** (source `slug` from a flag) instead of
+  straight into `canonical_pois`. Update `.cursor/skills/import-pois/SKILL.md` and
+  `lib/db-map/IMPORTING.md` to the new staging-first flow. The old direct-to-`canonical_pois`
   behavior is retired so we never bypass dedup again.
 
 Testing utilities (so we can trust the pipeline):
 
-- Unit tests for each extractor (sample fixture rows → expected `pois_research`).
+- Unit tests for each extractor (sample fixture rows → expected `research_pois`).
 - Unit tests for normalizers (swapped coords, accents, abbreviations).
 - A **golden-set** harness reporting matcher precision/recall on labeled real pairs.
 - `--dry-run` everywhere, and a `pnpm ingest:run … --dry-run` that prints the full
@@ -792,7 +844,7 @@ Testing utilities (so we can trust the pipeline):
 
 Beyond the explicit requirements, decide these up front so we don't repaint later:
 
-1. **Licensing — recorded, not enforced (Decision 1).** Keep `sources.license` /
+1. **Licensing — recorded, not enforced (Decision 1).** Keep `research_sources.license` /
    `attribution` as metadata to revisit later *per category, per source*, but do **not** gate
    ingestion or display in the POC. Capturing the metadata now is cheap and avoids a re-scrape
    when we do the legal pass.
@@ -803,13 +855,13 @@ Beyond the explicit requirements, decide these up front so we don't repaint late
    genuinely-near distinct places.
 4. **Flexible `attributes jsonb`** + optional per-category JSON-schema validation — so each
    new category's fields don't require a migration.
-5. **Reversibility & overrides** (`match_overrides`, `match_decisions`) — the AI *will* make
+5. **Reversibility & overrides** (`research_match_overrides`, `research_match_decisions`) — the AI *will* make
    mistakes; since there's no human review (Decision 3), we need to correct them in code
    stickily and explain every merge.
 6. **Golden-set evaluation — the primary quality gate** — quantify matcher precision/recall
    before trusting the LLM-auto-decide pipeline on 284k rows; re-check on every threshold/prompt
    change.
-7. **Geocode cost/rate control** (`geocode_cache`, provider abstraction) — per the
+7. **Geocode cost/rate control** (`research_geocode_cache`, provider abstraction) — per the
    `location-api.md` research; start LocationIQ free tier, keep a self-host-Nominatim path.
 8. **Data-quality QA gates** — reject/flag coords in the ocean, country-vs-coordinate
    mismatches, obviously swapped lat/lng, empty names.
@@ -818,7 +870,7 @@ Beyond the explicit requirements, decide these up front so we don't repaint late
 10. **Observability** — an `ingest_runs` metrics row per execution (counts, durations, failure
     rates) for dashboards and regression alerts.
 11. **Coordinate precision/privacy** — round published coords to ~6 dp.
-12. **Canonical-ID stability** — never churn `pois_canonical.id` on re-merge (the app/users
+12. **Canonical-ID stability** — never churn `canonical_pois.id` on re-merge (the app/users
     may reference it); update in place.
 13. **Scale path** — indexes above handle low millions; revisit partitioning/tiling beyond
     that.
@@ -829,29 +881,31 @@ Beyond the explicit requirements, decide these up front so we don't repaint late
 
 Each phase is independently shippable and leaves the app working.
 
-- **Phase 0 — Schema foundations.** Migrations for extensions, `sources`, `pois_research`,
-  the renamed + revised `pois_canonical` (`ALTER TABLE pois RENAME TO pois_canonical`, then
-  +`geom`, `attributes`, `field_provenance`, `popularity`, drop `UNIQUE(lng,lat)`), categories
-  trio, audit/override/geocode tables. Run `pnpm db:sync`, commit generated artifacts. Seed the
-  existing canonical rows into `pois_research` under a `manual`/`legacy` source (with
-  `canonical_poi_id` pointing back at themselves) so today's data keeps its attribution and
-  nothing is lost.
-- **Phase 1 — Extractors + staging.** Common `Extractor` interface, `sources` registry,
+- **Phase 0 — Schema foundations.** Migrations for extensions, `research_sources`,
+  `research_pois`, the renamed + revised `canonical_pois` (`ALTER TABLE pois RENAME TO
+  canonical_pois`, then +`geom`, `attributes`, `field_provenance`, `popularity`, drop
+  `UNIQUE(lng,lat)`), the category tables (`canonical_categories`,
+  `canonical_poi_categories`, `research_category_aliases`), and the
+  `research_match_decisions` / `research_match_overrides` / `research_geocode_cache` tooling
+  tables. Run `pnpm db:sync`, commit generated artifacts. Seed the existing canonical rows into
+  `research_pois` under a `manual`/`legacy` source (with `canonical_poi_id` pointing back at
+  themselves) so today's data keeps its attribution and nothing is lost.
+- **Phase 1 — Extractors + staging.** Common `Extractor` interface, `research_sources` registry,
   `ingest:extract`, streaming parsers. Adapters for the 12 example sources. Land both example
-  dumps into `pois_research` (no publishing yet).
-- **Phase 2 — Normalize + categorize.** Normalizers, `category_aliases` seed for gardens &
+  dumps into `research_pois` (no publishing yet).
+- **Phase 2 — Normalize + categorize.** Normalizers, `research_category_aliases` seed for gardens &
   campgrounds, unmapped-category report.
-- **Phase 3 — Geocode.** LocationIQ client + `geocode_cache`; fill coordinate gaps.
+- **Phase 3 — Geocode.** LocationIQ client + `research_geocode_cache`; fill coordinate gaps.
 - **Phase 4 — Embed + match/merge.** pgvector embeddings; the **per-record, resumable**
   match+merge loop: blocking, scoring, thresholds, strong-ID shortcut, **binary LLM
   adjudicator**, union-find, per-record canonical rebuild, field precedence, conditional
-  (verbatim-vs-LLM) description, popularity, `poi_categories`, `match_decisions`, and the
+  (verbatim-vs-LLM) description, popularity, `canonical_poi_categories`, `research_match_decisions`, and the
   golden-set harness. Publish gate = coords + category only (no licensing/review gate).
 - **Phase 5 — App read path.** Update `listPoisGeoJson` / detail / categories endpoints for
   the new category model + popularity sort; category expansion; keep the GeoJSON shape stable.
 - **Phase 6 — Automation & ops.** `ingest:run` orchestrator with `--resume`/`--limit`,
   scheduling, `ingest_runs` metrics, `ingest:override` for corrections, retire direct
-  `db:import:*`-to-`pois_canonical`; update skill + docs.
+  `db:import:*`-to-`canonical_pois`; update skill + docs.
 
 ---
 
@@ -864,7 +918,7 @@ are restated here (and drive §0) so the document is self-contained.
 |---|---|---|
 | 1 | Licensing — gate display on it? | **No.** Ignore licensing for the POC; use the best data; publish source content verbatim. Store `license`/`attribution` as metadata to revisit later *per category, per source*. No "enrichment-only" sources. |
 | 2 | Global from day one? | **Yes, but chunked.** Worldwide coverage, ingested one **category × source** at a time. Scripts must be **long-running, resumable, one-record-at-a-time** processes. |
-| 3 | Human review appetite? | **None.** The LLM **always auto-decides** the gray zone (forced binary). No review queue/UI. Optional developer-only `match_overrides` for after-the-fact corrections in code. |
+| 3 | Human review appetite? | **None.** The LLM **always auto-decides** the gray zone (forced binary). No review queue/UI. Optional developer-only `research_match_overrides` for after-the-fact corrections in code. |
 | 4 | AI-written descriptions? | **Verbatim first.** One source → publish its text as-is. Multiple sources with differing content → LLM aggregates. Never rewrite good single-source prose. |
 | 5 | Category taxonomy ownership? | **Code-owned.** Slugs/parents/aliases live in a committed seed file edited only by the developer (coupled to the AI prompts/matching code). No in-app/admin editing. |
 
