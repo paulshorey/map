@@ -14,6 +14,7 @@ throughout as the worked examples.
 
 ## Table of Contents
 
+0. [Resolved product decisions & operating constraints](#0-resolved-product-decisions--operating-constraints)
 1. [The problem with what we have today](#1-the-problem-with-what-we-have-today)
 2. [Core idea: two layers — raw research vs. canonical](#2-core-idea-two-layers--raw-research-vs-canonical)
 3. [Industry context: this is "conflation" / entity resolution](#3-industry-context-this-is-conflation--entity-resolution)
@@ -26,7 +27,43 @@ throughout as the worked examples.
 10. [Worked examples (gardens + RV campgrounds)](#10-worked-examples-gardens--rv-campgrounds)
 11. [Things we should plan for now](#11-things-we-should-plan-for-now)
 12. [Phased rollout](#12-phased-rollout)
-13. [Open product questions](#13-open-product-questions)
+13. [Product decisions (resolved)](#13-product-decisions-resolved)
+
+---
+
+## 0. Resolved product decisions & operating constraints
+
+These five decisions were made by the product owner and are now **binding** for the POC. The
+rest of the plan reflects them; this section is the single place to read them quickly.
+
+1. **Licensing — ignore for the POC.** Do **not** gate ingestion or display on licensing.
+   Use the best available data and **publish source content verbatim**. Copyrighted content
+   will be reviewed/rewritten later, *per category, per source*, once we know which sources
+   permit redistribution. → We still **store** `license`/`attribution` on `sources` as
+   metadata to fill in later, but nothing enforces it now. No "enrichment-only" source class.
+
+2. **Global from day one, ingested in chunks.** Coverage is worldwide, but we never ingest
+   the whole planet at once — ingestion happens **one category × one source at a time**.
+   Therefore every script must be a **resumable, long-running process** that handles each POI
+   **one at a time**: analyze a record → compare it against what's already in the database →
+   aggregate & save → move to the next. No giant all-at-once batch is required, and a run can
+   stop and resume without losing or double-counting work. See the
+   [execution model](#execution-model-long-running--resumable).
+
+3. **LLM always auto-decides — no human review.** We have no resources for a human review
+   queue. The gray-zone tie-breaker is the LLM, and it is **forced to a binary answer**
+   (same → merge, otherwise → new POI). There is no `review` state and no review UI. (An
+   optional developer-only `match_overrides` escape hatch remains, for correcting a wrong
+   merge in code/SQL after the fact — it is *not* a review workflow.)
+
+4. **Prefer verbatim text; aggregate with AI only when sources disagree.** Keep the best
+   *original* data. If a place has **one source**, publish that source's text verbatim. If
+   **multiple sources** carry **different** substantive content, use generative AI to fuse
+   them into one output. Never rewrite good single-source prose just to "AI-ify" it.
+
+5. **Category taxonomy is code-owned.** Slugs, parents, and aliases live in a committed seed
+   file edited **only by the developer in source**, because they are tightly coupled to the
+   generative-AI prompts and matching code. **No in-app/admin editing of categories.**
 
 ---
 
@@ -116,15 +153,17 @@ The universally-used shape of the solution (and what we adopt):
    makes that impossible — we only ever compare nearby things.
 2. **Scoring** — within a block, compute a similarity score per pair from multiple signals
    (name, distance, embeddings, shared strong IDs).
-3. **Decision** — threshold the score: auto-merge / auto-separate / send the gray zone to a
-   tie-breaker (LLM and/or human).
+3. **Decision** — threshold the score: auto-merge / auto-separate / send the gray zone to an
+   **LLM tie-breaker that always returns a decision** (no human review — see Decision 3 in §0).
 4. **Clustering & merge** — group all "same" records into one cluster and synthesize the
-   canonical record (field precedence + LLM summary for prose).
+   canonical record (field precedence + verbatim-preferred text, LLM summary only when
+   multiple sources disagree — see Decision 4 in §0).
 
 The LLM is used **only as a bounded tie-breaker in the ambiguous middle band**, not as the
 primary matcher — which neatly sidesteps the user's "LLM is hard to quantify" and "embeddings
-ignore distance" problems. Cheap deterministic signals decide the easy 90%; the LLM adjudicates
-the expensive 10%.
+ignore distance" problems. Cheap deterministic signals decide the easy ~90%; the LLM
+adjudicates the expensive ~10% and is **forced to a binary same/new answer** so the pipeline
+never blocks on a human.
 
 **Strong identifiers short-circuit everything.** If two records share a Wikidata QID, an OSM
 `(type,id)`, the same website domain, or the same phone number, they are the same place by
@@ -160,17 +199,19 @@ CREATE TABLE sources (
   slug          text UNIQUE NOT NULL,        -- 'osm', 'bgci', 'wikidata', 'thedyrt', 'ridb'
   name          text NOT NULL,
   homepage      text,
-  license       text,                        -- 'ODbL', 'CC0', 'CC-BY-SA', 'proprietary', ...
-  attribution   text,                        -- exact text we must display, if any
-  display_allowed boolean NOT NULL DEFAULT true,  -- false = use for dedupe only, never show
+  license       text,                        -- 'ODbL', 'CC0', 'CC-BY-SA', 'proprietary', ... (metadata only for now)
+  attribution   text,                        -- exact text to display, if known (metadata only for now)
   trust         integer NOT NULL DEFAULT 50, -- 0-100, field-precedence weight
   last_ingested_at timestamptz,
   created_at    timestamptz NOT NULL DEFAULT now()
 );
 ```
 
-`display_allowed` is the legal kill-switch: e.g. proprietary scrapes (The Dyrt) may only be
-allowed to *boost popularity / fill blanks*, never to be the displayed source of truth.
+> **Licensing is not enforced in the POC (Decision 1).** `license`/`attribution` are recorded
+> as *metadata* so we can act on them later, per category/source — but every source is
+> display-eligible now and source content is published verbatim. There is no "enrichment-only"
+> class of source.
+
 `trust` orders field precedence during merge (government/official > Wikidata > OSM > scrape).
 
 ### 4.2 `source_records` — the raw research layer
@@ -207,9 +248,9 @@ CREATE TABLE source_records (
   content_hash    text,                       -- hash of normalized fields; skip work if unchanged
 
   canonical_poi_id uuid REFERENCES pois(id) ON DELETE SET NULL, -- match result
-  match_status    text NOT NULL DEFAULT 'pending', -- pending|matched|new|review|rejected
+  match_status    text NOT NULL DEFAULT 'pending', -- pending|matched|new (no 'review' — Decision 3)
   match_score     real,
-  match_method    text,                       -- 'strong_id'|'auto'|'llm'|'human'|'new'
+  match_method    text,                       -- 'strong_id'|'auto'|'llm'|'override'|'new'
 
   first_seen_at   timestamptz NOT NULL DEFAULT now(),
   last_seen_at    timestamptz NOT NULL DEFAULT now(),
@@ -299,12 +340,13 @@ CREATE TABLE match_decisions (
   candidate_poi_id uuid REFERENCES pois(id) ON DELETE SET NULL,
   score         real,
   signals       jsonb,        -- {name_sim, distance_m, embed_cos, shared_ids:[...]}
-  decision      text NOT NULL,-- 'merge' | 'new' | 'review' | 'reject'
-  method        text NOT NULL,-- 'strong_id' | 'auto' | 'llm' | 'human'
+  decision      text NOT NULL,-- 'merge' | 'new'  (LLM is forced binary — Decision 3)
+  method        text NOT NULL,-- 'strong_id' | 'auto' | 'llm' | 'override'
+  llm_reason    text,         -- one-line rationale when method='llm', for later audit
   decided_at    timestamptz NOT NULL DEFAULT now()
 );
 
--- human/operator overrides the algorithm must ALWAYS respect
+-- OPTIONAL developer-only overrides the algorithm must ALWAYS respect (not a review queue)
 CREATE TABLE match_overrides (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   record_a      uuid NOT NULL REFERENCES source_records(id) ON DELETE CASCADE,
@@ -359,8 +401,8 @@ of them; a re-pull of an existing source flows through the same steps and self-h
 - **Address:** split into city/region/country_code where possible.
 - **website_domain / phone:** normalize to comparable forms (strong-ID signals).
 - **Category mapping:** map `raw_category` → canonical category via `category_aliases`
-  (§7). Unmapped raw categories are reported, not guessed, so a human can extend the alias
-  table.
+  (§7). Unmapped raw categories are reported, not guessed, so the **developer** can extend the
+  code-owned alias seed (Decision 5).
 
 ### Stage 3 — Geocode the gaps (`ingest:geocode`)
 
@@ -380,47 +422,68 @@ of them; a re-pull of an existing source flows through the same steps and self-h
 - Model: a small, cheap text-embedding model (e.g. 384-dim like `bge-small`/`all-MiniLM`, or
   a hosted embeddings endpoint). Dimension is fixed in the column type; pick once.
 
-### Stage 5 — Match / conflate (`ingest:match`)
+### Stage 5+6 — Match & merge, one record at a time (`ingest:match`)
 
-The de-duplication core — full detail in §6. Produces, for each `source_record`: a
-`canonical_poi_id` (existing or newly created), a `match_status`, a `match_score`, and an
-audit row in `match_decisions`.
+The de-duplication core — full detail in §6. Per Decision 2, this runs as a **resumable loop
+that processes a single `source_record` at a time** rather than a giant batch: for each
+`pending` record it blocks → scores → (LLM-)decides → attaches to an existing canonical POI or
+creates a new one → **immediately recomputes that one canonical POI** from its cluster, then
+moves to the next record. Match and merge are fused per record so the database is always in a
+consistent, publishable state and a run can stop/resume at any point (see
+[execution model](#execution-model-long-running--resumable)).
 
-### Stage 6 — Merge / promote (`ingest:merge`)
+When a record attaches to (or creates) a canonical POI, that POI is rebuilt from its linked
+`source_records`:
 
-- For each canonical cluster, (re)build the `pois` row from its linked `source_records`:
-  - **Field precedence by source `trust`** for structured fields (coords, name, website,
-    phone, hours, address). Government/official sources win coordinates; Wikidata/Wikipedia
-    win names; etc.
-  - **Description:** either longest non-empty, or an **LLM-aggregated summary** that fuses the
-    prose from all sources into one neutral blurb (this is the user's "use LLM to aggregate
-    text content" idea — applied at merge time, on a small cluster, not for matching).
-  - **attributes:** union/merge category-specific fields (e.g. OR the campground hookup
-    booleans across sources; keep max `area_ha`).
-  - **categories:** union of all sources' mapped categories.
-  - **popularity:** `COUNT(DISTINCT source_id)`.
-- Respect `display_allowed`: never let a display-forbidden source be the *only* basis for a
-  published field; it can fill blanks / boost popularity only.
+- **Field precedence by source `trust`** for structured fields (coords, name, website,
+  phone, hours, address). Government/official sources win coordinates; Wikidata/Wikipedia
+  win names; etc.
+- **Description / prose (Decision 4):** if only **one** source has content, publish it
+  **verbatim**. If **multiple** sources have **differing** substantive content, use an
+  **LLM to aggregate** them into one output (small cluster, merge time only — never for
+  matching, and never to rewrite good single-source text).
+- **attributes:** union/merge category-specific fields (e.g. OR the campground hookup
+  booleans across sources; keep max `area_ha`).
+- **categories:** union of all sources' mapped categories.
+- **popularity:** `COUNT(DISTINCT source_id)`.
 
-### Stage 7 — Publish & report (`ingest:report`)
+### Stage 7 — Report (`ingest:report`)
 
-- Set `status = 'published'` for canonical POIs that pass QA (have coords, ≥1 display-allowed
-  source, a category).
+- Canonical POIs are `published` once they pass QA (have coordinates and ≥1 category); there
+  is no licensing gate (Decision 1) and no human-review gate (Decision 3).
 - Emit a **reconciliation report** (like the current import script does, but richer):
-  records in, new vs. updated, matched-to-existing, new canonical created, sent to review,
-  geocode failures, unmapped categories, popularity distribution.
+  records in, new vs. updated, matched-to-existing, new canonical created, LLM-adjudicated
+  count, geocode failures, unmapped categories, popularity distribution.
 
 ### Orchestration
 
-`ingest:run <source> <file>` chains Stages 1–7 with flags (`--dry-run`,
-`--auto-threshold`, `--review-band`, `--no-geocode`, `--no-llm`). Designed to be run by hand
-today and by a scheduler later (§8).
+`ingest:run <source> <file>` chains the stages with flags (`--dry-run`, `--auto-threshold`,
+`--no-geocode`, `--no-llm`, `--resume`, `--limit N`). Designed to be run by hand today and by
+a scheduler later (§8). Because ingestion is chunked **per category × per source**, a typical
+invocation processes one such chunk end to end.
 
 ```
-extract → normalize → geocode → embed → match → merge → publish/report
+extract → normalize → geocode → embed → [ match+merge per record ] → report
    ▲                                                  │
    └──────────────  safe to re-run any stage  ────────┘
 ```
+
+### Execution model: long-running & resumable
+
+Per Decision 2, the heavy stages (geocode, embed, match+merge) are built as **incremental,
+checkpointed loops**, not one-shot batch jobs:
+
+- **Work is a queue.** Each stage selects rows still needing work (`match_status='pending'`,
+  `geocode_status='unknown'`, stale `content_hash`/embedding) and processes them one by one.
+- **Each record is its own transaction.** Block → score → decide → attach/create → recompute
+  that canonical POI → commit. If the process dies, completed records are already saved and
+  `pending` ones are simply picked up on the next run — no double-counting (popularity is a
+  recomputed `COUNT(DISTINCT source_id)`, never an increment).
+- **Bounded memory & API use.** Streaming reads, per-record commits, cached geocoding, and
+  incremental embeddings keep a worldwide source from ever needing to fit in memory or hit an
+  API twice.
+- **`--limit` / `--resume`** let an operator (or scheduler) run a chunk, pause, and continue,
+  which is exactly how we'll grind through large categories like the 284k campgrounds.
 
 ---
 
@@ -467,20 +530,24 @@ candidates are ever scored.
 
 - `score ≥ T_high` (e.g. 0.85) → **auto-merge** into best candidate. `method = 'auto'`.
 - `score ≤ T_low` (e.g. 0.55) → **new canonical POI**. `method = 'new'`.
-- `T_low < score < T_high` → **gray zone**:
-  1. **LLM adjudication** — send both records' salient fields (names, address, distance,
-     category, websites) and ask a structured "same place? {yes|no|unsure} + confidence +
-     one-line reason". Yes(high) → merge; No(high) → new; unsure → **human review queue**
-     (`match_status = 'review'`). `method = 'llm'`.
-  2. Cap LLM usage to the gray band only → bounded cost, and avoids the "LLM is hard to
-     quantify" problem because it never decides the easy cases.
+- `T_low < score < T_high` → **gray zone → LLM (Decision 3)**: send both records' salient
+  fields (names, address, distance, category, websites) and ask for a **binary** "same place?
+  {yes|no} + one-line reason". `yes` → merge; `no` → new. The LLM is **forced to choose** —
+  there is no `unsure`/review state and **no human queue**. `method = 'llm'`; the rationale is
+  stored in `match_decisions.llm_reason`.
+- LLM usage is **capped to the gray band only** → bounded cost (the deterministic bands and
+  strong-ID shortcut handle the vast majority), and it avoids the "LLM is hard to quantify"
+  problem because the model never decides the easy cases.
 
 **Step F — Record** the decision + all signals in `match_decisions` (tuning + explainability).
 
-**Tuning loop.** Maintain a small **golden set** of hand-labeled same/different pairs drawn
-from the real dumps (e.g. the obvious Kew duplicates across BGCI/OSM/Wikidata/Wikipedia).
-Re-run matching against it to measure **precision/recall** whenever we change weights or
-thresholds. This turns "is the matcher good?" into a number.
+**Tuning loop (now our primary safety net).** With no human review, the **golden set** is how
+we keep quality honest. Maintain a small set of hand-labeled same/different pairs drawn from
+the real dumps (e.g. the obvious Kew duplicates across BGCI/OSM/Wikidata/Wikipedia) and re-run
+matching against it to measure **precision/recall** whenever we change weights, thresholds, or
+the LLM prompt. This turns "is the matcher good?" into a number — essential because the LLM is
+the last line of defense. When it gets something wrong in production, fix it with a
+`match_overrides` rule (developer, in code/SQL) and, ideally, add the pair to the golden set.
 
 **Cluster transitivity.** Matches are pairwise; collapse them with union-find so A≡B and
 B≡C ⇒ one cluster {A,B,C} → one canonical POI.
@@ -490,6 +557,13 @@ B≡C ⇒ one cluster {A,B,C} → one canonical POI.
 ## 7. Categories, taxonomy & aliases
 
 The user gave three concrete requirements; this model satisfies all of them.
+
+> **Taxonomy is code-owned (Decision 5).** Categories, slugs, parents, and aliases are defined
+> in a **committed seed file** in the repo (e.g. `lib/db-map/scripts/ingest/taxonomy.ts` →
+> seeded into the tables below) and edited **only by the developer in source**, because they
+> are tightly coupled to the generative-AI prompts and matching code. There is **no in-app or
+> admin-UI editing**. The tables below are the runtime projection of that seed; changing the
+> taxonomy means editing the seed file and re-running the seed migration in a PR.
 
 ### Schema
 
@@ -565,13 +639,13 @@ this safe by construction.
   rows update (and bump `last_seen_at`); rows missing from the new pull get `is_stale = true`
   (soft delete — we keep history and don't thrash canonical IDs). **Popularity does not move**
   because it counts *distinct sources*, and this is the same source.
-- **New source, same place:** a new `source_record` matches an existing canonical POI in
-  Stage 5, links via `poi_source_records`, and `popularity` increments by one (new distinct
+- **New source, same place:** a new `source_record` matches an existing canonical POI during
+  match+merge, links via `poi_source_records`, and `popularity` increments by one (new distinct
   source). Exactly the user's definition: *popularity = how many sources it appears in*,
   un-normalized, used only to sort search results.
-- **Re-merge after algorithm/threshold improvements:** because raw rows are intact, re-run
-  Stages 5–6 to rebuild canonical POIs without re-fetching anything. `match_overrides` keep
-  human corrections sticky across re-runs.
+- **Re-merge after algorithm/threshold/prompt improvements:** because raw rows are intact,
+  re-run match+merge to rebuild canonical POIs without re-fetching anything. `match_overrides`
+  keep developer corrections sticky across re-runs.
 - **Scheduling (later):** wrap `ingest:run` in a cron/worker (Railway scheduled job or GitHub
   Action) per source on its own cadence. Incremental `content_hash` checks keep repeat runs
   cheap.
@@ -589,22 +663,23 @@ if it grows). Proposed `package.json` scripts (mirroring existing `db:import:*` 
 | `ingest:normalize [--source S]` | Clean names/coords/address, map categories |
 | `ingest:geocode [--limit N]` | Fill missing coords via LocationIQ + cache |
 | `ingest:embed` | Compute embeddings for changed rows |
-| `ingest:match [--dry-run] [--auto-threshold] [--review-band]` | Conflation → decisions |
-| `ingest:merge` | Build/refresh canonical `pois` from clusters |
+| `ingest:match [--dry-run] [--auto-threshold] [--limit N] [--resume] [--no-llm]` | Per-record conflation **and** canonical rebuild (Stage 5+6); LLM auto-decides the gray zone |
 | `ingest:report` | Reconciliation + QA stats |
-| `ingest:run <source> <file>` | Orchestrate all of the above |
-| `ingest:review` | List/resolve the gray-zone review queue (CLI; later a tiny admin page) |
-| `ingest:override <a> <b> same|different` | Write a `match_overrides` rule |
+| `ingest:run <source> <file>` | Orchestrate all of the above for one category × source chunk |
+| `ingest:override <a> <b> same\|different` | Developer-only: write a `match_overrides` rule (not a review queue) |
+| `ingest:taxonomy:seed` | Seed/refresh `categories` + `category_aliases` from the committed taxonomy source file |
 
 Shared building blocks to maintain:
 
 - **`extractors/`** — one file per source; a registry mapping `slug → Extractor`. Each new
   data dump = one new small adapter, nothing else.
 - **`normalize/`** — name/address/phone/coord normalizers (shared, unit-tested).
-- **`match/`** — blocking, scoring, thresholds, union-find clustering, LLM adjudicator,
-  golden-set evaluator.
-- **`merge/`** — field-precedence resolver + LLM description aggregator.
+- **`match/`** — per-record loop: blocking, scoring, thresholds, strong-ID shortcut,
+  union-find clustering, the **binary LLM adjudicator**, and the golden-set evaluator.
+- **`merge/`** — field-precedence resolver + **conditional** description aggregator (verbatim
+  for single-source; LLM fusion only when multiple sources disagree — Decision 4).
 - **`geocode/`** — pluggable provider client + cache.
+- **`taxonomy.ts`** — the committed, code-owned category/alias seed (Decision 5).
 - **Migrate the existing skill/scripts:** `db:import:json` / `db:import:kml` become thin
   adapters that write into **`source_records`** (source `slug` from a flag) instead of
   straight into `pois`. Update `.cursor/skills/import-pois/SKILL.md` and
@@ -648,9 +723,10 @@ Testing utilities (so we can trust the pipeline):
   `has_electric`, `has_sewer`, `max_rig_length_ft`). Don't create a POI per campsite.
 - **OSM as location-only:** the dump notes OSM hookup tags are sparse — treat OSM as
   coordinate truth and enrich hookups from The Dyrt/RIDB/uscampgrounds.
-- **Licensing gate:** The Dyrt is a proprietary scrape → set `display_allowed = false`; use
-  it to **boost popularity and fill missing hookup flags**, but never publish it as the
-  visible source. OSM (ODbL, attribution) and RIDB (US gov, public domain) are display-OK.
+- **Licensing (deferred — Decision 1):** all four sources, including the proprietary The Dyrt
+  scrape, are **display-eligible** in the POC and their content can be published verbatim. We
+  record each source's `license`/`attribution` as metadata to revisit per source later, but
+  nothing is gated now.
 - **Categories:** `tourism=caravan_site` / `caravans=yes` / `rv_hookup` → `rv`; tent-only →
   `tent`; all under `campground` parent. "Caravan" is just an alias for the `rv` slug.
 - **Staleness:** uscampgrounds.info is 2014 data — ingest as seed, let newer sources override
@@ -663,30 +739,35 @@ Testing utilities (so we can trust the pipeline):
 
 Beyond the explicit requirements, decide these up front so we don't repaint later:
 
-1. **Licensing / attribution per source** (`sources.license`, `attribution`,
-   `display_allowed`). Some dumps (The Dyrt, possibly BGCI) are ToS-restricted — we must be
-   able to use them for dedup/enrichment without publishing them. This is a legal must-have,
-   not a nice-to-have.
-2. **PostGIS adoption + dropping `UNIQUE(lng,lat)`** — required for blocking and for allowing
+1. **Licensing — recorded, not enforced (Decision 1).** Keep `sources.license` /
+   `attribution` as metadata to revisit later *per category, per source*, but do **not** gate
+   ingestion or display in the POC. Capturing the metadata now is cheap and avoids a re-scrape
+   when we do the legal pass.
+2. **Long-running, resumable processing (Decision 2)** — heavy stages are checkpointed
+   per-record loops, not all-at-once batches; ingestion is chunked per category × source. See
+   the [execution model](#execution-model-long-running--resumable).
+3. **PostGIS adoption + dropping `UNIQUE(lng,lat)`** — required for blocking and for allowing
    genuinely-near distinct places.
-3. **Flexible `attributes jsonb`** + optional per-category JSON-schema validation — so each
+4. **Flexible `attributes jsonb`** + optional per-category JSON-schema validation — so each
    new category's fields don't require a migration.
-4. **Reversibility & overrides** (`match_overrides`, `match_decisions`) — the AI *will* make
-   mistakes; we need to correct them stickily and explain merges.
-5. **Golden-set evaluation** — quantify matcher precision/recall before trusting it on 284k
-   rows.
-6. **Geocode cost/rate control** (`geocode_cache`, provider abstraction) — per the
+5. **Reversibility & overrides** (`match_overrides`, `match_decisions`) — the AI *will* make
+   mistakes; since there's no human review (Decision 3), we need to correct them in code
+   stickily and explain every merge.
+6. **Golden-set evaluation — the primary quality gate** — quantify matcher precision/recall
+   before trusting the LLM-auto-decide pipeline on 284k rows; re-check on every threshold/prompt
+   change.
+7. **Geocode cost/rate control** (`geocode_cache`, provider abstraction) — per the
    `location-api.md` research; start LocationIQ free tier, keep a self-host-Nominatim path.
-7. **Data-quality QA gates** — reject/flag coords in the ocean, country-vs-coordinate
+8. **Data-quality QA gates** — reject/flag coords in the ocean, country-vs-coordinate
    mismatches, obviously swapped lat/lng, empty names.
-8. **Photos & media rights** — today `photo_url` hotlinks; decide on storage (R2/Supabase) and
-   per-source image rights before bulk-importing images.
-9. **Observability** — a `ingest_runs` metrics row per execution (counts, durations, failure
-   rates) for dashboards and regression alerts.
-10. **Coordinate precision/privacy** — round published coords to ~6 dp.
-11. **Canonical-ID stability** — never churn `pois.id` on re-merge (the app/users may
+9. **Photos & media** — today `photo_url` hotlinks; decide on storage (R2/Supabase) later
+   (media rights ride along with the deferred licensing pass — Decision 1).
+10. **Observability** — an `ingest_runs` metrics row per execution (counts, durations, failure
+    rates) for dashboards and regression alerts.
+11. **Coordinate precision/privacy** — round published coords to ~6 dp.
+12. **Canonical-ID stability** — never churn `pois.id` on re-merge (the app/users may
     reference it); update in place.
-12. **Scale path** — indexes above handle low millions; revisit partitioning/tiling beyond
+13. **Scale path** — indexes above handle low millions; revisit partitioning/tiling beyond
     that.
 
 ---
@@ -706,34 +787,29 @@ Each phase is independently shippable and leaves the app working.
 - **Phase 2 — Normalize + categorize.** Normalizers, `category_aliases` seed for gardens &
   campgrounds, unmapped-category report.
 - **Phase 3 — Geocode.** LocationIQ client + `geocode_cache`; fill coordinate gaps.
-- **Phase 4 — Embed + match.** pgvector embeddings, blocking, scoring, thresholds, strong-ID
-  shortcut, union-find, `match_decisions`, golden-set harness.
-- **Phase 5 — Merge + publish.** Field precedence, LLM description aggregation, popularity,
-  `poi_categories`, publish gating, `ingest:report`.
-- **Phase 6 — App read path.** Update `listPoisGeoJson` / detail / categories endpoints for
+- **Phase 4 — Embed + match/merge.** pgvector embeddings; the **per-record, resumable**
+  match+merge loop: blocking, scoring, thresholds, strong-ID shortcut, **binary LLM
+  adjudicator**, union-find, per-record canonical rebuild, field precedence, conditional
+  (verbatim-vs-LLM) description, popularity, `poi_categories`, `match_decisions`, and the
+  golden-set harness. Publish gate = coords + category only (no licensing/review gate).
+- **Phase 5 — App read path.** Update `listPoisGeoJson` / detail / categories endpoints for
   the new category model + popularity sort; category expansion; keep the GeoJSON shape stable.
-- **Phase 7 — Review tooling + overrides.** Gray-zone queue CLI (then minimal admin UI),
-  `ingest:override`.
-- **Phase 8 — Automation.** `ingest:run` orchestrator, scheduling, `ingest_runs` metrics,
-  retire direct `db:import:*`-to-`pois`; update skill + docs.
+- **Phase 6 — Automation & ops.** `ingest:run` orchestrator with `--resume`/`--limit`,
+  scheduling, `ingest_runs` metrics, `ingest:override` for corrections, retire direct
+  `db:import:*`-to-`pois`; update skill + docs.
 
 ---
 
-## 13. Open product questions
+## 13. Product decisions (resolved)
 
-Best-judgement defaults are chosen above; these are genuine product calls worth your
-confirmation (not blockers):
+These were open questions in the first draft; the product owner has now answered them. They
+are restated here (and drive §0) so the document is self-contained.
 
-1. **Display vs. enrichment licensing:** OK to treat proprietary scrapes (e.g. The Dyrt) as
-   *enrichment/popularity only* and never display them? (Assumed yes.)
-2. **Global from day one?** The dumps are global; matcher radii and geocoding are tuned for
-   worldwide coverage. Confirm we're not US-first.
-3. **Human review appetite:** how big a gray-zone review queue is acceptable vs. letting the
-   LLM auto-decide more aggressively (precision vs. recall trade-off)?
-4. **LLM-written descriptions:** OK to publish AI-aggregated description prose (with source
-   attribution retained), or keep verbatim source text only?
-5. **Category taxonomy ownership:** should the canonical taxonomy (slugs, parents) be a
-   committed seed file in the repo (versioned, PR-reviewed) — recommended — or editable live
-   in an admin UI?
-```
+| # | Question | Decision |
+|---|---|---|
+| 1 | Licensing — gate display on it? | **No.** Ignore licensing for the POC; use the best data; publish source content verbatim. Store `license`/`attribution` as metadata to revisit later *per category, per source*. No "enrichment-only" sources. |
+| 2 | Global from day one? | **Yes, but chunked.** Worldwide coverage, ingested one **category × source** at a time. Scripts must be **long-running, resumable, one-record-at-a-time** processes. |
+| 3 | Human review appetite? | **None.** The LLM **always auto-decides** the gray zone (forced binary). No review queue/UI. Optional developer-only `match_overrides` for after-the-fact corrections in code. |
+| 4 | AI-written descriptions? | **Verbatim first.** One source → publish its text as-is. Multiple sources with differing content → LLM aggregates. Never rewrite good single-source prose. |
+| 5 | Category taxonomy ownership? | **Code-owned.** Slugs/parents/aliases live in a committed seed file edited only by the developer (coupled to the AI prompts/matching code). No in-app/admin editing. |
 
