@@ -28,6 +28,7 @@ throughout as the worked examples.
 11. [Things we should plan for now](#11-things-we-should-plan-for-now)
 12. [Phased rollout](#12-phased-rollout)
 13. [Product decisions (resolved)](#13-product-decisions-resolved)
+14. [Implementation risks & refinements to watch](#14-implementation-risks--refinements-to-watch)
 
 ---
 
@@ -174,10 +175,13 @@ ignore distance" problems. Cheap deterministic signals decide the easy ~90%; the
 adjudicates the expensive ~10% and is **forced to a binary same/new answer** so the pipeline
 never blocks on a human.
 
-**Strong identifiers short-circuit everything.** If two records share a Wikidata QID, an OSM
-`(type,id)`, the same website domain, or the same phone number, they are the same place by
-definition — merge immediately, skip scoring. The dumps are full of these
-(`wikidata`/`wikipedia` cross-refs in OSM, `wikidata_id`, BGCI ids, etc.).
+**Definitive identifiers short-circuit the fuzzy work.** If two records share a *globally
+unique* id — a Wikidata QID or an OSM `(type,id)` — they are the same entity by definition:
+merge immediately, skip scoring. The dumps are full of these (`wikidata`/`wikipedia` cross-refs
+in OSM, `wikidata_id`, BGCI ids, etc.). **Website domain and phone are strong _signals_, not
+definitive:** `koa.com` is shared by hundreds of KOAs and `nps.gov` by every national park, so
+they add weight during scoring (§6) but must never trigger an automatic merge on their own
+(see the chain/portal guard in §6, Steps B & D).
 
 ---
 
@@ -334,6 +338,11 @@ CREATE INDEX research_pois_status_idx ON research_pois (match_status);
 The `UNIQUE (source_id, source_record_id)` constraint is what makes re-ingestion safe: the
 same record from the same source always lands on the same row (upsert), so nothing
 duplicates and popularity never double-counts.
+
+> **The HNSW embedding index is optional.** Matching blocks by geography first (§6), so
+> embedding cosine is only ever computed against the handful of nearby candidates — not the
+> whole table. Keep the index only if we later add pure-vector search; otherwise it is pure
+> write-cost.
 
 ### 4.3 `canonical_pois` — the canonical / validated layer (revised)
 
@@ -599,10 +608,14 @@ For each `source_record` not yet confidently matched:
 **Step A — Overrides first.** If a `research_match_overrides` rule touches this record, obey it
 absolutely (force_same → that cluster; force_different → never merge those).
 
-**Step B — Strong-ID match.** If the record shares any strong identifier with an existing
-canonical POI or another record — Wikidata QID, OSM `(type,id)`, normalized
-`website_domain`, or `phone` — merge into that cluster immediately. `method = 'strong_id'`,
-done. (Distance is irrelevant here; identity is proven.)
+**Step B — Definitive-ID match.** If the record shares a *globally unique* id with an existing
+canonical POI — a Wikidata QID or an OSM `(type,id)` — merge into that cluster immediately.
+`method = 'strong_id'`, done (distance irrelevant; identity is proven). **Website domain and
+phone are deliberately _not_ used as definitive keys here:** they are shared by chains,
+reservation call centers, and government/social portals (`koa.com`, `recreation.gov`,
+`facebook.com`), so treating them as definitive would collapse every KOA — or every national
+park — into one POI. They instead feed Step D as weighted signals, and only when the
+domain/phone is **not** on a maintained denylist of known multi-location operators.
 
 **Step C — Spatial blocking.** Otherwise, fetch candidate canonical POIs within a
 category-tuned radius using PostGIS:
@@ -627,6 +640,7 @@ candidates are ever scored.
 | Embedding cosine | `content_embedding <=> candidate` | medium |
 | Distance decay | `1 - dist/radius` | medium |
 | City/region match | exact city or region equality | small boost |
+| Website / phone | matching `website_domain` or `phone`, **excluding** denylisted chains/portals | medium boost |
 | Soft-ID partial | same Wikipedia title, overlapping address tokens | small boost |
 
 `score = Σ wᵢ·sᵢ`, normalized to 0–1.
@@ -921,4 +935,61 @@ are restated here (and drive §0) so the document is self-contained.
 | 3 | Human review appetite? | **None.** The LLM **always auto-decides** the gray zone (forced binary). No review queue/UI. Optional developer-only `research_match_overrides` for after-the-fact corrections in code. |
 | 4 | AI-written descriptions? | **Verbatim first.** One source → publish its text as-is. Multiple sources with differing content → LLM aggregates. Never rewrite good single-source prose. |
 | 5 | Category taxonomy ownership? | **Code-owned.** Slugs/parents/aliases live in a committed seed file edited only by the developer (coupled to the AI prompts/matching code). No in-app/admin editing. |
+
+---
+
+## 14. Implementation risks & refinements to watch
+
+A skeptical-engineer pass over the design. None of these change the architecture — they sharpen
+it — but each is a trap that would otherwise surface mid-build or in production. Capturing them
+now so they're not rediscovered the hard way.
+
+1. **Incremental matching is order-dependent.** Matching one record at a time against
+   *already-merged* canonical POIs can produce different clusters depending on ingestion order,
+   and can leave two canonical POIs un-merged because neither existed when the other was
+   created. Mitigation: (a) a periodic **full re-cluster** pass (safe — raw rows are intact),
+   and (b) a **canonical-vs-canonical merge** check after each chunk that looks for near-duplicate
+   canonical rows.
+
+2. **Not every source has a stable record id.** `UNIQUE(source_id, source_record_id)` is the
+   idempotency anchor, but Wikipedia-table / Gardenology rows have no natural id. The extractor
+   must **synthesize a deterministic id** (e.g. a hash of source + normalized name + locality)
+   so re-pulls land on the same row instead of duplicating inside the research layer.
+
+3. **Website/phone are not safe merge keys** (already corrected in §6). Only Wikidata/OSM ids
+   are definitive; domain/phone need a chain/portal denylist and act only as scoring signals.
+
+4. **Attribute vocabulary needs aliasing too.** Sources name the same attribute differently
+   (`electric_hookups` vs `Electricity Hookup` vs `E`). Define a **canonical attribute key set
+   per category** in the code-owned taxonomy and map source attrs → canonical keys during
+   normalize — exactly like category aliases — or the `attributes` jsonb merge becomes an
+   inconsistent grab-bag.
+
+5. **Garbage-collect orphaned canonicals.** Re-clustering or an override can leave a
+   `canonical_pois` row with zero linked `research_pois`. Sweep these to `status='hidden'` (or
+   delete) so the map never shows an empty merge.
+
+6. **Geocode precision should gate match confidence.** A city/region-centroid geocode is not a
+   real location. When a candidate's coordinates came from a low-`precision` geocode, the
+   matcher should widen the radius / lower confidence / refuse auto-merge, so we never merge two
+   places onto the same fuzzy centroid.
+
+7. **Stale-row policy.** Decide whether `is_stale` rows still contribute fields/popularity.
+   Recommended: keep contributing for a grace period, then stop counting a source that has
+   dropped a place for N consecutive runs — prevents both flapping and zombie data.
+
+8. **Single-writer matching (concurrency).** The "find-nearby-or-create" step races if
+   parallelized — two workers could create two canonical POIs for one place. Keep matching
+   single-writer (per region) or use advisory locks / a unique guard before scaling out.
+
+9. **Embedding model is pinned by the column type.** `vector(384)` hard-codes the model's
+   dimension; switching models means a migration + full re-embed. Record the model name/version
+   in config and treat a model change as a deliberate, planned re-embed.
+
+10. **Keep `geom` in lockstep with `lat`/`lng`.** Simplest is a generated column
+    (`GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(lng,lat),4326)::geography) STORED`) so the
+    spatial column can never drift from the raw coordinates.
+
+11. **Confirm pgvector on the host.** Same caveat as PostGIS — verify the Railway Postgres
+    image ships the `vector` extension (or switch images) before Phase 4.
 
