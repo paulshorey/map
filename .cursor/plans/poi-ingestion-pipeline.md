@@ -72,7 +72,9 @@ rest of the plan reflects them; this section is the single place to read them qu
 Current state (verified in the repo):
 
 - **One flat table** `pois` (`lib/db-map/migrations/202605241200__baseline.sql`): `name`,
-  `category` (a free-text string), `lng`, `lat`, plus a few optional text columns.
+  `category` (a free-text string), `lng`, `lat`, plus a few optional text columns. (This table
+  is renamed to `pois_canonical` in §4.3; a new `pois_research` staging table is added for raw
+  source data.)
 - **Category is a single string column** with a btree index — no way to put one place in
   multiple categories, no way to rename a category without rewriting every row, no
   synonyms.
@@ -103,24 +105,31 @@ popularity score" — and that is safe to re-run forever.
 This is the single most important decision, and it matches the user's instinct exactly.
 
 ```
-                 EXTRACT          NORMALIZE / GEOCODE        MATCH / MERGE         PUBLISH
-  raw files  ─────────────▶  source_records  ───────────▶  (conflation)  ─────▶   pois
- (CSV/JSON/                  (one row per source           clustering of      (one row per real
-  JSONL/KML)                  record, kept forever)         duplicates          place; the only
-                                                                                table the app reads)
+                 EXTRACT          NORMALIZE / GEOCODE        MATCH / MERGE          PUBLISH
+  raw files  ───────────▶  pois_research  ───────────▶  (conflation)  ───────▶  pois_canonical
+ (CSV/JSON/                (one row per source           clustering of          (one row per real
+  JSONL/KML)               record, kept forever)         duplicates              place; the only
+                                                                                  table the app reads)
 ```
 
-- **Raw / research layer — `source_records`**: one row per record **per source**, kept
+- **Raw / research layer — `pois_research`**: one row per record **per source**, kept
   forever, never shown on the map. This is the data-science workspace where we compare,
   normalize, and de-duplicate. Re-ingesting a source updates these rows in place (keyed by
   the source's own id), so the same source never inflates anything.
-- **Canonical / validated layer — `pois`**: one row per **real place**, built by merging a
-  cluster of `source_records`. This is the *only* table the map API reads. It carries the
-  merged/best attributes, the multi-category memberships, and the popularity score.
+- **Canonical / validated layer — `pois_canonical`**: one row per **real place**, built by
+  merging a cluster of `pois_research` rows. This is the *only* table the map API reads. It
+  carries the merged/best attributes, the multi-category memberships, the popularity score,
+  and the per-field provenance (which source each published field came from).
 
-A link table (`poi_source_records`) records exactly which raw records compose each canonical
-POI. Everything downstream — popularity, attribution, "where did this name come from",
-re-merging after a fix — derives from that link.
+**Source attribution runs through both layers (see [§4.4](#44-attribution--provenance)):**
+
+- Every `pois_research` row is attributed to exactly one source via `source_id`
+  (+ `source_record_id` = the source's own id for that record).
+- Each `pois_research` row points at its merged place via the `canonical_poi_id` foreign key —
+  so the full set of sources behind any canonical POI is a single join, popularity is a
+  `COUNT(DISTINCT source_id)` over that set, and `pois_canonical.field_provenance` records
+  *which* source supplied each individual published field. That last part is what the future
+  per-source licensing review will need to edit/omit content source by source.
 
 Why two layers (vs. trying to dedupe in place):
 
@@ -214,12 +223,16 @@ CREATE TABLE sources (
 
 `trust` orders field precedence during merge (government/official > Wikidata > OSM > scrape).
 
-### 4.2 `source_records` — the raw research layer
+### 4.2 `pois_research` — the raw research layer
+
+> Renamed from the working name `source_records`. One row per **(source, record)**; this is
+> where source attribution begins — `source_id` ties every research row to exactly one entry
+> in `sources`, and `source_record_id` preserves that source's own id for the record.
 
 ```sql
-CREATE TABLE source_records (
+CREATE TABLE pois_research (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  source_id       uuid NOT NULL REFERENCES sources(id),
+  source_id       uuid NOT NULL REFERENCES sources(id),  -- ← attribution: which source this row came from
   source_record_id text NOT NULL,            -- the source's OWN id (osm_id, wikidata_id, bgci_id, dyrt id)
   ingest_category text,                       -- which dump/run this came from, e.g. 'botanical_garden'
 
@@ -247,7 +260,7 @@ CREATE TABLE source_records (
   content_embedding vector(384),              -- name + locality + category embedding
   content_hash    text,                       -- hash of normalized fields; skip work if unchanged
 
-  canonical_poi_id uuid REFERENCES pois(id) ON DELETE SET NULL, -- match result
+  canonical_poi_id uuid REFERENCES pois_canonical(id) ON DELETE SET NULL, -- ← the match result / attribution link
   match_status    text NOT NULL DEFAULT 'pending', -- pending|matched|new (no 'review' — Decision 3)
   match_score     real,
   match_method    text,                       -- 'strong_id'|'auto'|'llm'|'override'|'new'
@@ -259,21 +272,26 @@ CREATE TABLE source_records (
   UNIQUE (source_id, source_record_id)        -- ← idempotency anchor
 );
 
-CREATE INDEX source_records_geom_gix   ON source_records USING gist (geom);
-CREATE INDEX source_records_name_trgm  ON source_records USING gin (name_normalized gin_trgm_ops);
-CREATE INDEX source_records_embed_hnsw ON source_records USING hnsw (content_embedding vector_cosine_ops);
-CREATE INDEX source_records_canon_idx  ON source_records (canonical_poi_id);
-CREATE INDEX source_records_status_idx ON source_records (match_status);
+CREATE INDEX pois_research_geom_gix   ON pois_research USING gist (geom);
+CREATE INDEX pois_research_name_trgm  ON pois_research USING gin (name_normalized gin_trgm_ops);
+CREATE INDEX pois_research_embed_hnsw ON pois_research USING hnsw (content_embedding vector_cosine_ops);
+CREATE INDEX pois_research_canon_idx  ON pois_research (canonical_poi_id); -- ← fast "all sources for this POI"
+CREATE INDEX pois_research_status_idx ON pois_research (match_status);
 ```
 
 The `UNIQUE (source_id, source_record_id)` constraint is what makes re-ingestion safe: the
 same record from the same source always lands on the same row (upsert), so nothing
 duplicates and popularity never double-counts.
 
-### 4.3 `pois` — the canonical / validated layer (revised)
+### 4.3 `pois_canonical` — the canonical / validated layer (revised)
+
+> Renamed from the working name `pois`. Migration path: `ALTER TABLE pois RENAME TO
+> pois_canonical`, then add the new columns below. (The existing rows are also seeded into
+> `pois_research` under a `manual`/`legacy` source so today's data keeps its attribution — see
+> Phase 0.)
 
 ```sql
-CREATE TABLE pois (
+CREATE TABLE pois_canonical (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name          text NOT NULL,
   description   text,
@@ -286,14 +304,15 @@ CREATE TABLE pois (
   lng           double precision NOT NULL,
   geom          geography(Point, 4326) NOT NULL,
   attributes    jsonb NOT NULL DEFAULT '{}', -- category-specific structured fields (see below)
-  popularity    integer NOT NULL DEFAULT 1,  -- COUNT(DISTINCT source_id) among linked records
+  field_provenance jsonb NOT NULL DEFAULT '{}', -- per-field source attribution (see §4.4)
+  popularity    integer NOT NULL DEFAULT 1,  -- COUNT(DISTINCT source_id) over pois_research for this POI
   status        text NOT NULL DEFAULT 'published', -- 'published' | 'draft' | 'hidden'
   created_at    timestamptz NOT NULL DEFAULT now(),
   updated_at    timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX pois_geom_gix     ON pois USING gist (geom);
-CREATE INDEX pois_name_trgm    ON pois USING gin ((lower(name)) gin_trgm_ops);
+CREATE INDEX pois_canonical_geom_gix  ON pois_canonical USING gist (geom);
+CREATE INDEX pois_canonical_name_trgm ON pois_canonical USING gin ((lower(name)) gin_trgm_ops);
 ```
 
 > **Drop `UNIQUE (lng, lat)`.** Distinct real places can legitimately be a few meters apart
@@ -302,8 +321,8 @@ CREATE INDEX pois_name_trgm    ON pois USING gin ((lower(name)) gin_trgm_ops);
 > the matching stage, not a DB constraint. Migrate `insertPois`'s `ON CONFLICT (lng,lat)`
 > path accordingly (legacy direct-import becomes a staging write — see §9).
 
-> **Category leaves the `pois` table** entirely (see §7). The `pois.category` string column
-> is replaced by the `poi_categories` join.
+> **Category leaves the table** entirely (see §7). The old `pois.category` string column is
+> replaced by the `poi_categories` join.
 
 **Why `attributes jsonb` instead of more columns:** gardens carry `area_ha`,
 `accreditation_level`, `visitors_annual`; campgrounds carry `electric`, `sewer`,
@@ -312,23 +331,56 @@ category is unsustainable. Keep **universal** fields typed (name/description/web
 address/hours/photo) and put **category-specific** fields in `attributes` (optionally
 validated per-category by a JSON schema we keep in `lib/db-map/contracts/`).
 
-### 4.4 `poi_source_records` — link / provenance
+### 4.4 Attribution & provenance
+
+Source attribution is a first-class concern (it drives popularity, the displayed "data from…"
+credit, and the future per-source licensing review). It works at two levels and needs **no
+extra link table** — the `pois_research.canonical_poi_id` foreign key already records exactly
+which raw rows compose each canonical POI.
+
+**Set-level attribution (which sources contributed at all).** A single join answers it:
 
 ```sql
-CREATE TABLE poi_source_records (
-  poi_id           uuid NOT NULL REFERENCES pois(id) ON DELETE CASCADE,
-  source_record_id uuid NOT NULL REFERENCES source_records(id) ON DELETE CASCADE,
-  PRIMARY KEY (poi_id, source_record_id)
-);
+-- every source behind a canonical POI, and the popularity count
+SELECT s.slug, s.name, s.license, s.attribution
+FROM pois_research r
+JOIN sources s ON s.id = r.source_id
+WHERE r.canonical_poi_id = $poi_id
+GROUP BY s.id;
+
+-- popularity (recomputed on every merge; same source twice ≠ +1)
+UPDATE pois_canonical p
+SET popularity = (
+  SELECT COUNT(DISTINCT r.source_id)
+  FROM pois_research r WHERE r.canonical_poi_id = p.id
+)
+WHERE p.id = $poi_id;
 ```
 
-`popularity = COUNT(DISTINCT sr.source_id)` over the linked records — recomputed on every
-merge. Appearing again in the *same* source does not change it; appearing in a *new* source
-increments it.
+**Field-level attribution (which source supplied each published value).** Stored on
+`pois_canonical.field_provenance` as JSON mapping each merged field to the winning source and
+the exact research row it came from:
+
+```jsonc
+{
+  "name":        { "source": "wikidata", "research_id": "…" },
+  "description": { "source": "bgci",     "research_id": "…" },
+  "website":     { "source": "osm",      "research_id": "…" },
+  "coordinates": { "source": "ridb",     "research_id": "…" },
+  "hours":       { "source": "osm",      "research_id": "…" }
+}
+```
+
+This is what makes the deferred licensing pass tractable: to review/edit/omit content from one
+source, query `field_provenance` for that source's slug (or `pois_research.source_id`) and you
+get every canonical field — and every raw row — that depends on it, without re-running the
+pipeline. The app's POI-detail read path can also use it (plus `sources.attribution`) to render
+the correct credits.
 
 ### 4.5 Categories (see §7 for the model)
 
-`categories`, `category_aliases`, `poi_categories`.
+`categories`, `category_aliases`, `poi_categories` (the last links `pois_canonical` ↔
+`categories`).
 
 ### 4.6 Audit & override tables (reproducibility + correcting AI mistakes)
 
@@ -336,8 +388,8 @@ increments it.
 -- every match decision, so we can tune thresholds and explain merges
 CREATE TABLE match_decisions (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  source_record_id uuid NOT NULL REFERENCES source_records(id) ON DELETE CASCADE,
-  candidate_poi_id uuid REFERENCES pois(id) ON DELETE SET NULL,
+  research_id   uuid NOT NULL REFERENCES pois_research(id) ON DELETE CASCADE,
+  candidate_poi_id uuid REFERENCES pois_canonical(id) ON DELETE SET NULL,
   score         real,
   signals       jsonb,        -- {name_sim, distance_m, embed_cos, shared_ids:[...]}
   decision      text NOT NULL,-- 'merge' | 'new'  (LLM is forced binary — Decision 3)
@@ -349,8 +401,8 @@ CREATE TABLE match_decisions (
 -- OPTIONAL developer-only overrides the algorithm must ALWAYS respect (not a review queue)
 CREATE TABLE match_overrides (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  record_a      uuid NOT NULL REFERENCES source_records(id) ON DELETE CASCADE,
-  record_b      uuid REFERENCES source_records(id) ON DELETE CASCADE,
+  record_a      uuid NOT NULL REFERENCES pois_research(id) ON DELETE CASCADE,
+  record_b      uuid REFERENCES pois_research(id) ON DELETE CASCADE,
   rule          text NOT NULL,  -- 'force_same' | 'force_different'
   note          text,
   created_at    timestamptz NOT NULL DEFAULT now()
@@ -385,7 +437,7 @@ of them; a re-pull of an existing source flows through the same steps and self-h
   `wikipedia.ts`, `arbnet.ts`, `ridb.ts`, `thedyrt.ts`, `uscampgrounds.ts`).
 - **Stream-parse** large files — several inputs are 11–78 MB (`csv-parse` streaming, `ndjson`
   for JSONL). Never `JSON.parse` a 78 MB file into memory.
-- Map each record to the common `source_records` shape; keep the entire original row in
+- Map each record to the common `pois_research` shape; keep the entire original row in
   `raw` (jsonb) for later re-derivation.
 - **Upsert by `(source_id, source_record_id)`**: insert new, update `last_seen_at` +
   changed fields on existing, set `is_stale = true` for rows not present in this pull.
@@ -432,8 +484,9 @@ moves to the next record. Match and merge are fused per record so the database i
 consistent, publishable state and a run can stop/resume at any point (see
 [execution model](#execution-model-long-running--resumable)).
 
-When a record attaches to (or creates) a canonical POI, that POI is rebuilt from its linked
-`source_records`:
+When a record attaches to (or creates) a canonical POI, that POI is rebuilt from all
+`pois_research` rows that share its `canonical_poi_id`, and `field_provenance` is updated to
+record which source won each field (§4.4):
 
 - **Field precedence by source `trust`** for structured fields (coords, name, website,
   phone, hours, address). Government/official sources win coordinates; Wikidata/Wikipedia
@@ -504,7 +557,7 @@ category-tuned radius using PostGIS:
 
 ```sql
 SELECT id, name, geom, ... 
-FROM pois
+FROM pois_canonical
 WHERE ST_DWithin(geom, $rec_geom, $radius_m)
 ORDER BY geom <-> $rec_geom
 LIMIT 25;
@@ -591,7 +644,7 @@ CREATE TABLE category_aliases (
 
 -- a place can be in many categories
 CREATE TABLE poi_categories (
-  poi_id        uuid NOT NULL REFERENCES pois(id) ON DELETE CASCADE,
+  poi_id        uuid NOT NULL REFERENCES pois_canonical(id) ON DELETE CASCADE,
   category_id   uuid NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
   is_primary    boolean NOT NULL DEFAULT false,
   PRIMARY KEY (poi_id, category_id)
@@ -640,7 +693,7 @@ this safe by construction.
   (soft delete — we keep history and don't thrash canonical IDs). **Popularity does not move**
   because it counts *distinct sources*, and this is the same source.
 - **New source, same place:** a new `source_record` matches an existing canonical POI during
-  match+merge, links via `poi_source_records`, and `popularity` increments by one (new distinct
+  match+merge (its `canonical_poi_id` points at that POI), and `popularity` increments by one (new distinct
   source). Exactly the user's definition: *popularity = how many sources it appears in*,
   un-normalized, used only to sort search results.
 - **Re-merge after algorithm/threshold/prompt improvements:** because raw rows are intact,
@@ -659,7 +712,7 @@ if it grows). Proposed `package.json` scripts (mirroring existing `db:import:*` 
 
 | Command | Purpose |
 |---|---|
-| `ingest:extract <source> <file>` | Adapter → upsert `source_records` (streamed, idempotent) |
+| `ingest:extract <source> <file>` | Adapter → upsert `pois_research` (streamed, idempotent) |
 | `ingest:normalize [--source S]` | Clean names/coords/address, map categories |
 | `ingest:geocode [--limit N]` | Fill missing coords via LocationIQ + cache |
 | `ingest:embed` | Compute embeddings for changed rows |
@@ -681,14 +734,14 @@ Shared building blocks to maintain:
 - **`geocode/`** — pluggable provider client + cache.
 - **`taxonomy.ts`** — the committed, code-owned category/alias seed (Decision 5).
 - **Migrate the existing skill/scripts:** `db:import:json` / `db:import:kml` become thin
-  adapters that write into **`source_records`** (source `slug` from a flag) instead of
-  straight into `pois`. Update `.cursor/skills/import-pois/SKILL.md` and
-  `lib/db-map/IMPORTING.md` to the new staging-first flow. The old direct-to-`pois` behavior
-  is retired so we never bypass dedup again.
+  adapters that write into **`pois_research`** (source `slug` from a flag) instead of
+  straight into `pois_canonical`. Update `.cursor/skills/import-pois/SKILL.md` and
+  `lib/db-map/IMPORTING.md` to the new staging-first flow. The old direct-to-`pois_canonical`
+  behavior is retired so we never bypass dedup again.
 
 Testing utilities (so we can trust the pipeline):
 
-- Unit tests for each extractor (sample fixture rows → expected `source_records`).
+- Unit tests for each extractor (sample fixture rows → expected `pois_research`).
 - Unit tests for normalizers (swapped coords, accents, abbreviations).
 - A **golden-set** harness reporting matcher precision/recall on labeled real pairs.
 - `--dry-run` everywhere, and a `pnpm ingest:run … --dry-run` that prints the full
@@ -765,8 +818,8 @@ Beyond the explicit requirements, decide these up front so we don't repaint late
 10. **Observability** — an `ingest_runs` metrics row per execution (counts, durations, failure
     rates) for dashboards and regression alerts.
 11. **Coordinate precision/privacy** — round published coords to ~6 dp.
-12. **Canonical-ID stability** — never churn `pois.id` on re-merge (the app/users may
-    reference it); update in place.
+12. **Canonical-ID stability** — never churn `pois_canonical.id` on re-merge (the app/users
+    may reference it); update in place.
 13. **Scale path** — indexes above handle low millions; revisit partitioning/tiling beyond
     that.
 
@@ -776,14 +829,16 @@ Beyond the explicit requirements, decide these up front so we don't repaint late
 
 Each phase is independently shippable and leaves the app working.
 
-- **Phase 0 — Schema foundations.** Migrations for extensions, `sources`, `source_records`,
-  revised `pois` (+`geom`, `attributes`, `popularity`, drop `UNIQUE(lng,lat)`),
-  `poi_source_records`, categories trio, audit/override/geocode tables. Run `pnpm db:sync`,
-  commit generated artifacts. Backfill existing `pois` into a `manual`/`legacy` source so we
-  lose nothing.
+- **Phase 0 — Schema foundations.** Migrations for extensions, `sources`, `pois_research`,
+  the renamed + revised `pois_canonical` (`ALTER TABLE pois RENAME TO pois_canonical`, then
+  +`geom`, `attributes`, `field_provenance`, `popularity`, drop `UNIQUE(lng,lat)`), categories
+  trio, audit/override/geocode tables. Run `pnpm db:sync`, commit generated artifacts. Seed the
+  existing canonical rows into `pois_research` under a `manual`/`legacy` source (with
+  `canonical_poi_id` pointing back at themselves) so today's data keeps its attribution and
+  nothing is lost.
 - **Phase 1 — Extractors + staging.** Common `Extractor` interface, `sources` registry,
   `ingest:extract`, streaming parsers. Adapters for the 12 example sources. Land both example
-  dumps into `source_records` (no publishing yet).
+  dumps into `pois_research` (no publishing yet).
 - **Phase 2 — Normalize + categorize.** Normalizers, `category_aliases` seed for gardens &
   campgrounds, unmapped-category report.
 - **Phase 3 — Geocode.** LocationIQ client + `geocode_cache`; fill coordinate gaps.
@@ -796,7 +851,7 @@ Each phase is independently shippable and leaves the app working.
   the new category model + popularity sort; category expansion; keep the GeoJSON shape stable.
 - **Phase 6 — Automation & ops.** `ingest:run` orchestrator with `--resume`/`--limit`,
   scheduling, `ingest_runs` metrics, `ingest:override` for corrections, retire direct
-  `db:import:*`-to-`pois`; update skill + docs.
+  `db:import:*`-to-`pois_canonical`; update skill + docs.
 
 ---
 
