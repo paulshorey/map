@@ -212,7 +212,7 @@ pair for sources, categories, etc.
 | `research_sources` | research | data source | Registry of every source (slug, license, attribution, `trust` weight). Where raw data comes from; also the target of canonical attribution. | referenced by `research_pois.source_id`; surfaced for `canonical_pois` credits |
 | `research_pois` | research | **(source, record)** | Raw, normalized, geocoded, embedded staging rows. The de-dup workspace; kept forever. | `source_id → research_sources`; `canonical_poi_id → canonical_pois` (its match result) |
 | `research_category_aliases` | research | raw string → category | Maps messy source category strings (`caravan`, `garden:type=botanical`) to a canonical category during normalization. | `category_id → canonical_categories` |
-| `research_geocode_cache` | research | geocoded query | Cached forward-geocoding results so re-runs are free and rate-limits respected. | standalone cache |
+| `research_geocode_cache` | research | geocoded query | Cached forward-geocoding results (incl. remembered misses) so identical queries dedupe, re-runs are free, and unresolvable addresses aren't retried. | standalone cache |
 | `research_match_decisions` | research | match decision | Audit log of every merge/new decision (score, signals, LLM reason) for tuning & explainability. | `research_id → research_pois`; `candidate_poi_id → canonical_pois` |
 | `research_match_overrides` | research | corrected pair | Developer force-same / force-different rules the matcher must always obey. | references two `research_pois` rows |
 | `canonical_pois` | canonical | **real place** | The merged, best-of POIs the app shows. Carries merged fields, `attributes`, `field_provenance`, `popularity`. | parent of `canonical_poi_categories`; pointed at by `research_pois.canonical_poi_id` |
@@ -294,7 +294,7 @@ CREATE TABLE research_pois (
 
   -- normalized common fields (best-effort, nullable)
   name            text,
-  name_normalized text,                       -- lowercased, de-accented, de-noised (for trgm)
+  name_normalized text,                       -- NULL ⇒ needs normalize
   description     text,
   website         text,
   website_domain  text,                       -- normalized eTLD+1, a strong-ID signal
@@ -304,45 +304,51 @@ CREATE TABLE research_pois (
   city            text,
   region          text,                       -- state/province
   country_code    text,                       -- ISO-2
-  lat             double precision,
+  lat             double precision,           -- NULL ⇒ needs geocoding
   lng             double precision,
-  geom            geography(Point, 4326),     -- set from lat/lng (NULL until geocoded)
-  geocode_status  text NOT NULL DEFAULT 'unknown', -- 'present' | 'geocoded' | 'failed' | 'unknown'
+  geom            geography(Point,4326)
+                  GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography) STORED,
 
   raw_category    text,                       -- the source's category string, pre-mapping
   raw             jsonb NOT NULL,             -- the full original record, verbatim
   attributes      jsonb,                      -- extracted structured attrs (hookups, area_ha, ...)
 
-  content_embedding vector(384),              -- name + locality + category embedding
-  content_hash    text,                       -- hash of normalized fields; skip work if unchanged
+  content_embedding vector(384),              -- NULL ⇒ needs embed
+  content_hash    text,                       -- version of the input; if it changes, derived cols are reset to NULL
 
-  canonical_poi_id uuid REFERENCES canonical_pois(id) ON DELETE SET NULL, -- ← the match result / attribution link
-  match_status    text NOT NULL DEFAULT 'pending', -- pending|matched|new (no 'review' — Decision 3)
-  match_score     real,
-  match_method    text,                       -- 'strong_id'|'auto'|'llm'|'override'|'new'
+  canonical_poi_id uuid REFERENCES canonical_pois(id) ON DELETE SET NULL, -- NULL ⇒ needs match; else the match/attribution link
 
   first_seen_at   timestamptz NOT NULL DEFAULT now(),
   last_seen_at    timestamptz NOT NULL DEFAULT now(),
-  is_stale        boolean NOT NULL DEFAULT false,  -- vanished from latest pull
 
   UNIQUE (source_id, source_record_id)        -- ← idempotency anchor
 );
 
-CREATE INDEX research_pois_geom_gix   ON research_pois USING gist (geom);
-CREATE INDEX research_pois_name_trgm  ON research_pois USING gin (name_normalized gin_trgm_ops);
-CREATE INDEX research_pois_embed_hnsw ON research_pois USING hnsw (content_embedding vector_cosine_ops);
-CREATE INDEX research_pois_canon_idx  ON research_pois (canonical_poi_id); -- ← fast "all sources for this POI"
-CREATE INDEX research_pois_status_idx ON research_pois (match_status);
+CREATE INDEX research_pois_geom_gix  ON research_pois USING gist (geom);
+CREATE INDEX research_pois_name_trgm ON research_pois USING gin (name_normalized gin_trgm_ops);
+CREATE INDEX research_pois_canon_idx ON research_pois (canonical_poi_id); -- "all sources for this POI"
+-- "needs work" = a derived column IS NULL; partial indexes keep those resumable scans cheap:
+CREATE INDEX research_pois_todo_normalize ON research_pois (id) WHERE name_normalized   IS NULL;
+CREATE INDEX research_pois_todo_geocode   ON research_pois (id) WHERE lat               IS NULL;
+CREATE INDEX research_pois_todo_embed     ON research_pois (id) WHERE content_embedding IS NULL;
+CREATE INDEX research_pois_todo_match     ON research_pois (id) WHERE canonical_poi_id  IS NULL;
 ```
 
 The `UNIQUE (source_id, source_record_id)` constraint is what makes re-ingestion safe: the
 same record from the same source always lands on the same row (upsert), so nothing
 duplicates and popularity never double-counts.
 
-> **The HNSW embedding index is optional.** Matching blocks by geography first (§6), so
-> embedding cosine is only ever computed against the handful of nearby candidates — not the
-> whole table. Keep the index only if we later add pure-vector search; otherwise it is pure
-> write-cost.
+> **No status columns — state is the NULL-ness of derived columns.** A record "needs" a stage
+> exactly when that stage's output is missing: `name_normalized IS NULL` → normalize,
+> `lat IS NULL` → geocode, `content_embedding IS NULL` → embed, `canonical_poi_id IS NULL` →
+> match. `content_hash` versions the input; when an upsert changes it, the derived columns are
+> reset to NULL so the record flows through the stages again. This removes any `geocode_status` /
+> `match_status` bookkeeping: there is no "incomplete/parked" state to track — a record is simply
+> either done (column set) or not (column NULL). Match score/method live only in the
+> `research_match_decisions` audit (§4.6).
+>
+> **The HNSW embedding index is omitted** — matching blocks by geography first (§6), so embedding
+> cosine is computed only against the handful of nearby candidates, never the whole table.
 
 ### 4.3 `canonical_pois` — the canonical / validated layer (revised)
 
@@ -469,10 +475,11 @@ CREATE TABLE research_match_overrides (
   created_at    timestamptz NOT NULL DEFAULT now()
 );
 
--- geocode cache (cost & rate-limit control)
+-- geocode cache (cost & rate-limit control; also remembers misses so we never re-spend
+-- budget on the same unresolvable address). A row with NULL lat/lng = a remembered miss.
 CREATE TABLE research_geocode_cache (
   query_norm    text PRIMARY KEY,  -- normalized "name, city, region, country"
-  lat           double precision,
+  lat           double precision,  -- NULL ⇒ remembered miss (query did not resolve)
   lng           double precision,
   precision     text,              -- 'rooftop' | 'city' | 'region' | 'none'
   provider      text,
@@ -500,9 +507,13 @@ of them; a re-pull of an existing source flows through the same steps and self-h
   for JSONL). Never `JSON.parse` a 78 MB file into memory.
 - Map each record to the common `research_pois` shape; keep the entire original row in
   `raw` (jsonb) for later re-derivation.
-- **Upsert by `(source_id, source_record_id)`**: insert new, update `last_seen_at` +
-  changed fields on existing, set `is_stale = true` for rows not present in this pull.
-- Compute `content_hash`; if unchanged, skip the expensive downstream work for that row.
+- **Upsert by `(source_id, source_record_id)`**: insert new rows; on existing rows update the
+  source fields and bump `last_seen_at`.
+- Compute `content_hash`. If it is **unchanged**, skip the row entirely (no downstream work). If it
+  **changed**, reset the derived columns (`name_normalized`, `lat`/`lng`, `content_embedding`,
+  `canonical_poi_id`) to NULL so the record re-flows through the stages.
+- *(Deletion detection — marking rows that vanished from a re-pull — is deferred; for the
+  "haphazard, add-more-data" POC we only ever add/update, never prune.)*
 
 ### Stage 2 — Normalize & categorize (`ingest:normalize`)
 
@@ -519,22 +530,23 @@ of them; a re-pull of an existing source flows through the same steps and self-h
 
 ### Stage 3 — Geocode the gaps (`ingest:geocode`)
 
-- For rows with no usable coordinates (e.g. ArbNet captured only name+URL; Wikipedia tables
-  give city not lat/lng), forward-geocode `"name, city, region, country"`.
-- Use **LocationIQ** (recommended in `docs/search/location-api.md`: 5,000 req/day free,
-  Nominatim-compatible, commercial-OK with attribution). Provider is pluggable.
-- **Automatic & conditional:** the API is called **only for records missing coordinates**
-  (`geocode_status='unknown'`). Records that already carry lat/lng are never sent — no flag, zero
-  spend.
-- **Cache every lookup** in `research_geocode_cache` keyed by normalized query — re-runs cost nothing,
-  and we respect rate limits.
-- **Budgeted & resumable:** geocoding is the only metered resource (LocationIQ free = 5,000/day).
-  A run is capped (`--geocode-limit`, default ~4,500); when the cap is hit, unresolved rows stay
-  `unknown` and the next run continues — so a large source is geocoded across several days.
-- **Unchanged input is skipped entirely** via each record's `content_hash` (Stage 1): re-ingesting
-  identical data does no geocoding, no embedding, no re-matching — only new/changed records work.
-- Records that can't be geocoded get `geocode_status = 'failed'` and are **parked** (not
-  matched, not published) until coordinates appear. They still count as research data.
+- **Automatic & conditional** — the step processes exactly the rows where `lat IS NULL` (e.g.
+  ArbNet captured only name+URL; Wikipedia tables give city not lat/lng). Records that already
+  carry coordinates are never touched, so there's no flag and zero spend; we assume existing
+  coordinates are correct.
+- Forward-geocode `"name, city, region, country"` via **LocationIQ** (`docs/search/location-api.md`:
+  5,000 req/day free, Nominatim-compatible, commercial-OK with attribution; pluggable provider).
+  A success sets `lat`/`lng` (so the row is no longer selected next time).
+- **Cache every lookup** in `research_geocode_cache` keyed by the normalized query — including
+  **misses** (a cached row with NULL coords means "we tried this query and it didn't resolve").
+  This dedupes identical queries across records and, crucially, stops us from re-spending budget
+  retrying the same unresolvable addresses. A record whose query is a known miss simply stays
+  coordinate-less and is never matched/published — no per-record status needed.
+- **Budgeted, and it just stops** — geocoding is the only metered resource (LocationIQ free =
+  5,000/day). `--geocode-limit` (default ~4,500) caps API calls per run; when the cap is reached
+  the step **stops**. Nothing partial is recorded — rows that weren't reached still have
+  `lat IS NULL`, so the next run simply continues with them. A large source is geocoded across as
+  many days as it takes by re-running the same command.
 
 ### Stage 4 — Embed (`ingest:embed`)
 
@@ -580,9 +592,10 @@ record which source won each field (§4.4):
 ### Orchestration
 
 `ingest:run <source> <file>` chains the stages with flags (`--dry-run`, `--auto-threshold`,
-`--no-geocode`, `--no-llm`, `--resume`, `--limit N`). Designed to be run by hand today and by
-a scheduler later (§8). Because ingestion is chunked **per category × per source**, a typical
-invocation processes one such chunk end to end.
+`--geocode-limit N` (default ~4,500), `--no-llm`, `--limit N`). The **same command works for
+every source** — geocoding fires automatically only for rows missing coordinates. Designed to be
+run by hand today and by a scheduler later (§8). Because ingestion is chunked **per category × per
+source**, a typical invocation processes one such chunk end to end.
 
 ```
 extract → normalize → geocode → embed → [ match+merge per record ] → report
@@ -595,8 +608,10 @@ extract → normalize → geocode → embed → [ match+merge per record ] → r
 Per Decision 2, the heavy stages (geocode, embed, match+merge) are built as **incremental,
 checkpointed loops**, not one-shot batch jobs:
 
-- **Work is a queue.** Each stage selects rows still needing work (`match_status='pending'`,
-  `geocode_status='unknown'`, stale `content_hash`/embedding) and processes them one by one.
+- **Work is a queue, defined by NULL-ness.** Each stage selects rows whose output column is still
+  NULL (`name_normalized IS NULL` → normalize, `lat IS NULL` → geocode, `content_embedding IS
+  NULL` → embed, `canonical_poi_id IS NULL` → match) and processes them one by one. No status
+  columns; a changed `content_hash` resets those columns so the row re-flows.
 - **Each record is its own transaction.** Block → score → decide → attach/create → recompute
   that canonical POI → commit. If the process dies, completed records are already saved and
   `pending` ones are simply picked up on the next run — no double-counting (popularity is a
@@ -762,10 +777,10 @@ Stage 2 emits any `raw_category` that has no alias, so the team continuously ext
 Data changes; we will re-run the same sources forever and add new ones. The design makes
 this safe by construction.
 
-- **Same source, re-pulled:** Stage 1 upserts by `(source_id, source_record_id)`. Existing
-  rows update (and bump `last_seen_at`); rows missing from the new pull get `is_stale = true`
-  (soft delete — we keep history and don't thrash canonical IDs). **Popularity does not move**
-  because it counts *distinct sources*, and this is the same source.
+- **Same source, re-pulled:** Stage 1 upserts by `(source_id, source_record_id)`. Existing rows
+  update (and bump `last_seen_at`); unchanged rows (same `content_hash`) are skipped entirely.
+  **Popularity does not move** because it counts *distinct sources*, and this is the same source.
+  (Detecting places *removed* from a source is deferred — we only add/update for now.)
 - **New source, same place:** a new `source_record` matches an existing canonical POI during
   match+merge (its `canonical_poi_id` points at that POI), and `popularity` increments by one (new distinct
   source). Exactly the user's definition: *popularity = how many sources it appears in*,
@@ -982,9 +997,10 @@ now so they're not rediscovered the hard way.
    matcher should widen the radius / lower confidence / refuse auto-merge, so we never merge two
    places onto the same fuzzy centroid.
 
-7. **Stale-row policy.** Decide whether `is_stale` rows still contribute fields/popularity.
-   Recommended: keep contributing for a grace period, then stop counting a source that has
-   dropped a place for N consecutive runs — prevents both flapping and zombie data.
+7. **Deletion detection is deferred (no `is_stale`).** For the POC we only add/update; a place
+   removed from a source is *not* pruned. If/when this matters, add deletion detection via
+   `last_seen_at` (e.g. stop counting a source that has dropped a place for N consecutive full
+   re-pulls) rather than re-introducing a per-row status flag.
 
 8. **Single-writer matching (concurrency).** The "find-nearby-or-create" step races if
    parallelized — two workers could create two canonical POIs for one place. Keep matching
