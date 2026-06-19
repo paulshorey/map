@@ -11,7 +11,7 @@ if [[ -z "${DB_MAP_URL:-}" ]]; then
 fi
 
 eval "$(
-  bash "${repo_root}/scripts/check-postgres-client-version.sh" \
+  bash "${repo_root}/scripts/sql-check-postgres-client-version.sh" \
     DB_MAP_URL \
     "@lib/db-map" \
     --print-env
