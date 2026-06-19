@@ -56,33 +56,57 @@ What this means concretely:
 - **A single source is fully useful on its own.** Its records become `canonical_pois` (each new
   place = popularity 1). When you add the next source, matching merges duplicates into the
   existing canonicals and bumps popularity — nothing already done is repeated.
-- **Geocoding is the only metered resource** (LocationIQ free tier = **5,000 lookups/day**).
-  Extract / normalize / embed / match all run locally with no per-day cap.
-  - Most sources **need no geocoding at all** — BGCI (~93% have coords), Wikidata, OSM, RIDB, and
-    The Dyrt already carry lat/lng. Run those with `--no-geocode`: **zero** LocationIQ spend.
-  - Only coordinate-less sources (ArbNet = name+URL; Wikipedia/Gardenology = city-level) consume
-    the budget, and only for rows not already in `research_geocode_cache`.
-  - Cap a day's spend with `--geocode-limit N` (default ≤ 4,500, safely under 5k). When the cap is
-    hit, remaining rows keep `geocode_status='unknown'` and are picked up by the next day's run —
-    no work lost (the resumable execution model, overview §5).
+- **The same command works for every source — no `--no-geocode` flag to remember.** Geocoding is
+  **automatic and conditional**: a record is sent to the geocoding API **only if it is missing
+  lat/lng**. Records that already carry coordinates (BGCI ~93%, Wikidata, OSM, RIDB, The Dyrt)
+  never enter the geocode step, so they cost **zero** LocationIQ calls — automatically, with no
+  flag. (`--no-geocode` still exists as an optional override to skip the step entirely, but you
+  don't need it for the normal flow.)
+- **Geocoding is the only metered resource** (LocationIQ free tier = **5,000 lookups/day**);
+  extract / normalize / embed / match run locally with no per-day cap. The geocode step is
+  capped by `--geocode-limit N`, which **defaults to ~4,500** (safely under 5k) so even the cap
+  is optional. When the cap is hit, the remaining coordinate-less records keep
+  `geocode_status='unknown'` and are resolved on the next run — no work lost.
 
-**Recommended low-cost, test-as-you-go loop:**
+### How re-runs skip already-done work (the hash you asked about)
+
+Re-running the *same* data must not redo anything or spend budget twice. Three mechanisms make
+this automatic — "if it's already in our database and unchanged, ignore it":
+
+1. **Per-record content hash (primary skip).** At extract, each record gets a `content_hash` over
+   its normalizable fields, stored on its `research_pois` row (keyed by
+   `(source_id, source_record_id)`). On any later run, a record whose hash is unchanged is
+   **skipped at every stage** — no re-normalize, no re-embed, no re-geocode, no re-match. Only
+   **new or changed** records do work. This is exactly your "generate a hash of the input data and
+   ignore unchanged objects" idea, and it's the main resume mechanism.
+2. **Per-record geocode state (resume the over-budget tail).** Only records with
+   `geocode_status='unknown'` (missing coords, not yet attempted) ever call the API. After the
+   daily cap is hit, the rest stay `unknown`; the next run continues from there. So a huge
+   coordinate-less source is geocoded across as many days as it takes by re-running the **same
+   command** — it never restarts from the beginning.
+3. **Geocode query cache (cross-record dedupe).** `research_geocode_cache` stores results keyed by
+   the normalized query string, so two *different* records with the same `"name, city, region,
+   country"` resolve to one API call, and cache hits never count against the daily budget.
+
+**Recommended low-cost, test-as-you-go loop — one command per source, re-runnable:**
 
 ```bash
-# Day 1 — a source that already has coordinates → no geocoding, no API spend.
+# Same command for EVERY source. Geocoding fires automatically only for records missing
+# coordinates, capped at the default daily budget (~4,500). Re-run any time: unchanged
+# records are skipped via their content hash.
 pnpm --filter @lib/db-map ingest:run bgci \
-  docs/poi/botanical_gardens_data/bgci_gardens_full.json --no-geocode
-#   → review the map, check merges, tweak taxonomy/thresholds if needed.
+  docs/poi/botanical_gardens_data/bgci_gardens_full.json
+#   → BGCI rows have coords, so this spends 0 geocode calls. Review the map, adjust, repeat.
 
-# Day 2 — a coordinate-less source → cap geocoding under the daily limit.
 pnpm --filter @lib/db-map ingest:run arbnet \
-  docs/poi/botanical_gardens_data/arbnet_morton_register.json --geocode-limit 4500
-#   → if it has >4,500 ungeocoded rows, run the SAME command again tomorrow; the cache +
-#     'unknown' status resume it exactly where it stopped, spending another ≤4,500.
+  docs/poi/botanical_gardens_data/arbnet_morton_register.json
+#   → ArbNet lacks coords. If it has >~4,500 records, the first run resolves ~4,500 and stops;
+#     run the SAME command tomorrow to resolve the next ~4,500. Already-done rows are skipped
+#     (hash + geocode_status), so no restart and no double spend. Override with --geocode-limit N.
 ```
 
 If you prefer, run the stages separately — `ingest:extract` everything now, then
-`ingest:geocode --geocode-limit 4500` and `ingest:match` in daily slices.
+`ingest:geocode` (auto-capped) and `ingest:match` in daily slices.
 
 ---
 
@@ -674,26 +698,29 @@ Map raw fields → `RawRecord`; stash source-specific extras (hookups, area_ha, 
 
 ## M6 — Geocode the gaps
 
-`ingest/geocode.ts` + `"ingest:geocode"`. Resumable loop over `research_pois` where
-`geocode_status IN ('unknown')` and coords are null but an address/name exists.
+`ingest/geocode.ts` + `"ingest:geocode"`. **Automatic and conditional** — the loop selects only
+`research_pois` rows that are **missing coordinates and not yet attempted**
+(`geocode_status='unknown'` AND `lat IS NULL`). Records that already have coordinates were set to
+`geocode_status='present'` in M5 and are never selected, so there is **no flag to remember** and
+they cost zero API calls.
 
 - Build `query_norm` = normalized `"name, city, region, country"`; check `research_geocode_cache`
   first; only call LocationIQ on a miss; write the result (lat/lng, `precision`, `provider`) back
   to the cache and the row; set `geocode_status='geocoded'` or `'failed'`.
-- Respect rate limits (throttle; `--limit N`). Low-`precision` (city/region centroid) results are
-  flagged so M8 can down-weight them (overview §14.6).
-- **Daily budget (LocationIQ free = 5,000/day).** Cap each run with `--geocode-limit N` (default
-  ≤ 4,500). Count only **cache misses** against the budget; cache hits are free. When the cap is
-  reached, stop and leave the rest as `geocode_status='unknown'` — the next run resumes exactly
-  there. So a large coordinate-less source is geocoded across several days by simply re-running
-  the same command.
-- **Coordinate-bearing sources skip this stage entirely.** After M5, rows that already had
-  coordinates are `geocode_status='present'`, so the loop never touches them and they cost zero
-  API calls. Run such sources with `--no-geocode`.
+- Respect rate limits (throttle). Low-`precision` (city/region centroid) results are flagged so M8
+  can down-weight them (overview §14.6).
+- **Daily budget (LocationIQ free = 5,000/day), default-capped.** `--geocode-limit N` **defaults
+  to ~4,500** (override to raise/lower). Only **cache misses** count against it; cache hits are
+  free. When the cap is reached, stop and leave the rest as `geocode_status='unknown'` — the next
+  run resumes exactly there. A large coordinate-less source is thus geocoded across several days
+  by re-running the **same command**, never restarting.
+- **Unchanged records are skipped before this stage even runs** — `content_hash` (M4) means a
+  re-ingest of identical data does no geocoding at all.
 
 > **Acceptance (M6):** coordinate-less rows (e.g. ArbNet) get coordinates or `geocode_status=
-> 'failed'`; `--geocode-limit` stops at the cap and a same-command re-run continues from where it
-> left off; a second pass over already-resolved rows makes **zero** new API calls (cache hits).
+> 'failed'`; rows that already had coordinates are never sent to the API (no flag needed); the
+> default `--geocode-limit` stops at the cap and a same-command re-run continues from where it
+> left off; a second pass over already-resolved or unchanged rows makes **zero** new API calls.
 
 ---
 
@@ -766,10 +793,12 @@ at-a-time** loop from overview §5 (Stage 5+6) and §6. Process `research_pois` 
 ## M9 — Orchestrate, report & migrate old tooling
 
 - `ingest/run.ts` + `"ingest:run <source> <file>"` — chains extract → normalize → geocode →
-  embed → match, with `--dry-run`, `--limit`, `--resume`, `--no-geocode`, `--geocode-limit N`,
-  `--no-llm`. One invocation = one **category × source** chunk (overview Decision 2); `--no-geocode`
-  / `--geocode-limit` keep a run inside the LocationIQ daily budget (see "Ingestion is incremental
-  and budgeted" above).
+  embed → match. **Geocoding is automatic/conditional** (only records missing coordinates call the
+  API) and **`--geocode-limit` defaults to ~4,500**, so the *same command works for every source*
+  with no flags. Optional flags: `--dry-run`, `--limit`, `--resume`, `--geocode-limit N`,
+  `--no-geocode` (skip the step entirely), `--no-llm`. One invocation = one **category × source**
+  chunk (overview Decision 2). See "Ingestion is incremental and budgeted" above for the
+  re-run/skip mechanics.
 - `ingest:report` — reconciliation stats (in, new vs updated, matched, new canonicals, LLM count,
   geocode failures, unmapped categories, popularity distribution).
 - `ingest_runs` metrics table (optional, overview §14/§11.10) — one row per run for observability.
@@ -819,9 +848,11 @@ at-a-time** loop from overview §5 (Stage 5+6) and §6. Process `research_pois` 
   contract check may churn.
 - **Streaming, always** — the campground CSV/JSON files are tens to hundreds of MB; never
   `JSON.parse`/`readFileSync` them whole (M4.1).
-- **Idempotency is the contract** — `(source_id, source_record_id)` uniqueness + recomputed
-  popularity mean every stage is safe to re-run; preserve this in every extractor (synthesize
-  stable ids where the source lacks them).
+- **Idempotency is the contract** — `(source_id, source_record_id)` uniqueness + per-record
+  `content_hash` (skip unchanged) + `geocode_status` (resume the ungeocoded tail) + recomputed
+  popularity mean every stage is safe to re-run and never restarts or double-spends. Preserve this
+  in every extractor (synthesize stable ids where the source lacks them, and compute the hash over
+  the same normalizable fields every time).
 - **Commit generated artifacts with each schema change** — after any migration: `cd lib/db-map &&
   pnpm db:sync` and commit `schema/`, `generated/` (per root `AGENTS.md`).
 - **Keep the read contract additive** — M3 deliberately avoids frontend changes; only revisit the

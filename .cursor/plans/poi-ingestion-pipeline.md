@@ -523,12 +523,16 @@ of them; a re-pull of an existing source flows through the same steps and self-h
   give city not lat/lng), forward-geocode `"name, city, region, country"`.
 - Use **LocationIQ** (recommended in `docs/search/location-api.md`: 5,000 req/day free,
   Nominatim-compatible, commercial-OK with attribution). Provider is pluggable.
+- **Automatic & conditional:** the API is called **only for records missing coordinates**
+  (`geocode_status='unknown'`). Records that already carry lat/lng are never sent — no flag, zero
+  spend.
 - **Cache every lookup** in `research_geocode_cache` keyed by normalized query — re-runs cost nothing,
   and we respect rate limits.
 - **Budgeted & resumable:** geocoding is the only metered resource (LocationIQ free = 5,000/day).
-  A run is capped (`--geocode-limit`); when the cap is hit, unresolved rows stay `unknown` and the
-  next run continues — so a large source is geocoded across several days, and coordinate-bearing
-  sources skip this stage entirely (zero spend).
+  A run is capped (`--geocode-limit`, default ~4,500); when the cap is hit, unresolved rows stay
+  `unknown` and the next run continues — so a large source is geocoded across several days.
+- **Unchanged input is skipped entirely** via each record's `content_hash` (Stage 1): re-ingesting
+  identical data does no geocoding, no embedding, no re-matching — only new/changed records work.
 - Records that can't be geocoded get `geocode_status = 'failed'` and are **parked** (not
   matched, not published) until coordinates appear. They still count as research data.
 
