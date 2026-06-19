@@ -525,6 +525,10 @@ of them; a re-pull of an existing source flows through the same steps and self-h
   Nominatim-compatible, commercial-OK with attribution). Provider is pluggable.
 - **Cache every lookup** in `research_geocode_cache` keyed by normalized query — re-runs cost nothing,
   and we respect rate limits.
+- **Budgeted & resumable:** geocoding is the only metered resource (LocationIQ free = 5,000/day).
+  A run is capped (`--geocode-limit`); when the cap is hit, unresolved rows stay `unknown` and the
+  next run continues — so a large source is geocoded across several days, and coordinate-bearing
+  sources skip this stage entirely (zero spend).
 - Records that can't be geocoded get `geocode_status = 'failed'` and are **parked** (not
   matched, not published) until coordinates appear. They still count as research data.
 

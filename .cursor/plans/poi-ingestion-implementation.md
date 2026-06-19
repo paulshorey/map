@@ -40,6 +40,52 @@
 
 ---
 
+## Ingestion is incremental and budgeted (one source at a time)
+
+**You never ingest everything at once.** The pipeline is built around the overview's Decision 2:
+the unit of work is **one source × one category**, and you can go smaller still within a source
+via `--limit`. After ingesting a *single* source you already have a usable, viewable map; each
+additional source (run on a later day) merges into and enriches what's already there. A
+comfortable cadence is therefore "one source per day → review → adjust → repeat."
+
+What this means concretely:
+
+- **Pick a category, then ingest its sources one by one.** Gardens, say: day 1 BGCI, day 2
+  Wikidata, day 3 OSM, … Each `ingest:run <source> <file>` is independent and idempotent — you do
+  **not** need all sources loaded for the plan to work.
+- **A single source is fully useful on its own.** Its records become `canonical_pois` (each new
+  place = popularity 1). When you add the next source, matching merges duplicates into the
+  existing canonicals and bumps popularity — nothing already done is repeated.
+- **Geocoding is the only metered resource** (LocationIQ free tier = **5,000 lookups/day**).
+  Extract / normalize / embed / match all run locally with no per-day cap.
+  - Most sources **need no geocoding at all** — BGCI (~93% have coords), Wikidata, OSM, RIDB, and
+    The Dyrt already carry lat/lng. Run those with `--no-geocode`: **zero** LocationIQ spend.
+  - Only coordinate-less sources (ArbNet = name+URL; Wikipedia/Gardenology = city-level) consume
+    the budget, and only for rows not already in `research_geocode_cache`.
+  - Cap a day's spend with `--geocode-limit N` (default ≤ 4,500, safely under 5k). When the cap is
+    hit, remaining rows keep `geocode_status='unknown'` and are picked up by the next day's run —
+    no work lost (the resumable execution model, overview §5).
+
+**Recommended low-cost, test-as-you-go loop:**
+
+```bash
+# Day 1 — a source that already has coordinates → no geocoding, no API spend.
+pnpm --filter @lib/db-map ingest:run bgci \
+  docs/poi/botanical_gardens_data/bgci_gardens_full.json --no-geocode
+#   → review the map, check merges, tweak taxonomy/thresholds if needed.
+
+# Day 2 — a coordinate-less source → cap geocoding under the daily limit.
+pnpm --filter @lib/db-map ingest:run arbnet \
+  docs/poi/botanical_gardens_data/arbnet_morton_register.json --geocode-limit 4500
+#   → if it has >4,500 ungeocoded rows, run the SAME command again tomorrow; the cache +
+#     'unknown' status resume it exactly where it stopped, spending another ≤4,500.
+```
+
+If you prefer, run the stages separately — `ingest:extract` everything now, then
+`ingest:geocode --geocode-limit 4500` and `ingest:match` in daily slices.
+
+---
+
 ## M0 — Prerequisites & decisions
 
 Do these before touching the schema; they determine column types and dependencies.
@@ -636,9 +682,18 @@ Map raw fields → `RawRecord`; stash source-specific extras (hookups, area_ha, 
   to the cache and the row; set `geocode_status='geocoded'` or `'failed'`.
 - Respect rate limits (throttle; `--limit N`). Low-`precision` (city/region centroid) results are
   flagged so M8 can down-weight them (overview §14.6).
+- **Daily budget (LocationIQ free = 5,000/day).** Cap each run with `--geocode-limit N` (default
+  ≤ 4,500). Count only **cache misses** against the budget; cache hits are free. When the cap is
+  reached, stop and leave the rest as `geocode_status='unknown'` — the next run resumes exactly
+  there. So a large coordinate-less source is geocoded across several days by simply re-running
+  the same command.
+- **Coordinate-bearing sources skip this stage entirely.** After M5, rows that already had
+  coordinates are `geocode_status='present'`, so the loop never touches them and they cost zero
+  API calls. Run such sources with `--no-geocode`.
 
 > **Acceptance (M6):** coordinate-less rows (e.g. ArbNet) get coordinates or `geocode_status=
-> 'failed'`; a second run makes **zero** new API calls (cache hits).
+> 'failed'`; `--geocode-limit` stops at the cap and a same-command re-run continues from where it
+> left off; a second pass over already-resolved rows makes **zero** new API calls (cache hits).
 
 ---
 
@@ -711,8 +766,10 @@ at-a-time** loop from overview §5 (Stage 5+6) and §6. Process `research_pois` 
 ## M9 — Orchestrate, report & migrate old tooling
 
 - `ingest/run.ts` + `"ingest:run <source> <file>"` — chains extract → normalize → geocode →
-  embed → match, with `--dry-run`, `--limit`, `--resume`, `--no-geocode`, `--no-llm`. One
-  invocation = one **category × source** chunk (overview Decision 2).
+  embed → match, with `--dry-run`, `--limit`, `--resume`, `--no-geocode`, `--geocode-limit N`,
+  `--no-llm`. One invocation = one **category × source** chunk (overview Decision 2); `--no-geocode`
+  / `--geocode-limit` keep a run inside the LocationIQ daily budget (see "Ingestion is incremental
+  and budgeted" above).
 - `ingest:report` — reconciliation stats (in, new vs updated, matched, new canonicals, LLM count,
   geocode failures, unmapped categories, popularity distribution).
 - `ingest_runs` metrics table (optional, overview §14/§11.10) — one row per run for observability.
