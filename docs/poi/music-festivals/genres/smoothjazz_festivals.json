@@ -1,0 +1,1424 @@
+[
+  {
+    "name": "EventSort descending",
+    "city": "City",
+    "state_region": "State/Region",
+    "country": "Country",
+    "dates": "Event Month",
+    "website": "?page=0&order=title&sort=desc",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Cancun Jazz Festival : Fall '26",
+    "city": "Cancun",
+    "state_region": "Quintana Roo",
+    "country": "Mexico",
+    "dates": "November",
+    "website": "http://www.cancunjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Cancun Jazz Festival : Spring '27",
+    "city": "Cancun",
+    "state_region": "Quintana Roo",
+    "country": "Mexico",
+    "dates": "May",
+    "website": "http://www.cancunjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "A To Jazz Festival",
+    "city": "Sofia",
+    "state_region": "",
+    "country": "Bulgaria",
+    "dates": "July",
+    "website": "http://www.atojazz.bg/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Algarve Smooth Jazz Festival",
+    "city": "Albufeira",
+    "state_region": "Algarve",
+    "country": "Portugal",
+    "dates": "May",
+    "website": "http://www.algarve.smoothjazzfestival.eu",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Aloha Jazz Festival",
+    "city": "Honolulu",
+    "state_region": "Hawaii",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://www.alohajazzfestival.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "ALW Entertainment",
+    "city": "San Antoinio",
+    "state_region": "Texas",
+    "country": "USA",
+    "dates": "Monthly",
+    "website": "http://www.alwe.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Amelia Island Jazz Festival",
+    "city": "Fernandina Beach",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "October",
+    "website": "http://ameliaislandjazzfestival.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Asbury Jazz Fest",
+    "city": "Asbury Park",
+    "state_region": "New Jersey",
+    "country": "USA",
+    "dates": "June",
+    "website": "",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Atlanta Jazz Festival",
+    "city": "Atlanta",
+    "state_region": "Georgia",
+    "country": "USA",
+    "dates": "May",
+    "website": "http://atlantafestivals.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Austin Women in Jazz Festival",
+    "city": "Austin",
+    "state_region": "Texas",
+    "country": "USA",
+    "dates": "September",
+    "website": "https://womeninjazz.org/event/festival2026/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Barcelona Int Jazz Festival",
+    "city": "Barcelona",
+    "state_region": "",
+    "country": "Spain",
+    "dates": "October",
+    "website": "http://www.jazz.barcelona/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Berks Jazz Festival",
+    "city": "Reading",
+    "state_region": "Pennsylvania",
+    "country": "USA",
+    "dates": "March",
+    "website": "http://www.berksjazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Blue Note Jazz Festival",
+    "city": "Hollywood",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "June",
+    "website": "http://www.hollywoodbowl.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Blue Note Napa",
+    "city": "Napa",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "Monthly",
+    "website": "https://www.bluenotenapa.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Blue Note Napa Summer Sessions",
+    "city": "Napa Valley",
+    "state_region": "CA",
+    "country": "USA",
+    "dates": "Summer",
+    "website": "https://tix.bluenotejazz.com/trk/IP7lc",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Borneo Jazz Festival",
+    "city": "Sarawak",
+    "state_region": "Sarawak",
+    "country": "Borneo",
+    "dates": "May",
+    "website": "http://jazzborneo.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Branford Jazz On the Green Series",
+    "city": "Branford",
+    "state_region": "Conneticut",
+    "country": "USA",
+    "dates": "Summer",
+    "website": "http://branfordjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Brass City Jazz Fest",
+    "city": "Waterbury",
+    "state_region": "Conneticut",
+    "country": "usa",
+    "dates": "July",
+    "website": "http://www.brasscityjazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Brian Culbertson Hawaii Jazz Getaway",
+    "city": "Honolulu",
+    "state_region": "Hawaii",
+    "country": "USA",
+    "dates": "October",
+    "website": "https://www.jazzgetaway.com/hawaii-jazz-getaway",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Brian Culbertson Napa Valley Getaway",
+    "city": "Napa",
+    "state_region": "CA",
+    "country": "USA",
+    "dates": "June",
+    "website": "https://www.jazzgetaway.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Brian Culbertson New Orleans Getaway",
+    "city": "New Orleans",
+    "state_region": "Louisiana",
+    "country": "USA",
+    "dates": "March",
+    "website": "https://www.neworleansjazzgetaway.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Cape Town International Jazz Festival",
+    "city": "Cape Town",
+    "state_region": "",
+    "country": "South Africa",
+    "dates": "April",
+    "website": "https://www.capetownjazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Capital Jazz Fest",
+    "city": "Columbia",
+    "state_region": "Maryland",
+    "country": "USA",
+    "dates": "June",
+    "website": "http://www.capitaljazz.com/fest",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Capital Jazz Super Cruise",
+    "city": "Miami",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "March",
+    "website": "http://www.capitaljazz.com/supercruise/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Catalina Island JazzTrax Festival",
+    "city": "Catalina Island",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "October",
+    "website": "https://www.jazztrax.com/?fbclid=IwAR3retszJPhw4Bw30D6kD32hx65_Hqa1Z0AZivWQIgId5Idw0JKMBUfHEL4",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Cella Summer Supper Sessions",
+    "city": "Monterey",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "June",
+    "website": "https://www.eventbrite.com/o/18216236263",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Charlie Parker Jazz Festival",
+    "city": "Manhattan",
+    "state_region": "New York",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://cityparksfoundation.org/charlieparker/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Cheltenham Jazz Festival",
+    "city": "",
+    "state_region": "Cheltenham",
+    "country": "England",
+    "dates": "May",
+    "website": "http://www.cheltenhamfestivals.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Church Street Jazz Series",
+    "city": "Norfolk",
+    "state_region": "Virginia",
+    "country": "USA",
+    "dates": "Monthly",
+    "website": "http://www.churchstreetjazzseries.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "City Center Bishop Ranch Smooth Jazz Series",
+    "city": "San Ramon",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "July",
+    "website": "https://www.bishopranch.com/event-calendar/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Clearwater Jazz and Art Festival",
+    "city": "Eau Claire",
+    "state_region": "Wisconsin",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://www.leauclairejazzsociety.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Clearwater Jazz Holiday",
+    "city": "Clearwater",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "October",
+    "website": "http://www.clearwaterjazz.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Clearwater Smooth Jazz Jam",
+    "city": "Clearwater",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "May",
+    "website": "https://www.floridasmoothjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Clifford Brown Jazz Festival",
+    "city": "Wilmington",
+    "state_region": "Delaware",
+    "country": "USA",
+    "dates": "June",
+    "website": "http://www.cliffordbrownjazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Creekside Blues & Jazz Festival",
+    "city": "Gahanna",
+    "state_region": "Ohio",
+    "country": "USA",
+    "dates": "June",
+    "website": "http://www.creeksidebluesandjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Cully Jazz Festival",
+    "city": "Cully",
+    "state_region": "VD",
+    "country": "Switzerland",
+    "dates": "April",
+    "website": "http://www.cullyjazz.ch/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Curacao North Sea Jazz Festival",
+    "city": "Piscadera Bay",
+    "state_region": "Willemstad",
+    "country": "Curacao",
+    "dates": "September",
+    "website": "http://www.curacaonorthseajazz.com/en/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Dave Koz Cruise",
+    "city": "Various",
+    "state_region": "Various",
+    "country": "Various",
+    "dates": "Periodically",
+    "website": "https://davekozcruise.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Daytona Jazz Weekend - Hosted By Peter White",
+    "city": "Daytona Beach",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "April",
+    "website": "https://www.floridasmoothjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "DC Jazz Festival",
+    "city": "Washington",
+    "state_region": "DC",
+    "country": "USA",
+    "dates": "June",
+    "website": "https://dcjazzfest.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Duck Jazz Festival",
+    "city": "Town of Duck",
+    "state_region": "North Carolina",
+    "country": "USA",
+    "dates": "October",
+    "website": "https://www.townofduck.com/special-events/duck-jazz-festival/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Eagle Jazz  & Blues Festival",
+    "city": "Boise",
+    "state_region": "Eagle, Idaho",
+    "country": "USA",
+    "dates": "September",
+    "website": "https://www.eaglejazz.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Edinburgh Jazz & Blues Festival",
+    "city": "Edinburgh",
+    "state_region": "",
+    "country": "Scotland",
+    "dates": "July",
+    "website": "https://www.edinburghfestivalcity.com/festivals/edinburgh-jazz-blues-festival",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "EFG London Jazz Festival",
+    "city": "London",
+    "state_region": "",
+    "country": "UK",
+    "dates": "November",
+    "website": "https://efglondonjazzfestival.org.uk",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "ELB Jazz Festival",
+    "city": "Hamburg",
+    "state_region": "",
+    "country": "Germany",
+    "dates": "June",
+    "website": "http://www.elbjazz.de",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Elmira Jazz Festival",
+    "city": "Elmira",
+    "state_region": "New York",
+    "country": "USA",
+    "dates": "August",
+    "website": "http://www.elmirajazzfestival.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Estival Jazz Lugano",
+    "city": "Lugano",
+    "state_region": "",
+    "country": "Switzerland",
+    "dates": "July",
+    "website": "http://www.estivaljazz.ch/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Festival Da Jazz",
+    "city": "St Moritz",
+    "state_region": "",
+    "country": "Switzerland",
+    "dates": "July",
+    "website": "http://www.festivaldajazz.ch",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Festival Internacional Canarias Jazz & más",
+    "city": "Las Palmas",
+    "state_region": "Gran Canaria",
+    "country": "Spain",
+    "dates": "June",
+    "website": "http://www.canariasjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Festival International de Jazz de Montréal",
+    "city": "Montreal",
+    "state_region": "Quebec",
+    "country": "Canada",
+    "dates": "June",
+    "website": "http://www.montrealjazzfest.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Festival of Arts",
+    "city": "Laguna Beach",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "July",
+    "website": "https://www.foapom.com/events-mmm/art-jazz-wine-chocolate/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "First Coast Jazz Festival",
+    "city": "Jacksoinville",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://firstcoastjazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Fresh Coast Jazz Festival",
+    "city": "Milwaukee",
+    "state_region": "Wisconsin",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://www.freshcoastjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Glass city Jazz Fest",
+    "city": "Toledo",
+    "state_region": "Ohio",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://glasscityjazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Grooves At The Westin",
+    "city": "Rancho Mirage",
+    "state_region": "CA",
+    "country": "USA",
+    "dates": "Monthly",
+    "website": "https://groovesatthewestin.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Gulf Coast Summer Music Festival",
+    "city": "Pensacola",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://www.gulfcoastsummerfestjazzedition.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Half Moon Bay Wine & Jazz Festival",
+    "city": "Half Moon Bay",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "May",
+    "website": "https://hmbwineandjazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Halifax Jazz Festival",
+    "city": "Halifax",
+    "state_region": "NS",
+    "country": "Canada",
+    "dates": "July",
+    "website": "http://www.halifaxjazzfestival.ca",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "HI Jazz Fest",
+    "city": "O'ahu",
+    "state_region": "Hawaii",
+    "country": "USA",
+    "dates": "October",
+    "website": "https://hijazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Hot Summer Cool Jazz",
+    "city": "Austin",
+    "state_region": "Texas",
+    "country": "USA",
+    "dates": "June",
+    "website": "https://womeninjazz.org/event/hotsummer2025/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Hub City Jazz Festival",
+    "city": "New Brunswick",
+    "state_region": "New Jersey",
+    "country": "United States",
+    "dates": "October",
+    "website": "http://www.hubcityjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Humphreys Concerts By the Bay",
+    "city": "San Diego",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "Monthly",
+    "website": "http://humphreysconcerts.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Indy Jazz Fest",
+    "city": "Indianapolis",
+    "state_region": "Indiana",
+    "country": "USA",
+    "dates": "September",
+    "website": "http://www.indyjazzfest.net/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jacksonville Jazz Festival",
+    "city": "Jacksonville",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "May",
+    "website": "https://jacksonvillejazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Java Jazz Festival",
+    "city": "Jakarta",
+    "state_region": "",
+    "country": "Indonesia",
+    "dates": "May",
+    "website": "http://www.javajazzfestival.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz & Jackie : A Musical Salute to Jackie Robinson",
+    "city": "Kansas City",
+    "state_region": "Missouri",
+    "country": "USA",
+    "dates": "May",
+    "website": "https://www.nlbm.com/events/jazz-jackie-a-musical-salute-to-jackie-robinson/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz & Rib Fest",
+    "city": "Columbus",
+    "state_region": "Ohio",
+    "country": "USA",
+    "dates": "July",
+    "website": "http://www.hotribscooljazz.org/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz A Juan",
+    "city": "Juan Las Pins",
+    "state_region": "",
+    "country": "French Riviera",
+    "dates": "July",
+    "website": "http://www.jazzajuan.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz à Vienne",
+    "city": "Vienne",
+    "state_region": "",
+    "country": "France",
+    "dates": "June",
+    "website": "http://www.jazzavienne.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz Aspen Snowmass",
+    "city": "Aspen",
+    "state_region": "Colorado",
+    "country": "USA",
+    "dates": "September",
+    "website": "https://jazzaspensnowmass.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz at the Creek",
+    "city": "San Diego",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "August",
+    "website": "http://www.jazzatthecreeksd.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz Fest Pompano Beach",
+    "city": "Pompano",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "April",
+    "website": "https://www.pompanobeacharts.org/events/jazz-fest",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz In The Country",
+    "city": "King George",
+    "state_region": "Virginia",
+    "country": "USA",
+    "dates": "October",
+    "website": "https://jazzinthecountry.com/?fbclid=IwAR0ETu9iL40_AZ0HEQTKbkBhll6SFVRK-Vt8frmmdk36QKkm8BFL6yvx6Ng",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz in the Gardens",
+    "city": "Miami Gardens",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "March",
+    "website": "http://jazzinthegardens.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz Legacy Gala Weekend",
+    "city": "Hampton",
+    "state_region": "Virginia",
+    "country": "USA",
+    "dates": "November",
+    "website": "https://www.jazzlegacyfoundation.org/index.html",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz on the Trinity",
+    "city": "Fort Worth",
+    "state_region": "Texas",
+    "country": "USA",
+    "dates": "June",
+    "website": "https://www.jazzonthetrinity.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazz On The Vine at The Osthoff Resort",
+    "city": "Elkhart Lake",
+    "state_region": "Wisconsin",
+    "country": "USA",
+    "dates": "May",
+    "website": "https://osthoff.com/jazz-on-the-vine-2026/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Jazzfest Amsterdam",
+    "city": "Amsterdam",
+    "state_region": "",
+    "country": "Netherlands",
+    "dates": "March",
+    "website": "https://jazzfestamsterdam.nl",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "John Coltrane International Jazz & Blues Festival",
+    "city": "High Point",
+    "state_region": "North Carolina",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://coltranejazzfest.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Keystone Wine & Jazz Festival",
+    "city": "Keystone",
+    "state_region": "Colorado",
+    "country": "USA",
+    "dates": "June",
+    "website": "https://www.keystonefestivals.com/festivals/wine-and-jazz/info/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Kim Scott Live",
+    "city": "",
+    "state_region": "",
+    "country": "Worldwide",
+    "dates": "Monthly",
+    "website": "http://kimscottmusic.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Kongsberg Jazz Festival",
+    "city": "Kongsberg",
+    "state_region": "",
+    "country": "Norway",
+    "dates": "July",
+    "website": "https://kongsbergjazz.no/en/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Lake Arbor Jazz Festival",
+    "city": "National Harbor",
+    "state_region": "Maryland",
+    "country": "USA",
+    "dates": "July",
+    "website": "https://lakearborjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Las Vegas City of Lights Jazz and R&B Festival",
+    "city": "Las Vegas",
+    "state_region": "Nevada",
+    "country": "USA",
+    "dates": "April",
+    "website": "http://www.yourjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Leverkusener JazzTage",
+    "city": "Dresden",
+    "state_region": "",
+    "country": "Germany",
+    "dates": "November",
+    "website": "https://www.leverkusener-jazztage.de",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Long Beach Jazz Festival",
+    "city": "Long Beach",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "August",
+    "website": "http://www.longbeachjazzfestival.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Louisville Jazz Festival",
+    "city": "Louisville",
+    "state_region": "Kentucky",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://www.gabshows.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Love Supreme Jazz Festival",
+    "city": "Glynde Place",
+    "state_region": "South Downs of East Sussex",
+    "country": "UK",
+    "dates": "July",
+    "website": "https://lovesupremefestival.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Lowcountry Jazz Festival",
+    "city": "Charleston",
+    "state_region": "South Carolina",
+    "country": "USA",
+    "dates": "September",
+    "website": "http://www.lowcountryjazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Marcus Anderson Jazz and Coffee escape",
+    "city": "Asheville",
+    "state_region": "North Carolina",
+    "country": "USA",
+    "dates": "July",
+    "website": "https://jazzandcoffee-escape.net",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Maricopa Desert Music & Arts Festival",
+    "city": "Rancho El Dorado Golf Course",
+    "state_region": "Maricopa",
+    "country": "Arizona",
+    "dates": "March",
+    "website": "https://www.eventbrite.com/e/maricopa-desert-music-arts-festival-2026-presented-by-aarp-arizona-tickets-1974940987658",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Martha's Vineyard Jazz & Blues Summerfest",
+    "city": "Oak Bluffs",
+    "state_region": "Massachusettes",
+    "country": "USA",
+    "dates": "September",
+    "website": "http://mvjazzbluessummerfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Melbourne International Jazz Festival",
+    "city": "",
+    "state_region": "Melbourne",
+    "country": "Australia",
+    "dates": "October",
+    "website": "https://www.melbournejazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Melton Mustafa Jazz Festival",
+    "city": "Miami",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "February",
+    "website": "http://www.meltonmustafajazzfestival.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Michael Fields Jr, Jazz On The Green",
+    "city": "Tulsa",
+    "state_region": "Oklahoma",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://jazzonthegreentulsa.com/home",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Monterey Jazz Festival",
+    "city": "Monterey",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "September",
+    "website": "https://montereyjazzfestival.org?utm_source=sj&utm_medium=referral",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Montreux Jazz Festival",
+    "city": "Montreux",
+    "state_region": "",
+    "country": "Switzerland",
+    "dates": "July",
+    "website": "https://www.montreuxjazzfestival.com/en/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Mountain Winery Concert Season",
+    "city": "Saratoga",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "Periodically",
+    "website": "http://www.mountainwinery.com/concerts",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Myrtle Beach Jazz Fest",
+    "city": "Myrtle Beach",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "September",
+    "website": "http://myrtlebeachjazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Natchitoches Jazz and R&B Festival",
+    "city": "Natchitoches",
+    "state_region": "Louisianna",
+    "country": "USA",
+    "dates": "April",
+    "website": "http://www.natchjazzfest.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "New Orleans Jazz and Heritage Festival",
+    "city": "New Orleans",
+    "state_region": "Louisianna",
+    "country": "USA",
+    "dates": "April",
+    "website": "http://www.nojazzfest.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "New Orleans Jazz Ascona Festival",
+    "city": "Ascona",
+    "state_region": "Lake Maggiore",
+    "country": "Switzerland",
+    "dates": "June",
+    "website": "http://www.jazzascona.ch/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Newport Beach Jazz Festival",
+    "city": "Newport Beach",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "June",
+    "website": "http://festivals.hyattconcerts.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Newport Jazz Festival",
+    "city": "Newport",
+    "state_region": "Rhode Island",
+    "country": "USA",
+    "dates": "August",
+    "website": "http://www.newportjazz.org/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Nice Jazz Festival",
+    "city": "Nice",
+    "state_region": "Côte d’Azur",
+    "country": "France",
+    "dates": "July",
+    "website": "http://www.nicejazzfestival.fr/en/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "North Sea Jazz Festival",
+    "city": "Rotterdam",
+    "state_region": "Delft",
+    "country": "Netherlands",
+    "dates": "July",
+    "website": "http://www.northseajazz.com/en",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Ocean City Jazz Festival",
+    "city": "North Topsail Beach",
+    "state_region": "North Carolina",
+    "country": "United States",
+    "dates": "July",
+    "website": "http://www.oceancityjazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Panama Jazz Festival",
+    "city": "Ciudad de Panamá",
+    "state_region": "",
+    "country": "República de Panamá",
+    "dates": "January",
+    "website": "https://panamajazzfestival.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Phil Denny's Armory Smooth Jazz Fete",
+    "city": "Lansing",
+    "state_region": "Michigan",
+    "country": "USA",
+    "dates": "August",
+    "website": "http://www.smoothjazzfete.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Pori Jazz Festival",
+    "city": "Pori",
+    "state_region": "",
+    "country": "Finland",
+    "dates": "July",
+    "website": "http://www.porijazz.fi",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Rehoboth Beach Jazz Festival",
+    "city": "Rehoboth",
+    "state_region": "Deleware",
+    "country": "USA",
+    "dates": "October",
+    "website": "http://www.rehobothjazz.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Richmond Jazz & Music Festival",
+    "city": "Richmond",
+    "state_region": "Virginia",
+    "country": "USA",
+    "dates": "August",
+    "website": "http://www.jazzatmaymont.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Rick Braun's New Year's Eve",
+    "city": "Orlando",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "December",
+    "website": "https://www.floridasmoothjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Rick Braun's River Cruises",
+    "city": "",
+    "state_region": "",
+    "country": "Europe",
+    "dates": "Periodically",
+    "website": "http://www.rickbraun.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Riverfront Jazz Festival",
+    "city": "Dallas",
+    "state_region": "Texas",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://www.tbaalriverfrontjazzfestival.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Rochester International Jazz Festival",
+    "city": "Rochester",
+    "state_region": "New York",
+    "country": "USA",
+    "dates": "June",
+    "website": "http://www.rochesterjazz.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Saint Lucia Jazz & Artist Festival",
+    "city": "",
+    "state_region": "Saint Lucia",
+    "country": "Caribbean",
+    "dates": "April",
+    "website": "http://stluciajazz.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "San Diego Smooth Jazz Festival",
+    "city": "San Diego",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "June",
+    "website": "https://www.sandiegosmoothjazzfestival.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "San Francisco Jazz Festival",
+    "city": "San Francisco",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "June",
+    "website": "http://www.sfjazz.org/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Scottsdale Jazz Festival",
+    "city": "Scottsdale",
+    "state_region": "Arizona",
+    "country": "USA",
+    "dates": "April",
+    "website": "https://scottsdalejazzfest.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Scranton Jazz Festival",
+    "city": "Scranton",
+    "state_region": "Pennsylvania",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://scrantonjazzfestival.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Seabreeze Jazz Festival",
+    "city": "Panama City Beach",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "April",
+    "website": "http://www.seabreezejazzfestival.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Seoul Jazz Festival",
+    "city": "Seoul",
+    "state_region": "",
+    "country": "South Korea",
+    "dates": "May",
+    "website": "https://www.bandwagon.asia/articles/seoul-jazz-festival-2023-announces-lineup-taeyang-epik-high-balming-tiger-damien-rice-se-so-neon-sigrid-and-more-tickets-south-korea-may-2023-olympic-park",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Smooth Jazz Chicago",
+    "city": "Chicago",
+    "state_region": "Illinois",
+    "country": "USA",
+    "dates": "Periodically",
+    "website": "https://www.smoothchicago.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Smooth Jazz for Scholars Benefit Concert",
+    "city": "Milford",
+    "state_region": "Connecticut",
+    "country": "USA",
+    "dates": "May",
+    "website": "https://www.jayrowemusic.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Spring Fever Festival",
+    "city": "Chicago",
+    "state_region": "IL",
+    "country": "USA",
+    "dates": "April",
+    "website": "https://www.oharejazzfest.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Steel City Smooth Jazz Festival",
+    "city": "Birmingham",
+    "state_region": "Alabama",
+    "country": "USA",
+    "dates": "June",
+    "website": "http://www.steelcityjazzfest.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Steve Oliver Inner Fire Tour",
+    "city": "",
+    "state_region": "",
+    "country": "Worldwide",
+    "dates": "Monthly",
+    "website": "https://www.steveolivermusic.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Stockbridge Jazz Festival",
+    "city": "Atlanta",
+    "state_region": "Georgia",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://www.vividseats.com/stockbridge-jazz-festival-tickets/performer/414231",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Stockton's Waterfront Smooth Jazz Festival",
+    "city": "Stockton",
+    "state_region": "CA",
+    "country": "USA",
+    "dates": "June",
+    "website": "https://www.eventbrite.com/e/stocktons-waterfront-smooth-jazz-fete-tickets-1759132756429",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Summer Concert Series",
+    "city": "Newport Beach",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "Summer",
+    "website": "https://series.hyattconcerts.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Summer Solstice Jazz Festival",
+    "city": "East Lansing",
+    "state_region": "Michigan",
+    "country": "USA",
+    "dates": "June",
+    "website": "http://www.eljazzfest.com/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Suncoast Jazz Festival",
+    "city": "Largo",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "November",
+    "website": "https://suncoastjazzfestival.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Sunset Fest Cabo",
+    "city": "Medando Beach",
+    "state_region": "Cabo San Lucas",
+    "country": "Mexico",
+    "dates": "October",
+    "website": "https://www.sunsetfestcabo.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Tampa Bay Black Heritage Music Fest",
+    "city": "Tampa",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "April",
+    "website": "https://tampablackheritage.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "TD James Moody Jazz Festival",
+    "city": "Newark",
+    "state_region": "New Jersey",
+    "country": "USA",
+    "dates": "November",
+    "website": "https://www.njpac.org/series/james-moody-jazz-festival/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Telluride Jazz Festival",
+    "city": "Telluride",
+    "state_region": "Colorado",
+    "country": "USA",
+    "dates": "August",
+    "website": "http://telluridejazz.org/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Temecula Wine & Music Festival",
+    "city": "Temecula",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "May",
+    "website": "https://temeculawineandmusicfestival.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Texas Jazz Festival",
+    "city": "Corpus Christie",
+    "state_region": "Texas",
+    "country": "USA",
+    "dates": "October",
+    "website": "http://www.texasjazz-fest.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "The Big Easy Cruise",
+    "city": "FT. Laurderdale",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "January",
+    "website": "https://bigeasycruise.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "The Desert Jazz Festival",
+    "city": "Coachella Valley",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "September",
+    "website": "https://www.desertjazzfestival.com/index.html",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "The Florida Smooth Jazz Weekend",
+    "city": "Daytona Beach",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "November",
+    "website": "https://www.floridasmoothjazz.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "The Nova Jazz 7 Blues Nights",
+    "city": "Vienna",
+    "state_region": "",
+    "country": "Austria",
+    "dates": "Periodically",
+    "website": "http://www.njbn.at/jart/prj3/njbn/main.jart?rel=de&content-id=1274973600737&reserve-mode=active",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "The Smooth Jazz Cruise",
+    "city": "Fort Lauderdale",
+    "state_region": "Florida",
+    "country": "USA",
+    "dates": "January",
+    "website": "https://thesmoothjazzcruise.com/?fbclid=IwAR3Q_UDVcRhgBudZ9bMk6gR0nQY41bZZT3heSJF4k_cJVh_Dw1_MWhFLVko",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Thornton Winery Champagne Jazz Series",
+    "city": "Temecula",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "Monthly",
+    "website": "http://www.thorntonwine.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Tracy Hamlin's Sweet Jazz Festival",
+    "city": "Leesburg",
+    "state_region": "Virginia",
+    "country": "USA",
+    "dates": "April",
+    "website": "https://sweetjazzfestival.us",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Tri-C Smooth Jazz Festival",
+    "city": "Cleveland",
+    "state_region": "Ohio",
+    "country": "USA",
+    "dates": "June",
+    "website": "http://www.tri-c.edu/jazzfest/index.html",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Tucson Jazz Festival",
+    "city": "Tucson",
+    "state_region": "Arizona",
+    "country": "USA",
+    "dates": "January",
+    "website": "http://tucsonjazzfestival.org",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Vail Jazz Series",
+    "city": "Vail",
+    "state_region": "Colorado",
+    "country": "USA",
+    "dates": "Monthly",
+    "website": "http://www.vailjazz.org/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Vallejo Jazz Festival",
+    "city": "Vallejo",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "July",
+    "website": "",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Vancouver Wine & Jazz Festival",
+    "city": "Vancouver",
+    "state_region": "Washington",
+    "country": "USA",
+    "dates": "August",
+    "website": "https://www.vancouverwinejazz.com/contact.html",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Vanport Jazz Festival",
+    "city": "Portland",
+    "state_region": "Oregon",
+    "country": "USA",
+    "dates": "August",
+    "website": "http://vanportjazzfestival.com",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Vienna Smooth Jazz Festival",
+    "city": "Vienna - Budapest - Esztergom - Bratislava - Emmersdorf - Linz",
+    "state_region": "",
+    "country": "Austria - Hungary - Slovakia",
+    "dates": "October",
+    "website": "https://smoothjazzshop.eu/en_US",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Weekend of Jazz at The Broadmoor",
+    "city": "Colorado Springs",
+    "state_region": "Colorado",
+    "country": "USA",
+    "dates": "March",
+    "website": "http://www.weekendofjazz.com/broadmoor/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Wine, Art, and Jazz Festival",
+    "city": "Keystone",
+    "state_region": "Colorado",
+    "country": "USA",
+    "dates": "August",
+    "website": "http://www.keystonefestivals.com/index.php/wine-jazz/",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Winterpark Jazz Festival",
+    "city": "Winterpark",
+    "state_region": "Colorado",
+    "country": "USA",
+    "dates": "July",
+    "website": "https://www.playwinterpark.com/jazzfest",
+    "source": "smoothjazz.com"
+  },
+  {
+    "name": "Yosemite Jazz Train",
+    "city": "Fish Camp",
+    "state_region": "California",
+    "country": "USA",
+    "dates": "Periodically",
+    "website": "https://www.jazzconcerts.com",
+    "source": "smoothjazz.com"
+  }
+]

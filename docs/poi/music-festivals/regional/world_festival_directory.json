@@ -1,0 +1,957 @@
+{
+  "source": "worldfestivaldirectory.com",
+  "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/",
+  "total_festivals": 103,
+  "extraction_date": "2026-06-20",
+  "note": "All festivals from the A-Z listing page at worldfestivaldirectory.com. Data includes cultural festivals, folk festivals, film festivals, music festivals, and carnival events from around the world.",
+  "festivals": [
+    {
+      "name": "Abu Dhabi Film Festival",
+      "city": "Abu Dhabi",
+      "country": "United Arab Emirates",
+      "type": "Film",
+      "description": "International film festival held in Abu Dhabi.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Albuquerque Balloon Festival",
+      "city": "Albuquerque",
+      "country": "USA",
+      "state": "New Mexico",
+      "type": "Cultural",
+      "description": "World's largest hot air balloon festival.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Aliwan Fiesta",
+      "city": "Pasay City",
+      "country": "Philippines",
+      "type": "Cultural/Folk",
+      "description": "Annual festival showcasing Filipino culture and traditions.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Amsterdam's Orange Festival (Queens Day)",
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "type": "Cultural",
+      "description": "City-wide celebration of the Dutch royal family's birthday.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Annecy Venetian Festival",
+      "city": "Annecy",
+      "country": "France",
+      "type": "Cultural",
+      "description": "Venetian-themed festival with boats and costumes in Annecy.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Aurillac International Street Theater Festival",
+      "city": "Aurillac",
+      "country": "France",
+      "type": "Theater/Street Arts",
+      "description": "International street theater festival in Aurillac.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Austin Film Festival",
+      "city": "Austin",
+      "country": "USA",
+      "state": "Texas",
+      "type": "Film",
+      "description": "Film festival focused on screenwriting and storytelling.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Battle of the Oranges (Ivrea Carnival)",
+      "city": "Ivrea",
+      "country": "Italy",
+      "type": "Cultural/Carnival",
+      "description": "Historic battle using oranges as weapons during Carnival.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Bestival",
+      "city": "Isle of Wight",
+      "country": "UK",
+      "type": "Music",
+      "description": "Eclectic music festival on the Isle of Wight.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Beyond the Pines",
+      "city": "Woodlands",
+      "country": "USA",
+      "state": "Texas",
+      "type": "Music",
+      "description": "Music festival in the Woodlands, Texas.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Bif&st, Bari International Film Festival",
+      "city": "Bari",
+      "country": "Italy",
+      "type": "Film",
+      "description": "International film festival held in Bari, Italy.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Boi Bumba Folklore Festival",
+      "city": "Parintins",
+      "country": "Brazil",
+      "type": "Folk/Cultural",
+      "description": "Spectacular folkloric festival in the Amazon with theatrical performances.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Boryeong Mud Festival",
+      "city": "Boryeong",
+      "country": "South Korea",
+      "type": "Cultural",
+      "description": "Annual festival featuring mud pools, mud skiing and mud wrestling.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Bo Sang Umbrella Festival",
+      "city": "Bo Sang",
+      "country": "Thailand",
+      "type": "Cultural/Craft",
+      "description": "Festival celebrating handmade umbrellas and Thai handicrafts.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Brisbane Festival",
+      "city": "Brisbane",
+      "country": "Australia",
+      "type": "Arts/Performing Arts",
+      "description": "Multi-arts festival featuring music, theater, and visual art.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Bristol Balloon Fiesta",
+      "city": "Bristol",
+      "country": "UK",
+      "state": "England",
+      "type": "Cultural",
+      "description": "Europe's largest hot air balloon festival.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Bucharest International Jazz Competition & Festival",
+      "city": "Bucharest",
+      "country": "Romania",
+      "type": "Music/Jazz",
+      "description": "International jazz competition and festival in Bucharest.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Buenos Aires World Tango Festival",
+      "city": "Buenos Aires",
+      "country": "Argentina",
+      "type": "Dance/Music",
+      "description": "World-class tango festival and competition in Buenos Aires.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Buffalo Water Racing Festival",
+      "city": "Chonburi City",
+      "country": "Thailand",
+      "type": "Cultural/Sport",
+      "description": "Traditional Thai festival featuring water buffalo races.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Burning Man Festival",
+      "city": "Black Rock Desert",
+      "country": "USA",
+      "state": "Nevada",
+      "type": "Art/Music/Counterculture",
+      "description": "Annual gathering in the Nevada desert focused on community, art, and self-expression.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Cannes Film Festival",
+      "city": "Cannes",
+      "country": "France",
+      "type": "Film",
+      "description": "World's most prestigious international film festival.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Carnaval de Ovar",
+      "city": "Ovar",
+      "country": "Portugal",
+      "type": "Carnival/Cultural",
+      "description": "One of Portugal's most vibrant carnival celebrations.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Chaumont Garden Festival",
+      "city": "Loire Valley",
+      "country": "France",
+      "type": "Horticulture/Art",
+      "description": "International garden festival featuring innovative garden designs.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Church Rocket War (Rouketopolemos)",
+      "city": "Chios Island",
+      "country": "Greece",
+      "type": "Cultural/Religious",
+      "description": "Easter tradition where two rival churches fire rockets at each other.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Coachella Valley Music & Arts Festival",
+      "city": "Indio",
+      "country": "USA",
+      "state": "California",
+      "type": "Music/Arts",
+      "description": "One of the world's largest and most famous music and arts festivals.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Copenhagen Carnival Parade",
+      "city": "Copenhagen",
+      "country": "Denmark",
+      "type": "Carnival/Cultural",
+      "description": "Colorful carnival parade through the streets of Copenhagen.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Day of the Dead",
+      "city": "Various",
+      "country": "Mexico",
+      "type": "Cultural/Religious",
+      "description": "Traditional Mexican festival honoring deceased loved ones with altars, marigolds, and celebrations.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Der Meistertrunk Festival",
+      "city": "Rothenburg ob der Tauber",
+      "country": "Germany",
+      "type": "Historical/Cultural",
+      "description": "Historical festival reenacting the legendary 'Master Drink' story.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Desert Festival",
+      "city": "Jaisalmer",
+      "country": "India",
+      "type": "Cultural",
+      "description": "Festival showcasing Rajasthani folk arts and culture in the Thar Desert.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Elephant Festival",
+      "city": "Jaipur",
+      "country": "India",
+      "type": "Cultural",
+      "description": "Festival celebrating elephants with decorations, polo and races.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Essaouira Gnaoua & World Music Festival",
+      "city": "Essaouira",
+      "country": "Morocco",
+      "type": "Music/Cultural",
+      "description": "Annual festival celebrating Gnaoua music and world music in Essaouira.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Fallas de Valencia",
+      "city": "Valencia",
+      "country": "Spain",
+      "type": "Cultural/Fire",
+      "description": "Festival featuring enormous papier-m\u00e2ch\u00e9 sculptures burned at midnight.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Festa Major del Raval Festival",
+      "city": "Barcelona",
+      "country": "Spain",
+      "type": "Cultural/Street",
+      "description": "Neighborhood festival in El Raval with concerts, activities, and street parties.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Festival of Lights (Fete des Lumieres)",
+      "city": "Lyon",
+      "country": "France",
+      "type": "Light/Art",
+      "description": "Spectacular light installations across the city of Lyon.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Festival of Roses",
+      "city": "Lyon",
+      "country": "France",
+      "type": "Cultural/Horticulture",
+      "description": "Festival celebrating roses in Lyon.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Fiesta de la Transhumancia",
+      "city": "Madrid",
+      "country": "Spain",
+      "type": "Cultural/Agricultural",
+      "description": "Annual festival where thousands of sheep are driven through central Madrid.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "First Hermetic International Film Festival",
+      "city": "Venice",
+      "country": "Italy",
+      "type": "Film",
+      "description": "International film festival in Venice.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Fremont's Solstice Parade",
+      "city": "Seattle",
+      "country": "USA",
+      "state": "Washington",
+      "type": "Cultural/Parade",
+      "description": "Quirky annual parade celebrating the summer solstice in Seattle.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Galway Arts Festival",
+      "city": "Galway",
+      "country": "Ireland",
+      "type": "Arts/Performing Arts",
+      "description": "Ireland's largest arts festival featuring theater, music, and visual arts.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Gilroy Garlic Festival",
+      "city": "Gilroy",
+      "country": "USA",
+      "state": "California",
+      "type": "Food/Cultural",
+      "description": "Annual festival celebrating garlic with food, music, and entertainment.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Gion Festival (Gion Matsuri)",
+      "city": "Kyoto",
+      "country": "Japan",
+      "type": "Cultural/Religious",
+      "description": "One of Japan's most famous festivals, held for an entire month in July.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Gracia Festival (Festa Major de Gracia)",
+      "city": "Barcelona",
+      "country": "Spain",
+      "type": "Cultural/Street",
+      "description": "Week-long street festival in the Gracia neighborhood of Barcelona.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Hallia Venezia",
+      "city": "Schw\u00e4bisch Hall",
+      "country": "Germany",
+      "type": "Cultural/Theater",
+      "description": "Theatrical festival transforming the town into a Venetian spectacle.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Highland Games Braemar Gathering",
+      "city": "Braemar",
+      "country": "UK",
+      "state": "Scotland",
+      "type": "Cultural/Sport",
+      "description": "Traditional Scottish Highland Games with caber toss, hammer throw, and more.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Hogmanay",
+      "city": "Edinburgh",
+      "country": "UK",
+      "state": "Scotland",
+      "type": "Cultural/New Year",
+      "description": "Scotland's world-famous New Year celebration.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Holi Festival (Festival of Colors)",
+      "city": "Various",
+      "country": "India",
+      "type": "Cultural/Religious",
+      "description": "Hindu festival of colors celebrated across India and worldwide.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Horse Fair (Feria del Caballo)",
+      "city": "Jerez de la Frontera",
+      "country": "Spain",
+      "type": "Cultural/Agricultural",
+      "description": "Traditional Spanish horse fair and fiesta.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Ice Sculpting Festival",
+      "city": "London",
+      "country": "UK",
+      "state": "England",
+      "type": "Art/Cultural",
+      "description": "Festival showcasing elaborate ice sculptures in London.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Ivrea Carnival (Battle of the Oranges)",
+      "city": "Ivrea",
+      "country": "Italy",
+      "type": "Carnival/Cultural",
+      "description": "Historic carnival battle using oranges in Ivrea, Italy.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Jazz Festival",
+      "city": "New Orleans",
+      "country": "USA",
+      "state": "Louisiana",
+      "type": "Music/Jazz",
+      "description": "World-famous New Orleans Jazz & Heritage Festival.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Jazzfestival Saalfelden",
+      "city": "Saalfelden",
+      "country": "Austria",
+      "type": "Music/Jazz",
+      "description": "International jazz festival in the Austrian Alps.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Jidai Matsuri (Festival of the Ages)",
+      "city": "Kyoto",
+      "country": "Japan",
+      "type": "Cultural/Historical",
+      "description": "Historical pageant through Kyoto featuring costumes from different eras.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Kagoshima Spring Festival",
+      "city": "Kagoshima",
+      "country": "Japan",
+      "type": "Cultural/Spring",
+      "description": "Spring festival in Kagoshima, Japan.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Keukenhof Flower Show",
+      "city": "Lisse",
+      "country": "Netherlands",
+      "type": "Horticulture",
+      "description": "World's largest flower garden with millions of tulips and spring flowers.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Kiev International Firework Festival (Dance of Fire)",
+      "city": "Kyiv",
+      "country": "Ukraine",
+      "type": "Fireworks/Cultural",
+      "description": "International fireworks competition in Kyiv.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Kite Festival (Festival de Cometas)",
+      "city": "Fuerteventura",
+      "country": "Spain",
+      "type": "Cultural/Sport",
+      "description": "International kite festival on Fuerteventura.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Kirkpinar Oil Wrestling Festival",
+      "city": "Edirne",
+      "country": "Turkey",
+      "type": "Cultural/Sport",
+      "description": "World's oldest sporting competition - traditional Turkish oil wrestling.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "La Fiesta Patria Gaucha",
+      "city": "Tacuarembo",
+      "country": "Uruguay",
+      "type": "Cultural/Folk",
+      "description": "Festival celebrating gaucho culture and traditions in Uruguay.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "La Tomatina Festival",
+      "city": "Bunol",
+      "country": "Spain",
+      "type": "Cultural",
+      "description": "World-famous tomato-throwing festival held in Bu\u00f1ol, near Valencia.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Limassol Carnival Parade",
+      "city": "Limassol",
+      "country": "Cyprus",
+      "type": "Carnival/Cultural",
+      "description": "One of the biggest carnivals in the Eastern Mediterranean.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Loch Shiel Festival",
+      "city": "Scottish Highlands",
+      "country": "UK",
+      "state": "Scotland",
+      "type": "Music/Cultural",
+      "description": "Music festival in the Scottish Highlands.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Loy Krathong Festival",
+      "city": "Phuket",
+      "country": "Thailand",
+      "type": "Cultural/Religious",
+      "description": "Thai festival of lights where floating lanterns and krathongs are released.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Mardi Gras",
+      "city": "New Orleans",
+      "country": "USA",
+      "state": "Louisiana",
+      "type": "Carnival/Cultural",
+      "description": "World-famous carnival celebration with parades, beads, and costumes.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Maslenitsa Festival (Pancake Festival)",
+      "city": "Moscow",
+      "country": "Russia",
+      "type": "Cultural/Religious",
+      "description": "Eastern Slavic folk holiday marking the end of winter with pancakes and celebrations.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Medieval Style Knight Festival",
+      "city": "Jerusalem",
+      "country": "Israel",
+      "type": "Historical/Cultural",
+      "description": "Medieval knight festival in Jerusalem.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Moh\u00e1csi Bus\u00f3j\u00e1r\u00e1s",
+      "city": "Moh\u00e1cs",
+      "country": "Hungary",
+      "type": "Cultural/Carnival",
+      "description": "UNESCO-recognized carnival tradition with frightening masks to chase away winter.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Monkey Buffet Festival",
+      "city": "Lopburi Province",
+      "country": "Thailand",
+      "type": "Cultural",
+      "description": "Festival offering a grand buffet to the local monkey population in Lopburi.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Nadaam Games",
+      "city": "Ulaanbaatar",
+      "country": "Mongolia",
+      "type": "Cultural/Sport",
+      "description": "Traditional Mongolian festival featuring archery, horse racing, and wrestling.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "New Orleans Jazz & Heritage Festival",
+      "city": "New Orleans",
+      "country": "USA",
+      "state": "Louisiana",
+      "type": "Music/Cultural",
+      "description": "Celebration of New Orleans culture and music with jazz, blues, R&B, gospel and more.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Notting Hill Carnival",
+      "city": "London",
+      "country": "UK",
+      "state": "England",
+      "type": "Carnival/Cultural",
+      "description": "Europe's biggest street festival celebrating Caribbean culture in London.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Oddysia Festival",
+      "city": "Corinthos",
+      "country": "Greece",
+      "type": "Cultural/Theater",
+      "description": "Cultural festival in Corinth, Greece.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Ohara Matsuri Dance Festival",
+      "city": "Kagoshima",
+      "country": "Japan",
+      "type": "Cultural/Dance",
+      "description": "One of Japan's largest dance festivals in Kagoshima.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Oktoberfest",
+      "city": "Munich",
+      "country": "Germany",
+      "type": "Cultural/Beer",
+      "description": "World's largest beer festival with traditional Bavarian food, music, and rides.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Orange Festival (Queens Day)",
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "type": "Cultural",
+      "description": "Amsterdam's King's Day celebration with the entire city turning orange.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Poi Sang Long Festival",
+      "city": "Mae Hong Son",
+      "country": "Thailand",
+      "type": "Cultural/Religious",
+      "description": "Buddhist ordination festival for young Shan boys in northern Thailand.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Przystanek Woodstock Festival",
+      "city": "Kostrzyn nad Odr\u0105",
+      "country": "Poland",
+      "type": "Music/Rock",
+      "description": "One of the largest open-air music festivals in Europe.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Queens Day (Amsterdam Orange Festival)",
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "type": "Cultural",
+      "description": "National celebration with street parties, flea markets, and live music.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "RHS Chelsea Flower Show",
+      "city": "London",
+      "country": "UK",
+      "state": "England",
+      "type": "Horticulture",
+      "description": "The world's most prestigious flower show.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Richmond International Film Festival",
+      "city": "Richmond",
+      "country": "USA",
+      "state": "Virginia",
+      "type": "Film",
+      "description": "Independent film festival in Richmond, Virginia.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Rouketopolemos (Church Rocket War)",
+      "city": "Chios Island",
+      "country": "Greece",
+      "type": "Cultural/Religious",
+      "description": "Easter tradition where two churches fire thousands of fireworks rockets at each other.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Running of the Bulls (San Fermin Festival)",
+      "city": "Pamplona",
+      "country": "Spain",
+      "type": "Cultural/Sport",
+      "description": "Famous festival where bulls run through the streets of Pamplona.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Salon du Chocolat",
+      "city": "Paris",
+      "country": "France",
+      "type": "Food/Cultural",
+      "description": "World's largest chocolate show with tastings, demonstrations, and fashion shows.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Samba Festival",
+      "city": "Coburg",
+      "country": "Germany",
+      "type": "Music/Dance/Cultural",
+      "description": "Europe's largest samba festival outside Brazil.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "San Fermin Festival (Running of the Bulls)",
+      "city": "Pamplona",
+      "country": "Spain",
+      "type": "Cultural/Sport",
+      "description": "Nine-day festival with the famous encierro (running of the bulls).",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Sitges Carnival",
+      "city": "Sitges",
+      "country": "Spain",
+      "type": "Carnival/Cultural",
+      "description": "One of Spain's most celebrated carnivals known for its flamboyant parades.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Songkran Water Festival",
+      "city": "Various",
+      "country": "Thailand",
+      "type": "Cultural/Religious",
+      "description": "Thai New Year celebration involving water fights across the entire country.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Sundance Film Festival",
+      "city": "Park City",
+      "country": "USA",
+      "state": "Utah",
+      "type": "Film",
+      "description": "World's premier independent film festival.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Surin Elephant Roundup Parade",
+      "city": "Surin",
+      "country": "Thailand",
+      "type": "Cultural",
+      "description": "Annual parade featuring hundreds of elaborately dressed elephants.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Sydney Festival",
+      "city": "Sydney",
+      "country": "Australia",
+      "type": "Arts/Performing Arts",
+      "description": "Major arts festival in Sydney with theater, music, and visual arts.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Terre di Cinema",
+      "city": "Forza D'Agr\u00f2",
+      "country": "Italy",
+      "type": "Film",
+      "description": "Film festival in Sicily, Italy.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Testicle Festival",
+      "city": "Clinton",
+      "country": "USA",
+      "state": "Montana",
+      "type": "Food/Cultural",
+      "description": "Quirky annual festival in Clinton, Montana, featuring bull testicle cuisine.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Thaipusam Festival",
+      "city": "Batu Caves",
+      "country": "Malaysia",
+      "type": "Cultural/Religious",
+      "description": "Hindu festival celebrated by Tamil communities with devotional rituals.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Up Helly Aa Fire Festival",
+      "city": "Lerwick",
+      "country": "UK",
+      "state": "Scotland, Shetland",
+      "type": "Cultural/Fire",
+      "description": "Viking fire festival in Shetland with a galley burning ceremony.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Vegetarian Festival",
+      "city": "Phuket",
+      "country": "Thailand",
+      "type": "Cultural/Religious",
+      "description": "Nine-day Taoist festival involving vegetarianism and extreme rituals.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Voga Alla Veneta & Regata Storica",
+      "city": "Venice",
+      "country": "Italy",
+      "type": "Cultural/Sport",
+      "description": "Historic boat race on the Grand Canal in Venice.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Venice Carnival",
+      "city": "Venice",
+      "country": "Italy",
+      "type": "Carnival/Cultural",
+      "description": "World-famous carnival with elaborate masks and costumes in Venice.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Viareggio Carnival (Carnevale di Viareggio)",
+      "city": "Viareggio",
+      "country": "Italy",
+      "type": "Carnival/Cultural",
+      "description": "One of the most famous carnivals in Italy with giant papier-m\u00e2ch\u00e9 floats.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "White Nights Festival",
+      "city": "St. Petersburg",
+      "country": "Russia",
+      "type": "Cultural/Arts",
+      "description": "Festival celebrating St. Petersburg's famous white nights with concerts and events.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "World AIDS Day",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "type": "Awareness/Cultural",
+      "description": "Awareness event in Addis Ababa for World AIDS Day.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Yee Peng (Yi Peng) Festival",
+      "city": "Chiang Mai",
+      "country": "Thailand",
+      "type": "Cultural/Religious",
+      "description": "Buddhist festival releasing thousands of sky lanterns in Chiang Mai.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Yemanja (Festival of the Goddess of the Sea)",
+      "city": "Montevideo",
+      "country": "Uruguay",
+      "type": "Cultural/Religious",
+      "description": "Afro-Brazilian festival honoring the goddess of the sea.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Yoga Festival",
+      "city": "Calpe",
+      "country": "Spain",
+      "type": "Wellness/Cultural",
+      "description": "Yoga festival on the Costa Blanca in Spain.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    },
+    {
+      "name": "Zuri Carneval (Zurich Carnival)",
+      "city": "Zurich",
+      "country": "Switzerland",
+      "type": "Carnival/Cultural",
+      "description": "Traditional carnival celebration in Zurich.",
+      "source": "worldfestivaldirectory.com",
+      "source_url": "http://www.worldfestivaldirectory.com/festivals-a-z/"
+    }
+  ]
+}

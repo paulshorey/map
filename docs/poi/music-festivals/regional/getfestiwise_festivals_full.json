@@ -1,0 +1,1353 @@
+{
+  "source": "GetFestiWise",
+  "url": "https://getfestiwise.com",
+  "description": "Festival discovery platform covering 100+ world-class music events across 9 global regions. Provides personalized festival recommendations.",
+  "extraction_method": "Best-of list pages: edm, rock, jazz, world-music, hip-hop, family, budget. The /festivals premium page requires login. The /best/boutique, /best/folk, /best/country pages return 404.",
+  "total_count": 103,
+  "regions": [
+    "Europe",
+    "North America",
+    "Latin America",
+    "South America",
+    "Asia",
+    "Oceania",
+    "Caribbean",
+    "Africa",
+    "Middle East"
+  ],
+  "size_categories": {
+    "massive": "100,000+ attendees",
+    "large": "20,000-100,000 attendees",
+    "medium": "5,000-20,000 attendees",
+    "small": "Under 5,000 attendees"
+  },
+  "festivals": [
+    {
+      "name": "Tomorrowland",
+      "location": "Boom, Belgium",
+      "month": "July",
+      "genres": [
+        "electronic",
+        "edm",
+        "house"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Ultra Music Festival",
+      "location": "Miami, USA",
+      "month": "March",
+      "genres": [
+        "electronic",
+        "edm"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "EDC Las Vegas",
+      "location": "Las Vegas, USA",
+      "month": "May",
+      "genres": [
+        "electronic",
+        "edm",
+        "trance"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Creamfields",
+      "location": "Daresbury, UK",
+      "month": "August",
+      "genres": [
+        "electronic",
+        "edm",
+        "house"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Parookaville",
+      "location": "Weeze, Germany",
+      "month": "July",
+      "genres": [
+        "electronic",
+        "edm",
+        "house"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Untold Festival",
+      "location": "Cluj-Napoca, Romania",
+      "month": "August",
+      "genres": [
+        "electronic",
+        "edm",
+        "pop"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "World Club Dome",
+      "location": "Frankfurt, Germany",
+      "month": "June",
+      "genres": [
+        "electronic",
+        "edm",
+        "house"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Defqon.1",
+      "location": "Biddinghuizen, Netherlands",
+      "month": "June",
+      "genres": [
+        "electronic",
+        "hardstyle",
+        "hardcore"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Balaton Sound",
+      "location": "Zamárdi, Hungary",
+      "month": "July",
+      "genres": [
+        "electronic",
+        "edm",
+        "house"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Nature One",
+      "location": "Neustadt-Glewe, Germany",
+      "month": "July",
+      "genres": [
+        "electronic",
+        "edm",
+        "hardstyle"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Mysteryland",
+      "location": "Haarlemmermeer, Netherlands",
+      "month": "August",
+      "genres": [
+        "electronic",
+        "edm",
+        "house"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Awakenings",
+      "location": "Spaarnwoude, Netherlands",
+      "month": "June",
+      "genres": [
+        "electronic",
+        "techno",
+        "house"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Zrce Beach Festival",
+      "location": "Novalja, Croatia",
+      "month": "August",
+      "genres": [
+        "electronic",
+        "techno",
+        "trance"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Sónar Festival",
+      "location": "Barcelona, Spain",
+      "month": "June",
+      "genres": [
+        "electronic",
+        "techno",
+        "house"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Electric Forest",
+      "location": "Rothbury, USA",
+      "month": "June",
+      "genres": [
+        "electronic",
+        "edm",
+        "house"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Nocturnal Wonderland",
+      "location": "San Bernardino, USA",
+      "month": "March",
+      "genres": [
+        "electronic",
+        "edm",
+        "trance"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Shambhala",
+      "location": "Salmo, Canada",
+      "month": "August",
+      "genres": [
+        "dubstep",
+        "bass",
+        "electronic"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Lost Lands",
+      "location": "Thornville, USA",
+      "month": "September",
+      "genres": [
+        "dubstep",
+        "bass",
+        "electronic"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Sunburn Festival",
+      "location": "Goa, India",
+      "month": "December",
+      "genres": [
+        "electronic",
+        "edm"
+      ],
+      "size": "large",
+      "region": "Asia",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Wonderfruit Festival",
+      "location": "Pattaya, Thailand",
+      "month": "April",
+      "genres": [
+        "electronic",
+        "world",
+        "indie"
+      ],
+      "size": "medium",
+      "region": "Asia",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "VH1 Supersonic",
+      "location": "Pune, India",
+      "month": "February",
+      "genres": [
+        "electronic",
+        "edm",
+        "house"
+      ],
+      "size": "medium",
+      "region": "Asia",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Ozora Festival",
+      "location": "Ozora, Hungary",
+      "month": "July-August",
+      "genres": [
+        "psytrance",
+        "electronic",
+        "ambient"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "MUTEK",
+      "location": "Montreal, Canada (also Berlin)",
+      "month": "June-September",
+      "genres": [
+        "electronic",
+        "experimental",
+        "ambient"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Bass Coast",
+      "location": "Salmo, Canada",
+      "month": "August",
+      "genres": [
+        "electronic",
+        "bass",
+        "ambient"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Dekmantel",
+      "location": "Amsterdam, Netherlands",
+      "month": "August",
+      "genres": [
+        "electronic",
+        "techno",
+        "experimental"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Movement Electronic Music Festival",
+      "location": "Detroit, USA",
+      "month": "May",
+      "genres": [
+        "techno",
+        "house",
+        "electronic"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Melt Festival",
+      "location": "Gräfenhainichen, Germany",
+      "month": "July",
+      "genres": [
+        "electronic",
+        "indie",
+        "rock"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Fusion Festival",
+      "location": "Lärz, Germany",
+      "month": "June",
+      "genres": [
+        "electronic",
+        "techno",
+        "experimental"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Envision Festival",
+      "location": "Uvita, Costa Rica",
+      "month": "February",
+      "genres": [
+        "electronic",
+        "world",
+        "ambient"
+      ],
+      "size": "small",
+      "region": "Latin America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Lightning in a Bottle",
+      "location": "Bakersfield, USA",
+      "month": "May",
+      "genres": [
+        "electronic",
+        "indie",
+        "world"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Coachella",
+      "location": "Indio, USA",
+      "month": "April",
+      "genres": [
+        "indie",
+        "pop",
+        "electronic"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Glastonbury",
+      "location": "Pilton, UK",
+      "month": "June",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Burning Man",
+      "location": "Black Rock City, USA",
+      "month": "August-September",
+      "genres": [
+        "electronic",
+        "world",
+        "ambient"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Primavera Sound",
+      "location": "Barcelona, Spain",
+      "month": "May-June",
+      "genres": [
+        "indie",
+        "rock",
+        "electronic"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Lollapalooza",
+      "location": "Chicago, USA",
+      "month": "August",
+      "genres": [
+        "rock",
+        "indie",
+        "pop"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Austin City Limits Festival",
+      "location": "Austin, USA",
+      "month": "June",
+      "genres": [
+        "rock",
+        "indie",
+        "hiphop"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Sziget Festival",
+      "location": "Budapest, Hungary",
+      "month": "August",
+      "genres": [
+        "rock",
+        "pop",
+        "electronic"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Rock in Rio",
+      "location": "Rio de Janeiro, Brazil",
+      "month": "September",
+      "genres": [
+        "rock",
+        "pop",
+        "electronic"
+      ],
+      "size": "massive",
+      "region": "South America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Bonnaroo",
+      "location": "Manchester, USA",
+      "month": "June",
+      "genres": [
+        "rock",
+        "indie",
+        "hiphop"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Summerfest",
+      "location": "Milwaukee, USA",
+      "month": "June-July",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Reading & Leeds Festivals",
+      "location": "Reading & Leeds, UK",
+      "month": "August",
+      "genres": [
+        "rock",
+        "indie",
+        "pop"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Osheaga",
+      "location": "Montreal, Canada",
+      "month": "August",
+      "genres": [
+        "indie",
+        "rock",
+        "pop"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Outside Lands",
+      "location": "San Francisco, USA",
+      "month": "August",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Fuji Rock Festival",
+      "location": "Yuzawa, Japan",
+      "month": "July",
+      "genres": [
+        "rock",
+        "indie",
+        "electronic"
+      ],
+      "size": "large",
+      "region": "Asia",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Roskilde Festival",
+      "location": "Roskilde, Denmark",
+      "month": "July",
+      "genres": [
+        "rock",
+        "indie",
+        "electronic"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "EXIT Festival",
+      "location": "Novi Sad, Serbia",
+      "month": "July",
+      "genres": [
+        "electronic",
+        "rock",
+        "hiphop"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Splendour in the Grass",
+      "location": "Byron Bay, Australia",
+      "month": "July",
+      "genres": [
+        "indie",
+        "rock",
+        "electronic"
+      ],
+      "size": "large",
+      "region": "Oceania",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Pukkelpop",
+      "location": "Hasselt, Belgium",
+      "month": "August",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Governors Ball",
+      "location": "New York, USA",
+      "month": "June",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Firefly Music Festival",
+      "location": "Dover, USA",
+      "month": "September",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "BottleRock Napa Valley",
+      "location": "Napa, USA",
+      "month": "May",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Hangout Music Festival",
+      "location": "Gulf Shores, USA",
+      "month": "May",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "NOS Alive",
+      "location": "Porto, Portugal",
+      "month": "June",
+      "genres": [
+        "indie",
+        "rock",
+        "electronic"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Lowlands",
+      "location": "Biddinghuizen, Netherlands",
+      "month": "August",
+      "genres": [
+        "indie",
+        "rock",
+        "electronic"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Bilbao BBK Live",
+      "location": "Bilbao, Spain",
+      "month": "July",
+      "genres": [
+        "indie",
+        "rock",
+        "electronic"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Mad Cool Festival",
+      "location": "Madrid, Spain",
+      "month": "July",
+      "genres": [
+        "indie",
+        "rock",
+        "pop"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Dour Festival",
+      "location": "Dour, Belgium",
+      "month": "July",
+      "genres": [
+        "electronic",
+        "rock",
+        "hiphop"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Rock Werchter",
+      "location": "Werchter, Belgium",
+      "month": "July",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "FIB Benicàssim",
+      "location": "Benicàssim, Spain",
+      "month": "July",
+      "genres": [
+        "indie",
+        "rock",
+        "electronic"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Isle of Wight Festival",
+      "location": "Isle of Wight, UK",
+      "month": "June",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Corona Capital",
+      "location": "Mexico City, Mexico",
+      "month": "November",
+      "genres": [
+        "indie",
+        "rock",
+        "pop"
+      ],
+      "size": "large",
+      "region": "Latin America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Festival d'été de Québec",
+      "location": "Quebec City, Canada",
+      "month": "July",
+      "genres": [
+        "rock",
+        "pop",
+        "indie"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Bumbershoot",
+      "location": "Seattle, USA",
+      "month": "August",
+      "genres": [
+        "rock",
+        "indie",
+        "pop"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Pitchfork Music Festival",
+      "location": "Chicago, USA",
+      "month": "July",
+      "genres": [
+        "indie",
+        "rock",
+        "pop"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Riot Fest",
+      "location": "Chicago, USA",
+      "month": "July",
+      "genres": [
+        "indie",
+        "rock",
+        "pop"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Way Out West",
+      "location": "Gothenburg, Sweden",
+      "month": "August",
+      "genres": [
+        "indie",
+        "electronic",
+        "pop"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Flow Festival",
+      "location": "Helsinki, Finland",
+      "month": "August",
+      "genres": [
+        "indie",
+        "electronic",
+        "pop"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "End of the Road",
+      "location": "Dorset, UK",
+      "month": "September",
+      "genres": [
+        "indie",
+        "folk",
+        "rock"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "It's The Ship",
+      "location": "Pattaya, Thailand",
+      "month": "December",
+      "genres": [
+        "electronic",
+        "indie",
+        "world"
+      ],
+      "size": "medium",
+      "region": "Asia",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Lost Paradise",
+      "location": "Lexton, Australia",
+      "month": "January",
+      "genres": [
+        "electronic",
+        "psytrance",
+        "techno"
+      ],
+      "size": "medium",
+      "region": "Oceania",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Beyond the Valley",
+      "location": "Victoria, Australia",
+      "month": "February",
+      "genres": [
+        "indie",
+        "electronic",
+        "rock"
+      ],
+      "size": "medium",
+      "region": "Oceania",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Download Festival",
+      "location": "Donington, UK",
+      "month": "June",
+      "genres": [
+        "rock",
+        "metal"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Rock am Ring / Rock im Park",
+      "location": "Nürburg / Nuremberg, Germany",
+      "month": "June",
+      "genres": [
+        "rock",
+        "metal",
+        "indie"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Hellfest",
+      "location": "Clisson, France",
+      "month": "June",
+      "genres": [
+        "metal",
+        "hardcore",
+        "rock"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Wacken Open Air",
+      "location": "Wacken, Germany",
+      "month": "August",
+      "genres": [
+        "metal",
+        "rock",
+        "heavy metal"
+      ],
+      "size": "massive",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Graspop Metal Meeting",
+      "location": "Dessel, Belgium",
+      "month": "June",
+      "genres": [
+        "metal",
+        "rock",
+        "hardcore"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Bloodstock Open Air",
+      "location": "Derbyshire, UK",
+      "month": "August",
+      "genres": [
+        "metal",
+        "rock",
+        "hardcore"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Tons of Rock",
+      "location": "Oslo, Norway",
+      "month": "June",
+      "genres": [
+        "rock",
+        "metal",
+        "indie"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Resurrection Fest",
+      "location": "Viveiro, Spain",
+      "month": "July",
+      "genres": [
+        "metal",
+        "hardcore",
+        "rock"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Sick New World",
+      "location": "Las Vegas, USA",
+      "month": "April",
+      "genres": [
+        "rock",
+        "metal",
+        "nu-metal"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Shaky Knees Music Festival",
+      "location": "Atlanta, USA",
+      "month": "May",
+      "genres": [
+        "indie",
+        "rock",
+        "pop"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Louder Than Life",
+      "location": "Louisville, USA",
+      "month": "September",
+      "genres": [
+        "rock",
+        "metal",
+        "indie"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Inkcarceration Music & Tattoo Festival",
+      "location": "Mansfield, USA",
+      "month": "July",
+      "genres": [
+        "rock",
+        "metal",
+        "tattoo culture"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Rolling Loud California",
+      "location": "Los Angeles, USA",
+      "month": "March",
+      "genres": [
+        "hiphop",
+        "trap",
+        "rap"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Dreamville Festival",
+      "location": "Raleigh, USA",
+      "month": "April",
+      "genres": [
+        "hiphop",
+        "rnb",
+        "pop"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Afropunk Festival",
+      "location": "Brooklyn, USA",
+      "month": "August-September",
+      "genres": [
+        "rock",
+        "hiphop",
+        "indie"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "AfroFuture Detroit",
+      "location": "Detroit, USA",
+      "month": "August",
+      "genres": [
+        "afrobeat",
+        "hiphop",
+        "electronic"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "New Orleans Jazz & Heritage Festival",
+      "location": "New Orleans, USA",
+      "month": "April-May",
+      "genres": [
+        "jazz",
+        "blues",
+        "rock"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Jazz in the Gardens",
+      "location": "Miami, USA",
+      "month": "March",
+      "genres": [
+        "jazz",
+        "rnb",
+        "hiphop"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Montreux Jazz Festival",
+      "location": "Montreux, Switzerland",
+      "month": "July",
+      "genres": [
+        "jazz",
+        "blues",
+        "rock"
+      ],
+      "size": "large",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Byron Bay Bluesfest",
+      "location": "Byron Bay, Australia",
+      "month": "April",
+      "genres": [
+        "blues",
+        "rock",
+        "folk"
+      ],
+      "size": "large",
+      "region": "Oceania",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Newport Jazz Festival",
+      "location": "Newport, USA",
+      "month": "July-August",
+      "genres": [
+        "jazz"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "We Out Here",
+      "location": "Wimborne St. Giles, UK",
+      "month": "August",
+      "genres": [
+        "jazz",
+        "soul",
+        "hiphop"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Vive Latino",
+      "location": "Mexico City, Mexico",
+      "month": "March",
+      "genres": [
+        "latin",
+        "rock",
+        "indie"
+      ],
+      "size": "large",
+      "region": "Latin America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Newport Folk Festival",
+      "location": "Newport, USA",
+      "month": "July",
+      "genres": [
+        "folk",
+        "indie",
+        "rock"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "WOMAD Festival",
+      "location": "Charlton Park, UK",
+      "month": "July",
+      "genres": [
+        "world",
+        "ambient"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "High Water Festival",
+      "location": "North Charleston, USA",
+      "month": "April",
+      "genres": [
+        "indie",
+        "rock",
+        "folk"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Green Man Festival",
+      "location": "Brecon Beacons, UK",
+      "month": "August",
+      "genres": [
+        "indie",
+        "folk",
+        "rock"
+      ],
+      "size": "medium",
+      "region": "Europe",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Reggae Sumfest",
+      "location": "Montego Bay, Jamaica",
+      "month": "July",
+      "genres": [
+        "reggae",
+        "hiphop"
+      ],
+      "size": "large",
+      "region": "Caribbean",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Tanglewood Music Festival",
+      "location": "Lenox, USA",
+      "month": "July-August",
+      "genres": [
+        "classical"
+      ],
+      "size": "medium",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "SXSW",
+      "location": "Austin, USA",
+      "month": "March",
+      "genres": [
+        "pop",
+        "indie",
+        "rock"
+      ],
+      "size": "massive",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Country Thunder",
+      "location": "Georgetown, USA",
+      "month": "April",
+      "genres": [
+        "country"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    },
+    {
+      "name": "Stagecoach",
+      "location": "Gonzales, USA",
+      "month": "April",
+      "genres": [
+        "country",
+        "rock"
+      ],
+      "size": "large",
+      "region": "North America",
+      "source": "getfestiwise.com"
+    }
+  ]
+}

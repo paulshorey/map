@@ -1,0 +1,387 @@
+{
+  "source": "Bandsintown",
+  "source_url": "https://www.bandsintown.com/f",
+  "extraction_method": "Individual festival pages + API attempt + web search for festival URLs",
+  "extraction_date": "2026-06-17",
+  "api_status": {
+    "attempted_endpoints": [
+      "https://rest.bandsintown.com/artists/lollapalooza/events/?app_id=musicfestivaldata&date=all",
+      "https://rest.bandsintown.com/artists/coachella/events/?app_id=musicfestivaldata&date=all",
+      "https://rest.bandsintown.com/artists/glastonbury/events/?app_id=musicfestivaldata&date=all",
+      "https://rest.bandsintown.com/artists/burning+man/events/?app_id=js",
+      "https://rest.bandsintown.com/v4/artists/lollapalooza/events/?app_id=js"
+    ],
+    "result": "All API endpoints return HTTP 403 'User is not authorized to access this resource with an explicit deny in an identity-based policy'. API access blocked."
+  },
+  "top_festivals_2025_bandsintown_data": {
+    "most_ticket_clicks": [
+      {"name": "Lollapalooza Chicago", "location": "Chicago, IL", "rank": 1},
+      {"name": "The Governors Ball Music Festival", "location": "Queens, NY", "rank": 2},
+      {"name": "Bourbon & Beyond", "location": "Louisville, KY", "rank": 3},
+      {"name": "Austin City Limits Music Festival", "location": "Austin, TX", "rank": 4},
+      {"name": "Wonderfront Music & Arts Festival", "location": "San Diego, CA", "rank": 5},
+      {"name": "Louder Than Life", "location": "Louisville, KY", "rank": 6},
+      {"name": "ONE Musicfest", "location": "Atlanta, GA", "rank": 7},
+      {"name": "Aftershock", "location": "Sacramento, CA", "rank": 8},
+      {"name": "Shaky Knees Festival", "location": "Atlanta, GA", "rank": 9},
+      {"name": "BottleRock Napa Valley", "location": "Napa, CA", "rank": 10}
+    ],
+    "most_views": [
+      {"name": "Lollapalooza Chicago", "location": "Chicago, IL", "rank": 1},
+      {"name": "Soundstorm", "location": "Riyadh, Saudi Arabia", "rank": 2},
+      {"name": "Summerfest", "location": "Milwaukee, WI", "rank": 3},
+      {"name": "Welcome to Rockville", "location": "Daytona Beach, FL", "rank": 4},
+      {"name": "Aftershock", "location": "Sacramento, CA", "rank": 5},
+      {"name": "Bourbon & Beyond", "location": "Louisville, KY", "rank": 6},
+      {"name": "EDC", "location": "Orlando, FL", "rank": 7},
+      {"name": "Shaky Knees Festival", "location": "Atlanta, GA", "rank": 8},
+      {"name": "Austin City Limits Music Festival", "location": "Austin, TX", "rank": 9},
+      {"name": "Pulse of Gaia", "location": "Madrid, Spain", "rank": 10}
+    ],
+    "most_new_followers": [
+      {"name": "Bollywood Music Project", "location": "Mumbai, India", "rank": 1},
+      {"name": "Reading Festival", "location": "Reading, UK", "rank": 2},
+      {"name": "Louder Than Life", "location": "Louisville, KY", "rank": 3},
+      {"name": "Ottawa Bluesfest", "location": "Ottawa, Canada", "rank": 4},
+      {"name": "Rock the South", "location": "Cullman, AL", "rank": 5},
+      {"name": "The Country Fest", "location": "North Lawrence, OH", "rank": 6},
+      {"name": "Aftershock", "location": "Sacramento, CA", "rank": 7},
+      {"name": "Lokerse Feesten", "location": "Lokeren, Belgium", "rank": 8},
+      {"name": "EDC", "location": "Orlando, FL", "rank": 9},
+      {"name": "Welcome to Rockville", "location": "Daytona Beach, FL", "rank": 10}
+    ],
+    "data_source": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+  },
+  "festivals": [
+    {
+      "name": "Lollapalooza Chicago 2025",
+      "bandsintown_id": "173242",
+      "dates": "July 31 – August 3, 2025",
+      "location": "Grant Park, Chicago, IL",
+      "country": "US",
+      "venue": "Grant Park",
+      "lineup_note": "4 days of music; specific daily artists not rendered (requires JavaScript)",
+      "ticket_url": "https://www.bandsintown.com/f/173242-lollapalooza-chicago-2025",
+      "website": "lollapalooza.com",
+      "description": "4 days of the world's best music in the heart of Chicago.",
+      "source_url": "https://www.bandsintown.com/f/173242-lollapalooza-chicago-2025"
+    },
+    {
+      "name": "Coachella Valley Music and Arts Festival 2025",
+      "bandsintown_id": "171897",
+      "dates": "April 11–20, 2025 (two weekends)",
+      "location": "Empire Polo Club, Indio, California",
+      "country": "US",
+      "venue": "Empire Polo Club",
+      "lineup": ["Lady Gaga", "Green Day", "Post Malone", "Travis Scott", "Missy Elliott", "Charli XCX", "Megan Thee Stallion", "Zedd", "FKA twigs", "The Prodigy", "Keinemusik", "Above & Beyond", "Anitta", "Japanese Breakfast", "Kraftwerk", "Polo & Pan", "Chase & Status", "Boris Brejcha", "Amelie Lens", "GloRilla", "Clairo"],
+      "ticket_url": "https://www.bandsintown.com/f/171897",
+      "website": "coachella.com",
+      "description": "Annual music and arts festival at Empire Polo Club; headliners Lady Gaga, Green Day, Post Malone, Travis Scott.",
+      "source_url": "https://www.bandsintown.com/f/171897"
+    },
+    {
+      "name": "Shaky Knees Festival 2025",
+      "bandsintown_id": "170945",
+      "dates": "September 19–21, 2025",
+      "location": "Piedmont Park, Atlanta, GA",
+      "country": "US",
+      "venue": "Piedmont Park",
+      "lineup": ["My Chemical Romance", "Blink-182", "Deftones", "Vampire Weekend", "Lenny Kravitz", "Cage The Elephant", "Alabama Shakes", "The Black Keys", "Sublime", "Weird Al Yankovic", "The Marias", "Public Enemy", "Lucy Dacus", "Devo", "Pixies", "The Backseat Lovers", "TV On The Radio", "The All-American Rejects", "Idles"],
+      "ticket_url": "https://www.bandsintown.com/f/170945-shaky-knees-festival-2025",
+      "website": "shakykneesfestival.com",
+      "description": "12th edition of Shaky Knees Music Festival at Piedmont Park, Atlanta.",
+      "source_url": "https://www.bandsintown.com/f/170945-shaky-knees-festival-2025"
+    },
+    {
+      "name": "Sonic Temple Art & Music Festival 2025",
+      "bandsintown_id": "159682",
+      "dates": "May 8–11, 2025",
+      "location": "Historic Crew Stadium, Columbus, OH",
+      "country": "US",
+      "venue": "Historic Crew Stadium",
+      "lineup": ["Metallica", "Rob Zombie", "Alice in Chains"],
+      "ticket_url": "https://www.bandsintown.com/f/159682-sonic-temple-art-and-music-festival-2025",
+      "website": "sonictemplefestival.com",
+      "address": "1 Black and Gold Blvd, Columbus, OH",
+      "description": "Sonic Temple Art of Music Festival returns to Historic Crew Stadium May 8-11, 2025. Two nights of Metallica.",
+      "source_url": "https://www.bandsintown.com/f/159682-sonic-temple-art-and-music-festival-2025"
+    },
+    {
+      "name": "Taubertal-Festival 2025",
+      "bandsintown_id": "163356",
+      "dates": "August 7–10, 2025",
+      "location": "Taubertal-Festival, Rothenburg ob der Tauber, Germany",
+      "country": "Germany",
+      "venue": "Taubertal Open Air / Eiswiese",
+      "lineup_note": "Over 40 bands on several stages; specific lineup not rendered via fetch",
+      "ticket_url": "https://www.bandsintown.com/f/163356",
+      "website": "taubertal-festival.de",
+      "description": "Over 40 bands on several stages in the beautiful Tauber Valley with a view of historic Rothenburg ob der Tauber.",
+      "source_url": "https://www.bandsintown.com/f/163356"
+    },
+    {
+      "name": "Lugano LongLake Festival 2025",
+      "bandsintown_id": "184196",
+      "dates": "July 10–27, 2025",
+      "location": "Multiple Venues, Lugano, Switzerland",
+      "country": "Switzerland",
+      "venue": "Multiple Venues",
+      "lineup_note": "Over 300 events including Estival Jazz (Jul 10-12), Blues to Bop, Lugano Buskers",
+      "ticket_url": "https://www.bandsintown.com/f/184196",
+      "website": "longlake.ch",
+      "description": "15th edition of LongLake Festival; one of the largest urban open-air festivals in Switzerland. Over 300 events — music, theatre, dance, workshops. Most events are free.",
+      "source_url": "https://www.bandsintown.com/f/184196"
+    },
+    {
+      "name": "Festival Cruïlla 2025",
+      "bandsintown_id": "164053",
+      "dates": "July 9–12, 2025",
+      "location": "Parc del Fòrum, Barcelona, Spain",
+      "country": "Spain",
+      "venue": "Parc del Fòrum",
+      "address": "Carrer de la Pau, 12, Barcelona, Spain",
+      "lineup_note": "4-day festival; specific artist lineup not rendered via fetch",
+      "ticket_url": "https://www.bandsintown.com/f/164053",
+      "source_url": "https://www.bandsintown.com/f/164053"
+    },
+    {
+      "name": "The Governors Ball Music Festival 2025",
+      "bandsintown_id": "165667",
+      "dates": "June 6–8, 2025",
+      "location": "Flushing Meadows–Corona Park, Queens, NY",
+      "country": "US",
+      "venue": "Flushing Meadows–Corona Park",
+      "lineup": ["Tyler, the Creator", "Olivia Rodrigo", "Hozier"],
+      "ticket_url": "https://www.bandsintown.com/es/f/165667-the-governors-ball-music-festival-2025",
+      "description": "14th edition of Governors Ball; headlined by Tyler, the Creator, Olivia Rodrigo, and Hozier.",
+      "source_url": "https://www.bandsintown.com/es/f/165667-the-governors-ball-music-festival-2025"
+    },
+    {
+      "name": "Sonic Temple Art & Music Festival 2025",
+      "bandsintown_id": "159682",
+      "dates": "May 8–11, 2025",
+      "location": "Historic Crew Stadium, Columbus, OH",
+      "country": "US",
+      "venue": "Historic Crew Stadium",
+      "lineup": ["Metallica", "Rob Zombie", "Alice in Chains"],
+      "ticket_url": "https://www.bandsintown.com/f/159682-sonic-temple-art-and-music-festival-2025",
+      "source_url": "https://www.bandsintown.com/f/159682-sonic-temple-art-and-music-festival-2025"
+    },
+    {
+      "name": "Green River Festival 2025",
+      "bandsintown_id": "162320",
+      "dates": "June 20–22, 2025",
+      "location": "Franklin County Fairgrounds, Greenfield, MA",
+      "country": "US",
+      "venue": "Franklin County Fairgrounds",
+      "address": "81 Wisdom Way, Greenfield, MA",
+      "lineup_note": "3-day festival; full lineup not rendered via fetch",
+      "ticket_url": "https://www.bandsintown.com/f/162320-green-river-festival-2025",
+      "source_url": "https://www.bandsintown.com/f/162320-green-river-festival-2025"
+    },
+    {
+      "name": "The Country Fest 2025",
+      "bandsintown_id": "158951",
+      "dates": "June 11–14, 2025",
+      "location": "Clay's Resort Jellystone Park, North Lawrence, Ohio",
+      "country": "US",
+      "venue": "Clay's Resort Jellystone Park",
+      "lineup_note": "3-day country music festival in Northeast Ohio",
+      "ticket_url": "https://www.bandsintown.com/f/158951-the-country-fest-2025",
+      "description": "The Country Fest is a 3 Day Country Music Festival in Northeast Ohio with a RT Hampton Wednesday Night Kickoff Party.",
+      "source_url": "https://www.bandsintown.com/f/158951-the-country-fest-2025"
+    },
+    {
+      "name": "Jfest 2025",
+      "bandsintown_id": "165386",
+      "dates": "May 17, 2025",
+      "location": "Tennessee Riverpark, Chattanooga, TN",
+      "country": "US",
+      "venue": "Tennessee Riverpark",
+      "address": "4301 Amnicola Hwy, Chattanooga, TN",
+      "lineup_note": "Tennessee Valley's largest Christian music festival, 25th year",
+      "ticket_url": "https://www.bandsintown.com/f/165386-jfest-2025",
+      "source_url": "https://www.bandsintown.com/f/165386-jfest-2025"
+    },
+    {
+      "name": "Kernowfornia Festival 2025",
+      "bandsintown_id": "161038",
+      "dates": "September 26–28, 2025",
+      "location": "East Looe Beach, Looe, United Kingdom",
+      "country": "UK",
+      "venue": "East Looe Beach",
+      "lineup": ["Marillion", "Nick Mulvey", "Jordan Rakei"],
+      "ticket_url": "https://www.bandsintown.com/f/161038",
+      "description": "3-day genre-spanning festival on the shores of Looe, Cornwall, UK.",
+      "source_url": "https://www.bandsintown.com/f/161038"
+    },
+    {
+      "name": "The Town and The City Festival 2025",
+      "bandsintown_id": "166872",
+      "dates": "April 24–26, 2025",
+      "location": "Multiple Venues, Lowell, Massachusetts",
+      "country": "US",
+      "venue": "Multiple Venues",
+      "lineup_note": "Multi-day music and arts festival in downtown Lowell, MA",
+      "ticket_url": "https://www.bandsintown.com/f/166872-the-town-and-the-city-festival-2025",
+      "source_url": "https://www.bandsintown.com/f/166872-the-town-and-the-city-festival-2025"
+    },
+    {
+      "name": "Mountain Music Fest 2025",
+      "bandsintown_id": "180947",
+      "dates": "August 16, 2025",
+      "location": "Buchanan Park Recreation Center, Evergreen, CO",
+      "country": "US",
+      "venue": "Buchanan Park Recreation Center",
+      "address": "32003 Ellingwood Trail, Evergreen, CO",
+      "ticket_url": "https://www.bandsintown.com/f/180947-mountain-music-fest-2025",
+      "website": "mountainmusicfest.org",
+      "description": "Mountain Music Fest in Evergreen, Colorado.",
+      "source_url": "https://www.bandsintown.com/f/180947-mountain-music-fest-2025"
+    },
+    {
+      "name": "Glastonbury Festival 2025",
+      "dates": "June 25–29, 2025",
+      "location": "Worthy Farm, Pilton, United Kingdom",
+      "country": "UK",
+      "venue": "Worthy Farm",
+      "lineup": ["The 1975", "Neil Young and The Chrome Hearts", "Biffy Clyro", "Loyle Carner", "RAYE", "Four Tet", "Floating Points", "Olivia Rodrigo", "PinkPantheress", "Overmono", "Parcels", "Alanis Morissette", "Busta Rhymes", "Wet Leg", "Franz Ferdinand"],
+      "ticket_url": "https://www.bandsintown.com/v/10281392-Glastonbury-Festival",
+      "website": "glastonburyfestivals.co.uk",
+      "description": "Iconic UK festival at Worthy Farm, Pilton. 2025 headliners: The 1975 (Friday), Neil Young (Saturday), Olivia Rodrigo (Sunday).",
+      "source_url": "https://www.bandsintown.com/v/10281392-Glastonbury-Festival"
+    },
+    {
+      "name": "Reading Festival 2025",
+      "dates": "August 21–24, 2025",
+      "location": "Richfield Avenue, Reading, UK",
+      "country": "UK",
+      "venue": "Richfield Avenue",
+      "lineup_note": "Major UK festival; gained most new Bandsintown followers in UK in 2025",
+      "ticket_url": "https://www.bandsintown.com",
+      "website": "readingfestival.com",
+      "source_url": "https://www.bandsintown.com"
+    },
+    {
+      "name": "BottleRock Napa Valley 2025",
+      "dates": "May 23–25, 2025",
+      "location": "Napa Valley Expo, Napa, CA",
+      "country": "US",
+      "venue": "Napa Valley Expo",
+      "lineup": ["Green Day", "Justin Timberlake", "Noah Kahan", "Khruangbin", "Ice Cube", "Sublime", "Kaskade", "Goose", "Public Enemy", "E-40", "Benson Boone"],
+      "description": "Annual music, food, and wine festival in Napa Valley. Top 10 most ticket clicks on Bandsintown in 2025.",
+      "source_url": "https://www.sfgate.com/sf-culture/article/bottlerock-2025-lineup-20031528.php"
+    },
+    {
+      "name": "Outside Lands 2025",
+      "dates": "August 8–10, 2025",
+      "location": "Golden Gate Park, San Francisco, CA",
+      "country": "US",
+      "venue": "Golden Gate Park",
+      "lineup": {
+        "Aug 8": ["Doja Cat", "John Summit", "Doechii", "Still Woozy", "Beck", "Thundercat", "MARINA", "Floating Points", "Fujii Kaze"],
+        "Aug 9": ["Tyler, the Creator", "Vampire Weekend", "Gracie Abrams", "Gesaffelstein", "Ludacris", "Wallows", "Royel Otis", "Artemas"],
+        "Aug 10": ["Hozier", "Anderson .Paak & Free Nationals", "Glass Animals", "Jamie xx", "Bleachers", "Jorja Smith", "Black Coffee"]
+      },
+      "ticket_url": "https://sfoutsidelands.com",
+      "source_url": "https://www.jambase.com/festival/outside-lands-2025"
+    },
+    {
+      "name": "EDC (Electric Daisy Carnival) 2025",
+      "dates": "2025",
+      "location": "Orlando, FL",
+      "country": "US",
+      "venue": "Orlando",
+      "lineup_note": "Top 10 most views and most new followers on Bandsintown in 2025",
+      "description": "Major EDM festival. Top 10 for both views and new followers on Bandsintown in 2025.",
+      "source_url": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+    },
+    {
+      "name": "Soundstorm 2025",
+      "dates": "2025",
+      "location": "Riyadh, Saudi Arabia",
+      "country": "Saudi Arabia",
+      "venue": "Riyadh",
+      "lineup_note": "No. 2 most views globally on Bandsintown in 2025",
+      "description": "Major international festival in Saudi Arabia. Second most-viewed festival on Bandsintown globally in 2025.",
+      "source_url": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+    },
+    {
+      "name": "Welcome to Rockville 2025",
+      "dates": "2025",
+      "location": "Daytona Beach, FL",
+      "country": "US",
+      "venue": "Daytona Beach",
+      "lineup_note": "Top 10 most views and most new followers on Bandsintown in 2025",
+      "description": "Major rock festival. Top 4 most views and top 10 new followers on Bandsintown in 2025.",
+      "source_url": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+    },
+    {
+      "name": "Bollywood Music Project 2025",
+      "dates": "2025",
+      "location": "Mumbai, India",
+      "country": "India",
+      "lineup_note": "No. 1 most new followers globally on Bandsintown in 2025",
+      "description": "Indian music festival; gained the most new Bandsintown followers of any festival worldwide in 2025.",
+      "source_url": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+    },
+    {
+      "name": "Ottawa Bluesfest 2025",
+      "dates": "2025",
+      "location": "Ottawa, Canada",
+      "country": "Canada",
+      "lineup_note": "No. 4 most new followers on Bandsintown in 2025",
+      "source_url": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+    },
+    {
+      "name": "Lokerse Feesten 2025",
+      "dates": "2025",
+      "location": "Lokeren, Belgium",
+      "country": "Belgium",
+      "lineup_note": "No. 8 most new followers on Bandsintown in 2025",
+      "source_url": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+    },
+    {
+      "name": "Wonderfront Music & Arts Festival 2025",
+      "dates": "2025",
+      "location": "San Diego, CA",
+      "country": "US",
+      "venue": "San Diego",
+      "lineup_note": "No. 5 most ticket clicks on Bandsintown in 2025",
+      "source_url": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+    },
+    {
+      "name": "ONE Musicfest 2025",
+      "dates": "2025",
+      "location": "Atlanta, GA",
+      "country": "US",
+      "lineup_note": "No. 7 most ticket clicks on Bandsintown in 2025",
+      "source_url": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+    },
+    {
+      "name": "Rock the South 2025",
+      "dates": "2025",
+      "location": "Cullman, AL",
+      "country": "US",
+      "lineup_note": "No. 5 most new followers on Bandsintown in 2025",
+      "source_url": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+    },
+    {
+      "name": "Pulse of Gaia 2025",
+      "dates": "2025",
+      "location": "Madrid, Spain",
+      "country": "Spain",
+      "lineup_note": "No. 10 most views globally on Bandsintown in 2025",
+      "source_url": "https://www.hypebot.com/hypebot/2025/12/bandsintown-high-notes-shines-the-spotlight-on-festivals-in-2025.html"
+    }
+  ],
+  "total_festivals_extracted": 28,
+  "notes": [
+    "Bandsintown REST API (rest.bandsintown.com) is fully blocked — returns HTTP 403 for all app_id values tested",
+    "Festival directory page (bandsintown.com/f) requires JavaScript to render listings",
+    "Individual festival pages render partial data (dates, venue, description) but full artist lineups require JavaScript",
+    "Lineup data supplemented from external sources (JamBase, Wikipedia, Hypebot) where available",
+    "Top 10 festival rankings sourced from Bandsintown High Notes 2025 year-end data via Hypebot",
+    "Bandsintown festival IDs in URLs follow format: bandsintown.com/f/{id}-{slug}"
+  ]
+}

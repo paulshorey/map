@@ -1,0 +1,5740 @@
+[
+  {
+    "name": "Sonar 2026",
+    "start_date": "2026-06-18T00:00:00.000Z",
+    "end_date": "2026-06-20T00:00:00.000Z",
+    "venue": "Metro",
+    "city": "Barcelona",
+    "country": "ES",
+    "genres": [
+      "House",
+      "Tech House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Barcelona's legendary electronic music festival.",
+    "organizers": [
+      {
+        "name": "Sonar",
+        "slug": "sonar"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL Presents Make The Girls Dance",
+    "start_date": "2026-06-18T00:00:00.000Z",
+    "end_date": "2026-06-18T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Tech House",
+      "Progressive House",
+      "Melodic Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-06-18",
+    "is_free": false,
+    "description": "HUGEL brings his Make The Girls Dance residency with Latin house energy to the Theatre, while Miss Monique takes over the Club Room with progressive house vibes.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER",
+    "start_date": "2026-06-18T00:00:00.000Z",
+    "end_date": "2026-06-18T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/18-06-2026",
+    "is_free": false,
+    "description": "FISHER returns to [UNVRS] Ibiza for year 2 of his Thursday night residency with high-octane house and tech house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla",
+    "start_date": "2026-06-19T00:00:00.000Z",
+    "end_date": "2026-06-19T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-06-19",
+    "is_free": false,
+    "description": "Dom Dolla plays Hï Ibiza every Friday with Ewan McVicar's Club Knuckles in the Club Room. High-energy house and tech house music at the world's #1 club.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-06-19T00:00:00.000Z",
+    "end_date": "2026-06-19T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/19-06-2026",
+    "is_free": false,
+    "description": "David Guetta returns to Fridays at [UNVRS] presenting Galactic Circus, a carnival of sight and sound spanning genres with performances and immersive production.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "S.A.M. (all night DJ set + live)",
+    "start_date": "2026-06-19T00:00:00.000Z",
+    "end_date": "2026-06-19T00:00:00.000Z",
+    "venue": "Shelter Amsterdam",
+    "city": "Amsterdam",
+    "country": "NL",
+    "genres": [
+      "DJ Set",
+      "Live"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "S.A.M. presents an all night DJ set and live performance at Shelter Amsterdam.",
+    "organizers": [
+      {
+        "name": "Shelter Amsterdam",
+        "slug": "shelter-amsterdam"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-06-20T00:00:00.000Z",
+    "end_date": "2026-06-20T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-06-20",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday night residency at Hï Ibiza, bringing his signature Afro House sound and global vision to the dancefloor.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-06-20T00:00:00.000Z",
+    "end_date": "2026-06-20T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/20-06-2026",
+    "is_free": false,
+    "description": "Psychedelic adventure as elrow returns to [UNVRS] with Enter The WORTEX - immersive worlds of house, tech house and techno with world-class performances and visuals.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Kiesgrube 21.06 with BUNT., Marco Faraone, Steve Bug Chinonegro",
+    "start_date": "2026-06-20T00:00:00.000Z",
+    "end_date": "2026-06-20T00:00:00.000Z",
+    "venue": "Kiesgrube",
+    "city": "Neuss",
+    "country": "DE",
+    "genres": [
+      "Electro",
+      "Tech House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Kiesgrube celebrates 30 years with BUNT., Marco Faraone, Steve Bug and Chinonegro performing electro and deep house music at this special open air event in Neuss.",
+    "organizers": [
+      {
+        "name": "Kiesgrube",
+        "slug": "kiesgrube"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Moody Mehran Curates",
+    "start_date": "2026-06-20T00:00:00.000Z",
+    "end_date": "2026-06-20T00:00:00.000Z",
+    "venue": "Shelter Amsterdam",
+    "city": "Amsterdam",
+    "country": "NL",
+    "genres": [],
+    "website": null,
+    "is_free": false,
+    "description": "Moody Mehran Curates at Shelter Amsterdam",
+    "organizers": [
+      {
+        "name": "Shelter Amsterdam",
+        "slug": "shelter-amsterdam"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MESTIZA",
+    "start_date": "2026-06-21T00:00:00.000Z",
+    "end_date": "2026-06-21T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Latin House",
+      "Flamenco Electronic",
+      "Psy-Techno",
+      "Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/mestiza/2026-06-21",
+    "is_free": false,
+    "description": "MESTIZA residency at Hï Ibiza featuring flamenco-inspired electronic music with Indira Paganotto Presents ARTCORE in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox Opening Party",
+    "start_date": "2026-06-21T00:00:00.000Z",
+    "end_date": "2026-06-21T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/21-06-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza. Opening party featuring an all-night long set from the electronic music icon.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Kiesgrube presents #WAH 21.06 with Amelie Lens, Deborah De Luca, NEGITIV, ROW1, BRINA KNAUSS",
+    "start_date": "2026-06-21T00:00:00.000Z",
+    "end_date": "2026-06-21T00:00:00.000Z",
+    "venue": "Kiesgrube",
+    "city": "Neuss",
+    "country": "DE",
+    "genres": [
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Kiesgrube celebrates 30 years with a techno event featuring Amelie Lens, Deborah De Luca, NEGITIV, ROW1, and Brina Knauss at this unique outdoor venue in Neuss.",
+    "organizers": [
+      {
+        "name": "Kiesgrube",
+        "slug": "kiesgrube"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-06-22T00:00:00.000Z",
+    "end_date": "2026-06-22T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-06-22",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza with Afro house, Latin house and deep house featuring live instrumentalists and dancers. Andrea Oliva presents All I Need in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "John Summit Presents Experts Only",
+    "start_date": "2026-06-22T00:00:00.000Z",
+    "end_date": "2026-06-22T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/john-summit-presents-experts-only/22-06-2026",
+    "is_free": false,
+    "description": "John Summit's Ibiza residency featuring house and tech house music with handpicked special guests from the Experts Only label roster.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Circoloco Ibiza",
+    "start_date": "2026-06-22T00:00:00.000Z",
+    "end_date": "2026-06-22T00:00:00.000Z",
+    "venue": "DC-10",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Circoloco returns to Ibiza with an exceptional lineup featuring DJ Koze, Seth Troxler, Mochakk, DJ Tennis and more.",
+    "organizers": [
+      {
+        "name": "Circoloco",
+        "slug": "circoloco"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-06-23T00:00:00.000Z",
+    "end_date": "2026-06-23T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Tech House",
+      "Dub",
+      "Garage"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-06-23",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza featuring deep tech, minimal house, dub, garage and groove across Theatre and Club Room with Paco Osuna's NOW HERE residency.",
+    "organizers": [
+      {
+        "name": "Eastenderz",
+        "slug": "eastenderz"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA - ÆDEN",
+    "start_date": "2026-06-23T00:00:00.000Z",
+    "end_date": "2026-06-23T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/23-06-2026",
+    "is_free": false,
+    "description": "Anyma returns to [UNVRS] with ÆDEN, a deeply immersive creative experience featuring melodic techno and cutting-edge technology.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-06-24T00:00:00.000Z",
+    "end_date": "2026-06-24T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-06-24",
+    "is_free": false,
+    "description": "MEDUZA and James Hype present OUR HOUSE, exploring the full spectrum of house music with MEDUZA³ live concept and James Hype's SYNC show at Hï Ibiza.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-06-24T00:00:00.000Z",
+    "end_date": "2026-06-24T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/24-06-2026",
+    "is_free": false,
+    "description": "Jamie Jones and Paradise crew present an immersive cosmic journey at UNVRS Ibiza with signature expansive house sound.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL and Miss Monique",
+    "start_date": "2026-06-25T00:00:00.000Z",
+    "end_date": "2026-06-25T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Progressive House",
+      "Melodic Techno",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-06-25",
+    "is_free": false,
+    "description": "HUGEL brings Latin house energy to the Theatre while Miss Monique takes over the Club Room with progressive house and melodic techno at Hï Ibiza.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER",
+    "start_date": "2026-06-25T00:00:00.000Z",
+    "end_date": "2026-06-25T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/25-06-2026",
+    "is_free": false,
+    "description": "FISHER returns to [UNVRS] for year 2 of his Thursday night residency with high-octane house and tech house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Paradise City Festival",
+    "start_date": "2026-06-26T00:00:00.000Z",
+    "end_date": "2026-06-28T00:00:00.000Z",
+    "venue": "Paradise City Festival Grounds",
+    "city": "Steenokkerzeel",
+    "country": "BE",
+    "genres": [
+      "Techno",
+      "Tech House",
+      "Drum & Bass"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Paradise City Festival - Keep an open mind. Never resist the unfamiliar. Never fail to be kind. Trust me, this is Paradise.",
+    "organizers": [
+      {
+        "name": "Paradise City Festival",
+        "slug": "paradise-city-festival"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla",
+    "start_date": "2026-06-26T00:00:00.000Z",
+    "end_date": "2026-06-26T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-06-26",
+    "is_free": false,
+    "description": "Dom Dolla takes over Fridays at Hï Ibiza with high-energy house and tech house, joined by Ewan McVicar's Club Knuckles in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Lago Lago 2026",
+    "start_date": "2026-06-26T00:00:00.000Z",
+    "end_date": "2026-06-28T00:00:00.000Z",
+    "venue": null,
+    "city": null,
+    "country": null,
+    "genres": [
+      "Techno",
+      "Tech House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Lago Lago is an electronic music festival featuring an extensive lineup of international DJs and live acts across multiple stages with music, animations, and accommodations.",
+    "organizers": [
+      {
+        "name": "Chasing the Hihat",
+        "slug": "chasing-the-hihat"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-06-26T00:00:00.000Z",
+    "end_date": "2026-06-26T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/26-06-2026",
+    "is_free": false,
+    "description": "David Guetta returns to Fridays at [UNVRS] presenting Galactic Circus, an alternative utopia carnival of sight and sound with performances spanning house, progressive house and tech house.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Benjaming Berg, Tom Trago, William Kiss & more",
+    "start_date": "2026-06-26T00:00:00.000Z",
+    "end_date": "2026-06-26T00:00:00.000Z",
+    "venue": "Shelter Amsterdam",
+    "city": "Amsterdam",
+    "country": "NL",
+    "genres": [
+      "House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Electronic music event at Shelter Amsterdam featuring Benjaming Berg, Tom Trago, William Kiss and more artists.",
+    "organizers": [
+      {
+        "name": "Shelter Amsterdam",
+        "slug": "shelter-amsterdam"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-06-27T00:00:00.000Z",
+    "end_date": "2026-06-27T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-06-27",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday night residency at Hï Ibiza, bringing his signature Afro House sound with special guests Dixon, DJ Kabila, Skepta, Alisha, and Hitty.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-06-27T00:00:00.000Z",
+    "end_date": "2026-06-27T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/27-06-2026",
+    "is_free": false,
+    "description": "Prepare for a psychedelic adventure as elrow returns to Saturday nights at [UNVRS] with Enter The WORTEX, featuring immersive worlds and cutting-edge electronic music.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-06-28T00:00:00.000Z",
+    "end_date": "2026-06-28T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/28-06-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Pulse",
+    "start_date": "2026-06-28T00:00:00.000Z",
+    "end_date": "2026-06-28T00:00:00.000Z",
+    "venue": "Bronze Beach",
+    "city": "Bloemendaal",
+    "country": "NL",
+    "genres": [
+      "Hard House",
+      "Hard Trance"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Pulse is reclaiming the coast in Bloemendaal with sunset, groove, hard house, bounce, and hard trance. Lost in the music together.",
+    "organizers": [
+      {
+        "name": "Pulse",
+        "slug": "pulse"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MESTIZA",
+    "start_date": "2026-06-28T00:00:00.000Z",
+    "end_date": "2026-06-28T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Latin House",
+      "Flamenco Electronic",
+      "Psy-Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/mestiza/2026-06-28",
+    "is_free": false,
+    "description": "MESTIZA at Hï Ibiza - Spanish duo fusing flamenco roots with melodic house and electronic avant-garde. Featuring Indira Paganotto Presents ARTCORE in the Club Room with psy-techno sounds.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Kiesgrube presents TOM'S BIRTHDAY with Jamie Jones, The Martinez Brothers, Vintage Culture",
+    "start_date": "2026-06-28T00:00:00.000Z",
+    "end_date": "2026-06-28T00:00:00.000Z",
+    "venue": "Kiesgrube",
+    "city": "Neuss",
+    "country": "DE",
+    "genres": [
+      "Techno",
+      "Tech House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Celebrating 30 years of Kiesgrube with Jamie Jones, The Martinez Brothers, Vintage Culture, Paco Osuna, STASSY, and Tina Colada.",
+    "organizers": [
+      {
+        "name": "Kiesgrube",
+        "slug": "kiesgrube"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-06-29T00:00:00.000Z",
+    "end_date": "2026-06-29T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-06-29",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza for his debut residency, blending Afro, Caribbean, and Latin house with live instrumentalists and dancers. Andrea Oliva presents All I Need in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Circoloco Ibiza",
+    "start_date": "2026-06-29T00:00:00.000Z",
+    "end_date": "2026-06-29T00:00:00.000Z",
+    "venue": "DC-10",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Circoloco Ibiza presents a lineup featuring Solomun, Luciano, Prospa, and many more for an unforgettable night of electronic music.",
+    "organizers": [
+      {
+        "name": "Circoloco",
+        "slug": "circoloco"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "John Summit Presents Experts Only",
+    "start_date": "2026-06-29T00:00:00.000Z",
+    "end_date": "2026-06-29T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/john-summit-presents-experts-only/29-06-2026",
+    "is_free": false,
+    "description": "John Summit's Ibiza residency debut at [UNVRS] featuring house music icon's explosive energy and handpicked special guests including MK, Kilimanjaro B2B TSHA, and Mesto.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-06-30T00:00:00.000Z",
+    "end_date": "2026-06-30T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Tech House",
+      "Dub",
+      "Garage"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-06-30",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza featuring deep tech, minimal house, dub, garage and groove with special guests.",
+    "organizers": [
+      {
+        "name": "Eastenderz",
+        "slug": "eastenderz"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA - ÆDEN",
+    "start_date": "2026-06-30T00:00:00.000Z",
+    "end_date": "2026-06-30T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/30-06-2026",
+    "is_free": false,
+    "description": "ANYMA returns to [UNVRS] with ÆDEN, a deeply immersive creative experience featuring melodic techno in the hyperclub.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Hideout Festival 2026",
+    "start_date": "2026-06-30T00:00:00.000Z",
+    "end_date": "2026-07-03T00:00:00.000Z",
+    "venue": "Zrce Beach",
+    "city": "Zrce",
+    "country": "HR",
+    "genres": [
+      "House",
+      "Tech House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Hideout Festival 2026 at Zrce Beach, Croatia. The festival is officially sold out with 2027 sign-ups now available.",
+    "organizers": [
+      {
+        "name": "Hideout Festival",
+        "slug": "hideout-festival"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-07-01T00:00:00.000Z",
+    "end_date": "2026-07-01T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/01-07-2026",
+    "is_free": false,
+    "description": "Jamie Jones and the Paradise crew present Paradise: Starship Eden at [UNVRS] Ibiza, featuring expansive house music in a fully immersive cosmic garden experience.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-07-01T00:00:00.000Z",
+    "end_date": "2026-07-01T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-07-01",
+    "is_free": false,
+    "description": "MEDUZA & James Hype return to Hï Ibiza for their fourth season, exploring the full spectrum of house music with MEDUZA³ hybrid live concept and James Hype's SYNC show.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL and Miss Monique",
+    "start_date": "2026-07-02T00:00:00.000Z",
+    "end_date": "2026-07-02T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Tech House",
+      "Progressive House",
+      "Melodic Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-07-02",
+    "is_free": false,
+    "description": "HUGEL presents Make The Girls Dance in the Theatre with Latin house energy, while Miss Monique takes over the Club Room with progressive house and melodic techno every Thursday at Hï Ibiza.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla",
+    "start_date": "2026-07-03T00:00:00.000Z",
+    "end_date": "2026-07-03T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-07-03",
+    "is_free": false,
+    "description": "Dom Dolla takes over Fridays at Hï Ibiza with high-energy house and tech house, joined by Ewan McVicar presenting Club Knuckles in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Kappa FuturFestival 2026",
+    "start_date": "2026-07-03T00:00:00.000Z",
+    "end_date": "2026-07-05T00:00:00.000Z",
+    "venue": "Parco Dora",
+    "city": "Torino",
+    "country": "IT",
+    "genres": [
+      "Tech House",
+      "House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Electronic music festival featuring exclusive DJ sets, B2B sessions and extraordinary performances across six unique stages at Parco Dora in Turin, Italy.",
+    "organizers": [
+      {
+        "name": "Kappa FuturFestival",
+        "slug": "kappa-futurfestival"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-07-04T00:00:00.000Z",
+    "end_date": "2026-07-04T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-07-04",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday night residency at Hï Ibiza, bringing Afro House and Afropolitan sounds with special guests including Jimi Jules, Meera, Skepta, Loco Dice and more.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-07-04T00:00:00.000Z",
+    "end_date": "2026-07-04T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/04-07-2026",
+    "is_free": false,
+    "description": "Psychedelic adventure with elrow's Enter The WORTEX, featuring immersive worlds, kinetic visuals, and a multi-coloured whirlwind of house, tech house and techno.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CAMELPHAT Present Summer of Love",
+    "start_date": "2026-07-05T00:00:00.000Z",
+    "end_date": "2026-07-05T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Melodic House",
+      "Psy-Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-07-05",
+    "is_free": false,
+    "description": "CAMELPHAT return to Hï Ibiza with Summer of Love, celebrating human connection and dancefloor energy with melodic, tech and deep house music.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-07-05T00:00:00.000Z",
+    "end_date": "2026-07-05T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/05-07-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy - Mondays at Hï Ibiza",
+    "start_date": "2026-07-06T00:00:00.000Z",
+    "end_date": "2026-07-06T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-07-06",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza with Afro house, Latin house and deep house featuring live instrumentalists and dancers. Andrea Oliva presents All I Need in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "John Summit Presents Experts Only",
+    "start_date": "2026-07-06T00:00:00.000Z",
+    "end_date": "2026-07-06T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/john-summit-presents-experts-only/06-07-2026",
+    "is_free": false,
+    "description": "John Summit's Ibiza residency showcasing Chicago house music with handpicked special guests and performances from the Experts Only label roster.",
+    "organizers": [
+      {
+        "name": "John Summit",
+        "slug": "john-summit"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-07-07T00:00:00.000Z",
+    "end_date": "2026-07-07T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Dub",
+      "Garage",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-07-07",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza, featuring deep tech, minimal house, dub, garage and groove with Paco Osuna's NOW HERE residency in the Club Room.",
+    "organizers": [
+      {
+        "name": "East End Dubs",
+        "slug": "east-end-dubs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA - ÆDEN",
+    "start_date": "2026-07-07T00:00:00.000Z",
+    "end_date": "2026-07-07T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/07-07-2026",
+    "is_free": false,
+    "description": "Anyma returns to [UNVRS] with ÆDEN, a deeply immersive creative experience featuring melodic techno in Ibiza's hyperclub.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-07-08T00:00:00.000Z",
+    "end_date": "2026-07-08T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House",
+      "Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-07-08",
+    "is_free": false,
+    "description": "MEDUZA and James Hype present OUR HOUSE at Hï Ibiza, featuring house music across the spectrum from underground intensity to main-stage energy.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Wildeburg 2026",
+    "start_date": "2026-07-09T00:00:00.000Z",
+    "end_date": "2026-07-12T00:00:00.000Z",
+    "venue": "Natuurpark Netl",
+    "city": "Kraggenburg",
+    "country": "NL",
+    "genres": [
+      "House",
+      "Tech House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Wildeburg 2026 is a major electronic music festival featuring over 150 artists across DJ and live performances, showcasing house, techno, and various electronic genres.",
+    "organizers": [
+      {
+        "name": "Wildeburg",
+        "slug": "wildeburg"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL Presents Make The Girls Dance with Miss Monique",
+    "start_date": "2026-07-09T00:00:00.000Z",
+    "end_date": "2026-07-09T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Progressive House",
+      "Melodic Techno",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-07-09",
+    "is_free": false,
+    "description": "HUGEL brings Latin house energy to the Theatre while Miss Monique takes over the Club Room with progressive house at Hï Ibiza.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Ultra Europe",
+    "start_date": "2026-07-10T00:00:00.000Z",
+    "end_date": "2026-07-12T00:00:00.000Z",
+    "venue": "Park Mladeži",
+    "city": "Split",
+    "country": "HR",
+    "genres": [
+      "House",
+      "Tech House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Ultra Europe is a multi-day electronic dance music festival held annually in Split, Croatia, featuring world-class DJs and producers.",
+    "organizers": [
+      {
+        "name": "Ultra Enterprises Inc.",
+        "slug": "ultra-enterprises-inc"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Awakenings Festival 2026",
+    "start_date": "2026-07-10T00:00:00.000Z",
+    "end_date": "2026-07-12T00:00:00.000Z",
+    "venue": "Hilvarenbeek",
+    "city": "Hilvarenbeek",
+    "country": "NL",
+    "genres": [
+      "Techno",
+      "Tech House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Awakenings Festival 2026 is a three-day electronic music festival featuring techno and house artists across multiple stages in Hilvarenbeek.",
+    "organizers": [
+      {
+        "name": "Awakenings",
+        "slug": "awakenings"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla",
+    "start_date": "2026-07-10T00:00:00.000Z",
+    "end_date": "2026-07-10T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-07-10",
+    "is_free": false,
+    "description": "Dom Dolla plays Hï Ibiza every Friday with Ewan McVicar's Club Knuckles in the Club Room. High-energy house and tech house music.",
+    "organizers": [
+      {
+        "name": "Ushuaïa",
+        "slug": "ushuaia"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-07-11T00:00:00.000Z",
+    "end_date": "2026-07-11T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House",
+      "Garage"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-07-11",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday residency at Hï Ibiza with his signature Afro House sound, joined by Skepta's house project Más Tiempo in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-07-11T00:00:00.000Z",
+    "end_date": "2026-07-11T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/11-07-2026",
+    "is_free": false,
+    "description": "elrow returns to [UNVRS] with Enter The WORTEX - a psychedelic adventure featuring immersive worlds, house, tech house and techno music in a technicoloured parallel universe.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CAMELPHAT Present Summer of Love",
+    "start_date": "2026-07-12T00:00:00.000Z",
+    "end_date": "2026-07-12T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Tech House",
+      "Psy-Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-07-12",
+    "is_free": false,
+    "description": "CAMELPHAT returns to Hï Ibiza with Summer of Love, a celebration of human connection and melodic house music on the dancefloor.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-07-12T00:00:00.000Z",
+    "end_date": "2026-07-12T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Techno",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/12-07-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FAZE MAG presents Sven Väth, DIXON B2B Jimi Jules, Jonathan Kaspar, Jamiie",
+    "start_date": "2026-07-12T00:00:00.000Z",
+    "end_date": "2026-07-12T00:00:00.000Z",
+    "venue": "Kiesgrube",
+    "city": "Neuss",
+    "country": "DE",
+    "genres": [
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Celebrating 30 years of Kiesgrube with Sven Väth, Dixon B2B Jimi Jules, Jonathan Kaspar, and Jamiie. Techno event at the legendary Kiesgrube venue in Neuss.",
+    "organizers": [
+      {
+        "name": "FAZE MAG",
+        "slug": "faze-mag"
+      },
+      {
+        "name": "Kiesgrube",
+        "slug": "kiesgrube"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-07-13T00:00:00.000Z",
+    "end_date": "2026-07-13T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-07-13",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza for his debut residency, blending Afro house, Latin house and international sounds with live instrumentalists and dancers.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "John Summit Presents Experts Only",
+    "start_date": "2026-07-13T00:00:00.000Z",
+    "end_date": "2026-07-13T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/john-summit-presents-experts-only/13-07-2026",
+    "is_free": false,
+    "description": "John Summit's Ibiza residency debuts at [UNVRS] with an explosive Monday night showcasing Chicago house music's icon with handpicked special guests.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA - ÆDEN",
+    "start_date": "2026-07-14T00:00:00.000Z",
+    "end_date": "2026-07-14T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/14-07-2026",
+    "is_free": false,
+    "description": "Anyma returns to [UNVRS] with ÆDEN, a deeply immersive creative experience featuring melodic techno in Ibiza's hyperclub.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-07-14T00:00:00.000Z",
+    "end_date": "2026-07-14T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Tech House",
+      "Dub",
+      "Garage"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-07-14",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza with deep tech, minimal house, dub, and garage sounds across two rooms.",
+    "organizers": [
+      {
+        "name": "Eastenderz",
+        "slug": "eastenderz"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-07-15T00:00:00.000Z",
+    "end_date": "2026-07-15T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-07-15",
+    "is_free": false,
+    "description": "MEDUZA and James Hype bring their OUR HOUSE residency to Hï Ibiza, exploring the full spectrum of house music with electrifying live performances and cutting-edge DJ sets.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-07-15T00:00:00.000Z",
+    "end_date": "2026-07-15T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/15-07-2026",
+    "is_free": false,
+    "description": "Jamie Jones and Paradise crew present an immersive cosmic house music experience at UNVRS Ibiza with signature expansive house sound.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Electric Castle",
+    "start_date": "2026-07-16T00:00:00.000Z",
+    "end_date": "2026-07-19T00:00:00.000Z",
+    "venue": "Banffy Castle",
+    "city": "Cluj",
+    "country": "RO",
+    "genres": [
+      "House",
+      "Tech House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Electric Castle is a multi-genre music festival held at the historic Banffy Castle in Cluj, Romania.",
+    "organizers": [
+      {
+        "name": "Electric Castle",
+        "slug": "electric-castle"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL Presents Make The Girls Dance",
+    "start_date": "2026-07-16T00:00:00.000Z",
+    "end_date": "2026-07-16T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Progressive House",
+      "Melodic Techno",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-07-16",
+    "is_free": false,
+    "description": "HUGEL's Make The Girls Dance residency featuring Latin house and Afro house in the Theatre, with Miss Monique bringing progressive house to the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER",
+    "start_date": "2026-07-16T00:00:00.000Z",
+    "end_date": "2026-07-16T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/16-07-2026",
+    "is_free": false,
+    "description": "FISHER returns to [UNVRS] Ibiza for year 2 of his Thursday night residency with high-octane stadium-sized showmanship and relentless energy.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-07-17T00:00:00.000Z",
+    "end_date": "2026-07-17T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/17-07-2026",
+    "is_free": false,
+    "description": "David Guetta returns to Fridays at [UNVRS] with Galactic Circus - an alternative utopia carnival featuring house, progressive house and tech house.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla",
+    "start_date": "2026-07-17T00:00:00.000Z",
+    "end_date": "2026-07-17T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-07-17",
+    "is_free": false,
+    "description": "Dom Dolla takes over Fridays at Hï Ibiza with Ewan McVicar presenting Club Knuckles in the Club Room. High-energy house and tech house music all night.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Tomorrowland Belgium",
+    "start_date": "2026-07-17T00:00:00.000Z",
+    "end_date": "2026-07-26T00:00:00.000Z",
+    "venue": "De Schorre",
+    "city": "Boom",
+    "country": "BE",
+    "genres": [
+      "House",
+      "Tech House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Step into the world of Consciencia, a new frontier in your Tomorrowland universe. A magnificent world where the impossible is merely a dream on the verge of becoming reality.",
+    "organizers": [
+      {
+        "name": "Tomorrowland",
+        "slug": "tomorrowland"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-07-18T00:00:00.000Z",
+    "end_date": "2026-07-18T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/18-07-2026",
+    "is_free": false,
+    "description": "elrow returns to [UNVRS] with Enter The WORTEX - a psychedelic adventure featuring immersive worlds, kinetic visuals, and world-class electronic music.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "No Art Festival — Opening Festival",
+    "start_date": "2026-07-18T00:00:00.000Z",
+    "end_date": "2026-07-18T00:00:00.000Z",
+    "venue": "Riekerhaven Amsterdam",
+    "city": "Amsterdam",
+    "country": "NL",
+    "genres": [
+      "House",
+      "Techno"
+    ],
+    "website": "https://www.noartfestival.com/opening-festival/tickets",
+    "is_free": false,
+    "description": "No Art Festival Opening Festival at Riekerhaven Amsterdam featuring ANOTR, Hannecart, Mochakk, Rooléh, Rüfüs Du Sol, and Toman.",
+    "organizers": [
+      {
+        "name": "No Art",
+        "slug": "no-art"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-07-18T00:00:00.000Z",
+    "end_date": "2026-07-18T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-07-18",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday night residency at Hï Ibiza, featuring Afro House and deep house with special guests including Henrik Schwarz, Fiona Kraft, and Skepta's Más Tiempo.",
+    "organizers": [
+      {
+        "name": "Ushuaïa",
+        "slug": "ushuaia"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-07-19T00:00:00.000Z",
+    "end_date": "2026-07-19T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/19-07-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CAMELPHAT Present Summer of Love",
+    "start_date": "2026-07-19T00:00:00.000Z",
+    "end_date": "2026-07-19T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Melodic House",
+      "Psy-Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-07-19",
+    "is_free": false,
+    "description": "CAMELPHAT return to Hï Ibiza with Summer of Love, a celebration of human connection and energy on the dancefloor with melodic, tech and deep house music.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "John Summit Presents Experts Only",
+    "start_date": "2026-07-20T00:00:00.000Z",
+    "end_date": "2026-07-20T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/john-summit-presents-experts-only/20-07-2026",
+    "is_free": false,
+    "description": "John Summit's Ibiza residency debut at [UNVRS] with special guests and Experts Only label artists, featuring Chicago house music icon's explosive energy and impeccable selection.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-07-20T00:00:00.000Z",
+    "end_date": "2026-07-20T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-07-20",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza with Afro house, Latin house, and deep house, featuring live instrumentalists and dancers, plus Andrea Oliva in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-07-21T00:00:00.000Z",
+    "end_date": "2026-07-21T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Tech House",
+      "Dub",
+      "Garage"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-07-21",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza featuring deep tech, minimal house, dub, garage and groove with Paco Osuna's NOW HERE residency in the Club Room.",
+    "organizers": [
+      {
+        "name": "East End Dubs",
+        "slug": "east-end-dubs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA - ÆDEN",
+    "start_date": "2026-07-21T00:00:00.000Z",
+    "end_date": "2026-07-21T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/21-07-2026",
+    "is_free": false,
+    "description": "Anyma returns to [UNVRS] with ÆDEN, a deeply immersive creative experience featuring melodic techno, as part of the ÆDEN Global Tour 2026.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-07-22T00:00:00.000Z",
+    "end_date": "2026-07-22T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/22-07-2026",
+    "is_free": false,
+    "description": "Jamie Jones and the Paradise crew present Paradise: Starship Eden at [UNVRS], featuring an immersive cosmic garden experience with expansive house sound.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-07-22T00:00:00.000Z",
+    "end_date": "2026-07-22T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House",
+      "Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-07-22",
+    "is_free": false,
+    "description": "MEDUZA & James Hype return to Hï Ibiza with OUR HOUSE, exploring the full spectrum of house music with MEDUZA³ live concept and James Hype's SYNC show.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL and Miss Monique",
+    "start_date": "2026-07-23T00:00:00.000Z",
+    "end_date": "2026-07-23T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Progressive House",
+      "Melodic Techno",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-07-23",
+    "is_free": false,
+    "description": "HUGEL's Make The Girls Dance residency with Latin house and Afro house in the Theatre, while Miss Monique brings progressive house and melodic techno to the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER",
+    "start_date": "2026-07-23T00:00:00.000Z",
+    "end_date": "2026-07-23T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/23-07-2026",
+    "is_free": false,
+    "description": "FISHER returns to [UNVRS] for year 2 of his Thursday night residency with high-octane house and tech house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla",
+    "start_date": "2026-07-24T00:00:00.000Z",
+    "end_date": "2026-07-24T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-07-24",
+    "is_free": false,
+    "description": "Dom Dolla takes over Fridays at Hï Ibiza with special guests Ewan McVicar, Dan Shake, and Tarzsa across the Theatre and Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-07-24T00:00:00.000Z",
+    "end_date": "2026-07-24T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/24-07-2026",
+    "is_free": false,
+    "description": "David Guetta returns to Fridays at [UNVRS] with Galactic Circus, a carnival of sight and sound spanning genres with performers, lights, and immersive production.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-07-25T00:00:00.000Z",
+    "end_date": "2026-07-25T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/25-07-2026",
+    "is_free": false,
+    "description": "Prepare for a psychedelic adventure as elrow returns to Saturday nights at [UNVRS] with Enter The WORTEX, featuring immersive worlds and world-class electronic music.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "No Art Closing Festival",
+    "start_date": "2026-07-25T00:00:00.000Z",
+    "end_date": "2026-07-25T00:00:00.000Z",
+    "venue": "Flevopark",
+    "city": "Amsterdam",
+    "country": "NL",
+    "genres": [
+      "House",
+      "Techno"
+    ],
+    "website": "https://www.noartfestival.com/closing-festival/tickets",
+    "is_free": false,
+    "description": "No Art Closing Festival at Flevopark Amsterdam featuring house and electronic music across Monument, Compose, and Retreat stages with international DJ lineup.",
+    "organizers": [
+      {
+        "name": "No Art",
+        "slug": "no-art"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-07-25T00:00:00.000Z",
+    "end_date": "2026-07-25T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-07-25",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday night residency at Hï Ibiza, featuring Afro House and Afropolitan sounds with special guest Skepta's Más Tiempo in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Geheime Liefde: Tuinen van Geluk",
+    "start_date": "2026-07-25T00:00:00.000Z",
+    "end_date": "2026-07-25T00:00:00.000Z",
+    "venue": "De Middengaarde",
+    "city": "Nieuwegein",
+    "country": "NL",
+    "genres": [
+      "Techno",
+      "House",
+      "Disco"
+    ],
+    "website": "https://geheimeliefde.nl/tuinen-van-geluk",
+    "is_free": false,
+    "description": "An immersive festival experience in colorful gardens with secret lineup featuring summery techno, house and disco music in an enchanting outdoor setting.",
+    "organizers": [
+      {
+        "name": "Geheime Liefde",
+        "slug": "geheime-liefde"
+      },
+      {
+        "name": "XSense",
+        "slug": "xsense"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Awakenings | Monegros 2026",
+    "start_date": "2026-07-25T00:00:00.000Z",
+    "end_date": "2026-07-26T00:00:00.000Z",
+    "venue": "Monegros Desert",
+    "city": "Fraga",
+    "country": "ES",
+    "genres": [
+      "Techno"
+    ],
+    "website": "https://www.awakenings.com/en/events/2026/07/monegros-awakenings-2026/391566/",
+    "is_free": false,
+    "description": "Awakenings returns to the legendary Monegros desert with an exclusive hosting stage, delivering 22+ hours of non-stop techno energy in the Spanish desert.",
+    "organizers": [
+      {
+        "name": "Awakenings",
+        "slug": "awakenings"
+      },
+      {
+        "name": "Monegros",
+        "slug": "monegros"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CamelPhat Present Summer of Love",
+    "start_date": "2026-07-26T00:00:00.000Z",
+    "end_date": "2026-07-26T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Psy-Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-07-26",
+    "is_free": false,
+    "description": "CamelPhat return to Hï Ibiza with Summer of Love, a celebration of human connection and the energy that lives between people on the dancefloor.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-07-26T00:00:00.000Z",
+    "end_date": "2026-07-26T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/26-07-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza with special guests David Guetta, Wild Comet, and melon bomb.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "John Summit Presents Experts Only - Closing Party",
+    "start_date": "2026-07-27T00:00:00.000Z",
+    "end_date": "2026-07-27T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/john-summit-presents-experts-only/27-07-2026",
+    "is_free": false,
+    "description": "The closing party of John Summit's Experts Only residency at [UNVRS] Ibiza, featuring Gorgon City, Odd Mob, and Roddy Lima.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-07-27T00:00:00.000Z",
+    "end_date": "2026-07-27T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-07-27",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza for his debut Monday residency, blending Afro house, Latin house and international sounds with live instrumentalists and dancers.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-07-28T00:00:00.000Z",
+    "end_date": "2026-07-28T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Tech House",
+      "Dub",
+      "Garage"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-07-28",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz every Tuesday at Hï Ibiza featuring deep tech, minimal house, dub, garage and groove with Skream, TSHA and more.",
+    "organizers": [
+      {
+        "name": "East End Dubs",
+        "slug": "east-end-dubs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA - ÆDEN at [UNVRS]",
+    "start_date": "2026-07-28T00:00:00.000Z",
+    "end_date": "2026-07-28T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/28-07-2026",
+    "is_free": false,
+    "description": "Anyma presents ÆDEN, a deeply immersive creative experience combining melodic techno with cutting-edge technology and visual artistry at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-07-29T00:00:00.000Z",
+    "end_date": "2026-07-29T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-07-29",
+    "is_free": false,
+    "description": "MEDUZA and James Hype present OUR HOUSE at Hï Ibiza, exploring the full spectrum of house music with electrifying live performances and cutting-edge concepts.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-07-29T00:00:00.000Z",
+    "end_date": "2026-07-29T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/29-07-2026",
+    "is_free": false,
+    "description": "Jamie Jones and Paradise crew present Starship Eden - an immersive cosmic journey with house, deep house and tech house at UNVRS Ibiza.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL Presents Make The Girls Dance",
+    "start_date": "2026-07-30T00:00:00.000Z",
+    "end_date": "2026-07-30T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Tech House",
+      "Progressive House",
+      "Melodic Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-07-30",
+    "is_free": false,
+    "description": "HUGEL and Miss Monique take over Theatre and Club Room with Latin house, Afro house, progressive house and melodic techno at Hï Ibiza.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER",
+    "start_date": "2026-07-30T00:00:00.000Z",
+    "end_date": "2026-07-30T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/30-07-2026",
+    "is_free": false,
+    "description": "FISHER returns to [UNVRS] for year 2 of his Thursday night residency with high-octane house and tech house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla - Radio 1 Dance X Afterparty",
+    "start_date": "2026-07-31T00:00:00.000Z",
+    "end_date": "2026-07-31T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-07-31",
+    "is_free": false,
+    "description": "Dom Dolla returns to Hï Ibiza for his Friday residency with Ewan McVicar presenting Club Knuckles in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-07-31T00:00:00.000Z",
+    "end_date": "2026-07-31T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/31-07-2026",
+    "is_free": false,
+    "description": "David Guetta returns to [UNVRS] Ibiza with Galactic Circus - a carnival of sight and sound spanning genres, scenes and sounds in an alternative utopia for rebels and renegades.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-08-01T00:00:00.000Z",
+    "end_date": "2026-08-01T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/01-08-2026",
+    "is_free": false,
+    "description": "A psychedelic adventure through Enter The WORTEX - elrow's immersive world of house, tech house and techno with kinetic visuals, sculptural works and live performances at [UNVRS].",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dekmantel Festival",
+    "start_date": "2026-08-01T00:00:00.000Z",
+    "end_date": "2026-08-09T00:00:00.000Z",
+    "venue": null,
+    "city": null,
+    "country": null,
+    "genres": [
+      "House",
+      "Tech House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Major electronic music festival featuring techno, house, experimental electronic, and drum & bass with performances from over 100 international artists and DJs.",
+    "organizers": [
+      {
+        "name": "Dekmantel",
+        "slug": "dekmantel"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Kiesgrube presents THE WEEKENDER DAY 1 with HUGEL, Sebastian Konrad, Nicole da Silva, Isa Roos",
+    "start_date": "2026-08-01T00:00:00.000Z",
+    "end_date": "2026-08-01T00:00:00.000Z",
+    "venue": "Kiesgrube",
+    "city": "Neuss",
+    "country": "DE",
+    "genres": [
+      "House",
+      "Afro House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "THE WEEKENDER DAY 1 at Kiesgrube celebrating 30 years with HUGEL, Sebastian Konrad, Nicole da Silva, Isa Roos and MR CONERY. House and Afro House music festival.",
+    "organizers": [
+      {
+        "name": "Kiesgrube",
+        "slug": "kiesgrube"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-08-02T00:00:00.000Z",
+    "end_date": "2026-08-02T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/02-08-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Kiesgrube presents THE WEEKENDER DAY 2 DAYTIME OPEN AIR with Mahmut Orhan, Rivo",
+    "start_date": "2026-08-02T00:00:00.000Z",
+    "end_date": "2026-08-02T00:00:00.000Z",
+    "venue": "Kiesgrube",
+    "city": "Neuss",
+    "country": "DE",
+    "genres": [
+      "House",
+      "Afro House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Day 2 of The Weekender daytime open air at Kiesgrube celebrating 30 years, featuring House and Afro House with Mahmut Orhan, Rivo, People Like Us and Lilya Mandre.",
+    "organizers": [
+      {
+        "name": "Kiesgrube",
+        "slug": "kiesgrube"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CamelPhat Present Summer of Love",
+    "start_date": "2026-08-02T00:00:00.000Z",
+    "end_date": "2026-08-02T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Psy-Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-08-02",
+    "is_free": false,
+    "description": "CamelPhat return to Hï Ibiza with Summer of Love, a celebration of human connection and energy on the dancefloor with melodic, tech and deep house music.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Tiësto at [UNVRS] - Opening Party",
+    "start_date": "2026-08-03T00:00:00.000Z",
+    "end_date": "2026-08-03T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Progressive House",
+      "Euphoric House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/tiesto/03-08-2026",
+    "is_free": false,
+    "description": "Tiësto takes control of the world's first hyperclub for a full-throttle dance music journey at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy - Mondays at Hï Ibiza",
+    "start_date": "2026-08-03T00:00:00.000Z",
+    "end_date": "2026-08-03T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-08-03",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza featuring Afro house, Latin house, and deep house with live instrumentalists and dancers. Andrea Oliva presents All I Need in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-08-04T00:00:00.000Z",
+    "end_date": "2026-08-04T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Dub",
+      "Garage",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-08-04",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza featuring deep tech, minimal house, dub, garage and groove. Theatre features East End Dubs B2B Franky Rizardo, Club Room features Paco Osuna.",
+    "organizers": [
+      {
+        "name": "Eastenderz",
+        "slug": "eastenderz"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-08-05T00:00:00.000Z",
+    "end_date": "2026-08-05T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-08-05",
+    "is_free": false,
+    "description": "MEDUZA and James Hype return to Hï Ibiza with their OUR HOUSE residency, exploring the full spectrum of house music with special performances MEDUZA³ and SYNC.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-08-05T00:00:00.000Z",
+    "end_date": "2026-08-05T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/05-08-2026",
+    "is_free": false,
+    "description": "Jamie Jones and the Paradise crew present Paradise: Starship Eden - an immersive cosmic house music experience at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "John Summit Presents Experts Only",
+    "start_date": "2026-08-06T00:00:00.000Z",
+    "end_date": "2026-08-06T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/john-summit-presents-experts-only/08-06-2026",
+    "is_free": false,
+    "description": "John Summit's explosive Ibiza debut residency at [UNVRS] featuring house music icon's unrelenting energy, mixing skills, and impeccable selection with handpicked special guests.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-08-07T00:00:00.000Z",
+    "end_date": "2026-08-07T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/08-07-2026",
+    "is_free": false,
+    "description": "Jamie Jones and the Paradise crew present Paradise: Starship Eden, a futuristic immersive experience featuring house and tech house music in a cosmic garden setting.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla",
+    "start_date": "2026-08-07T00:00:00.000Z",
+    "end_date": "2026-08-07T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-08-07",
+    "is_free": false,
+    "description": "Dom Dolla returns to Hï Ibiza for his Friday night residency with special guests Ewan McVicar, Chaos in the CBD, and DJ Paulette.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-08-07T00:00:00.000Z",
+    "end_date": "2026-08-07T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/07-08-2026",
+    "is_free": false,
+    "description": "David Guetta returns to Fridays at [UNVRS] with Galactic Circus, an alternative utopia carnival of sight and sound featuring house, progressive house and tech house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Brunch Electronik Festival 2026",
+    "start_date": "2026-08-07T00:00:00.000Z",
+    "end_date": "2026-08-09T00:00:00.000Z",
+    "venue": "Parc del Fòrum",
+    "city": "Barcelona",
+    "country": "ES",
+    "genres": [
+      "Techno",
+      "House",
+      "Tech House",
+      "Live Electronic"
+    ],
+    "website": "https://brunchelectronikfestival.com/?l=en",
+    "is_free": false,
+    "description": "3-day electronic music festival in Barcelona featuring Jamie Jones, Paul Kalkbrenner, Eric Prydz, The Blaze and over 80 international DJs and live acts.",
+    "organizers": [
+      {
+        "name": "Brunch Electronik",
+        "slug": "brunch-electronik"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-08-08T00:00:00.000Z",
+    "end_date": "2026-08-08T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-08-08",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday night residency at Hï Ibiza with Skepta's Más Tiempo in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-08-08T00:00:00.000Z",
+    "end_date": "2026-08-08T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/08-08-2026",
+    "is_free": false,
+    "description": "Enter The WORTEX - A psychedelic adventure with elrow featuring immersive worlds, house, tech house and techno music at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Loveland Festival",
+    "start_date": "2026-08-08T00:00:00.000Z",
+    "end_date": "2026-08-09T00:00:00.000Z",
+    "venue": null,
+    "city": null,
+    "country": null,
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Loveland Festival is an electronic music festival taking place over two days in August 2026.",
+    "organizers": [
+      {
+        "name": "Loveland",
+        "slug": "loveland"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CAMELPHAT Present Summer of Love",
+    "start_date": "2026-08-09T00:00:00.000Z",
+    "end_date": "2026-08-09T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Psy-Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-08-09",
+    "is_free": false,
+    "description": "CAMELPHAT return to Hï Ibiza with Summer of Love, a celebration of human connection and energy on the dancefloor featuring melodic, tech and deep house music.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-08-09T00:00:00.000Z",
+    "end_date": "2026-08-09T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/09-08-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Tiësto",
+    "start_date": "2026-08-10T00:00:00.000Z",
+    "end_date": "2026-08-10T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Progressive House",
+      "Euphoric House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/tiesto/10-08-2026",
+    "is_free": false,
+    "description": "Tiësto performs at [UNVRS] Ibiza playing melodic house, euphoric and progressive house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-08-10T00:00:00.000Z",
+    "end_date": "2026-08-10T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-08-10",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza with Afro, Latin and Caribbean house sounds, featuring live instrumentalists and dancers. Andrea Oliva presents All I Need in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA - ÆDEN",
+    "start_date": "2026-08-11T00:00:00.000Z",
+    "end_date": "2026-08-11T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/11-08-2026",
+    "is_free": false,
+    "description": "Anyma returns to [UNVRS] with ÆDEN, a deeply immersive creative experience blending melodic techno, technology, and architecture in a unique hyperclub setting.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-08-11T00:00:00.000Z",
+    "end_date": "2026-08-11T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Tech House",
+      "Dub",
+      "Garage"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-08-11",
+    "is_free": false,
+    "description": "Eastenderz takes over Hï Ibiza with East End Dubs presenting deep tech and minimal house. Paco Osuna hosts NOW HERE in the Club Room.",
+    "organizers": [
+      {
+        "name": "Eastenderz",
+        "slug": "eastenderz"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-08-12T00:00:00.000Z",
+    "end_date": "2026-08-12T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-08-12",
+    "is_free": false,
+    "description": "MEDUZA and James Hype present OUR HOUSE, exploring the full spectrum of house music with electrifying live performances and innovative DJ concepts at Hï Ibiza.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-08-12T00:00:00.000Z",
+    "end_date": "2026-08-12T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/12-08-2026",
+    "is_free": false,
+    "description": "Jamie Jones and the Paradise crew present Paradise: Starship Eden - a futuristic, fully immersive house music experience exploring the cosmos at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER",
+    "start_date": "2026-08-13T00:00:00.000Z",
+    "end_date": "2026-08-13T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/13-08-2026",
+    "is_free": false,
+    "description": "FISHER returns to [UNVRS] for year 2 of his Thursday night residency with high-octane house and tech house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL Presents Make The Girls Dance",
+    "start_date": "2026-08-13T00:00:00.000Z",
+    "end_date": "2026-08-13T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Progressive House",
+      "Melodic Techno",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-08-13",
+    "is_free": false,
+    "description": "HUGEL brings Latin house energy to the Theatre while Miss Monique takes over the Club Room with progressive house every Thursday at Hï Ibiza.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla",
+    "start_date": "2026-08-14T00:00:00.000Z",
+    "end_date": "2026-08-14T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-08-14",
+    "is_free": false,
+    "description": "Dom Dolla takes over Fridays at Hï Ibiza with high-energy house and tech house, joined by Ewan McVicar's Club Knuckles in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-08-14T00:00:00.000Z",
+    "end_date": "2026-08-14T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/14-08-2026",
+    "is_free": false,
+    "description": "David Guetta returns to [UNVRS] Ibiza with Galactic Circus, a carnival of sight and sound featuring house, progressive house and tech house music in an alternative utopia.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-08-15T00:00:00.000Z",
+    "end_date": "2026-08-15T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/15-08-2026",
+    "is_free": false,
+    "description": "Prepare for a psychedelic adventure as elrow returns with Enter The WORTEX, featuring immersive worlds of house, tech house and techno at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-08-15T00:00:00.000Z",
+    "end_date": "2026-08-15T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-08-15",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday residency at Hï Ibiza with Afro House and deep house sounds, featuring RY X, Jamiie in Theatre and Skepta's Más Tiempo in Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-08-16T00:00:00.000Z",
+    "end_date": "2026-08-16T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/16-08-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza. Electronic music icon with hand-picked special guests.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Kiesgrube presents Boris Brejcha, Andrea Oliva, LOVRA, Tobi Neumann",
+    "start_date": "2026-08-16T00:00:00.000Z",
+    "end_date": "2026-08-16T00:00:00.000Z",
+    "venue": "Kiesgrube",
+    "city": "Neuss",
+    "country": "DE",
+    "genres": [
+      "House",
+      "Afro House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Kiesgrube celebrates 30 years with Boris Brejcha, Andrea Oliva, LOVRA, and Tobi Neumann for a special techno event in Neuss.",
+    "organizers": [
+      {
+        "name": "Kiesgrube",
+        "slug": "kiesgrube"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CAMELPHAT Present Summer of Love",
+    "start_date": "2026-08-16T00:00:00.000Z",
+    "end_date": "2026-08-16T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-08-16",
+    "is_free": false,
+    "description": "CAMELPHAT return to Hï Ibiza with Summer of Love, celebrating human connection and energy on the dancefloor with melodic, tech and deep house music.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-08-17T00:00:00.000Z",
+    "end_date": "2026-08-17T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-08-17",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza - a sonic ritual blending sounds of the Levant, Africa, and the Caribbean with live instrumentalists and dancers.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Tiësto",
+    "start_date": "2026-08-17T00:00:00.000Z",
+    "end_date": "2026-08-17T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Progressive House",
+      "Euphoric House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/tiesto/17-08-2026",
+    "is_free": false,
+    "description": "GRAMMY Award-winning DJ Tiësto performs at the world's first hyperclub, delivering melodic, euphoric and progressive house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA - ÆDEN Residency",
+    "start_date": "2026-08-18T00:00:00.000Z",
+    "end_date": "2026-08-18T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/18-08-2026",
+    "is_free": false,
+    "description": "Anyma returns to [UNVRS] with ÆDEN, a deeply immersive creative experience featuring melodic techno in a hyperclub environment.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-08-18T00:00:00.000Z",
+    "end_date": "2026-08-18T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Dub",
+      "Garage",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-08-18",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza with deep tech, minimal house, dub and garage. Featuring Paco Osuna's NOW HERE in the Club Room.",
+    "organizers": [
+      {
+        "name": "East End Dubs",
+        "slug": "east-end-dubs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-08-19T00:00:00.000Z",
+    "end_date": "2026-08-19T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-08-19",
+    "is_free": false,
+    "description": "MEDUZA and James Hype return to Hï Ibiza for their fourth season with OUR HOUSE, exploring the full spectrum of house music with innovative live concepts and cutting-edge technology.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-08-19T00:00:00.000Z",
+    "end_date": "2026-08-19T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/19-08-2026",
+    "is_free": false,
+    "description": "Jamie Jones and Paradise crew present Starship Eden - a futuristic cosmic garden experience with expansive house music at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER",
+    "start_date": "2026-08-20T00:00:00.000Z",
+    "end_date": "2026-08-20T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/20-08-2026",
+    "is_free": false,
+    "description": "FISHER returns to [UNVRS] Ibiza for year 2 of his Thursday night residency with high-octane house and tech house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dekmantel Selectors 2026",
+    "start_date": "2026-08-20T00:00:00.000Z",
+    "end_date": "2026-08-24T00:00:00.000Z",
+    "venue": "The Garden Resort",
+    "city": "Tisno",
+    "country": "HR",
+    "genres": [
+      "House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "A five-day intimate festival celebrating 10 years of music, community and connection under the Adriatic sun at The Garden Resort in Tisno, Croatia.",
+    "organizers": [
+      {
+        "name": "Dekmantel",
+        "slug": "dekmantel"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL Presents Make The Girls Dance",
+    "start_date": "2026-08-20T00:00:00.000Z",
+    "end_date": "2026-08-20T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Tech House",
+      "Progressive House",
+      "Melodic Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-08-20",
+    "is_free": false,
+    "description": "HUGEL and Miss Monique take over Hï Ibiza's Theatre and Club Room with Latin house and progressive house energy every Thursday night.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla",
+    "start_date": "2026-08-21T00:00:00.000Z",
+    "end_date": "2026-08-21T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-08-21",
+    "is_free": false,
+    "description": "Dom Dolla takes over Hï Ibiza's iconic Friday night with high-energy house and tech house, joined by Ewan McVicar's Club Knuckles in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-08-21T00:00:00.000Z",
+    "end_date": "2026-08-21T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/21-08-2026",
+    "is_free": false,
+    "description": "David Guetta returns to Fridays at [UNVRS] as the visionary ringmaster of Galactic Circus, a carnival of sight and sound featuring house, progressive house and tech house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-08-22T00:00:00.000Z",
+    "end_date": "2026-08-22T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Afro House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-08-22",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday night residency at Hï Ibiza, featuring Afro House and deep house with special guests including Kerri Chandler and Skepta's Más Tiempo in the Club Room.",
+    "organizers": [
+      {
+        "name": "Ushuaïa",
+        "slug": "ushuaia"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-08-22T00:00:00.000Z",
+    "end_date": "2026-08-22T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/22-08-2026",
+    "is_free": false,
+    "description": "Prepare for a psychedelic adventure as elrow returns to Saturday nights at [UNVRS] with Enter The WORTEX - a gateway to a parallel world where madness is the only rule.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Kiesgrube presents #WAH with NOVAH, Cloudy, NEGITIV, Vagabund",
+    "start_date": "2026-08-23T00:00:00.000Z",
+    "end_date": "2026-08-23T00:00:00.000Z",
+    "venue": "Kiesgrube",
+    "city": "Neuss",
+    "country": "DE",
+    "genres": [
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Kiesgrube celebrates 30 years with #WAH featuring NOVAH, Cloudy, NEGITIV, and Vagabund. Techno event from 12:00 to 22:00.",
+    "organizers": [
+      {
+        "name": "Kiesgrube",
+        "slug": "kiesgrube"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CAMELPHAT Present Summer of Love",
+    "start_date": "2026-08-23T00:00:00.000Z",
+    "end_date": "2026-08-23T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Melodic House",
+      "Psy-Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-08-23",
+    "is_free": false,
+    "description": "CAMELPHAT return to Hï Ibiza with Summer of Love, a celebration of human connection and energy on the dancefloor with melodic, tech and deep house music.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-08-23T00:00:00.000Z",
+    "end_date": "2026-08-23T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/23-08-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza with special guests The Martinez Brothers and Pauza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Tiësto at [UNVRS]",
+    "start_date": "2026-08-24T00:00:00.000Z",
+    "end_date": "2026-08-24T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Progressive House",
+      "Euphoric House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/tiesto/24-08-2026",
+    "is_free": false,
+    "description": "GRAMMY Award-winning DJ Tiësto performs at the world's first hyperclub, playing melodic house, euphoric and progressive house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-08-24T00:00:00.000Z",
+    "end_date": "2026-08-24T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-08-24",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza with Afro, Caribbean, and Latin house. Live instrumentalists, dancers, and Andrea Oliva in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA - ÆDEN",
+    "start_date": "2026-08-25T00:00:00.000Z",
+    "end_date": "2026-08-25T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/25-08-2026",
+    "is_free": false,
+    "description": "Anyma returns to [UNVRS] with ÆDEN, a deeply immersive creative experience featuring melodic techno.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-08-25T00:00:00.000Z",
+    "end_date": "2026-08-25T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Dub",
+      "Garage",
+      "Deep Tech",
+      "Minimal House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-08-25",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza featuring deep tech and minimal house with Paco Osuna's NOW HERE residency in the Club Room.",
+    "organizers": [
+      {
+        "name": "Eastenderz",
+        "slug": "eastenderz"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-08-26T00:00:00.000Z",
+    "end_date": "2026-08-26T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/26-08-2026",
+    "is_free": false,
+    "description": "Jamie Jones and the Paradise crew present Paradise: Starship Eden, an immersive cosmic house music experience at UNVRS Ibiza.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-08-26T00:00:00.000Z",
+    "end_date": "2026-08-26T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-08-26",
+    "is_free": false,
+    "description": "MEDUZA & James Hype bring their OUR HOUSE residency to Hï Ibiza every Wednesday, exploring the full spectrum of house music with innovative live performances and cutting-edge technology.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL Presents Make The Girls Dance and Miss Monique",
+    "start_date": "2026-08-27T00:00:00.000Z",
+    "end_date": "2026-08-27T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Progressive House",
+      "Melodic Techno",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-08-27",
+    "is_free": false,
+    "description": "HUGEL brings Latin house energy to the Theatre while Miss Monique delivers progressive house in the Club Room at Hï Ibiza.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER",
+    "start_date": "2026-08-27T00:00:00.000Z",
+    "end_date": "2026-08-27T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/27-08-2026",
+    "is_free": false,
+    "description": "FISHER returns to [UNVRS] for year 2 of his Thursday night residency with high-octane house and tech house music.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Pepsi MAX presents Creamfields",
+    "start_date": "2026-08-27T00:00:00.000Z",
+    "end_date": "2026-08-30T00:00:00.000Z",
+    "venue": "Daresbury",
+    "city": "Daresbury",
+    "country": "GB",
+    "genres": [
+      "House",
+      "Tech House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Celebrate 20 years at Daresbury with the iconic electronic music festival featuring Calvin Harris, Swedish House Mafia, Tiësto, and many more across multiple stages.",
+    "organizers": [
+      {
+        "name": "Creamfields",
+        "slug": "creamfields"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dimensions Festival",
+    "start_date": "2026-08-27T00:00:00.000Z",
+    "end_date": "2026-08-31T00:00:00.000Z",
+    "venue": "The Garden Tisno",
+    "city": "Tisno",
+    "country": "HR",
+    "genres": [
+      "Techno",
+      "House"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "A five-day gathering of like-minded music heads at The Garden Tisno, a stunning site nestled into Croatia's Adriatic coastline with 150 artists.",
+    "organizers": [
+      {
+        "name": "Dimensions Festival",
+        "slug": "dimensions-festival"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-08-28T00:00:00.000Z",
+    "end_date": "2026-08-28T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/28-08-2026",
+    "is_free": false,
+    "description": "David Guetta returns to Fridays at [UNVRS] with Galactic Circus - a carnival of sight and sound spanning genres with performers, light shows and one-of-a-kind creative vision.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Onder De Radar Festival 2026",
+    "start_date": "2026-08-28T00:00:00.000Z",
+    "end_date": "2026-08-29T00:00:00.000Z",
+    "venue": "Militaire Vliegbasis Twenthe",
+    "city": "Enschede",
+    "country": "NL",
+    "genres": [
+      "Techno"
+    ],
+    "website": "https://www.onderderadarfestival.nl/#line-up",
+    "is_free": false,
+    "description": "Onder De Radar is a techno festival at the abandoned military airbase Twenthe near Enschede, featuring aircraft hangars, control towers, and the iconic radar installation.",
+    "organizers": [
+      {
+        "name": "Onder De Radar",
+        "slug": "onder-de-radar"
+      },
+      {
+        "name": "Basic Grooves",
+        "slug": "basic-grooves"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Dom Dolla - Fridays at Hï Ibiza - Closing Party",
+    "start_date": "2026-08-28T00:00:00.000Z",
+    "end_date": "2026-08-28T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/dom-dolla/2026-08-28",
+    "is_free": false,
+    "description": "Dom Dolla's Friday residency closing party at Hï Ibiza featuring Ewan McVicar's Club Knuckles in the Club Room. High-energy house and tech house music.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Audio Obscura Festival 2026",
+    "start_date": "2026-08-29T00:00:00.000Z",
+    "end_date": "2026-08-29T00:00:00.000Z",
+    "venue": "Van Nelle Fabriek",
+    "city": "Rotterdam",
+    "country": "NL",
+    "genres": [
+      "House",
+      "Techno"
+    ],
+    "website": "https://audio-obscura.com/festival/",
+    "is_free": false,
+    "description": "Outdoor electronic music festival at UNESCO World Heritage Van Nelle Fabriek featuring Chris Stussy, Prospa, Folamour, Honey Dijon, and more across multiple indoor and outdoor stages.",
+    "organizers": [
+      {
+        "name": "Audio Obscura",
+        "slug": "audio-obscura"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-08-29T00:00:00.000Z",
+    "end_date": "2026-08-29T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/29-08-2026",
+    "is_free": false,
+    "description": "Psychedelic adventure with elrow at [UNVRS] featuring Enter The WORTEX - immersive worlds of house, tech house and techno with art, music and performance.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-08-29T00:00:00.000Z",
+    "end_date": "2026-08-29T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-08-29",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday night residency at Hï Ibiza, featuring Afro House and deep house with special guests in Theatre and Club Room.",
+    "organizers": [
+      {
+        "name": "Ushuaïa",
+        "slug": "ushuaia"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-08-30T00:00:00.000Z",
+    "end_date": "2026-08-30T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/30-08-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza with special guests Joseph Capriati, Honey Dijon, Brina Knauss and more.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CAMELPHAT Present Summer of Love",
+    "start_date": "2026-08-30T00:00:00.000Z",
+    "end_date": "2026-08-30T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Melodic House",
+      "Psy-Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-08-30",
+    "is_free": false,
+    "description": "CAMELPHAT return to Hï Ibiza with Summer of Love, a celebration of human connection and energy on the dancefloor with melodic, tech and deep house music.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-08-31T00:00:00.000Z",
+    "end_date": "2026-08-31T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-08-31",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza with Afro, Caribbean and Latin house, featuring live instruments and dancers. Andrea Oliva presents All I Need in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA - ÆDEN Residency",
+    "start_date": "2026-09-01T00:00:00.000Z",
+    "end_date": "2026-09-01T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/01-09-2026",
+    "is_free": false,
+    "description": "Anyma returns to [UNVRS] with ÆDEN, a deeply immersive creative experience featuring melodic techno across multiple rooms.",
+    "organizers": [
+      {
+        "name": "Ushuaïa",
+        "slug": "ushuaia"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-09-01T00:00:00.000Z",
+    "end_date": "2026-09-01T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Tech House",
+      "Dub",
+      "Garage"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-09-01",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza every Tuesday. Deep tech, minimal house, dub, garage and groove with Paco Osuna's NOW HERE residency in the Club Room.",
+    "organizers": [
+      {
+        "name": "East End Dubs",
+        "slug": "east-end-dubs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-09-02T00:00:00.000Z",
+    "end_date": "2026-09-02T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/02-09-2026",
+    "is_free": false,
+    "description": "Jamie Jones and Paradise crew present an immersive house music experience at UNVRS Ibiza, featuring expansive house sounds in a futuristic cosmic garden setting.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-09-02T00:00:00.000Z",
+    "end_date": "2026-09-02T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-09-02",
+    "is_free": false,
+    "description": "MEDUZA & James Hype present OUR HOUSE at Hï Ibiza featuring the full spectrum of house music with MEDUZA³ live concept and James Hype's SYNC show.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL Presents Make The Girls Dance",
+    "start_date": "2026-09-03T00:00:00.000Z",
+    "end_date": "2026-09-03T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Progressive House",
+      "Melodic Techno",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-09-03",
+    "is_free": false,
+    "description": "HUGEL brings his Make The Girls Dance residency with Latin house and Afro house to the Theatre, while Miss Monique takes over the Club Room with progressive house and melodic techno.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Draaimolen Festival 2026",
+    "start_date": "2026-09-04T00:00:00.000Z",
+    "end_date": "2026-09-05T00:00:00.000Z",
+    "venue": null,
+    "city": null,
+    "country": null,
+    "genres": [],
+    "website": "https://www.draaimolen.nu/events/draaimolen-festival-2026?tab=about",
+    "is_free": false,
+    "description": "A 100% independent non-profit festival in Tilburg focusing on the perfect symbiosis of music, art and nature.",
+    "organizers": [
+      {
+        "name": "Draaimolen",
+        "slug": "draaimolen"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-09-05T00:00:00.000Z",
+    "end_date": "2026-09-05T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-09-05",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday night residency at Hï Ibiza, featuring Afro House and deep house with Skepta's Más Tiempo in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-09-05T00:00:00.000Z",
+    "end_date": "2026-09-05T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/05-09-2026",
+    "is_free": false,
+    "description": "elrow returns to [UNVRS] with Enter The WORTEX - a psychedelic adventure featuring immersive worlds, kinetic visuals, and world-class electronic music.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MESTIZA",
+    "start_date": "2026-09-06T00:00:00.000Z",
+    "end_date": "2026-09-06T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Latin House",
+      "Flamenco Electronic",
+      "Psy-Techno",
+      "Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/mestiza/2026-09-06",
+    "is_free": false,
+    "description": "MESTIZA bring their fusion of flamenco roots and electronic avant-garde to Hï Ibiza Theatre, with Indira Paganotto presents ARTCORE in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-09-06T00:00:00.000Z",
+    "end_date": "2026-09-06T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/06-09-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER",
+    "start_date": "2026-09-07T00:00:00.000Z",
+    "end_date": "2026-09-07T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/09-07-2026",
+    "is_free": false,
+    "description": "FISHER returns to [UNVRS] Ibiza for year 2 of his Thursday night residency with stadium-sized showmanship and relentless energy.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy - Mondays at Hï Ibiza",
+    "start_date": "2026-09-07T00:00:00.000Z",
+    "end_date": "2026-09-07T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-09-07",
+    "is_free": false,
+    "description": "Francis Mercier brings his Solèy residency to Hï Ibiza, blending Afro, Caribbean, and Latin house with live instruments and dancers.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Armin van Buuren - A State of Trance Opening Party",
+    "start_date": "2026-09-07T00:00:00.000Z",
+    "end_date": "2026-09-07T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Trance",
+      "Progressive House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/armin-van-buuren-asot/07-09-2026",
+    "is_free": false,
+    "description": "Armin van Buuren presents A State of Trance at [UNVRS] with a special 5-hour extended set celebrating 25 years of the globally influential trance brand.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "ANYMA ÆDEN",
+    "start_date": "2026-09-08T00:00:00.000Z",
+    "end_date": "2026-09-08T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/08-09-2026",
+    "is_free": false,
+    "description": "Anyma returns to [UNVRS] with ÆDEN, a deeply immersive creative experience featuring melodic techno and a carefully curated lineup including Amelie Lens.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-09-08T00:00:00.000Z",
+    "end_date": "2026-09-08T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Dub",
+      "Garage",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-09-08",
+    "is_free": false,
+    "description": "Eastenderz residency at Hï Ibiza featuring East End Dubs with deep tech, minimal house, dub, garage, and groove. Club Room hosted by Paco Osuna.",
+    "organizers": [
+      {
+        "name": "Eastenderz",
+        "slug": "eastenderz"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-09-09T00:00:00.000Z",
+    "end_date": "2026-09-09T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-09-09",
+    "is_free": false,
+    "description": "MEDUZA³ and James Hype bring their OUR HOUSE residency to Hï Ibiza, exploring the full spectrum of house music with innovative live performances and cutting-edge technology.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-09-09T00:00:00.000Z",
+    "end_date": "2026-09-09T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/09-09-2026",
+    "is_free": false,
+    "description": "Jamie Jones and Paradise crew present Paradise: Starship Eden - a futuristic cosmic journey featuring house, deep house and tech house in a fully immersive experience.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL and Miss Monique",
+    "start_date": "2026-09-10T00:00:00.000Z",
+    "end_date": "2026-09-10T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Progressive House",
+      "Melodic Techno",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-09-10",
+    "is_free": false,
+    "description": "HUGEL brings Latin house energy to the Theatre while Miss Monique delivers progressive house in the Club Room. Two residencies engineered to make you move every Thursday at Hï Ibiza.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CAMELPHAT Present Summer of Love",
+    "start_date": "2026-09-11T00:00:00.000Z",
+    "end_date": "2026-09-11T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-09-11",
+    "is_free": false,
+    "description": "CAMELPHAT return to Hï Ibiza with Summer of Love, a celebration of human connection and energy on the dancefloor with immersive house music experiences.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Voodoo Village",
+    "start_date": "2026-09-11T00:00:00.000Z",
+    "end_date": "2026-09-13T00:00:00.000Z",
+    "venue": "Voodoo Village",
+    "city": "Grimbergen",
+    "country": "BE",
+    "genres": [
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Voodoo Village is a music festival featuring multiple stages, artists, and experiences in Grimbergen.",
+    "organizers": [
+      {
+        "name": "Voodoo Village",
+        "slug": "voodoo-village"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-09-12T00:00:00.000Z",
+    "end_date": "2026-09-12T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/12-09-2026",
+    "is_free": false,
+    "description": "elrow returns to [UNVRS] with Enter The WORTEX - an immersive psychedelic adventure featuring house, tech house and techno across six themed worlds.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-09-12T00:00:00.000Z",
+    "end_date": "2026-09-12T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-09-12",
+    "is_free": false,
+    "description": "Black Coffee returns for his 8th year Saturday residency at Hï Ibiza, bringing his signature Afro House sound and Afropolitan sensibility to the world's premier nightclub.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MESTIZA",
+    "start_date": "2026-09-13T00:00:00.000Z",
+    "end_date": "2026-09-13T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Latin House",
+      "Flamenco Electronic",
+      "Psy-Techno",
+      "Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/mestiza/2026-09-13",
+    "is_free": false,
+    "description": "MESTIZA residency at Hï Ibiza featuring melodic house, Latin house and flamenco-inspired electronic music in the Theatre, with Indira Paganotto Presents ARTCORE in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-09-13T00:00:00.000Z",
+    "end_date": "2026-09-13T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/13-09-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-09-14T00:00:00.000Z",
+    "end_date": "2026-09-14T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-09-14",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza with Afro house, Latin house, and deep house featuring live instrumentalists and dancers, plus Andrea Oliva in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Armin Van Buuren presents A State Of Trance",
+    "start_date": "2026-09-14T00:00:00.000Z",
+    "end_date": "2026-09-14T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Trance",
+      "Progressive House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/armin-van-buuren-asot/14-09-2026",
+    "is_free": false,
+    "description": "Armin van Buuren presents A State of Trance with a special 5-hour extended set at UNVRS Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Anyma ÆDEN - Closing Party",
+    "start_date": "2026-09-15T00:00:00.000Z",
+    "end_date": "2026-09-15T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael",
+    "country": "ES",
+    "genres": [
+      "Melodic Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/anyma/15-09-2026",
+    "is_free": false,
+    "description": "Closing party of Anyma's ÆDEN residency at [UNVRS] featuring a deeply immersive creative experience with melodic techno.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-09-15T00:00:00.000Z",
+    "end_date": "2026-09-15T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Tech House",
+      "Dub",
+      "Garage"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-09-15",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza. Deep tech, minimal house, dub and garage energy on the dancefloor every Tuesday.",
+    "organizers": [
+      {
+        "name": "East End Dubs",
+        "slug": "east-end-dubs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-09-16T00:00:00.000Z",
+    "end_date": "2026-09-16T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-09-16",
+    "is_free": false,
+    "description": "MEDUZA and James Hype present OUR HOUSE at Hï Ibiza with their innovative live concepts MEDUZA³ and SYNC, exploring the full spectrum of house music.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-09-16T00:00:00.000Z",
+    "end_date": "2026-09-16T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/16-09-2026",
+    "is_free": false,
+    "description": "Jamie Jones and Paradise crew present an immersive cosmic house music experience at UNVRS Ibiza with expansive house, deep house and tech house sounds.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL Presents Make The Girls Dance with Miss Monique",
+    "start_date": "2026-09-17T00:00:00.000Z",
+    "end_date": "2026-09-17T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Progressive House",
+      "Melodic Techno",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-09-17",
+    "is_free": false,
+    "description": "HUGEL brings Latin house energy to the Theatre while Miss Monique delivers progressive house in the Club Room at Hï Ibiza's Thursday residency.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CAMELPHAT Present Summer of Love",
+    "start_date": "2026-09-18T00:00:00.000Z",
+    "end_date": "2026-09-18T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-09-18",
+    "is_free": false,
+    "description": "CAMELPHAT return to Hï Ibiza with Summer of Love, a celebration of human connection and energy on the dancefloor with melodic, tech and deep house.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-09-18T00:00:00.000Z",
+    "end_date": "2026-09-18T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/18-09-2026",
+    "is_free": false,
+    "description": "David Guetta returns to Fridays at [UNVRS] with Galactic Circus, a carnival of sight and sound spanning genres and scenes in an alternative utopia for rebels and renegades from across the galaxy.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-09-19T00:00:00.000Z",
+    "end_date": "2026-09-19T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-09-19",
+    "is_free": false,
+    "description": "Black Coffee presents his flagship Saturday night residency at Hï Ibiza with Afro House and deep house sounds, featuring artists from the African art scene.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-09-19T00:00:00.000Z",
+    "end_date": "2026-09-19T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/19-09-2026",
+    "is_free": false,
+    "description": "Prepare for a psychedelic adventure as elrow returns with Enter The WORTEX, featuring immersive worlds, kinetic visuals, and a multi-coloured whirlwind of house, tech house and techno.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MESTIZA",
+    "start_date": "2026-09-20T00:00:00.000Z",
+    "end_date": "2026-09-20T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Latin House",
+      "Flamenco Electronic",
+      "Psy-Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/mestiza/2026-09-20",
+    "is_free": false,
+    "description": "MESTIZA at Hï Ibiza - Spanish duo fusing flamenco roots with melodic house and Latin grooves. Indira Paganotto Presents ARTCORE in the Club Room featuring psy-techno sounds.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-09-20T00:00:00.000Z",
+    "end_date": "2026-09-20T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/20-09-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-09-21T00:00:00.000Z",
+    "end_date": "2026-09-21T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-09-21",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza - Afro house, Latin house, and deep house with live instrumentalists and dancers featuring Andrea Oliva in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Armin Van Buuren presents A State Of Trance",
+    "start_date": "2026-09-21T00:00:00.000Z",
+    "end_date": "2026-09-21T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Trance",
+      "Progressive House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/armin-van-buuren-asot/21-09-2026",
+    "is_free": false,
+    "description": "Armin van Buuren presents A State of Trance with a special 5-hour extended set at [UNVRS] Ibiza, celebrating 25 years of his globally influential trance brand.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-09-22T00:00:00.000Z",
+    "end_date": "2026-09-22T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Techno",
+      "Tech House",
+      "Afro House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/black-coffee/22-09-2026",
+    "is_free": false,
+    "description": "Black Coffee brings his acclaimed Afropolitan House sound to [UNVRS] Ibiza, blending traditional African percussion with metropolitan techno.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-09-22T00:00:00.000Z",
+    "end_date": "2026-09-22T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Dub",
+      "Garage",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-09-22",
+    "is_free": false,
+    "description": "East End Dubs presents Eastenderz at Hï Ibiza - deep tech and minimal house infused with dub, garage, and groove.",
+    "organizers": [
+      {
+        "name": "Eastenderz",
+        "slug": "eastenderz"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-09-23T00:00:00.000Z",
+    "end_date": "2026-09-23T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/23-09-2026",
+    "is_free": false,
+    "description": "Jamie Jones and Paradise crew present Starship Eden - a futuristic immersive house music experience in an all-new cosmic garden setting at UNVRS Ibiza.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MEDUZA & James Hype Present OUR HOUSE",
+    "start_date": "2026-09-23T00:00:00.000Z",
+    "end_date": "2026-09-23T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Progressive House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/our-house/2026-09-23",
+    "is_free": false,
+    "description": "MEDUZA & James Hype return to Hï Ibiza for their fourth season with OUR HOUSE, exploring the full spectrum of house music with innovative live performances and cutting-edge concepts.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "HUGEL and Miss Monique - Thursday Closing Party",
+    "start_date": "2026-09-24T00:00:00.000Z",
+    "end_date": "2026-09-24T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Latin House",
+      "Afro House",
+      "Tech House",
+      "Progressive House",
+      "Melodic Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/hugel/2026-09-24",
+    "is_free": false,
+    "description": "Thursday Closing Party featuring HUGEL's Make The Girls Dance in the Theatre and Miss Monique in the Club Room at Hï Ibiza.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Adriatique Presents X",
+    "start_date": "2026-09-24T00:00:00.000Z",
+    "end_date": "2026-09-24T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/adriatique-presents-x/24-09-2026",
+    "is_free": false,
+    "description": "Adriatique presents their debut headline show at [UNVRS], featuring melodic house and techno in a visionary audio-visual experience.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CamelPhat Present Summer of Love",
+    "start_date": "2026-09-25T00:00:00.000Z",
+    "end_date": "2026-09-25T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-09-25",
+    "is_free": false,
+    "description": "CamelPhat return to Hï Ibiza with Summer of Love, a celebration of human connection and energy on the dancefloor with melodic, tech and deep house music.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-09-25T00:00:00.000Z",
+    "end_date": "2026-09-25T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/25-09-2026",
+    "is_free": false,
+    "description": "David Guetta returns with Galactic Circus, an alternative utopia carnival of sight and sound featuring house, progressive house and tech house across multiple rooms.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza",
+    "start_date": "2026-09-26T00:00:00.000Z",
+    "end_date": "2026-09-26T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/26-09-2026",
+    "is_free": false,
+    "description": "elrow returns with Enter The WORTEX - a psychedelic adventure featuring immersive worlds, house, tech house and techno music in a technicoloured parallel universe.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-09-26T00:00:00.000Z",
+    "end_date": "2026-09-26T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/black-coffee/2026-09-26",
+    "is_free": false,
+    "description": "Black Coffee's flagship Saturday night residency at Hï Ibiza featuring Afropolitan and Afro house sounds with special guests Marco Carola, AMÉMÉ, DJ EZ and more.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox",
+    "start_date": "2026-09-27T00:00:00.000Z",
+    "end_date": "2026-09-27T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/27-09-2026",
+    "is_free": false,
+    "description": "Carl Cox takes you on a journey through house, techno, and beyond at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MESTIZA",
+    "start_date": "2026-09-27T00:00:00.000Z",
+    "end_date": "2026-09-27T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Latin House",
+      "Flamenco Electronic",
+      "Psy-Techno",
+      "Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/mestiza/2026-09-27",
+    "is_free": false,
+    "description": "MESTIZA take control of the Hï Ibiza Theatre fusing flamenco roots with melodic house and Latin grooves. Indira Paganotto presents ARTCORE in the Club Room with psy-techno sounds.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Armin Van Buuren presents A State Of Trance",
+    "start_date": "2026-09-28T00:00:00.000Z",
+    "end_date": "2026-09-28T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Trance",
+      "Progressive House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/armin-van-buuren-asot/28-09-2026",
+    "is_free": false,
+    "description": "Armin van Buuren performs a special 5-hour extended trance set at UNVRS, celebrating 25 years of A State of Trance.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier Presents Solèy",
+    "start_date": "2026-09-28T00:00:00.000Z",
+    "end_date": "2026-09-28T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-09-28",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza, blending Afro, Caribbean, and Latin house with live instrumentalists and dancers. Andrea Oliva presents All I Need in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "No Art",
+    "start_date": "2026-09-29T00:00:00.000Z",
+    "end_date": "2026-09-29T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Disco"
+    ],
+    "website": "https://www.unvrs.com/events/2026/no-art-ibiza/29-09-2026",
+    "is_free": false,
+    "description": "Internationally revered event series No Art returns to [UNVRS] with cutting-edge electronic music, artistic design, and unconventional art performances.",
+    "organizers": [
+      {
+        "name": "No Art",
+        "slug": "no-art"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz",
+    "start_date": "2026-09-29T00:00:00.000Z",
+    "end_date": "2026-09-29T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Dub",
+      "Garage",
+      "Tech House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-09-29",
+    "is_free": false,
+    "description": "Eastenderz debuts at Hï Ibiza every Tuesday with East End Dubs leading a night of deep tech, minimal house, dub, and garage energy.",
+    "organizers": [
+      {
+        "name": "East End Dubs",
+        "slug": "east-end-dubs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Presents Paradise",
+    "start_date": "2026-09-30T00:00:00.000Z",
+    "end_date": "2026-09-30T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/30-09-2026",
+    "is_free": false,
+    "description": "Jamie Jones and Paradise crew present Paradise: Starship Eden, a futuristic immersive experience exploring the cosmos with expansive house sounds at UNVRS Ibiza.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Black Coffee",
+    "start_date": "2026-10-01T00:00:00.000Z",
+    "end_date": "2026-10-01T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno",
+      "Afro House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/black-coffee/01-10-2026",
+    "is_free": false,
+    "description": "Black Coffee plays at [UNVRS] Ibiza. The GRAMMY-winning South African pioneer brings his acclaimed Afropolitan House sound to the world's first hyperclub.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "CAMELPHAT Presents Summer of Love",
+    "start_date": "2026-10-02T00:00:00.000Z",
+    "end_date": "2026-10-02T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/camelphat/2026-10-02",
+    "is_free": false,
+    "description": "CAMELPHAT return to Hï Ibiza with Summer of Love, a celebration of human connection and the energy that lives between people on the dancefloor.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta presents Galactic Circus - Closing Party",
+    "start_date": "2026-10-02T00:00:00.000Z",
+    "end_date": "2026-10-02T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/02-10-2026",
+    "is_free": false,
+    "description": "The closing party of David Guetta's Galactic Circus residency at [UNVRS] Ibiza, featuring a carnival of sight and sound with performances from the world's number one DJ.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "elrow Ibiza - Closing Party",
+    "start_date": "2026-10-03T00:00:00.000Z",
+    "end_date": "2026-10-03T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/elrow-ibiza/03-10-2026",
+    "is_free": false,
+    "description": "elrow's closing party at [UNVRS] Ibiza featuring Enter The WORTEX - a psychedelic adventure through immersive worlds with house, tech house and techno.",
+    "organizers": [
+      {
+        "name": "elrow",
+        "slug": "elrow"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Geheime Liefde presents: HRFST",
+    "start_date": "2026-10-03T00:00:00.000Z",
+    "end_date": "2026-10-03T00:00:00.000Z",
+    "venue": "Fort bij Vechten",
+    "city": "Utrecht",
+    "country": "NL",
+    "genres": [
+      "Techno",
+      "House",
+      "Trance",
+      "Disco"
+    ],
+    "website": "https://geheimeliefde.nl/hrfst#faq",
+    "is_free": false,
+    "description": "Techno, house, melodic, trance and disco beats in the bunkers of Fort bij Vechten. When leaves are falling, we unite!",
+    "organizers": [
+      {
+        "name": "Geheime Liefde",
+        "slug": "geheime-liefde"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "MESTIZA - Sunday Closing Party",
+    "start_date": "2026-10-04T00:00:00.000Z",
+    "end_date": "2026-10-04T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Melodic House",
+      "Latin House",
+      "Flamenco Electronic",
+      "Psy-Techno",
+      "Techno"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/mestiza/2026-10-04",
+    "is_free": false,
+    "description": "MESTIZA's closing party at Hï Ibiza featuring melodic house, Latin house and flamenco-inspired electronic music in the Theatre, with Indira Paganotto's ARTCORE psy-techno showcase in the Club Room.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Carl Cox - Closing Party",
+    "start_date": "2026-10-04T00:00:00.000Z",
+    "end_date": "2026-10-04T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/carl-cox/04-10-2026",
+    "is_free": false,
+    "description": "Carl Cox closing party at [UNVRS] with an all night long set, featuring Wild Comet and melon bomb in the Main Room.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Francis Mercier - Mondays at Hï Ibiza (Closing Party)",
+    "start_date": "2026-10-05T00:00:00.000Z",
+    "end_date": "2026-10-05T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Afro House",
+      "Latin House",
+      "Tech House",
+      "Melodic House"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/francis-mercier/2026-10-05",
+    "is_free": false,
+    "description": "Francis Mercier brings Solèy to Hï Ibiza for the Monday Closing Party featuring Afro house, Latin house, and international sounds with live instrumentalists and dancers.",
+    "organizers": [
+      {
+        "name": "Hï Ibiza",
+        "slug": "h-ibiza"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Armin van Buuren - A State of Trance Closing Party",
+    "start_date": "2026-10-05T00:00:00.000Z",
+    "end_date": "2026-10-05T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael",
+    "country": "ES",
+    "genres": [
+      "Trance",
+      "Progressive House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/armin-van-buuren-asot/05-10-2026",
+    "is_free": false,
+    "description": "Closing Party of Armin van Buuren's A State of Trance residency featuring a special 5-hour extended set at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Eastenderz - Closing Party",
+    "start_date": "2026-10-06T00:00:00.000Z",
+    "end_date": "2026-10-06T00:00:00.000Z",
+    "venue": "Hï Ibiza",
+    "city": "Sant Josep de sa Talaia",
+    "country": "ES",
+    "genres": [
+      "Deep Tech",
+      "Minimal House",
+      "Tech House",
+      "Dub",
+      "Garage"
+    ],
+    "website": "https://www.hiibiza.com/events/2026/eastenderz/2026-10-06",
+    "is_free": false,
+    "description": "Eastenderz closing party at Hï Ibiza featuring deep tech and minimal house with East End Dubs, Ewan McVicar, Paco Osuna and more.",
+    "organizers": [
+      {
+        "name": "Eastenderz",
+        "slug": "eastenderz"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Jamie Jones Paradise - Closing Party",
+    "start_date": "2026-10-07T00:00:00.000Z",
+    "end_date": "2026-10-07T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/jamie-jones-paradise/07-10-2026",
+    "is_free": false,
+    "description": "Paradise: Starship Eden Closing Party with Jamie Jones and the Paradise crew at [UNVRS] Ibiza. A futuristic, fully immersive house music experience.",
+    "organizers": [
+      {
+        "name": "Paradise",
+        "slug": "paradise"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-10-07T00:00:00.000Z",
+    "end_date": "2026-10-07T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/10-07-2026",
+    "is_free": false,
+    "description": "David Guetta returns as the visionary ringmaster of Galactic Circus, a carnival of sight and sound spanning genres, scenes and sounds at [UNVRS] Ibiza.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Indira Paganotto Presents Artcore",
+    "start_date": "2026-10-09T00:00:00.000Z",
+    "end_date": "2026-10-09T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "Ibiza",
+    "country": "ES",
+    "genres": [
+      "Psy-Techno",
+      "Techno"
+    ],
+    "website": "https://www.unvrs.com/events/2026/artcore/09-10-2026",
+    "is_free": false,
+    "description": "An enthralling, psy-techno odyssey in the world's first hyperclub featuring Indira Paganotto and her ARTCORE label showcase.",
+    "organizers": [
+      {
+        "name": "Artcore",
+        "slug": "artcore"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER Closing Party",
+    "start_date": "2026-10-09T00:00:00.000Z",
+    "end_date": "2026-10-09T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/10-09-2026",
+    "is_free": false,
+    "description": "FISHER's closing party at [UNVRS] Ibiza featuring high-octane house and tech house with special guests ATRIP, RICHY PENNY and more.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Duro Festival 2026",
+    "start_date": "2026-10-10T00:00:00.000Z",
+    "end_date": "2026-10-11T00:00:00.000Z",
+    "venue": "Can Guitet",
+    "city": "Montmeló",
+    "country": "ES",
+    "genres": [
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "Techno festival taking place in Montmeló featuring top artists in an outdoor venue near Circuit de Catalunya.",
+    "organizers": [
+      {
+        "name": "Duro Festival",
+        "slug": "duro-festival"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "FISHER",
+    "start_date": "2026-11-06T00:00:00.000Z",
+    "end_date": "2026-11-06T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/fisher/11-06-2026",
+    "is_free": false,
+    "description": "FISHER returns to [UNVRS] Ibiza for year 2 of his Thursday night residency with high-octane stadium-sized showmanship and relentless energy.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "David Guetta Presents Galactic Circus",
+    "start_date": "2026-11-09T00:00:00.000Z",
+    "end_date": "2026-11-09T00:00:00.000Z",
+    "venue": "[UNVRS]",
+    "city": "San Rafael, Ibiza",
+    "country": "ES",
+    "genres": [
+      "Progressive House",
+      "Tech House"
+    ],
+    "website": "https://www.unvrs.com/events/2026/david-guetta-galactic-circus/11-09-2026",
+    "is_free": false,
+    "description": "David Guetta returns as visionary ringmaster of Galactic Circus, a carnival of sight and sound delivering sets spanning genres, scenes and sounds in an alternative utopia.",
+    "organizers": [
+      {
+        "name": "[UNVRS]",
+        "slug": "unvrs"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Tomorrowland Thailand 2026",
+    "start_date": "2026-12-11T00:00:00.000Z",
+    "end_date": "2026-12-13T00:00:00.000Z",
+    "venue": null,
+    "city": null,
+    "country": null,
+    "genres": [
+      "Techno"
+    ],
+    "website": "https://thailand.tomorrowland.com/en/welcome/",
+    "is_free": false,
+    "description": "Tomorrowland's first full-scale Asian festival in Wisdom Valley, Thailand. A three-day celebration of music, magic, and unity featuring six spectacular stages including the legendary Mainstage.",
+    "organizers": [
+      {
+        "name": "Tomorrowland",
+        "slug": "tomorrowland"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "DGTL Amsterdam",
+    "start_date": "2027-03-26T00:00:00.000Z",
+    "end_date": "2027-03-28T00:00:00.000Z",
+    "venue": "NDSM Docklands",
+    "city": "Amsterdam",
+    "country": "NL",
+    "genres": [
+      "House",
+      "Tech House",
+      "Techno"
+    ],
+    "website": null,
+    "is_free": false,
+    "description": "DGTL is a leading electronic music festival featuring art, music, impressive stages in raw industrial settings, mesmerizing visuals, and revolutionary sustainability projects.",
+    "organizers": [
+      {
+        "name": "DGTL",
+        "slug": "dgtl"
+      }
+    ],
+    "source": "festifeed.com"
+  },
+  {
+    "name": "Tomorrowland Brasil 2027",
+    "start_date": "2027-04-30T00:00:00.000Z",
+    "end_date": "2027-05-02T00:00:00.000Z",
+    "venue": "Parque Maeda",
+    "city": "Itu, São Paulo",
+    "country": "BR",
+    "genres": [
+      "Techno",
+      "House",
+      "Trance"
+    ],
+    "website": "https://brasil.tomorrowland.com/en/welcome/",
+    "is_free": false,
+    "description": "Tomorrowland Brasil returns to Parque Maeda with the theme Consciencia - a magnificent world where the impossible is merely a dream on the verge of becoming reality.",
+    "organizers": [
+      {
+        "name": "Tomorrowland",
+        "slug": "tomorrowland"
+      }
+    ],
+    "source": "festifeed.com"
+  }
+]

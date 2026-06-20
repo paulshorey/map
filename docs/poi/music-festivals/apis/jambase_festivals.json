@@ -1,0 +1,262 @@
+{
+  "_meta": {
+    "source": "JamBase",
+    "extraction_date": "2026-06-17",
+    "extraction_method": "Website HTML - data extracted from cached page at https://www.jambase.com/festivals",
+    "notes": [
+      "JamBase API (https://api.jambase.com/v3/ and https://data.jambase.com/api/v1/) requires a paid API key.",
+      "Free 14-day trial available at https://data.jambase.com - no credit card required.",
+      "JamBase website (www.jambase.com) is protected by Cloudflare/BigScoots bot protection - returns HTTP 429 for programmatic requests.",
+      "JamBase internal API (jb-api/v1/events) requires API key even for website-embedded calls.",
+      "Festival data extracted from page https://www.jambase.com/festivals via fetch_url (cached).",
+      "Names and headliners extracted - individual dates/locations not available without API key or JavaScript rendering.",
+      "To get full data: sign up at https://data.jambase.com for API trial.",
+      "24 festivals extracted from the JamBase festivals page."
+    ],
+    "api_signup_url": "https://data.jambase.com",
+    "api_trial": "14-day free trial, no credit card required",
+    "total_festivals": 24
+  },
+  "festivals": [
+    {
+      "name": "Telluride Bluegrass Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Larkin Poe",
+        "Gregory Alan Isakov",
+        "Tedeschi Trucks Band"
+      ],
+      "url": "https://www.jambase.com/festival/telluride-bluegrass-festival"
+    },
+    {
+      "name": "Nelsonville Music Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Geese",
+        "The Marcus King Band",
+        "Gillian Welch"
+      ],
+      "url": "https://www.jambase.com/festival/nelsonville-music-festival"
+    },
+    {
+      "name": "Father's Day Bluegrass Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "The Po' Ramblin' Boys",
+        "Sam Grisman Project",
+        "Bluegrass Cardinals"
+      ],
+      "url": "https://www.jambase.com/festival/fathers-day-bluegrass-festival"
+    },
+    {
+      "name": "Green River Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Charley Crockett",
+        "Spoon",
+        "Geese"
+      ],
+      "url": "https://www.jambase.com/festival/green-river-festival"
+    },
+    {
+      "name": "Blue Ox Music Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Daniel Donato",
+        "The Marcus King Band",
+        "Charley Crockett"
+      ],
+      "url": "https://www.jambase.com/festival/blue-ox-music-festival"
+    },
+    {
+      "name": "Get Down",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Cabinet",
+        "Keller & the Keels",
+        "Spafford"
+      ],
+      "url": "https://www.jambase.com/festival/get-down"
+    },
+    {
+      "name": "Blues From The Top",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Marc Broussard",
+        "Kenny Wayne Shepherd",
+        "Los Lobos"
+      ],
+      "url": "https://www.jambase.com/festival/blues-from-the-top"
+    },
+    {
+      "name": "Rose Arts Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Mihali",
+        "Neighbor",
+        "Melt"
+      ],
+      "url": "https://www.jambase.com/festival/rose-arts-festival"
+    },
+    {
+      "name": "Saratoga Jazz Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Patti LaBelle",
+        "The Revivalists",
+        "Dianne Reeves"
+      ],
+      "url": "https://www.jambase.com/festival/saratoga-jazz-festival"
+    },
+    {
+      "name": "High Sierra Music Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Don Was & The Pan-Detroit Ensemble",
+        "The Word",
+        "Steel Pulse"
+      ],
+      "url": "https://www.jambase.com/festival/high-sierra-music-festival"
+    },
+    {
+      "name": "Great Blue Heron Music Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Ripe",
+        "The Dip",
+        "Donna the Buffalo"
+      ],
+      "url": "https://www.jambase.com/festival/great-blue-heron-music-festival"
+    },
+    {
+      "name": "Dead of Summer Music Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "God Street Wine",
+        "Leftover Salmon",
+        "Pink Talking Fish"
+      ],
+      "url": "https://www.jambase.com/festival/dead-of-summer-music-festival"
+    },
+    {
+      "name": "Rock The Dock",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Dark Star Orchestra",
+        "Spafford",
+        "Strange Machines"
+      ],
+      "url": "https://www.jambase.com/festival/rock-the-dock"
+    },
+    {
+      "name": "moe.down",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "moe.",
+        "Umphrey's McGee",
+        "Daniel Donato"
+      ],
+      "url": "https://www.jambase.com/festival/moe-down"
+    },
+    {
+      "name": "Great South Bay Music Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Sublime",
+        "My Morning Jacket",
+        "Gov't Mule"
+      ],
+      "url": "https://www.jambase.com/festival/great-south-bay-music-festival"
+    },
+    {
+      "name": "Gambler's Run Music Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "The String Cheese Incident",
+        "Big Head Todd and the Monsters",
+        "The California Honeydrops"
+      ],
+      "url": "https://www.jambase.com/festival/gamblers-run-music-festival"
+    },
+    {
+      "name": "Flood City Music Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "The Disco Biscuits",
+        "Greensky Bluegrass",
+        "Pigeons Playing Ping Pong"
+      ],
+      "url": "https://www.jambase.com/festival/flood-city-music-festival"
+    },
+    {
+      "name": "Everwild",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Dirty Heads",
+        "311",
+        "Tropidelic"
+      ],
+      "url": "https://www.jambase.com/festival/everwild"
+    },
+    {
+      "name": "XRoads41",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Lainey Wilson",
+        "Jason Aldean",
+        "Zac Brown Band"
+      ],
+      "url": "https://www.jambase.com/festival/xroads41"
+    },
+    {
+      "name": "Rocky Mountain Folks Festival",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Jesse Welles",
+        "Gillian Welch",
+        "David Rawlings"
+      ],
+      "url": "https://www.jambase.com/festival/rocky-mountain-folks-festival"
+    },
+    {
+      "name": "Heritage Music BluesFest",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "JJ Grey & Mofro",
+        "St. Paul and The Broken Bones",
+        "Eddie 9V"
+      ],
+      "url": "https://www.jambase.com/festival/heritage-music-bluesfest"
+    },
+    {
+      "name": "Strawberry Jam",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Cory Wong",
+        "The California Honeydrops",
+        "Devon Gilfillian"
+      ],
+      "url": "https://www.jambase.com/festival/strawberry-jam"
+    },
+    {
+      "name": "Cory Wong's Syncopated Summer Camp",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Cory Wong",
+        "Eric Krasno",
+        "Ariel Posen"
+      ],
+      "url": "https://www.jambase.com/festival/cory-wongs-syncopated-summer-camp"
+    },
+    {
+      "name": "Milwaukee Irish Fest",
+      "source_page": "https://www.jambase.com/festivals",
+      "headliners": [
+        "Ally The Piper",
+        "Altan",
+        "Atlantic Wave"
+      ],
+      "url": "https://www.jambase.com/festival/milwaukee-irish-fest"
+    }
+  ]
+}
