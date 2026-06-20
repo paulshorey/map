@@ -1,0 +1,1223 @@
+{
+  "source_info": {
+    "primary_source": "downbeat.com",
+    "note": "DownBeat's 2026 International Jazz Festival Guide lists 126 festivals. The actual list is in their magazine PDF/digital edition (paywalled). This dataset combines: festivals explicitly mentioned in DownBeat articles, IJFO member festivals (16 leading international festivals with 2026 dates), SmoothJazz.com Jazz Festival Guide, and other well-known jazz festivals.",
+    "sources": [
+      "downbeat.com",
+      "ijfo.org",
+      "smoothjazz.com"
+    ],
+    "downbeat_2026_festival_count": 126,
+    "collected_count": 142
+  },
+  "festivals": [
+    {
+      "name": "NN North Sea Jazz Festival",
+      "location": "Rotterdam",
+      "country": "Netherlands",
+      "year": 2026,
+      "dates_2026": "July 10–12",
+      "notes": "50th anniversary, DownBeat 2026 Spotlight",
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Syracuse Jazz Festival",
+      "location": "Syracuse, New York",
+      "country": "USA",
+      "year": 2026,
+      "notes": "40th anniversary, DownBeat 2026 Spotlight",
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "San Diego Tijuana Jazz Festival",
+      "location": "San Diego, CA / Tijuana, Mexico",
+      "country": "USA/Mexico",
+      "year": 2026,
+      "notes": "3rd annual, DownBeat 2026 Spotlight",
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Edgefest",
+      "location": "Ann Arbor, Michigan",
+      "country": "USA",
+      "notes": "avant garde",
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Vision Fest",
+      "location": "New York City, New York",
+      "country": "USA",
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Guelph Jazz Festival",
+      "location": "Guelph, Ontario",
+      "country": "Canada",
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Mitrovica International Jazz Days",
+      "location": "Mitrovica, Kosovo",
+      "country": "Kosovo",
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Tallinn International Festival Jazzkaar",
+      "location": "Tallinn, Estonia",
+      "country": "Estonia",
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Port Hope Jazz Festival",
+      "location": "Port Hope, Ontario",
+      "country": "Canada",
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Springfield Jazz & Roots Festival",
+      "location": "Springfield, Massachusetts",
+      "country": "USA",
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Detroit Jazz Festival",
+      "location": "Detroit, Michigan",
+      "country": "USA",
+      "dates_2026": "September 4–7 (Labor Day weekend)",
+      "year": 2026,
+      "source": "downbeat.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jazz Fest Wien",
+      "location": "Vienna",
+      "country": "Austria",
+      "dates_2026": "July 3–12, 2026",
+      "website": "jazzfest.wien",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Pori Jazz Festival",
+      "location": "Pori",
+      "country": "Finland",
+      "dates_2026": "July 16–18, 2026",
+      "website": "porijazz.fi",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jazz à Vienne",
+      "location": "Vienne",
+      "country": "France",
+      "dates_2026": "June 25–July 11, 2026",
+      "website": "jazzavienne.com",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "North Sea Jazz Festival (Rotterdam)",
+      "location": "Rotterdam",
+      "country": "Netherlands",
+      "dates_2026": "July 10–12, 2026",
+      "website": "northseajazz.com",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Umbria Jazz",
+      "location": "Perugia",
+      "country": "Italy",
+      "dates_2026": "July 3–12, 2026",
+      "website": "umbriajazz.it",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Molde International Jazz Festival",
+      "location": "Molde",
+      "country": "Norway",
+      "dates_2026": "July 13–18, 2026",
+      "website": "moldejazz.no",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Festival de Jazz de Vitoria-Gasteiz",
+      "location": "Vitoria-Gasteiz",
+      "country": "Spain",
+      "dates_2026": "July 13–18, 2026",
+      "website": "jazzvitoria.com",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Montreux Jazz Festival",
+      "location": "Montreux",
+      "country": "Switzerland",
+      "dates_2026": "July 3–18, 2026",
+      "website": "montreuxjazzfestival.com",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Istanbul Jazz Festival",
+      "location": "Istanbul",
+      "country": "Turkey",
+      "dates_2026": "June 30–July 14, 2026",
+      "website": "caz.iksv.org/en",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Nice Jazz Fest",
+      "location": "Nice",
+      "country": "France",
+      "dates_2026": "July 23–26, 2026",
+      "website": "nicejazzfest.fr",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "EFG London Jazz Festival",
+      "location": "London",
+      "country": "UK",
+      "dates_2026": "November 13–22, 2026",
+      "website": "efglondonjazzfestival.org.uk",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Festival International de Jazz de Montréal",
+      "location": "Montreal, Quebec",
+      "country": "Canada",
+      "dates_2026": "June 25–July 4, 2026",
+      "website": "montrealjazzfest.com",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Newport Jazz Festival",
+      "location": "Newport, Rhode Island",
+      "country": "USA",
+      "dates_2026": "July 31–August 2, 2026",
+      "website": "newportjazz.org",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Monterey Jazz Festival",
+      "location": "Monterey, California",
+      "country": "USA",
+      "dates_2026": "September 25–27, 2026",
+      "website": "montereyjazzfestival.org",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Saratoga Jazz Festival",
+      "location": "Saratoga Springs, New York",
+      "country": "USA",
+      "dates_2026": "June 27–28, 2026",
+      "website": "spac.org",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Washington DC Jazz Festival",
+      "location": "Washington, D.C.",
+      "country": "USA",
+      "dates_2026": "September 2–6, 2026",
+      "website": "dcjazzfest.org",
+      "source": "ijfo.org",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Cancun Jazz Festival (Fall)",
+      "city": "Cancun",
+      "state_region": "Quintana Roo",
+      "country": "Mexico",
+      "month": "November",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "A To Jazz Festival",
+      "city": "Sofia",
+      "country": "Bulgaria",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Algarve Smooth Jazz Festival",
+      "city": "Albufeira",
+      "state_region": "Algarve",
+      "country": "Portugal",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Aloha Jazz Festival",
+      "city": "Honolulu",
+      "state_region": "Hawaii",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Amelia Island Jazz Festival",
+      "city": "Fernandina Beach",
+      "state_region": "Florida",
+      "country": "USA",
+      "month": "October",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Asbury Jazz Fest",
+      "city": "Asbury Park",
+      "state_region": "New Jersey",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Atlanta Jazz Festival",
+      "city": "Atlanta",
+      "state_region": "Georgia",
+      "country": "USA",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Austin Women in Jazz Festival",
+      "city": "Austin",
+      "state_region": "Texas",
+      "country": "USA",
+      "month": "September",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Barcelona Int Jazz Festival",
+      "city": "Barcelona",
+      "country": "Spain",
+      "month": "October",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Berks Jazz Festival",
+      "city": "Reading",
+      "state_region": "Pennsylvania",
+      "country": "USA",
+      "month": "March",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Blue Note Jazz Festival",
+      "city": "Hollywood",
+      "state_region": "California",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Borneo Jazz Festival",
+      "city": "Sarawak",
+      "country": "Borneo",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Brass City Jazz Fest",
+      "city": "Waterbury",
+      "state_region": "Connecticut",
+      "country": "USA",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Brian Culbertson Hawaii Jazz Getaway",
+      "city": "Honolulu",
+      "state_region": "Hawaii",
+      "country": "USA",
+      "month": "October",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Cape Town International Jazz Festival",
+      "city": "Cape Town",
+      "country": "South Africa",
+      "month": "April",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Capital Jazz Fest",
+      "city": "Columbia",
+      "state_region": "Maryland",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Catalina Island JazzTrax Festival",
+      "city": "Catalina Island",
+      "state_region": "California",
+      "country": "USA",
+      "month": "October",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Charlie Parker Jazz Festival",
+      "city": "Manhattan",
+      "state_region": "New York",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Cheltenham Jazz Festival",
+      "city": "Cheltenham",
+      "state_region": "England",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Clifford Brown Jazz Festival",
+      "city": "Wilmington",
+      "state_region": "Delaware",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Creekside Blues & Jazz Festival",
+      "city": "Gahanna",
+      "state_region": "Ohio",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Cully Jazz Festival",
+      "city": "Cully",
+      "state_region": "VD",
+      "country": "Switzerland",
+      "month": "April",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Curacao North Sea Jazz Festival",
+      "city": "Piscadera Bay",
+      "country": "Curacao",
+      "month": "September",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Daytona Jazz Weekend",
+      "city": "Daytona Beach",
+      "state_region": "Florida",
+      "country": "USA",
+      "month": "April",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "DC Jazz Festival",
+      "city": "Washington",
+      "state_region": "DC",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Duck Jazz Festival",
+      "city": "Town of Duck",
+      "state_region": "North Carolina",
+      "country": "USA",
+      "month": "October",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Edinburgh Jazz & Blues Festival",
+      "city": "Edinburgh",
+      "state_region": "Scotland",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "ELB Jazz Festival",
+      "city": "Hamburg",
+      "country": "Germany",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Elmira Jazz Festival",
+      "city": "Elmira",
+      "state_region": "New York",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Estival Jazz Lugano",
+      "city": "Lugano",
+      "country": "Switzerland",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Festival Da Jazz",
+      "city": "St Moritz",
+      "country": "Switzerland",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Festival Internacional Canarias Jazz",
+      "city": "Las Palmas",
+      "country": "Spain",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Festival of Arts",
+      "city": "Laguna Beach",
+      "state_region": "California",
+      "country": "USA",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "First Coast Jazz Festival",
+      "city": "Jacksonville",
+      "state_region": "Florida",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Fresh Coast Jazz Festival",
+      "city": "Milwaukee",
+      "state_region": "Wisconsin",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Glass City Jazz Fest",
+      "city": "Toledo",
+      "state_region": "Ohio",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Gulf Coast Summer Music Festival",
+      "city": "Pensacola",
+      "state_region": "Florida",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Half Moon Bay Wine & Jazz Festival",
+      "city": "Half Moon Bay",
+      "state_region": "California",
+      "country": "USA",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Halifax Jazz Festival",
+      "city": "Halifax",
+      "state_region": "Nova Scotia",
+      "country": "Canada",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Hot Summer Cool Jazz",
+      "city": "Austin",
+      "state_region": "Texas",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Hub City Jazz Festival",
+      "city": "New Brunswick",
+      "state_region": "New Jersey",
+      "country": "USA",
+      "month": "October",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Indy Jazz Fest",
+      "city": "Indianapolis",
+      "state_region": "Indiana",
+      "country": "USA",
+      "month": "September",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jacksonville Jazz Festival",
+      "city": "Jacksonville",
+      "state_region": "Florida",
+      "country": "USA",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Java Jazz Festival",
+      "city": "Jakarta",
+      "country": "Indonesia",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jazz Aspen Snowmass",
+      "city": "Aspen",
+      "state_region": "Colorado",
+      "country": "USA",
+      "month": "September",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jazz Fest Pompano Beach",
+      "city": "Pompano Beach",
+      "state_region": "Florida",
+      "country": "USA",
+      "month": "April",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jazz in the Gardens",
+      "city": "Miami Gardens",
+      "state_region": "Florida",
+      "country": "USA",
+      "month": "March",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jazz on the Trinity",
+      "city": "Fort Worth",
+      "state_region": "Texas",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jazz On The Vine at The Osthoff Resort",
+      "city": "Elkhart Lake",
+      "state_region": "Wisconsin",
+      "country": "USA",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jazzfest Amsterdam",
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "month": "March",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "John Coltrane International Jazz & Blues Festival",
+      "city": "High Point",
+      "state_region": "North Carolina",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Keystone Wine & Jazz Festival",
+      "city": "Keystone",
+      "state_region": "Colorado",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Kongsberg Jazz Festival",
+      "city": "Kongsberg",
+      "country": "Norway",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Lake Arbor Jazz Festival",
+      "city": "Lake Arbor",
+      "state_region": "Maryland",
+      "country": "USA",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Las Vegas City of Lights Jazz and R&B Festival",
+      "city": "Las Vegas",
+      "state_region": "Nevada",
+      "country": "USA",
+      "month": "April",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Long Beach Jazz Festival",
+      "city": "Long Beach",
+      "state_region": "California",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Louisville Jazz Festival",
+      "city": "Louisville",
+      "state_region": "Kentucky",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Love Supreme Jazz Festival",
+      "city": "Glynde Place",
+      "state_region": "East Sussex",
+      "country": "UK",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Lowcountry Jazz Festival",
+      "city": "Charleston",
+      "state_region": "South Carolina",
+      "country": "USA",
+      "month": "September",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Martha's Vineyard Jazz & Blues Summerfest",
+      "city": "Oak Bluffs",
+      "state_region": "Massachusetts",
+      "country": "USA",
+      "month": "September",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Melbourne International Jazz Festival",
+      "city": "Melbourne",
+      "country": "Australia",
+      "month": "October",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "New Orleans Jazz and Heritage Festival",
+      "city": "New Orleans",
+      "state_region": "Louisiana",
+      "country": "USA",
+      "month": "April",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "New Orleans Jazz Ascona Festival",
+      "city": "Ascona",
+      "country": "Switzerland",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Newport Beach Jazz Festival",
+      "city": "Newport Beach",
+      "state_region": "California",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Nice Jazz Festival",
+      "city": "Nice",
+      "country": "France",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "North Sea Jazz Festival",
+      "city": "Rotterdam",
+      "country": "Netherlands",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Panama Jazz Festival",
+      "city": "Ciudad de Panamá",
+      "country": "Panama",
+      "month": "January",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Rehoboth Beach Jazz Festival",
+      "city": "Rehoboth Beach",
+      "state_region": "Delaware",
+      "country": "USA",
+      "month": "October",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Richmond Jazz & Music Festival",
+      "city": "Richmond",
+      "state_region": "Virginia",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Riverfront Jazz Festival",
+      "city": "Dallas",
+      "state_region": "Texas",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Rochester International Jazz Festival",
+      "city": "Rochester",
+      "state_region": "New York",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Saint Lucia Jazz & Artist Festival",
+      "city": "Saint Lucia",
+      "country": "Caribbean",
+      "month": "April",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "San Diego Smooth Jazz Festival",
+      "city": "San Diego",
+      "state_region": "California",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "San Francisco Jazz Festival",
+      "city": "San Francisco",
+      "state_region": "California",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Scottsdale Jazz Festival",
+      "city": "Scottsdale",
+      "state_region": "Arizona",
+      "country": "USA",
+      "month": "April",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Scranton Jazz Festival",
+      "city": "Scranton",
+      "state_region": "Pennsylvania",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Seabreeze Jazz Festival",
+      "city": "Panama City Beach",
+      "state_region": "Florida",
+      "country": "USA",
+      "month": "April",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Seoul Jazz Festival",
+      "city": "Seoul",
+      "country": "South Korea",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Festival de Jazz en Merlo",
+      "city": "Merlo",
+      "state_region": "Buenos Aires",
+      "country": "Argentina",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Festival Ecuador Jazz",
+      "city": "Quito",
+      "country": "Ecuador",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Freihofer's Jazz Festival (Saratoga)",
+      "city": "Saratoga Springs",
+      "state_region": "New York",
+      "country": "USA",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "French Quarter Festival",
+      "city": "New Orleans",
+      "state_region": "Louisiana",
+      "country": "USA",
+      "month": "April",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Gdynia Jazz By the Sea Weekend",
+      "city": "Gdynia",
+      "country": "Poland",
+      "month": "September",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Glasgow International Jazz Festival",
+      "city": "Glasgow",
+      "state_region": "Scotland",
+      "month": "June",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Golden Gate Jazz Festival",
+      "city": "San Francisco",
+      "state_region": "California",
+      "country": "USA",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Grand Rapids Jazz Festival",
+      "city": "Grand Rapids",
+      "state_region": "Michigan",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Greater Hartford Festival of Jazz",
+      "city": "Hartford",
+      "state_region": "Connecticut",
+      "country": "USA",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Guinness Cork Jazz Festival",
+      "city": "Cork",
+      "state_region": "County Cork",
+      "country": "Ireland",
+      "month": "October",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Healdsburg Jazz Festival",
+      "city": "Healdsburg",
+      "state_region": "California",
+      "country": "USA",
+      "month": "May",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Holiday Jazz Festival",
+      "city": "Incline Village",
+      "state_region": "Nevada",
+      "country": "USA",
+      "month": "November",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Vanport Jazz Festival",
+      "city": "Portland",
+      "state_region": "Oregon",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Vienna Smooth Jazz Festival",
+      "city": "Vienna",
+      "country": "Austria",
+      "month": "October",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Weekend of Jazz at The Broadmoor",
+      "city": "Colorado Springs",
+      "state_region": "Colorado",
+      "country": "USA",
+      "month": "March",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Wine, Art, and Jazz Festival",
+      "city": "Keystone",
+      "state_region": "Colorado",
+      "country": "USA",
+      "month": "August",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Winterpark Jazz Festival",
+      "city": "Winterpark",
+      "state_region": "Colorado",
+      "country": "USA",
+      "month": "July",
+      "source": "smoothjazz.com",
+      "genre": "Jazz"
+    },
+    {
+      "name": "BRIC JazzFest",
+      "city": "Brooklyn",
+      "state_region": "New York",
+      "country": "USA",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Belgrade Jazz Festival",
+      "location": "Belgrade, Serbia",
+      "country": "Serbia",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jazzfest Berlin",
+      "city": "Berlin",
+      "country": "Germany",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Big Ears Festival",
+      "city": "Knoxville",
+      "state_region": "Tennessee",
+      "country": "USA",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Boston Globe Jazz & Blues Festival",
+      "city": "Boston",
+      "state_region": "Massachusetts",
+      "country": "USA",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "New Orleans Jazz & Heritage Festival",
+      "city": "New Orleans",
+      "state_region": "Louisiana",
+      "country": "USA",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Chicago Jazz Festival",
+      "city": "Chicago",
+      "state_region": "Illinois",
+      "country": "USA",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Umbria Jazz Festival",
+      "city": "Perugia",
+      "country": "Italy",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Copenhagen Jazz Festival",
+      "city": "Copenhagen",
+      "country": "Denmark",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Jazzaldia / San Sebastián Jazz Festival",
+      "city": "San Sebastián",
+      "country": "Spain",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Marciac Jazz Festival",
+      "city": "Marciac",
+      "country": "France",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Cape Breton Jazz Festival",
+      "city": "Sydney",
+      "state_region": "Nova Scotia",
+      "country": "Canada",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "TD Ottawa Jazz Festival",
+      "city": "Ottawa",
+      "state_region": "Ontario",
+      "country": "Canada",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Vancouver International Jazz Festival",
+      "city": "Vancouver",
+      "state_region": "British Columbia",
+      "country": "Canada",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Tokyo Jazz Festival",
+      "city": "Tokyo",
+      "country": "Japan",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Tampere Jazz Happening",
+      "city": "Tampere",
+      "country": "Finland",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Saalfelden Jazz Festival",
+      "city": "Saalfelden",
+      "country": "Austria",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Moers Festival",
+      "city": "Moers",
+      "country": "Germany",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Hague Jazz (North Sea Jazz pre-event)",
+      "city": "The Hague",
+      "country": "Netherlands",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    },
+    {
+      "name": "Barcelona Jazz Festival",
+      "city": "Barcelona",
+      "country": "Spain",
+      "source": "downbeat.com / known",
+      "genre": "Jazz"
+    }
+  ]
+}

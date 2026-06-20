@@ -1,0 +1,834 @@
+{
+  "source": "Bandwagon Asia",
+  "url": "https://bandwagon.asia",
+  "description": "Southeast and East Asian music festival and concert coverage. Primary cities: Singapore, Manila/Philippines, Jakarta/Bali, Bangkok, Hong Kong, Tokyo, Seoul, Kuala Lumpur.",
+  "extraction_method": "Articles and guides: hear65 Singapore 2026 guide; 2024 SEA festival guide; 2022 Asia Pacific guide. Direct /events and /sg pages returned 404 or 403.",
+  "total_count": 41,
+  "regions_covered": [
+    "Singapore",
+    "Philippines",
+    "Indonesia",
+    "Thailand",
+    "Malaysia",
+    "Japan",
+    "South Korea",
+    "Hong Kong",
+    "Taiwan"
+  ],
+  "festivals": [
+    {
+      "name": "Glow Festival by Prudential",
+      "country": "Singapore",
+      "city": "Sentosa",
+      "dates": "July 2026",
+      "genres": [
+        "electronic",
+        "pop"
+      ],
+      "type": "music festival",
+      "source": "bandwagon.asia",
+      "source_url": "https://bandwagon.asia",
+      "notes": "World Cup-level star power described; held at Sentosa"
+    },
+    {
+      "name": "RUPTURE (part of Singapore International Festival of Arts 2026)",
+      "country": "Singapore",
+      "city": "Empress Lawn",
+      "dates": "28-30 May 2026",
+      "time": "6:30AM",
+      "lineup": [
+        "The Observatory",
+        "three suns & moons"
+      ],
+      "ticket_price": "Free entry",
+      "type": "outdoor arts/music festival",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "Lush Life",
+      "country": "Singapore",
+      "city": "Victoria Theatre",
+      "dates": "29-30 May 2026",
+      "time": "8PM",
+      "lineup": [
+        "Jacintha",
+        "Dick Lee"
+      ],
+      "ticket_price_sgd": "$48 - $88",
+      "type": "concert",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "Earthopia Fest 2026",
+      "country": "Singapore",
+      "city": "Fort Canning Green",
+      "dates": "29-31 May 2026",
+      "time": "10AM",
+      "lineup": [
+        "Shye",
+        "Club Mild",
+        "Sobs",
+        "Heema Izzati",
+        "Jukuleles"
+      ],
+      "ticket_price": "Free entry",
+      "type": "music and sustainability festival",
+      "genres": [
+        "indie",
+        "pop"
+      ],
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "Identité",
+      "country": "Singapore",
+      "city": "RASA",
+      "dates": "29 May 2026",
+      "time": "7:30PM",
+      "lineup": [
+        "SEER",
+        "KITASUKA",
+        "Iman's League",
+        "Cesspit"
+      ],
+      "ticket_price_sgd": "$30",
+      "type": "indie gig",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "That Incredible Gig In May",
+      "country": "Singapore",
+      "city": "Wire Entertainment Live House",
+      "dates": "30 May 2026",
+      "time": "6PM",
+      "lineup": [
+        "rathmock",
+        "Tariot",
+        "MAO.A",
+        "Saving Medusa",
+        "Cakar",
+        "Mantra"
+      ],
+      "ticket_price_sgd": "$19.90",
+      "type": "live music gig",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "Housekeeping",
+      "country": "Singapore",
+      "city": "Filmhouse",
+      "dates": "30 May 2026",
+      "time": "7PM",
+      "lineup": [
+        "Fickle",
+        "Tomo Blu",
+        "Krunkle",
+        "Bellied Star",
+        "ABSRD.",
+        "Disco Hue (DJ)",
+        "failtrylagi (DJ)",
+        "New Masculine (DJ)"
+      ],
+      "ticket_price": "Free entry",
+      "type": "indie music showcase",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "goneMUNE: AVERDONIA [EXTENDED] LIVE",
+      "country": "Singapore",
+      "city": "Empress Lawn",
+      "dates": "30 May 2026",
+      "time": "10PM",
+      "lineup": [
+        "goneMUNE",
+        "AVERDONIA",
+        "Mervin Wong",
+        "Tactility of Light",
+        "Hidemen",
+        "Houg"
+      ],
+      "ticket_price": "Free entry",
+      "type": "outdoor performance (SIFA x Big Duck Music)",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "hello risk hello reward",
+      "country": "Singapore",
+      "city": "Esplanade Concourse",
+      "dates": "6-7 June 2026",
+      "time": "8:30PM",
+      "lineup": [
+        "deformed"
+      ],
+      "ticket_price": "Free entry",
+      "type": "outdoor concert",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "BIG BIG small small",
+      "country": "Singapore",
+      "city": "Studio Theatre, School of the Arts Singapore",
+      "dates": "6-7 June 2026",
+      "lineup": [
+        "Joanna Dong",
+        "Chok Kerong",
+        "Dawn Ng"
+      ],
+      "ticket_price_sgd": "$48 - $56",
+      "type": "musical performance",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "Ma mère l'Oye: SNYO with Singapore Ballet",
+      "country": "Singapore",
+      "city": "Esplanade Concert Hall",
+      "dates": "12-13 June 2026",
+      "time": "7:30PM",
+      "lineup": [
+        "Singapore National Youth Orchestra (SNYO)",
+        "Singapore Ballet",
+        "Joshua Tan (Music Director)"
+      ],
+      "ticket_price_sgd": "$20 - $50",
+      "type": "classical music + ballet",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "A Pale Decrepit Dot Live",
+      "country": "Singapore",
+      "city": "Esplanade Annexe Studio",
+      "dates": "27 June 2026",
+      "time": "7:30PM",
+      "lineup": [
+        "Amateur Takes Control",
+        "In A Pale Decrepit Dot",
+        "I Am David Sparkle",
+        "deformed"
+      ],
+      "ticket_price_sgd": "$40 - $45",
+      "type": "indie music showcase",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "Singapore International Piano Festival 2026",
+      "country": "Singapore",
+      "city": "Victoria Concert Hall & Play Den, The Arts House",
+      "dates": "2-5 July 2026",
+      "lineup": [
+        "Churen Li (2 July)",
+        "Jonathan Shin (3 July)"
+      ],
+      "organizer": "Singapore Symphony Orchestra (SSO)",
+      "ticket_price_sgd": "$28 - $88",
+      "type": "classical piano festival",
+      "genres": [
+        "classical"
+      ],
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "Broadway Beng 20th Anniversary TWENTY POON PIPI",
+      "country": "Singapore",
+      "city": "Esplanade Concert Hall",
+      "dates": "10-11 July 2026",
+      "time": "7:30PM",
+      "lineup": [
+        "Sebastian Tan (Broadway Beng)",
+        "mini-combo orchestra"
+      ],
+      "ticket_price_sgd": "$88 - $198",
+      "type": "musical / concert",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "CHASING LIGHT: DING YI x DICK LEE 70",
+      "country": "Singapore",
+      "city": "Esplanade Concert Hall",
+      "dates": "25 July 2026",
+      "time": "7:30PM",
+      "lineup": [
+        "Ding Yi Music Company",
+        "Dick Lee",
+        "Jessie Yeong",
+        "Lennerd Lim",
+        "Skye Sirena",
+        "Wysom Wong"
+      ],
+      "ticket_price_sgd": "$48 - $158",
+      "type": "concert",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "Sonic Shaman 2026: Borderless",
+      "country": "Singapore",
+      "city": "Singapore",
+      "dates": "January 2026",
+      "type": "international sound and contemporary art festival",
+      "genres": [
+        "experimental sound",
+        "contemporary art"
+      ],
+      "lineup": [
+        "The Filipino Superwoman Band (Manila)",
+        "Kamal Sabran (Ipoh)",
+        "TZECHAR (Singapore/Melbourne)",
+        "Umeda Tetsuya (Osaka)",
+        "weish (Singapore)"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/gigs/sonic-shaman-2026-borderless"
+    },
+    {
+      "name": "Zoukout",
+      "country": "Singapore",
+      "city": "Sentosa",
+      "dates": "Annual (end of year)",
+      "type": "beach electronic music festival",
+      "genres": [
+        "electronic",
+        "dance"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia"
+    },
+    {
+      "name": "Waterbomb Singapore",
+      "country": "Singapore",
+      "city": "Singapore",
+      "dates": "Annual (summer)",
+      "type": "K-pop & electronic water festival",
+      "genres": [
+        "K-pop",
+        "electronic"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia"
+    },
+    {
+      "name": "Baybeats",
+      "country": "Singapore",
+      "city": "Esplanade, Theatres on the Bay",
+      "dates": "Annual (TBA 2026)",
+      "type": "indie music festival",
+      "genres": [
+        "indie",
+        "alternative"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "Singapore International Festival of Arts 2026",
+      "country": "Singapore",
+      "city": "Singapore (multiple venues)",
+      "dates": "28-30 May 2026",
+      "type": "performing arts festival",
+      "source": "hear65.bandwagon.asia",
+      "source_url": "https://hear65.bandwagon.asia/articles/hear65-s-guide-to-concerts-and-gigs-to-catch-in-singapore-in-2026"
+    },
+    {
+      "name": "ARTBOX Avenue 2024",
+      "country": "Singapore",
+      "city": "Singapore Expo Hall 2",
+      "dates": "26-28 January & 2-4 February 2024",
+      "lineup": [
+        "Reverie",
+        "The Passerby",
+        "The Mad Trio",
+        "Jocelyn Ng",
+        "Spruce Teo"
+      ],
+      "ticket_price_sgd": "from $6",
+      "type": "arts and music market festival",
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "Singapore Chamber Music Festival 2024",
+      "country": "Singapore",
+      "city": "YTS Concert Hall, NUS",
+      "dates": "24 January - 3 February 2024",
+      "lineup": [
+        "Concordia Quartet",
+        "Aoi Trio",
+        "Jonathan Ong",
+        "Toh Chee Hung"
+      ],
+      "ticket_price_sgd": "from $10",
+      "type": "classical / chamber music festival",
+      "genres": [
+        "classical",
+        "chamber music"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "Wanderland Music & Arts Festival 2024",
+      "country": "Philippines",
+      "city": "Muntinlupa City, Metro Manila",
+      "venue": "Filinvest City Events Grounds, Alabang",
+      "dates": "9-10 March 2024",
+      "lineup": [
+        "Jack Johnson",
+        "Thundercat",
+        "Parcels",
+        "Breakbot & Irfane",
+        "Novo Amor",
+        "Jeff Bernat",
+        "Beenzino",
+        "grentperez",
+        "ena mori",
+        "Paolo Sandejas",
+        "dwta",
+        "bird.",
+        "Party Pace",
+        "Gabba",
+        "The Walters",
+        "Lola Amour"
+      ],
+      "ticket_price_php": "PHP 6,470 (1-Day), PHP 8,610 (2-Day Regular), PHP 16,100 (2-Day Star VIP)",
+      "type": "music and arts festival",
+      "genres": [
+        "indie",
+        "pop",
+        "rock"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "PULP Summer Slam 2024",
+      "country": "Philippines",
+      "city": "Quezon City, Metro Manila",
+      "venue": "Amoranto Stadium",
+      "dates": "23 March 2024",
+      "lineup": [
+        "Parkway Drive",
+        "Code Orange",
+        "Story of the Year",
+        "La Dispute",
+        "Fit for an Autopsy",
+        "Crypta",
+        "Fleshgod Apocalypse",
+        "Of Virtue",
+        "Prompts",
+        "Rolling Quartz"
+      ],
+      "ticket_price_php": "PHP 1,500 (GA), PHP 3,500 (VIP), PHP 10,000 (PULP Royalty)",
+      "type": "rock/metal festival",
+      "genres": [
+        "rock",
+        "metal",
+        "hardcore"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "PPOP CON",
+      "country": "Philippines",
+      "city": "Quezon City",
+      "venue": "Araneta Coliseum",
+      "dates": "9-10 April 2022 (recurring annual event)",
+      "lineup": [
+        "SB19",
+        "BINI",
+        "BGYO",
+        "1ST.ONE",
+        "Press Hit Play",
+        "Alamat",
+        "4th Impact",
+        "VXON",
+        "KAIA",
+        "MNL48"
+      ],
+      "ticket_price_php": "Starting from 900 PHP",
+      "type": "P-pop festival",
+      "genres": [
+        "P-pop",
+        "K-pop"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://bandwagon.asia/articles/guide-festivals-concerts-in-asia-pacific-singapore-japan-manila-philippines-australia-thailand-jakarta-indonesia-malaysia-bangkok-vietnam-tokyo-osaka-2022"
+    },
+    {
+      "name": "Pelupo 2024",
+      "country": "Thailand",
+      "city": "Pattaya",
+      "venue": "The Fields at Siam Country Club",
+      "dates": "1-2 March 2024",
+      "lineup": [
+        "Jack Johnson",
+        "Parcels",
+        "Explosions in the Sky",
+        "H1F4",
+        "Cosmo's Midnight",
+        "Dirty Loops",
+        "Yung Bae",
+        "The Walters",
+        "Marc Rebillet",
+        "LANDOKMAI"
+      ],
+      "ticket_price_thb": "3,900-6,800 (1-day), 5,400-8,800 (2-day); kids under 12 free",
+      "type": "music festival",
+      "genres": [
+        "indie",
+        "electronic",
+        "pop"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "Maho Rasop Festival",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "dates": "Annual (November/December)",
+      "type": "indie/alternative music festival",
+      "genres": [
+        "indie",
+        "alternative",
+        "electronic"
+      ],
+      "lineup_2022": [
+        "Bombay Bicycle Club",
+        "Deafheaven",
+        "The Horrors",
+        "Swim Deep",
+        "YOUNGOHM",
+        "The fin.",
+        "Benny Sings",
+        "LITE",
+        "CHAI",
+        "Phum Viphurit",
+        "Summer Salt",
+        "No Party For Cao Dong",
+        "Peachy!",
+        "Onra",
+        "Junoflo",
+        "Jay Park"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://bandwagon.asia/articles/guide-festivals-concerts-in-asia-pacific-singapore-japan-manila-philippines-australia-thailand-jakarta-indonesia-malaysia-bangkok-vietnam-tokyo-osaka-2022"
+    },
+    {
+      "name": "Summer Sonic Bangkok 2024",
+      "country": "Thailand",
+      "city": "Muang Thong Thani (IMPACT Arena)",
+      "dates": "24-25 August 2024",
+      "type": "music festival (Thailand edition of Japan's Summer Sonic)",
+      "genres": [
+        "rock",
+        "indie",
+        "pop",
+        "electronic"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "Creamfields Thailand 2022",
+      "country": "Thailand",
+      "city": "Pattaya",
+      "venue": "Nongnooch Pattaya Garden",
+      "dates": "28-29 May 2022",
+      "ticket_price_thb": "Starting from 2,500 THB",
+      "type": "electronic music festival",
+      "genres": [
+        "electronic",
+        "EDM",
+        "house"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://bandwagon.asia/articles/guide-festivals-concerts-in-asia-pacific-singapore-japan-manila-philippines-australia-thailand-jakarta-indonesia-malaysia-bangkok-vietnam-tokyo-osaka-2022"
+    },
+    {
+      "name": "Kolour In The Park",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "dates": "4 June / 11 June 2022 (recurring)",
+      "ticket_price_thb": "Starting from 790 Baht",
+      "type": "electronic music festival",
+      "genres": [
+        "electronic",
+        "techno",
+        "house"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://bandwagon.asia/articles/guide-festivals-concerts-in-asia-pacific-singapore-japan-manila-philippines-australia-thailand-jakarta-indonesia-malaysia-bangkok-vietnam-tokyo-osaka-2022"
+    },
+    {
+      "name": "Joyland Bali 2024",
+      "country": "Indonesia",
+      "city": "Bali",
+      "venue": "Peninsula Island, Nusa Dua",
+      "dates": "1-3 March 2024",
+      "lineup": [
+        "James Blake",
+        "Kings of Convenience",
+        "The Walters",
+        "Shintaro Sakamoto",
+        "Gilles Peterson"
+      ],
+      "ticket_price_idr": "Pre-sale starting at Rp488,000",
+      "type": "music festival",
+      "genres": [
+        "indie",
+        "electronic",
+        "jazz"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "Hammersonic 2024",
+      "country": "Indonesia",
+      "city": "Jakarta",
+      "venue": "Carnaval Ancol",
+      "dates": "4-5 May 2024",
+      "lineup": [
+        "Lamb of God",
+        "As I Lay Dying",
+        "Atreyu",
+        "Yngwie Malmsteen",
+        "Suicide Silence",
+        "Converge"
+      ],
+      "type": "rock/metal festival",
+      "genres": [
+        "metal",
+        "rock",
+        "hardcore"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "JogjaROCKarta Festival",
+      "country": "Indonesia",
+      "city": "Yogyakarta",
+      "venue": "Lanud Gading, Wonosari",
+      "dates": "24-25 September 2022 (annual event)",
+      "lineup": [
+        "Voice of Baceprot",
+        "Burgerkill",
+        "DeadSquad",
+        "Death Vomit",
+        "Edane",
+        "Jamrud",
+        "Serigala Malam",
+        "Superman Is Dead",
+        "Prison of Blues",
+        "Extreme",
+        "Power Trip",
+        "Scorpions",
+        "Whitesnake"
+      ],
+      "ticket_price_idr": "Starting from 500,000 IDR",
+      "type": "rock festival",
+      "genres": [
+        "rock",
+        "metal"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://bandwagon.asia/articles/guide-festivals-concerts-in-asia-pacific-singapore-japan-manila-philippines-australia-thailand-jakarta-indonesia-malaysia-bangkok-vietnam-tokyo-osaka-2022"
+    },
+    {
+      "name": "Head In The Clouds Jakarta",
+      "country": "Indonesia",
+      "city": "Jakarta",
+      "dates": "Annual",
+      "organizer": "88rising",
+      "type": "Asian-American music festival",
+      "genres": [
+        "hiphop",
+        "pop",
+        "electronic"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://bandwagon.asia/articles/guide-festivals-concerts-in-asia-pacific-singapore-japan-manila-philippines-australia-thailand-jakarta-indonesia-malaysia-bangkok-vietnam-tokyo-osaka-2022"
+    },
+    {
+      "name": "Fuji Rock Festival 2024",
+      "country": "Japan",
+      "city": "Yuzawa, Niigata",
+      "venue": "Naeba Ski Resort",
+      "dates": "26-28 July 2024",
+      "lineup": [
+        "girl in red",
+        "Turnstile",
+        "Kraftwerk",
+        "Erika de Casier",
+        "No Party for Cao Dong"
+      ],
+      "ticket_price_jpy": "from JPY 16,000",
+      "type": "music festival",
+      "genres": [
+        "rock",
+        "indie",
+        "electronic"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "Summer Sonic 2024",
+      "country": "Japan",
+      "city": "Tokyo & Osaka",
+      "venue": "Zozomarine Stadium & Makuhari Messe (Tokyo), EXPO '70 Commemorative Park (Osaka)",
+      "dates": "17-18 August 2024",
+      "type": "music festival",
+      "genres": [
+        "rock",
+        "pop",
+        "electronic",
+        "indie"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "Summer Sonic 2022",
+      "country": "Japan",
+      "city": "Tokyo & Osaka",
+      "venue": "Maishima Sonic Park, Osaka; Zozomarine Stadium & Makuhari Messe, Tokyo",
+      "dates": "20-21 August 2022",
+      "lineup": [
+        "The 1975",
+        "Post Malone",
+        "TXT",
+        "Carly Rae Jepsen",
+        "ONE OK ROCK",
+        "Beabadoobee",
+        "Rina Sawayama",
+        "JOJI"
+      ],
+      "ticket_price_jpy": "from 17,000 JPY",
+      "type": "music festival",
+      "genres": [
+        "rock",
+        "pop",
+        "indie",
+        "electronic"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://bandwagon.asia/articles/guide-festivals-concerts-in-asia-pacific-singapore-japan-manila-philippines-australia-thailand-jakarta-indonesia-malaysia-bangkok-vietnam-tokyo-osaka-2022"
+    },
+    {
+      "name": "Fuji Rock Festival 2022",
+      "country": "Japan",
+      "city": "Yuzawa, Niigata",
+      "venue": "Naeba Ski Resort",
+      "dates": "29-31 July 2022",
+      "lineup": [
+        "Bonobo",
+        "Jack White",
+        "Halsey",
+        "Dawes",
+        "Hiatus Kaiyote",
+        "Jonas Blue",
+        "Syd",
+        "Foals",
+        "Arlo Parks",
+        "Black Pumas",
+        "Dinosaur Jr.",
+        "Tokyo Ska Paradise Orchestra",
+        "Mura Masa",
+        "Tom Misch",
+        "Japanese Breakfast",
+        "Elephant Gym",
+        "SNAIL MAIL",
+        "The fin.",
+        "FONTAINES D.C.",
+        "Macaroni Empitsu",
+        "Nariaki Obukuro",
+        "SUPERORGANISM"
+      ],
+      "ticket_price_jpy": "from 20,000 JPY",
+      "type": "music festival",
+      "genres": [
+        "rock",
+        "indie",
+        "electronic"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://bandwagon.asia/articles/guide-festivals-concerts-in-asia-pacific-singapore-japan-manila-philippines-australia-thailand-jakarta-indonesia-malaysia-bangkok-vietnam-tokyo-osaka-2022"
+    },
+    {
+      "name": "METROCK Festival 2022",
+      "country": "Japan",
+      "city": "Osaka & Tokyo",
+      "venue": "METROCK Osaka Event Space; Wakasu Park, Tokyo",
+      "dates": "14-15 June (Osaka), 21-22 May (Tokyo) 2022",
+      "lineup": [
+        "THE ORAL CIGARETTES",
+        "Omoinotake",
+        "Creepy Nuts",
+        "Kroi",
+        "Saucy Dog",
+        "SHISHAMO",
+        "Keina Suda",
+        "Novelbright",
+        "Tokyo Ska Paradise Orchestra",
+        "Vaundy",
+        "Macaroni Empitsu",
+        "04 Limited Sazabys",
+        "yama"
+      ],
+      "ticket_price_jpy": "from 11,000 JPY",
+      "type": "music festival",
+      "genres": [
+        "rock",
+        "indie",
+        "pop"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://bandwagon.asia/articles/guide-festivals-concerts-in-asia-pacific-singapore-japan-manila-philippines-australia-thailand-jakarta-indonesia-malaysia-bangkok-vietnam-tokyo-osaka-2022"
+    },
+    {
+      "name": "Clockenflap 2024",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "venue": "Central Harbourfront Event Space",
+      "dates": "29 November - 1 December 2024",
+      "type": "music and arts festival",
+      "genres": [
+        "indie",
+        "rock",
+        "electronic",
+        "pop"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    },
+    {
+      "name": "Busan Rock Festival",
+      "country": "South Korea",
+      "city": "Busan",
+      "dates": "Annual (TBA)",
+      "type": "rock festival",
+      "genres": [
+        "rock",
+        "metal",
+        "indie"
+      ],
+      "source": "bandwagon.asia",
+      "source_url": "https://www.bandwagon.asia/articles/2024-festival-guide-southeast-asia-singapore-philippines-thailand-malaysia-indonesia-japan-south-korea-tickets"
+    }
+  ]
+}

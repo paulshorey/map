@@ -1,0 +1,1453 @@
+{
+  "source": "festivals.directory",
+  "source_url": "https://festivals.directory",
+  "total_festivals": 85,
+  "extraction_date": "2026-06-17",
+  "note": "Extracted from main listing page at festivals.directory. The page displays curated music festivals from around the world.",
+  "festivals": [
+    {
+      "name": "Coachella Valley Music and Arts Festival",
+      "location": "Indio, California, USA",
+      "city": "Indio",
+      "country": "USA",
+      "genres": [
+        "pop",
+        "indie rock",
+        "desert",
+        "visual arts",
+        "influencer",
+        "fashion"
+      ],
+      "description": "The Coachella Valley Music and Arts Festival, or just Coachella, is one of the coolest and most talked-about music festivals out there. Every year,...",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Cincinnati Music Festival",
+      "location": "Cincinnati, Ohio, USA",
+      "city": "Cincinnati",
+      "country": "USA",
+      "genres": [
+        "R&B",
+        "hip-hop",
+        "jazz",
+        "soul",
+        "funk",
+        "urban"
+      ],
+      "description": "Cincinnati Music Festival blends R&B, hip-hop, jazz, soul, and funk in a vibrant urban setting with live music, multiple stages, and community-driven vibes.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Rock am Ring",
+      "location": "N\u00fcrburgring, N\u00fcrburg, Germany",
+      "city": "N\u00fcrburg",
+      "country": "Germany",
+      "genres": [
+        "rock",
+        "metal",
+        "alternative",
+        "punk",
+        "live music",
+        "multiple stages"
+      ],
+      "description": "Rock am Ring is one of Europe's largest rock festivals, held annually at N\u00fcrburgring, Germany.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Isle of Wight Festival",
+      "location": "Isle of Wight, UK",
+      "city": "Isle of Wight",
+      "country": "UK",
+      "genres": [
+        "rock",
+        "pop",
+        "indie",
+        "alternative",
+        "electronic",
+        "camping"
+      ],
+      "description": "The Isle of Wight Festival is a legendary UK music event at Seaclose Park, Newport.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Hinterland",
+      "location": "St. Charles, Iowa, USA",
+      "city": "St. Charles",
+      "country": "USA",
+      "genres": [
+        "indie",
+        "alternative",
+        "folk",
+        "country",
+        "community-driven",
+        "camping"
+      ],
+      "description": "Hinterland Music Festival blends indie, alternative, folk, and country genres with a community-driven, outdoor vibe.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Oceans Calling",
+      "location": "Ocean City, Maryland, USA",
+      "city": "Ocean City",
+      "country": "USA",
+      "genres": [
+        "indie",
+        "alternative",
+        "punk",
+        "rock",
+        "beach festival",
+        "multiple stages"
+      ],
+      "description": "The Oceans Calling Festival is a major music event held annually in Ocean City, Maryland.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Fusion",
+      "location": "M\u00fcritz Airfield, L\u00e4rz, Germany",
+      "city": "L\u00e4rz",
+      "country": "Germany",
+      "genres": [
+        "electronic",
+        "techno",
+        "house",
+        "punk",
+        "reggae",
+        "rave"
+      ],
+      "description": "Fusion Festival, held annually in L\u00e4rz, Germany, blends eclectic music, immersive art, and countercultural expression.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Riptide",
+      "location": "Fort Lauderdale Beach Park, FL, USA",
+      "city": "Fort Lauderdale",
+      "country": "USA",
+      "genres": [
+        "beach vibes",
+        "live music",
+        "diverse genres",
+        "local culture",
+        "outdoor event",
+        "VIP experiences"
+      ],
+      "description": "Riptide Music Festival is an annual event held in Victoria, British Columbia.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Barefoot Country",
+      "location": "Wildwood, New Jersey, USA",
+      "city": "Wildwood",
+      "country": "USA",
+      "genres": [
+        "country music",
+        "beach festival",
+        "live performances",
+        "multiple stages",
+        "VIP experience",
+        "summer festival"
+      ],
+      "description": "Barefoot Country Music Festival is an annual event that takes place on the beach in Wildwood, New Jersey.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Roskilde Festival",
+      "location": "Roskilde, Denmark",
+      "city": "Roskilde",
+      "country": "Denmark",
+      "genres": [
+        "rock",
+        "pop",
+        "hip-hop",
+        "electronic",
+        "activism",
+        "camping"
+      ],
+      "description": "Roskilde Festival is one of Europe's most iconic and vibrant music festivals.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Ultra Music Festival",
+      "location": "Miami, Florida, USA",
+      "city": "Miami",
+      "country": "USA",
+      "genres": [
+        "EDM",
+        "electronic",
+        "house",
+        "trance",
+        "techno",
+        "drum and bass"
+      ],
+      "description": "Ultra Music Festival, often simply called Ultra, is one of the most electrifying and high-energy EDM festivals in the United States.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "South by Southwest (SXSW)",
+      "location": "Austin, Texas, USA",
+      "city": "Austin",
+      "country": "USA",
+      "genres": [
+        "indie rock",
+        "rock",
+        "hip-hop",
+        "experimental",
+        "techno",
+        "creative"
+      ],
+      "description": "South by Southwest, or simply SXSW, is one of the most vibrant and multifaceted festivals in the United States.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Primavera Sound",
+      "location": "Barcelona, Spain",
+      "city": "Barcelona",
+      "country": "Spain",
+      "genres": [
+        "indie rock",
+        "alternative",
+        "electronic",
+        "urban",
+        "indie focus"
+      ],
+      "description": "Primavera Sound is one of Europe's most exciting and diverse music festivals.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Tomorrowland",
+      "location": "Boom, Belgium",
+      "city": "Boom",
+      "country": "Belgium",
+      "genres": [
+        "EDM",
+        "electronic",
+        "house",
+        "trance",
+        "dubstep",
+        "fantasy"
+      ],
+      "description": "Tomorrowland is one of the most electrifying and visually stunning EDM festivals in the world.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Lollapalooza (US)",
+      "location": "Chicago, Illinois, USA",
+      "city": "Chicago",
+      "country": "USA",
+      "genres": [
+        "alternative",
+        "rock",
+        "EDM",
+        "urban",
+        "established acts",
+        "diverse"
+      ],
+      "description": "Lollapalooza is one of the biggest and most exciting music festivals in the United States.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Rock in Rio",
+      "location": "Rio de Janeiro, Brazil",
+      "city": "Rio de Janeiro",
+      "country": "Brazil",
+      "genres": [
+        "rock",
+        "metal",
+        "pop",
+        "iconic",
+        "high-energy",
+        "south america"
+      ],
+      "description": "Rock in Rio is one of the most iconic and electrifying music festivals in the world.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "iHeartRadio Music Festival",
+      "location": "T-Mobile Arena in Las Vegas, USA",
+      "city": "Las Vegas",
+      "country": "USA",
+      "genres": [
+        "pop",
+        "rock",
+        "hip-hop",
+        "country",
+        "live music",
+        "multiple stages"
+      ],
+      "description": "The iHeartRadio Music Festival in Las Vegas features top pop, rock, hip-hop, and country acts.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Glastonbury Festival",
+      "location": "Pilton, Somerset, England",
+      "city": "Pilton",
+      "country": "UK",
+      "genres": [
+        "rock",
+        "alternative",
+        "electronic",
+        "world music",
+        "counterculture",
+        "outdoor"
+      ],
+      "description": "The Glastonbury Festival is one of the most legendary and iconic music festivals in the world.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Untold Festival",
+      "location": "Cluj-Napoca, Romania",
+      "city": "Cluj-Napoca",
+      "country": "Romania",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "description": "Untold Festival in Cluj-Napoca, Romania, is a vibrant electronic music event.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Reeperbahn Festival",
+      "location": "Reeperbahn, Hamburg, Germany",
+      "city": "Hamburg",
+      "country": "Germany",
+      "genres": [
+        "indie",
+        "pop",
+        "electronic",
+        "hip-hop",
+        "folk",
+        "jazz"
+      ],
+      "description": "Experience Europe's largest club festival at Hamburg's Reeperbahn.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Lovebox Festival",
+      "location": "Gunnersbury Park, London, England, United Kingdom",
+      "city": "London",
+      "country": "UK",
+      "genres": [
+        "electronic",
+        "dance",
+        "pop",
+        "hip-hop",
+        "indie",
+        "art installations"
+      ],
+      "description": "Lovebox Festival in London blends diverse music genres, vibrant art, and interactive experiences.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Amsterdam Dance Event",
+      "location": "Amsterdam, Netherlands",
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "description": "Experience the Amsterdam Dance Event: a vibrant festival with diverse electronic music.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Electric Love Festival",
+      "location": "Salzburgring, Plainfeld, Salzburg, Austria",
+      "city": "Salzburg",
+      "country": "Austria",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "techno",
+        "hip-hop",
+        "rave"
+      ],
+      "description": "Electric Love Festival: Austria's top EDM event at Salzburgring.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Sea Dance Festival",
+      "location": "Diamond Club, Malinska, Krk, Croatia",
+      "city": "Malinska",
+      "country": "Croatia",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "pop"
+      ],
+      "description": "Sea Dance Festival in Malinska, Croatia, offers diverse music, stunning seaside views.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Greenfield Festival",
+      "location": "Interlaken, Bern, Switzerland",
+      "city": "Interlaken",
+      "country": "Switzerland",
+      "genres": [
+        "rock",
+        "alternative",
+        "punk",
+        "metal",
+        "live music",
+        "multiple stages"
+      ],
+      "description": "Experience rock and metal in the Swiss Alps at Greenfield Festival.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Bergenfest",
+      "location": "Bergenhus Fortress, Bergen, Norway",
+      "city": "Bergen",
+      "country": "Norway",
+      "genres": [
+        "electronic",
+        "pop",
+        "rock",
+        "hip-hop",
+        "blues",
+        "indie"
+      ],
+      "description": "Bergenfest is a vibrant music festival in Bergen, Norway.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Parklife Festival",
+      "location": "Heaton Park, Manchester, England, United Kingdom",
+      "city": "Manchester",
+      "country": "UK",
+      "genres": [
+        "electronic",
+        "dance",
+        "pop",
+        "hip-hop",
+        "art installations",
+        "urban"
+      ],
+      "description": "Parklife Festival in Manchester is a vibrant two-day music event in June.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Parookaville",
+      "location": "Airport Weeze, Weeze, North Rhine-Westphalia, Germany",
+      "city": "Weeze",
+      "country": "Germany",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "description": "Parookaville: Germany's largest electronic music festival.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Outlook Festival",
+      "location": "The Garden, Tisno, Croatia",
+      "city": "Tisno",
+      "country": "Croatia",
+      "genres": [
+        "dubstep",
+        "hip-hop",
+        "reggae",
+        "drum and bass",
+        "art installations",
+        "beach festival"
+      ],
+      "description": "Outlook Festival in Tisno, Croatia, celebrates bass music with diverse genres.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Tycoon Music Festival",
+      "location": "Dreihausgasse 34, Vienna, Vienna, Austria",
+      "city": "Vienna",
+      "country": "Austria",
+      "genres": [
+        "hip-hop",
+        "R&B",
+        "urban",
+        "live music",
+        "multiple stages",
+        "fashion"
+      ],
+      "description": "Tycoon Music Festival in Atlanta celebrates R&B and hip-hop with top artists.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Down The Rabbit Hole",
+      "location": "Groene Heuvels, Beuningen, Gelderland, Netherlands",
+      "city": "Beuningen",
+      "country": "Netherlands",
+      "genres": [
+        "electronic",
+        "hip-hop",
+        "folk",
+        "indie",
+        "alternative",
+        "art installations"
+      ],
+      "description": "Down The Rabbit Hole is a vibrant three-day music festival in Ewijk, Netherlands.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Garbicz Festival",
+      "location": "Garbicz, Poland",
+      "city": "Garbicz",
+      "country": "Poland",
+      "genres": [
+        "electronic",
+        "techno",
+        "house",
+        "ambient",
+        "art installations",
+        "outdoor"
+      ],
+      "description": "Garbicz Festival: A unique blend of electronic music, art, and nature in Poland.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Dour Festival",
+      "location": "Dour, Dour, Wallonia, Belgium",
+      "city": "Dour",
+      "country": "Belgium",
+      "genres": [
+        "electronic",
+        "techno",
+        "house",
+        "rock",
+        "hip-hop",
+        "reggae"
+      ],
+      "description": "Dour Festival in Belgium is a five-day music event with diverse genres.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Mad Cool Festival",
+      "location": "Valdebebas, Madrid, Spain",
+      "city": "Madrid",
+      "country": "Spain",
+      "genres": [
+        "rock",
+        "pop",
+        "indie",
+        "electronic",
+        "alternative",
+        "art installations"
+      ],
+      "description": "Experience the vibrant Mad Cool Festival in Madrid.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Open'er Festival",
+      "location": "Kosakowo Airport, Gdynia, Pomeranian Voivodeship, Poland",
+      "city": "Gdynia",
+      "country": "Poland",
+      "genres": [
+        "electronic",
+        "pop",
+        "rock",
+        "hip-hop",
+        "indie",
+        "alternative"
+      ],
+      "description": "Open'er Festival in Gdynia, Poland, offers diverse music, art, and culture.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Best Kept Secret",
+      "location": "Beekse Bergen, Hilvarenbeek, North Brabant, Netherlands",
+      "city": "Hilvarenbeek",
+      "country": "Netherlands",
+      "genres": [
+        "indie",
+        "rock",
+        "hip-hop",
+        "folk",
+        "electronic",
+        "art installations"
+      ],
+      "description": "Best Kept Secret is a diverse music festival in the Netherlands.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Hurricane Festival",
+      "location": "Eichenring, Schee\u00dfel, Niedersachsen, Germany",
+      "city": "Schee\u00dfel",
+      "country": "Germany",
+      "genres": [
+        "rock",
+        "indie",
+        "electronic",
+        "hip-hop",
+        "pop",
+        "multiple stages"
+      ],
+      "description": "Hurricane Festival in Schee\u00dfel, Germany, offers diverse music, vibrant culture.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Lollapalooza Berlin",
+      "location": "Grant Park, Chicago, Illinois, United States",
+      "city": "Berlin",
+      "country": "Germany",
+      "genres": [
+        "EDM",
+        "pop",
+        "hip-hop",
+        "indie",
+        "alternative",
+        "art installations"
+      ],
+      "description": "Lollapalooza Berlin: A vibrant music festival at Olympiastadion.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "INmusic Festival",
+      "location": "Isle of Youth, Zagreb, Croatia",
+      "city": "Zagreb",
+      "country": "Croatia",
+      "genres": [
+        "rock",
+        "indie",
+        "electronic",
+        "folk",
+        "hip-hop",
+        "art installations"
+      ],
+      "description": "Experience Croatia's largest open-air music festival, INmusic.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Ultra Europe",
+      "location": "Park Mlade\u017ei, Split, Croatia",
+      "city": "Split",
+      "country": "Croatia",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "description": "Ultra Europe is a vibrant electronic music festival in Split, Croatia.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "\u00d8ya Festival",
+      "location": "T\u00f8yen Park, Oslo, Oslo, Norway",
+      "city": "Oslo",
+      "country": "Norway",
+      "genres": [
+        "electronic",
+        "pop",
+        "rock",
+        "hip-hop",
+        "indie",
+        "alternative"
+      ],
+      "description": "Experience \u00d8ya Festival in Oslo: a vibrant mix of top-tier music, diverse culture.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Boston Calling",
+      "location": "Harvard Athletic Complex in Boston, Massachusetts",
+      "city": "Boston",
+      "country": "USA",
+      "genres": [
+        "indie",
+        "rock",
+        "hip-hop",
+        "multiple stages",
+        "urban",
+        "outdoor"
+      ],
+      "description": "New England's premier outdoor music festival featuring indie, rock, and hip-hop.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "March Madness Music Festival",
+      "location": "Hance Park, Phoenix, AZ, USA",
+      "city": "Phoenix",
+      "country": "USA",
+      "genres": [
+        "live music",
+        "pop",
+        "rock",
+        "hip-hop",
+        "country",
+        "EDM"
+      ],
+      "description": "Enjoy the free March Madness Music Festival with top artists.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Four Chord Music Festival",
+      "location": "Pittsburgh, PA, United States",
+      "city": "Pittsburgh",
+      "country": "USA",
+      "genres": [
+        "punk",
+        "pop-punk",
+        "rock",
+        "alternative",
+        "live music",
+        "multiple stages"
+      ],
+      "description": "Experience punk rock vibes at Pittsburgh's Four Chord Music Festival.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Country Bay Music Festival",
+      "location": "Historic Miami Marine Stadium, Key Biscayne, Miami, FL, USA",
+      "city": "Miami",
+      "country": "USA",
+      "genres": [
+        "country",
+        "folk",
+        "rock",
+        "live music",
+        "multiple stages",
+        "outdoor"
+      ],
+      "description": "Experience country music with a tropical twist at the Country Bay Music Festival.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "DUSK Music Festival",
+      "location": "J\u00e1come Plaza, Tucson, Arizona, USA",
+      "city": "Tucson",
+      "country": "USA",
+      "genres": [
+        "EDM",
+        "pop",
+        "hip-hop",
+        "indie",
+        "alternative",
+        "art installations"
+      ],
+      "description": "Experience diverse music, vibrant art, and delicious food at Tucson's DUSK Music Festival.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "All Things Go Music Festival",
+      "location": "Merriweather Post Pavilion, Columbia, MD, USA",
+      "city": "Columbia",
+      "country": "USA",
+      "genres": [
+        "indie",
+        "pop",
+        "hip-hop",
+        "electronic",
+        "live music",
+        "multiple stages"
+      ],
+      "description": "All Things Go is a diverse music festival in Columbia, MD.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Northlands Music & Arts Festival",
+      "location": "Cheshire Fairgrounds, Swanzey, NH, USA",
+      "city": "Swanzey",
+      "country": "USA",
+      "genres": [
+        "rock",
+        "blues",
+        "Americana",
+        "jam bands",
+        "art installations",
+        "camping"
+      ],
+      "description": "Experience live music, art, and nature at Northlands Festival.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Shaky Knees Festival",
+      "location": "Central Park, Atlanta, GA, USA",
+      "city": "Atlanta",
+      "country": "USA",
+      "genres": [
+        "indie",
+        "alternative",
+        "punk",
+        "rock",
+        "folk",
+        "blues"
+      ],
+      "description": "Experience indie vibes and alternative rock at Shaky Knees in Atlanta.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "FM4 Frequency Festival",
+      "location": "VAZ St. P\u00f6lten, St. P\u00f6lten, Lower Austria, Austria",
+      "city": "St. P\u00f6lten",
+      "country": "Austria",
+      "genres": [
+        "electronic",
+        "pop",
+        "rock",
+        "hip-hop",
+        "indie",
+        "punk"
+      ],
+      "description": "Experience the FM4 Frequency Festival in St. P\u00f6lten, Austria.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Balaton Sound",
+      "location": "Lake Balaton, Zam\u00e1rdi, Hungary",
+      "city": "Zam\u00e1rdi",
+      "country": "Hungary",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "hip-hop"
+      ],
+      "description": "Balaton Sound: A vibrant music festival by Lake Balaton, Hungary.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "High Sierra Music Festival",
+      "location": "Plumas County Fairgrounds in Quincy, California, USA",
+      "city": "Quincy",
+      "country": "USA",
+      "genres": [
+        "outdoor",
+        "live music",
+        "multiple stages",
+        "jam bands",
+        "folk",
+        "bluegrass"
+      ],
+      "description": "High Sierra Music Festival blends jam bands, bluegrass, funk, and art.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "World Club Dome",
+      "location": "Deutsche Bank Park, Frankfurt am Main, Hessen, Germany",
+      "city": "Frankfurt",
+      "country": "Germany",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "description": "Experience the world's biggest club at World Club Dome in Frankfurt.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Burning Man",
+      "location": "Black Rock Desert, Nevada, USA",
+      "city": "Black Rock Desert",
+      "country": "USA",
+      "genres": [
+        "experimental",
+        "ambient",
+        "electronic",
+        "spiritual",
+        "artistic",
+        "community-driven"
+      ],
+      "description": "Burning Man is unlike any other festival, transforming a remote playa into a temporary city.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Earl Scruggs Music Festival",
+      "location": "Mill Spring, North Carolina, USA",
+      "city": "Mill Spring",
+      "country": "USA",
+      "genres": [
+        "folk",
+        "traditional",
+        "family-friendly",
+        "country",
+        "acoustic",
+        "outdoor"
+      ],
+      "description": "Earl Scruggs Music Festival is an annual celebration honoring the banjo virtuoso.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Summer Camp Music Festival",
+      "location": "Three Sisters Park in Chillicothe, Illinois, USA",
+      "city": "Chillicothe",
+      "country": "USA",
+      "genres": [
+        "jam bands",
+        "EDM",
+        "rock",
+        "hip-hop",
+        "folk",
+        "funk"
+      ],
+      "description": "A multi-genre outdoor festival with jam bands, EDM, funk, rock, and art installations.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Railbird Festival",
+      "location": "Lexington, Kentucky, USA",
+      "city": "Lexington",
+      "country": "USA",
+      "genres": [
+        "country",
+        "folk",
+        "Americana",
+        "alternative",
+        "bourbon experience",
+        "outdoor"
+      ],
+      "description": "Railbird Music Festival blends country, folk, and alternative rock.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Exit",
+      "location": "Petrovaradin Fortress, Novi Sad, Serbia",
+      "city": "Novi Sad",
+      "country": "Serbia",
+      "genres": [
+        "EDM",
+        "electronic",
+        "rock",
+        "hip-hop",
+        "punk",
+        "metal"
+      ],
+      "description": "EXIT Festival is a dynamic music event in Serbia.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Burning Mountain Festival",
+      "location": "Engadin Valley, Zernez, Switzerland",
+      "city": "Zernez",
+      "country": "Switzerland",
+      "genres": [
+        "psytrance",
+        "electronic",
+        "trance",
+        "art installations",
+        "rave",
+        "outdoor"
+      ],
+      "description": "Burning Mountain Festival is a psychedelic trance gathering in the Swiss Alps.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "NOS Alive",
+      "location": "Passeio Mar\u00edtimo de Alg\u00e9s, Portugal",
+      "city": "Alg\u00e9s",
+      "country": "Portugal",
+      "genres": [
+        "rock",
+        "pop",
+        "indie",
+        "alternative",
+        "electronic",
+        "soul"
+      ],
+      "description": "NOS Alive blends rock, pop, indie, and electronic music with vibrant art installations.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Pukkelpop",
+      "location": "Kiewit, Hasselt, Belgium",
+      "city": "Hasselt",
+      "country": "Belgium",
+      "genres": [
+        "electronic",
+        "indie",
+        "rock",
+        "pop",
+        "hip-hop",
+        "techno"
+      ],
+      "description": "Pukkelpop is an eclectic outdoor festival in Belgium.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Mysteryland",
+      "location": "Floriadeterrein in Haarlemmermeer, Netherlands",
+      "city": "Haarlemmermeer",
+      "country": "Netherlands",
+      "genres": [
+        "EDM",
+        "house",
+        "techno",
+        "trance",
+        "hip-hop",
+        "rave"
+      ],
+      "description": "Mysteryland is an outdoor electronic music festival in the Netherlands.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Lowlands Festival",
+      "location": "Biddinghuizen, Netherlands",
+      "city": "Biddinghuizen",
+      "country": "Netherlands",
+      "genres": [
+        "EDM",
+        "indie",
+        "rock",
+        "hip-hop",
+        "art installations",
+        "camping"
+      ],
+      "description": "Lowlands Festival is a dynamic mix of indie, rock, EDM, and hip-hop.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Sziget Festival",
+      "location": "Budapest, Hungary",
+      "city": "Budapest",
+      "country": "Hungary",
+      "genres": [
+        "pop",
+        "rock",
+        "electronic",
+        "hip-hop",
+        "indie",
+        "art installations"
+      ],
+      "description": "Sziget Festival is a massive celebration of music and arts held on Budapest's \u00d3buda Island.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Amsterdam Music Festival",
+      "location": "Johan Cruijff ArenA, Amsterdam, Netherlands",
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "description": "Amsterdam Music Festival (AMF) is a massive EDM event.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Arc Music Festival",
+      "location": "Union Park, Chicago, USA",
+      "city": "Chicago",
+      "country": "USA",
+      "genres": [
+        "house",
+        "techno",
+        "electronic",
+        "outdoor",
+        "multiple stages",
+        "urban"
+      ],
+      "description": "Arc Music Festival is Chicago's premier house and techno event.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Tortuga Music Festival",
+      "location": "Fort Lauderdale Beach Park, Florida, USA",
+      "city": "Fort Lauderdale",
+      "country": "USA",
+      "genres": [
+        "beach festival",
+        "roots music",
+        "marine conservation",
+        "ocean preservation",
+        "sustainability",
+        "rock"
+      ],
+      "description": "The Tortuga Music Festival is a renowned 3-day festival on the beaches of Fort Lauderdale.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "The Peach Music Festival",
+      "location": "Island Waterpark at Showboat, Atlantic City, NJ, USA",
+      "city": "Atlantic City",
+      "country": "USA",
+      "genres": [
+        "rock",
+        "blues",
+        "funk",
+        "jam bands",
+        "art installations",
+        "camping"
+      ],
+      "description": "The Peach Music Festival is a vibrant celebration of jam bands, rock, and blues.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Portola",
+      "location": "Pier 80, San Francisco, CA, USA",
+      "city": "San Francisco",
+      "country": "USA",
+      "genres": [
+        "electronic",
+        "house",
+        "techno",
+        "urban",
+        "warehouse rave",
+        "multiple stages"
+      ],
+      "description": "San Francisco's premier electronic music festival transforms Pier 80 into a massive warehouse rave.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Boom Festival",
+      "location": "Boomland, Idanha-a-Nova, Portugal",
+      "city": "Idanha-a-Nova",
+      "country": "Portugal",
+      "genres": [
+        "electronic",
+        "techno",
+        "trance",
+        "world",
+        "art installations",
+        "outdoor"
+      ],
+      "description": "Boom Festival in Portugal is a biennial celebration of electronic music, art, and sustainability.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Blue Ox Music Festival",
+      "location": "Pines Music Park, Eau Claire, Wisconsin, USA",
+      "city": "Eau Claire",
+      "country": "USA",
+      "genres": [
+        "bluegrass",
+        "roots",
+        "Americana",
+        "camping",
+        "outdoor",
+        "live music"
+      ],
+      "description": "Blue Ox Music Festival in Eau Claire, WI, offers a relaxed, intimate experience.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "S\u00f3nar",
+      "location": "Barcelona, Spain",
+      "city": "Barcelona",
+      "country": "Spain",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "art installations"
+      ],
+      "description": "S\u00f3nar Festival is a global hub for electronic music, art installations, and digital creativity.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Melt Festival",
+      "location": "Gr\u00e4fenhainichen, Germany",
+      "city": "Gr\u00e4fenhainichen",
+      "country": "Germany",
+      "genres": [
+        "EDM",
+        "techno",
+        "indie",
+        "hip-hop",
+        "art installations",
+        "camping"
+      ],
+      "description": "Melt Festival blends electronic, indie, and hip-hop music with art installations.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Creamfields",
+      "location": "Daresbury, Cheshire, UK",
+      "city": "Daresbury",
+      "country": "UK",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "description": "Creamfields is a massive outdoor EDM festival featuring house, techno, trance, and rave music.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Electric Picnic",
+      "location": "Stradbally Hall, Co. Laois, Ireland",
+      "city": "Stradbally",
+      "country": "Ireland",
+      "genres": [
+        "pop",
+        "rock",
+        "electronic",
+        "folk",
+        "hip-hop",
+        "art installations"
+      ],
+      "description": "Electric Picnic is Ireland's largest outdoor festival.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Carolina Country Music Fest",
+      "location": "Myrtle Beach, South Carolina, USA",
+      "city": "Myrtle Beach",
+      "country": "USA",
+      "genres": [
+        "country",
+        "rock",
+        "live music",
+        "multiple stages",
+        "beach festival",
+        "outdoor"
+      ],
+      "description": "Join the ultimate country music fest at Myrtle Beach!",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Flow Festival",
+      "location": "Suvilahti, Helsinki, Uusimaa, Finland",
+      "city": "Helsinki",
+      "country": "Finland",
+      "genres": [
+        "indie",
+        "soul",
+        "jazz",
+        "folk",
+        "hip-hop",
+        "art installations"
+      ],
+      "description": "Flow Festival in Helsinki blends diverse music, immersive art, and vibrant culture.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Echelon Festival",
+      "location": "Bad Aibling, Bavaria, Germany",
+      "city": "Bad Aibling",
+      "country": "Germany",
+      "genres": [
+        "EDM",
+        "electronic",
+        "dance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "description": "Echelon Festival in Bad Aibling, Germany, featuring top artists and stunning Alps views.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Joshua Tree Music Festival",
+      "location": "Mojave Desert, California, United States",
+      "city": "Mojave Desert",
+      "country": "USA",
+      "genres": [
+        "indie",
+        "funk",
+        "soul",
+        "reggae",
+        "folk",
+        "art installations"
+      ],
+      "description": "Immerse in music, art, and community at Joshua Tree Music Festival.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Wheatland Music Festival",
+      "location": "The Intersection, Grand Rapids, Michigan, United States",
+      "city": "Remus",
+      "country": "USA",
+      "genres": [
+        "folk",
+        "bluegrass",
+        "blues",
+        "country",
+        "celtic",
+        "community-driven"
+      ],
+      "description": "Wheatland Music Festival in Remus, MI, celebrates folk, bluegrass, and roots music.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Hopscotch Music Festival",
+      "location": "Raleigh, North Carolina, United States",
+      "city": "Raleigh",
+      "country": "USA",
+      "genres": [
+        "rock",
+        "hip-hop",
+        "folk",
+        "electronic",
+        "metal",
+        "experimental"
+      ],
+      "description": "Hopscotch Music Festival in Raleigh offers a diverse lineup across genres.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Pilgrimage Music Festival",
+      "location": "The Park at Harlinsdale, Franklin, Tennessee, USA",
+      "city": "Franklin",
+      "country": "USA",
+      "genres": [
+        "rock",
+        "alt-country",
+        "bluegrass",
+        "jazz",
+        "indie",
+        "gospel"
+      ],
+      "description": "Experience diverse music, local art, and Southern hospitality at the Pilgrimage Festival.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Levitate Music and Arts Festival",
+      "location": "Marshfield Fairgrounds in Marshfield, Massachusetts, USA",
+      "city": "Marshfield",
+      "country": "USA",
+      "genres": [
+        "reggae",
+        "rock",
+        "indie",
+        "folk",
+        "art installations",
+        "community-driven"
+      ],
+      "description": "A laid-back festival blending reggae, rock, and indie music with immersive art.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "Imagine Music Festival",
+      "location": "Kingston Downs, Georgia, USA",
+      "city": "Kingston Downs",
+      "country": "USA",
+      "genres": [
+        "EDM",
+        "electronic",
+        "house",
+        "techno",
+        "trance",
+        "art installations"
+      ],
+      "description": "Imagine Music Festival is an immersive outdoor EDM event.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    },
+    {
+      "name": "North Coast Music Festival",
+      "location": "SeatGeek Stadium in Bridgeview, Illinois, USA",
+      "city": "Bridgeview",
+      "country": "USA",
+      "genres": [
+        "EDM",
+        "electronic",
+        "house",
+        "dubstep",
+        "art installations",
+        "rave"
+      ],
+      "description": "North Coast Music Festival is an EDM event featuring electronic, house, and dubstep.",
+      "source": "festivals.directory",
+      "source_url": "https://festivals.directory"
+    }
+  ]
+}

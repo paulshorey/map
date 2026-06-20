@@ -1,0 +1,700 @@
+{
+  "source": "Songkick",
+  "source_url": "https://www.songkick.com/festivals",
+  "extraction_method": "Web browsing of country pages (API requires auth key)",
+  "api_status": {
+    "attempted_endpoints": [
+      "https://api.songkick.com/api/3.0/events.json?type=Festival",
+      "https://api.songkick.com/api/3.0/events.json?type=Festival&apikey=demo",
+      "https://api.songkick.com/api/3.0/events.json?type=Festival&apikey=test"
+    ],
+    "result": "All API endpoints return HTTP 404 - API key required, no public/demo access available"
+  },
+  "extraction_date": "2026-06-17",
+  "festivals": [
+    {
+      "name": "Vans Warped Tour 2025",
+      "location": "Shoreline Waterfront, Long Beach, CA",
+      "country": "US",
+      "venue": "Shoreline Waterfront",
+      "lineup": ["Sublime", "A Day to Remember", "3OH!3", "311", "Of Mice & Men", "Atmosphere", "Anberlin", "Enter Shikari"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Project Pabst 2025",
+      "location": "Portland, OR",
+      "country": "US",
+      "venue": "Portland, OR",
+      "lineup": ["Death Cab for Cutie", "Iggy Pop", "Japanese Breakfast", "Devo", "Say She She", "Cap'n Jazz", "Gustaf"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Pickathon 2025",
+      "location": "Portland, OR",
+      "country": "US",
+      "venue": "Portland, OR",
+      "lineup": ["Portugal. The Man", "Ocie Elliott", "Fruit Bats", "Taj Mahal", "Haley Heynderickx", "Surprise Chef", "Blu & Exile", "The Cactus Blossoms"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Hinterland Festival 2025",
+      "location": "Avenue of the Saints Amphitheater & Event Center, St. Charles, IA",
+      "country": "US",
+      "venue": "Avenue of the Saints Amphitheater & Event Center",
+      "lineup": ["Lana Del Rey", "Tyler, The Creator", "The Marías", "Bleachers", "Good Neighbours", "Orla Gartland", "Rebecca Black"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Outlaw Music Festival 2025",
+      "location": "Northwell Health at Jones Beach Theater, Wantagh, NY",
+      "country": "US",
+      "venue": "Northwell Health at Jones Beach Theater",
+      "lineup": ["Bob Dylan", "Wilco", "Willie Nelson", "Lucinda Williams", "Waylon Payne"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "HARD Summer Music Festival 2025",
+      "location": "Hollywood Park Grounds, Inglewood, CA",
+      "country": "US",
+      "venue": "Hollywood Park Grounds",
+      "lineup": ["Sean Paul", "Kaytranada", "Feid", "Four Tet", "Deorro", "Dom Dolla", "James Hype", "Gesaffelstein"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Outside Lands Music & Arts Festival 2025",
+      "location": "Golden Gate Park, San Francisco, CA",
+      "country": "US",
+      "venue": "Golden Gate Park",
+      "lineup": ["Tyler, The Creator", "Vampire Weekend", "Glass Animals", "Beck", "Ludacris", "Anderson .Paak", "Wallows", "Jamie xx"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Up In The Sky Music Festival 2025",
+      "location": "Buttermilk Mountain, Aspen, CO",
+      "country": "US",
+      "venue": "Buttermilk Mountain",
+      "lineup": ["Glass Animals", "Kacey Musgraves", "Suki Waterhouse", "RÜFÜS DU SOL (DJ Set)", "Up in the Sky"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "North Coast Music Festival 2025",
+      "location": "SeatGeek Stadium, Bridgeview, IL",
+      "country": "US",
+      "venue": "SeatGeek Stadium",
+      "lineup": ["Zedd", "Deadmau5", "Galantis", "Kaskade", "Benny Benassi", "SOFI TUKKER", "Louis the Child", "Zeds Dead"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Bumbershoot 2025",
+      "location": "Seattle Center, Seattle, WA",
+      "country": "US",
+      "venue": "Seattle Center",
+      "lineup": ["Weezer", "Sylvan Esso", "Tennis", "Digable Planets", "Indigo De Souza", "Madison McFerrin", "Say She She", "Fat Dog"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Bourbon and Beyond 2025",
+      "location": "Highland Festival Grounds at Kentucky Exposition Center, Louisville, KY",
+      "country": "US",
+      "venue": "Highland Festival Grounds at Kentucky Exposition Center",
+      "lineup": ["The Lumineers", "Cage the Elephant", "Pixies", "Noah Kahan", "Iron & Wine", "Alabama Shakes", "Foreigner", "Jack White"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Sea.Hear.Now 2025",
+      "location": "Asbury Park, NJ",
+      "country": "US",
+      "venue": "Asbury Park",
+      "lineup": ["Sublime", "Phantogram", "Spoon", "TV On The Radio", "Royel Otis", "Inhaler", "Neal Francis"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Louder Than Life Festival 2025",
+      "location": "Highland Festival Grounds at Kentucky Exposition Center, Louisville, KY",
+      "country": "US",
+      "venue": "Highland Festival Grounds at Kentucky Exposition Center",
+      "lineup": ["Bring Me The Horizon", "Deftones", "Evanescence", "Three Days Grace", "Avenged Sevenfold", "All Time Low", "Marilyn Manson", "$UICIDEBOY$"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Riot Fest 2025",
+      "location": "Douglass Park, Chicago, IL",
+      "country": "US",
+      "venue": "Douglass Park",
+      "lineup": ["Green Day", "blink-182", "Weezer", "The Beach Boys", "All Time Low", "Gym Class Heroes", "Jack White", "Cobra Starship"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Shaky Knees Festival 2025",
+      "location": "Piedmont Park, Atlanta, GA",
+      "country": "US",
+      "venue": "Piedmont Park",
+      "lineup": ["Cage the Elephant", "Vampire Weekend", "Sublime", "Alabama Shakes", "The Marías", "Spoon", "Stereophonics", "TV On The Radio"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Portola Festival 2025",
+      "location": "Pier 80, San Francisco, CA",
+      "country": "US",
+      "venue": "Pier 80",
+      "lineup": ["Christina Aguilera", "Chemical Brothers", "Blood Orange", "Duke Dumont", "Neil Frances", "Peggy Gou", "Arc de Soleil", "Ravyn Lenae"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Levitation 2025",
+      "location": "Palmer Events Center, Austin, TX",
+      "country": "US",
+      "venue": "Palmer Events Center",
+      "lineup": ["Unknown Mortal Orchestra", "TV On The Radio", "Pavement", "Mastodon", "The Brian Jonestown Massacre", "La Femme", "Blonde Redhead", "Built to Spill"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Oceans Calling 2025",
+      "location": "Ocean City Inlet Beach, Ocean City, MD",
+      "country": "US",
+      "venue": "Ocean City Inlet Beach",
+      "lineup": ["Green Day", "Fall Out Boy", "Weezer", "Vance Joy", "Vampire Weekend", "Noah Kahan", "Lenny Kravitz", "Good Charlotte"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "Austin City Limits Music Festival 2025",
+      "location": "Zilker Park, Austin, TX",
+      "country": "US",
+      "venue": "Zilker Park",
+      "lineup": ["Sabrina Carpenter", "MARINA", "The Backseat Lovers", "Leisure", "Wild Rivers", "Spacey Jane", "Gizmo Varillas", "Lucius"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "When We Were Young 2025",
+      "location": "Las Vegas Festival Grounds, North Las Vegas, NV",
+      "country": "US",
+      "venue": "Las Vegas Festival Grounds",
+      "lineup": ["Panic! At the Disco", "blink-182", "Avril Lavigne", "Weezer", "The Offspring", "All Time Low", "Plain White T's", "Simple Plan"],
+      "url": "https://www.songkick.com/festivals/countries/us",
+      "source_page": "https://www.songkick.com/festivals/countries/us"
+    },
+    {
+      "name": "SummerFest 2026",
+      "location": "American Family Insurance Amphitheater, Milwaukee, WI",
+      "country": "US",
+      "venue": "American Family Insurance Amphitheater",
+      "lineup": ["Ed Sheeran", "Post Malone", "Grouplove", "BØRNS", "Common", "The Roots", "Two Feet", "KALEO"],
+      "url": "https://www.songkick.com/festivals/countries/gb",
+      "source_page": "https://www.songkick.com/festivals/countries/gb"
+    },
+    {
+      "name": "Minnesota Yacht Club Festival 2026",
+      "location": "Harriet Island Regional Park, St. Paul, MN",
+      "country": "US",
+      "venue": "Harriet Island Regional Park",
+      "lineup": ["The Strokes", "The Lumineers", "The Black Keys", "Cage the Elephant", "The Fray", "The All-American Rejects", "Passion Pit", "Lord Huron"],
+      "url": "https://www.songkick.com/festivals/countries/gb",
+      "source_page": "https://www.songkick.com/festivals/countries/gb"
+    },
+    {
+      "name": "Lollapalooza 2026",
+      "location": "Grant Park, Chicago, IL",
+      "country": "US",
+      "venue": "Grant Park",
+      "lineup": ["Lorde", "The Chainsmokers", "The xx", "Tate McRae", "Empire of the Sun", "Beabadoobee", "Duke Dumont", "bbno$"],
+      "url": "https://www.songkick.com/festivals/countries/gb",
+      "source_page": "https://www.songkick.com/festivals/countries/gb"
+    },
+    {
+      "name": "Just Like Heaven 2026",
+      "location": "Brookside at the Rose Bowl, Pasadena, CA",
+      "country": "US",
+      "venue": "Brookside at the Rose Bowl",
+      "lineup": ["The Strokes", "TV Girl", "Feist", "LCD Soundsystem", "Dayglow", "STRFKR", "Matt and Kim", "Chromeo"],
+      "url": "https://www.songkick.com/festivals/countries/gb",
+      "source_page": "https://www.songkick.com/festivals/countries/gb"
+    },
+    {
+      "name": "Shaky Knees Festival 2026",
+      "location": "Piedmont Park, Atlanta, GA",
+      "country": "US",
+      "venue": "Piedmont Park",
+      "lineup": ["Gorillaz", "Twenty One Pilots", "Modest Mouse", "Wu-Tang Clan", "Jimmy Eat World", "Ben Howard", "Pierce the Veil", "LCD Soundsystem"],
+      "url": "https://www.songkick.com/festivals/countries/gb",
+      "source_page": "https://www.songkick.com/festivals/countries/gb"
+    },
+    {
+      "name": "Riot Fest 2026",
+      "location": "Douglass Park, Chicago, IL",
+      "country": "US",
+      "venue": "Douglass Park",
+      "lineup": ["Twenty One Pilots", "Pixies", "Nas", "The All-American Rejects", "Alanis Morissette", "Rise Against", "Tool", "Pierce the Veil"],
+      "url": "https://www.songkick.com/festivals/countries/gb",
+      "source_page": "https://www.songkick.com/festivals/countries/gb"
+    },
+    {
+      "name": "DARKER WAVES 2026",
+      "location": "Huntington State Beach, Huntington Beach, CA",
+      "country": "US",
+      "venue": "Huntington State Beach",
+      "lineup": ["The Smashing Pumpkins", "Simple Minds", "Morrissey", "Silversun Pickups", "Bad Religion", "Soft Cell", "Manic Street Preachers", "The Psychedelic Furs"],
+      "url": "https://www.songkick.com/festivals/countries/gb",
+      "source_page": "https://www.songkick.com/festivals/countries/gb"
+    },
+    {
+      "name": "Wacken Open Air 2025",
+      "location": "Wacken Festivalplatz, Wacken",
+      "country": "Germany",
+      "venue": "Wacken Festivalplatz",
+      "lineup": ["Papa Roach", "Gojira", "Apocalyptica", "Machine Head", "August Burns Red", "Within Temptation", "Ministry", "W.A.S.P."],
+      "url": "https://www.songkick.com/festivals/countries/de",
+      "source_page": "https://www.songkick.com/festivals/countries/de"
+    },
+    {
+      "name": "Taubertal Festival 2025",
+      "location": "Taubertal Open Air, Rothenburg ob der Tauber",
+      "country": "Germany",
+      "venue": "Taubertal Open Air",
+      "lineup": ["Papa Roach", "Nothing But Thieves", "YUNGBLUD", "I Prevail", "Hilltop Hoods", "Enter Shikari", "01099", "Kontra K"],
+      "url": "https://www.songkick.com/festivals/countries/de",
+      "source_page": "https://www.songkick.com/festivals/countries/de"
+    },
+    {
+      "name": "Mera Luna Festival 2025",
+      "location": "Flugplatz Hildesheim, Hildesheim",
+      "country": "Germany",
+      "venue": "Flugplatz Hildesheim",
+      "lineup": ["Apocalyptica", "Heilung", "Faun", "Eisbrecher", "Covenant", "And One", "Blutengel", "Corvus Corax"],
+      "url": "https://www.songkick.com/festivals/countries/de",
+      "source_page": "https://www.songkick.com/festivals/countries/de"
+    },
+    {
+      "name": "Summer Breeze 2025",
+      "location": "Summer Breeze Open Air, Dinkelsbuhl",
+      "country": "Germany",
+      "venue": "Summer Breeze Open Air",
+      "lineup": ["Gojira", "Machine Head", "August Burns Red", "Static-X", "Fit for a King", "Dimmu Borgir", "Thrown", "Between The Buried And Me"],
+      "url": "https://www.songkick.com/festivals/countries/de",
+      "source_page": "https://www.songkick.com/festivals/countries/de"
+    },
+    {
+      "name": "MS DOCKVILLE 2025",
+      "location": "MS Dockville Gelände, Hamburg",
+      "country": "Germany",
+      "venue": "MS Dockville Gelände",
+      "lineup": ["Royel Otis", "The Last Dinner Party", "Sigrid", "Lola Young", "Good Neighbours", "Peter Doherty", "SOFIA ISELLA", "Anja Schneider"],
+      "url": "https://www.songkick.com/festivals/countries/de",
+      "source_page": "https://www.songkick.com/festivals/countries/de"
+    },
+    {
+      "name": "Superbloom 2025",
+      "location": "Olympiapark & Olympiastadion, Munich",
+      "country": "Germany",
+      "venue": "Olympiapark & Olympiastadion",
+      "lineup": ["Post Malone", "Suki Waterhouse"],
+      "url": "https://www.songkick.com/festivals/countries/de",
+      "source_page": "https://www.songkick.com/festivals/countries/de"
+    },
+    {
+      "name": "La Route Du Rock 2025",
+      "location": "Le Fort de Saint Père, Saint-Père",
+      "country": "France",
+      "venue": "Le Fort de Saint Père",
+      "lineup": ["Pulp", "King Krule", "Kraftwerk", "La Femme", "Trentemøller", "Black Country, New Road", "Overmono", "Yard Act"],
+      "url": "https://www.songkick.com/festivals/countries/fr",
+      "source_page": "https://www.songkick.com/festivals/countries/fr"
+    },
+    {
+      "name": "Festival Cabaret Vert 2025",
+      "location": "Square Bayard, Charleville-Mézières",
+      "country": "France",
+      "venue": "Square Bayard",
+      "lineup": ["DJ Snake", "Vampire Weekend", "Queens of the Stone Age", "Will Smith", "Suki Waterhouse", "Wet Leg", "The Last Dinner Party", "IDLES"],
+      "url": "https://www.songkick.com/festivals/countries/fr",
+      "source_page": "https://www.songkick.com/festivals/countries/fr"
+    },
+    {
+      "name": "V AND B FEST 2025",
+      "location": "V and B Fest, Château Gontier",
+      "country": "France",
+      "venue": "V and B Fest",
+      "lineup": ["The Kooks", "Justice", "Mika", "Afrojack", "AURORA", "Fisher", "Maitre Gim's", "Fontaines D.C."],
+      "url": "https://www.songkick.com/festivals/countries/fr",
+      "source_page": "https://www.songkick.com/festivals/countries/fr"
+    },
+    {
+      "name": "Touquet Music Beach Festival 2025",
+      "location": "L'Orangerie de la Baie, Le Touquet",
+      "country": "France",
+      "venue": "L'Orangerie de la Baie",
+      "lineup": ["Kaytranada", "Fatboy Slim", "Eric Prydz", "Kungs", "Kavinsky", "HUGEL", "Bunt", "LP Giobbi"],
+      "url": "https://www.songkick.com/festivals/countries/fr",
+      "source_page": "https://www.songkick.com/festivals/countries/fr"
+    },
+    {
+      "name": "Pitchfork Music Festival 2025 (Paris)",
+      "location": "Various venues, Paris",
+      "country": "France",
+      "venue": "Multiple Venues",
+      "lineup": ["Blood Orange", "Erika de Casier", "Léa Sen", "Panda Bear", "Panchiko", "A. G. Cook", "underscores", "Indigo De Souza"],
+      "url": "https://www.songkick.com/festivals/countries/fr",
+      "source_page": "https://www.songkick.com/festivals/countries/fr"
+    },
+    {
+      "name": "Spilt Milk Gold Coast 2025",
+      "location": "Gold Coast Sports & Leisure Centre, Carrara, QLD",
+      "country": "Australia",
+      "venue": "Gold Coast Sports & Leisure Centre",
+      "lineup": ["Kendrick Lamar", "ScHoolboy Q", "Dominic Fike", "d4vd", "Chance Peña", "Doechii", "Nessa Barrett", "sombr"],
+      "url": "https://www.songkick.com/festivals/countries/au",
+      "source_page": "https://www.songkick.com/festivals/countries/au"
+    },
+    {
+      "name": "Spilt Milk Canberra 2025",
+      "location": "Exhibition Park, Canberra, ACT",
+      "country": "Australia",
+      "venue": "Exhibition Park",
+      "lineup": ["Kendrick Lamar", "ScHoolboy Q", "Dominic Fike", "d4vd", "Chance Peña", "Doechii", "Nessa Barrett", "sombr"],
+      "url": "https://www.songkick.com/festivals/countries/au",
+      "source_page": "https://www.songkick.com/festivals/countries/au"
+    },
+    {
+      "name": "Spilt Milk Perth 2025",
+      "location": "Robinson Pavilion, Claremont Showground, Claremont, WA",
+      "country": "Australia",
+      "venue": "Robinson Pavilion, Claremont Showground",
+      "lineup": ["Kendrick Lamar", "ScHoolboy Q", "Dominic Fike", "d4vd", "Chance Peña", "Doechii", "Nessa Barrett", "sombr"],
+      "url": "https://www.songkick.com/festivals/countries/au",
+      "source_page": "https://www.songkick.com/festivals/countries/au"
+    },
+    {
+      "name": "Queenscliff Music Festival 2025",
+      "location": "Princess Park - Queenscliff Foreshore, Queenscliff, VIC",
+      "country": "Australia",
+      "venue": "Princess Park",
+      "lineup": ["The Cat Empire", "Thelma Plum"],
+      "url": "https://www.songkick.com/festivals/countries/au",
+      "source_page": "https://www.songkick.com/festivals/countries/au"
+    },
+    {
+      "name": "Lowlands Festival 2025",
+      "location": "Lowlands Festival, Biddinghuizen",
+      "country": "Netherlands",
+      "venue": "Lowlands Festival",
+      "lineup": ["Queens of the Stone Age", "Chappell Roan", "Wallows", "Suki Waterhouse", "Royel Otis", "Fontaines D.C.", "Molchat Doma", "The Beaches"],
+      "url": "https://www.songkick.com/festivals/countries/nl",
+      "source_page": "https://www.songkick.com/festivals/countries/nl"
+    },
+    {
+      "name": "Dekmantel Festival 2025",
+      "location": "Amsterdam Forest / Amsterdamse Bos, Amstelveen",
+      "country": "Netherlands",
+      "venue": "Amsterdamse Bos",
+      "lineup": ["Leftfield", "The Orb", "Plaid", "Sega Bodega", "Sabres Of Paradise", "The Ragga Twins", "Skee Mask", "Two Shell"],
+      "url": "https://www.songkick.com/festivals/countries/nl",
+      "source_page": "https://www.songkick.com/festivals/countries/nl"
+    },
+    {
+      "name": "Dynamo MetalFest 2025",
+      "location": "IJssportcentrum Eindhoven, Eindhoven",
+      "country": "Netherlands",
+      "venue": "IJssportcentrum Eindhoven",
+      "lineup": ["Gojira", "I Prevail", "Mastodon", "Within Temptation", "Ministry", "Static-X", "Fear Factory", "kublai khan tx"],
+      "url": "https://www.songkick.com/festivals/countries/nl",
+      "source_page": "https://www.songkick.com/festivals/countries/nl"
+    },
+    {
+      "name": "Le Guess Who? 2025",
+      "location": "Utrecht",
+      "country": "Netherlands",
+      "venue": "Multiple Venues, Utrecht",
+      "lineup": ["Nicolas Jaar", "Alabaster DePlume", "Julianna Barwick", "Saul Williams", "Calibre", "Unwound", "Sunn O)))", "The Fiery Furnaces"],
+      "url": "https://www.songkick.com/festivals/countries/nl",
+      "source_page": "https://www.songkick.com/festivals/countries/nl"
+    },
+    {
+      "name": "Festival Arenal Sound 2025",
+      "location": "Recinto Arenal Sound, Burriana, Castellón",
+      "country": "Spain",
+      "venue": "Recinto Arenal Sound",
+      "lineup": ["Steve Aoki", "Rels B", "Jhayco", "Bad Gyal", "Beret", "Omar Montes", "Omar Courtz", "Chanél"],
+      "url": "https://www.songkick.com/festivals/countries/es",
+      "source_page": "https://www.songkick.com/festivals/countries/es"
+    },
+    {
+      "name": "Sonorama Ribera 2025",
+      "location": "Sonorama, Aranda de Duero",
+      "country": "Spain",
+      "venue": "Sonorama",
+      "lineup": ["Franz Ferdinand", "Duncan Dhu", "Natalia Lacunza", "Judeline", "Zahara", "Arde Bogotá", "Viva Suecia", "Fernandocosta"],
+      "url": "https://www.songkick.com/festivals/countries/es",
+      "source_page": "https://www.songkick.com/festivals/countries/es"
+    },
+    {
+      "name": "MEDUSA FESTIVAL 2025",
+      "location": "Playa Escollera, Cullera Beach",
+      "country": "Spain",
+      "venue": "Playa Escollera",
+      "lineup": ["Armin van Buuren", "Alesso", "Afrojack", "Hardwell", "Krewella", "Timmy Trumpet", "NERVO", "PAWSA"],
+      "url": "https://www.songkick.com/festivals/countries/es",
+      "source_page": "https://www.songkick.com/festivals/countries/es"
+    },
+    {
+      "name": "MIRA Festival 2025",
+      "location": "Fira Montjuic, Barcelona",
+      "country": "Spain",
+      "venue": "Fira Montjuic",
+      "lineup": ["Flying Lotus", "Nicolas Jaar", "Floating Points", "Oneohtrix Point Never", "John Maus", "Kaitlyn Aurelia Smith", "M.f.o.", "Erika de Casier"],
+      "url": "https://www.songkick.com/festivals/countries/es",
+      "source_page": "https://www.songkick.com/festivals/countries/es"
+    },
+    {
+      "name": "Shambhala Music Festival 2025",
+      "location": "Salmo River Ranch, BC",
+      "country": "Canada",
+      "venue": "Salmo River Ranch",
+      "lineup": ["SOFI TUKKER", "Excision", "Big Gigantic", "Rezz", "Delta Heavy", "Ship Wrek", "1tbsp", "Moody Good"],
+      "url": "https://www.songkick.com/festivals/countries/ca",
+      "source_page": "https://www.songkick.com/festivals/countries/ca"
+    },
+    {
+      "name": "Calgary Folk Music Festival 2025",
+      "location": "Calgary, AB",
+      "country": "Canada",
+      "venue": "Calgary",
+      "lineup": ["Michael Kiwanuka", "Cake", "Patrick Watson", "BadBadNotGood", "Los Lobos", "Cymande", "Sierra Ferrell", "Dengue Fever"],
+      "url": "https://www.songkick.com/festivals/countries/ca",
+      "source_page": "https://www.songkick.com/festivals/countries/ca"
+    },
+    {
+      "name": "Osheaga Music and Arts Festival 2025",
+      "location": "Parc Jean-Drapeau, Montreal, QC",
+      "country": "Canada",
+      "venue": "Parc Jean-Drapeau",
+      "lineup": ["Royel Otis", "The Beaches", "Isoxo"],
+      "url": "https://www.songkick.com/festivals/countries/ca",
+      "source_page": "https://www.songkick.com/festivals/countries/ca"
+    },
+    {
+      "name": "Lasso Montreal Festival 2025",
+      "location": "Parc Jean-Drapeau, Montreal, QC",
+      "country": "Canada",
+      "venue": "Parc Jean-Drapeau",
+      "lineup": ["Sheryl Crow", "Jelly Roll", "Shabooze¥", "Bailey Zimmerman", "Riley Green", "The Dead South", "Wyatt Flores", "Tucker Wetmore"],
+      "url": "https://www.songkick.com/festivals/countries/ca",
+      "source_page": "https://www.songkick.com/festivals/countries/ca"
+    },
+    {
+      "name": "Tomorrowland Brasil 2025",
+      "location": "Parque Maeda, Itu, São Paulo",
+      "country": "Brazil",
+      "venue": "Parque Maeda",
+      "lineup": ["Lost Frequencies", "John Newman", "Yves V", "Dimitri Vegas", "Maddix", "Henri Pfr", "Samm (BE)"],
+      "url": "https://www.songkick.com/festivals/countries/br",
+      "source_page": "https://www.songkick.com/festivals/countries/br"
+    },
+    {
+      "name": "Rock The Mountain 2025",
+      "location": "Área de Eventos Itaipava (Petrópolis), Rio de Janeiro",
+      "country": "Brazil",
+      "venue": "Área de Eventos Itaipava",
+      "lineup": ["Jorja Smith", "Chet Faker", "L'Impératrice", "Caetano Veloso", "Pedro Sampaio", "Gloria Groove", "Capital Inicial", "Criolo"],
+      "url": "https://www.songkick.com/festivals/countries/br",
+      "source_page": "https://www.songkick.com/festivals/countries/br"
+    },
+    {
+      "name": "Skogsröjet Festival 2025",
+      "location": "Skogsröjet Festival, Rejmyre",
+      "country": "Sweden",
+      "venue": "Skogsröjet Festival",
+      "lineup": ["W.A.S.P.", "Ugly Kid Joe", "Stratovarius", "Lita Ford", "Beast In Black", "Hardcore Superstar", "Masterplan", "Pretty Maids"],
+      "url": "https://www.songkick.com/festivals/countries/se",
+      "source_page": "https://www.songkick.com/festivals/countries/se"
+    },
+    {
+      "name": "South Ocean Festival 2025",
+      "location": "Malmö",
+      "country": "Sweden",
+      "venue": "Malmö",
+      "lineup": ["MØ", "Albin Lee Meldau", "Oskar Linnros", "Molly Hammar", "The Plan", "The Agitator", "ABU NEIN", "Louis Pax"],
+      "url": "https://www.songkick.com/festivals/countries/se",
+      "source_page": "https://www.songkick.com/festivals/countries/se"
+    },
+    {
+      "name": "I-Days Milano Coca-Cola 2025",
+      "location": "Ippodromo Snai San Siro, Milan",
+      "country": "Italy",
+      "venue": "Ippodromo Snai San Siro",
+      "lineup": ["Post Malone", "Jelly Roll"],
+      "url": "https://www.songkick.com/festivals/countries/it",
+      "source_page": "https://www.songkick.com/festivals/countries/it"
+    },
+    {
+      "name": "C2C 2025",
+      "location": "Lingotto, Turin",
+      "country": "Italy",
+      "venue": "Lingotto",
+      "lineup": ["Blood Orange", "Four Tet", "Nicolas Jaar", "John Maus", "Ecco2k", "A. G. Cook", "DjRUM", "Jenny Hval"],
+      "url": "https://www.songkick.com/festivals/countries/it",
+      "source_page": "https://www.songkick.com/festivals/countries/it"
+    },
+    {
+      "name": "Red Valley Festival 2025",
+      "location": "Olbia Arena, Olbia",
+      "country": "Italy",
+      "venue": "Olbia Arena",
+      "lineup": ["Alan Walker", "Steve Aoki", "Morad", "Sfera Ebbasta", "Fedez", "Ghali", "Anna", "Salmo"],
+      "url": "https://www.songkick.com/festivals/countries/it",
+      "source_page": "https://www.songkick.com/festivals/countries/it"
+    },
+    {
+      "name": "Baja Beach Fest 2025",
+      "location": "Baja Beach, Rosarito",
+      "country": "Mexico",
+      "venue": "Baja Beach",
+      "lineup": ["J Balvin", "Maluma", "Don Omar", "Myke Towers", "Arcangel", "Anitta", "El Alfa", "Wisin"],
+      "url": "https://www.songkick.com/festivals/countries/mx",
+      "source_page": "https://www.songkick.com/festivals/countries/mx"
+    },
+    {
+      "name": "Tecate Comuna 2025",
+      "location": "Foro Cholula, Cholula",
+      "country": "Mexico",
+      "venue": "Foro Cholula",
+      "lineup": ["Foster the People", "Julieta Venegas", "ZOÉ", "Apocalyptica", "Kevin Kaarl", "KHEA", "Molotov", "Mägo de Oz"],
+      "url": "https://www.songkick.com/festivals/countries/mx",
+      "source_page": "https://www.songkick.com/festivals/countries/mx"
+    },
+    {
+      "name": "Cocacola Flow Fest 2025",
+      "location": "Autódromo Hermanos Rodríguez, Mexico City",
+      "country": "Mexico",
+      "venue": "Autódromo Hermanos Rodríguez",
+      "lineup": ["J Balvin", "Don Omar", "Nicky Jam", "Myke Towers", "El Alfa", "Wisin", "Deorro", "Sech"],
+      "url": "https://www.songkick.com/festivals/countries/mx",
+      "source_page": "https://www.songkick.com/festivals/countries/mx"
+    },
+    {
+      "name": "Electric Picnic Music & Arts Festival 2025",
+      "location": "Stradbally Hall, Laois",
+      "country": "Ireland",
+      "venue": "Stradbally Hall",
+      "lineup": ["Chappell Roan", "Suki Waterhouse"],
+      "url": "https://www.songkick.com/festivals/countries/ie",
+      "source_page": "https://www.songkick.com/festivals/countries/ie"
+    },
+    {
+      "name": "Graspop Metal Meeting 2026",
+      "location": "Festivalpark Stenehei, Dessel",
+      "country": "Belgium",
+      "venue": "Festivalpark Stenehei",
+      "lineup": ["The Offspring", "Bring Me The Horizon", "Three Days Grace", "Limp Bizkit", "Def Leppard", "Breaking Benjamin", "Foreigner", "A Day to Remember"],
+      "url": "https://www.songkick.com/festivals/countries/be",
+      "source_page": "https://www.songkick.com/festivals/countries/be"
+    },
+    {
+      "name": "Tomorrowland Belgium 2026",
+      "location": "Provinciaal Recreatiedomein De Schorre, Boom",
+      "country": "Belgium",
+      "venue": "Provinciaal Recreatiedomein De Schorre",
+      "lineup": ["David Guetta", "The Chainsmokers", "Martin Garrix", "Lost Frequencies", "Armin van Buuren", "Alesso", "Afrojack", "R3HAB"],
+      "url": "https://www.songkick.com/festivals/countries/be",
+      "source_page": "https://www.songkick.com/festivals/countries/be"
+    },
+    {
+      "name": "Pukkelpop 2026",
+      "location": "Domein Kiewit, Kiewit-Hasselt",
+      "country": "Belgium",
+      "venue": "Domein Kiewit",
+      "lineup": ["Djo", "Parcels", "Purple Disco Machine", "Wunderhorse", "BLOND:ISH", "Love Spells", "Maruja", "Gurriers"],
+      "url": "https://www.songkick.com/festivals/countries/be",
+      "source_page": "https://www.songkick.com/festivals/countries/be"
+    },
+    {
+      "name": "Dour Festival 2026",
+      "location": "La Plaine de La Machine à Feu, Dour",
+      "country": "Belgium",
+      "venue": "La Plaine de La Machine à Feu",
+      "lineup": ["Pendulum", "Damso", "Orelsan", "Sammy Virji", "Myd", "Oklou", "Amelie Lens", "L2B"],
+      "url": "https://www.songkick.com/festivals/countries/be",
+      "source_page": "https://www.songkick.com/festivals/countries/be"
+    },
+    {
+      "name": "Werchter Parklife 2026",
+      "location": "Festivalpark Werchter, Rotselaar",
+      "country": "Belgium",
+      "venue": "Festivalpark Werchter",
+      "lineup": ["Linkin Park", "Papa Roach", "Phantogram", "Clipse", "Against the Current", "Zwangere Guy"],
+      "url": "https://www.songkick.com/festivals/countries/be",
+      "source_page": "https://www.songkick.com/festivals/countries/be"
+    },
+    {
+      "name": "Soundscape Festival Istanbul 2025",
+      "location": "Life Park, Istanbul",
+      "country": "Turkey",
+      "venue": "Life Park",
+      "lineup": ["Ben Böhmer", "Christian Löffler", "Kazy Lambist", "Kadebostany", "Valeron", "Diode Eins", "Sebastian Konrad"],
+      "url": "https://www.songkick.com/festivals/countries/tr",
+      "source_page": "https://www.songkick.com/festivals/countries/tr"
+    },
+    {
+      "name": "Solano Rock Festival 2025",
+      "location": "Bomberos de Solano, Buenos Aires",
+      "country": "Argentina",
+      "venue": "Bomberos de Solano",
+      "lineup": ["Viejas Locas", "A.N.I.M.A.L.", "Todos Tus Muertos", "Mal Pasar"],
+      "url": "https://www.songkick.com/festivals/countries/ar",
+      "source_page": "https://www.songkick.com/festivals/countries/ar"
+    },
+    {
+      "name": "Bumbershoot 2026",
+      "location": "Seattle Center, Seattle, WA",
+      "country": "US",
+      "venue": "Seattle Center",
+      "lineup": ["Death Cab for Cutie", "Blood Orange", "Chase & Status", "De La Soul", "Noname", "Japanese Breakfast", "Turnstile", "Lucy Dacus"],
+      "url": "https://www.songkick.com/festivals/countries/gb",
+      "source_page": "https://www.songkick.com/festivals/countries/gb"
+    },
+    {
+      "name": "Capitol Hill Block Party 2026",
+      "location": "Capitol Hill Block Party, Seattle, WA",
+      "country": "US",
+      "venue": "E Pine St between Broadway and 12th Ave",
+      "lineup": ["Tinashe", "Parcels", "Wet Leg", "Magdalena Bay", "Amber Mark", "Between Friends", "MUNA", "Mallrat"],
+      "url": "https://www.songkick.com/festivals/countries/gb",
+      "source_page": "https://www.songkick.com/festivals/countries/gb"
+    },
+    {
+      "name": "Outside Lands Music & Arts Festival 2026",
+      "location": "Golden Gate Park, San Francisco, CA",
+      "country": "US",
+      "venue": "Golden Gate Park",
+      "lineup": ["The xx", "Labrinth", "Death Cab for Cutie", "Empire of the Sun", "PinkPantheress", "Modest Mouse", "Baby Keem", "Djo"],
+      "url": "https://www.songkick.com/festivals/countries/gb",
+      "source_page": "https://www.songkick.com/festivals/countries/gb"
+    }
+  ],
+  "total_festivals_extracted": 72,
+  "countries_covered": ["US", "Germany", "France", "Australia", "Netherlands", "Spain", "Canada", "Brazil", "Sweden", "Italy", "Mexico", "Ireland", "Belgium", "Turkey", "Argentina"],
+  "notes": [
+    "Songkick API requires a valid API key — no public or demo key access available",
+    "Data extracted from public country pages on songkick.com",
+    "Some country code lookups returned unexpected data (e.g., /jp returned Brazil data — Songkick routing issue)",
+    "Lineup field typically shows the first 8 artists listed; full lineups are longer",
+    "Dates are available on individual festival detail pages; most 2025-2026 editions shown"
+  ]
+}

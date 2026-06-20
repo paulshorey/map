@@ -1,0 +1,2605 @@
+{
+  "source": "Skiddle Festival Guide",
+  "url": "https://www.skiddle.com/festivals/",
+  "description": "UK and European festival listings from Skiddle. 1,000+ festivals covering mainstream, boutique, rock/metal, dance, family, overseas, and more.",
+  "total_count": 323,
+  "categories": [
+    "mainstream / pop music",
+    "boutique / grassroots",
+    "family friendly",
+    "rock / metal / indie music",
+    "dance music",
+    "budget",
+    "overseas",
+    "comedy",
+    "country / blues music",
+    "reggae music"
+  ],
+  "note": "Full festival details (dates, locations, genres) available on individual festival pages at skiddle.com. The A-Z API endpoint requires an approved API key.",
+  "festivals": [
+    {
+      "name": "Tramlines",
+      "dates": "24th - 26th Jul 2026",
+      "location": "Sheffield",
+      "genre": "mainstream / pop music",
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rock The Mote Festival",
+      "dates": "24th - 26th Jul 2026",
+      "location": "Maidstone, Kent",
+      "genre": "mainstream / pop music",
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Noughty 90s Festival Newcastle",
+      "dates": "29th Aug 2026",
+      "location": "Newcastle",
+      "genre": "mainstream / pop music",
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Belladrum Tartan Heart Festival",
+      "dates": "30th July - 1st Aug 2026",
+      "location": "Beauly, Near Inverness",
+      "genre": "mainstream / pop music",
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Leeds Festival",
+      "dates": "27th - 30th Aug 2026",
+      "location": "Lowther Deer Park, nr Penrith, Cumbria",
+      "genre": "rock / metal / indie music",
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Kendal Calling Festival",
+      "dates": "30th July - 2nd Aug 2026",
+      "location": "Lowther Deer Park, nr Penrith, Cumbria",
+      "genre": "mainstream / pop music",
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Summer Sound Music Festival",
+      "dates": "11th - 12th Jul 2026",
+      "location": "Newcastle",
+      "genre": "mainstream / pop music",
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "2000trees Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "51st Festival Riverside Sessions",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "90's Fest 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "A New Day Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "ABODE on the Rock",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Africa Oye Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Aftershock Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "AlderFest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Aldershot Picnic and Pop Family Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "All Back To Minehead",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "All Points East",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "All Together Now",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Amsterdam Dance Event",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Another Love Story",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "App Fest UK",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Appetite On The Farm",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "ArcTanGent Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "As One in the Park",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Back 2 Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Back Doune the Rabbit Hole",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Balance Croatia",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Banff Castle Rocks",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Bassfest Summer Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Beardy Folk Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Beautiful Days Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Beermageddon",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Big London Tattoo Show",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Bilbao BBK Live",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Bloodstock Open Air Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Bloodstock Winter Gathering",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Bludfest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Boardmasters Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Boho Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Boogietown",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Boomtown Fair",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Breakin Science Amsterdam Weekender",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Bristol Sounds",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "BST Hyde Park",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Burn It Down Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Burning Man Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Cafe Mambo Ibiza Classics in the Park - Hull",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Cambridge Folk Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Camp Bestival - Dorset",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Camper Calling",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Campo Sancho",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Captured Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Castle Park Live",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Centreforce Tenerife Weekender",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Cheshire Fest 2026 | Live at Tatton Park",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Club To Club Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Clubland By The Sea",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Clubland Live On The Beach!",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Clubland Live Weekender",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Coloursfest 25th Anniversary 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Could Be Real Tribute Festival at Newstead Abbey",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Could Be Real Tribute Festival at Walton Hall & Gardens",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Country Calling",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Craic by the Creek",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Creation Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Crossroads",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "DALMA Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Damnation Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Dance Valley",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Daresbury Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Darker Waves",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Deer Shed Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Defqon.1",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Dekmantel Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Dekmantel Selectors",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Deva Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "doof in the park 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Dour Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Down At The Abbey Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Dreamland Jouvert X",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Dubs Of Rock 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Edge Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Edinburgh Fringe Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Edinburgh Psych Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "EFG London Jazz Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Electric Castle Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Electric Forest Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Electric Hills 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Electric Picnic Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Emerge Music Festival Belfast",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "End of the Road Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Equinox Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Essex Summer Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Existance Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "FearFest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Feast On Bristol 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "FeastyFest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Festwich Tribute Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Field Maneuvers",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Fields Of Gold Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Fields Of Gold Summer Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Firevolt Rock Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "FixFest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Float Along Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Folk by the Oak Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "FOMO Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Forwards - Bristol",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Four Chord Music Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Freerotation",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Fuji Rock Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Garage Nation Outdoor Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Gate To Southwell Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "GlastonBARRY Juniors Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "GlastonBARRY Tribute Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Glastonferret",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Glitch Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Goatfest 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "GOK WAN, DANNY BEARD | Pride Fest Live 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Good Vibrations Society",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Granite City Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Graspop Metal Meeting",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Green Man Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Greenbelt Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Guilfest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Halo Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Hard Rock Hell Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Heartland Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "HebCelt 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Hella Rock Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Hellfest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Hideout Festival Croatia",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Hifields Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Hits On The Pitch",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Hospitality On The Beach 2026 | A Drum & Bass Holiday",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Houghton Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Humber View Tribute Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Hurricane Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "In the Park Liverpool presents Lewis Capaldi",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "In the Park Newcastle presents Lewis Capaldi - Wednesday",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "In the Park Newcastle presents Paul Weller",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Inkcarceration Music & Tattoo Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Into the Woods Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Isle of Wight Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Junction 42",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Jurassic Fields Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Kaleidoscope Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Kelburn Garden Party",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Kent Country County Fair & Country By Campfire",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Kernowfornia Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Killin Music Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "KISSTORY on Blackheath",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lake Of Stars - Malawi Arts Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lakefest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Landed Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Latino Life in the Park 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Latitude Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lazydays Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Le Guess Who?",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Leicester Food Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Les Plages Electroniques",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Let It Roll",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "LIDO Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lindisfarne Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Linton Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lollapalooza Chicago Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lost Minds Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lost Paradise Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lost Village Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Louder Than Life",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Love Supreme Jazz Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Love to Be...Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lovefest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Loveland Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lowlands Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Lytham Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Mad Cool Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Made in Manchester Festival - Stockport",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Maid of Stone 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Maiden Voyage",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Manchester Psych Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Margate Rock Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Margate Soul Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Maui Waui Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Maverick Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "MKF Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Morley Music Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Moseley Folk Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Mostly Jazz, Funk and Soul Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Mucky Weekender Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Mutations Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Nature One Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Neopop Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "New World Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Nibirii",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "No Art Open Air Liverpool",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Northern Green Gathering",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "NOS Alive Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Nozstock The Hidden Valley",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Octoberfest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "OFFSonar",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "On The Waterfront presents 10 Years of Cream Classical",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "On The Waterfront presents Paul Weller",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "On the Waterfront presents Red Rum Club",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "On The Waterfront Presents Snow Patrol",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "One Love Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Our House Fest 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Our House Ibiza",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Outbreak Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Outlook Origins",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Outside Lands Music Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Parklife Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Party at the Palace",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Pepsi MAX presents Creamfields Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Pepsi Max presents TRNSMT Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Pinkpop",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Pioneer Plays Malta",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Pitchfork Music Festival - London",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Pohoda Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Pride on The Park - Brighton Pride",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Proper Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Pukkelpop",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rabidfest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "RADAR Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Reading Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rebellion Punk Music Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Reggae Land 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Restricted Forest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Resurrection Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Revenant IV - Whitby Goth Weekend (WGW) - Autumn",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rewind Festival South",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Riot Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rise Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "RnB Nation Outdoor Festival London",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rock en Seine",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rock in Rio",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rock In Rio Lisbon",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rock n Ribs Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rock N Roll Circus Norwich",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rock N Roll Circus Sheffield",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rock Oyster Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rock The Marshes",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rock Werchter",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rockprest Tribute Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rockstadt Extreme Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Roskilde Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Roundhay Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rum & Reggae Fest Leeds",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rum & Reggae Festival Birmingham",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Rum & Reggae Festival Nottingham",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Second Speed Accelerate Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Secret Island Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Shaky Knees Music Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Shambala Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Sheffield Festival of Reggae",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Shiiine On Weekender",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Shrewsbury Folk Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Sick New World - Texas",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Sidewinder Halloween Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Silverburn Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Solihull Summer Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Sonar Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Sonic Rock Solstice Music Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Soul Town Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Soultasia - Bristol",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Soultasia London 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Sound City Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "South East Dance Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Splendour Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "St George's Hall Beer Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "State Fayre Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Steelhouse Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Stendhal Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Stonedead Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Stowaway Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Suited and Booted Ska, Mod, Reggae Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Suncebeat New Horizons Lisbon 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Sziget Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Sŵn Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Tamworth Country Music Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Teletech Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Terminal V Croatia",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "The Big Feastival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "The Brit Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "The Darley Park Weekender",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "The Green Gathering",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "The Long Road",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "The Magpies Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "The Skegness Reggae & Ska Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Tidal Gathering Tribute Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Together Again Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Tomorrow's Ghosts Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Tons of Rock",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Towerfest Country Music Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Transition Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Truck Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Tunes In The Park",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Unearthed Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Untold Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Valley Fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Vans Warped Tour - Long Beach, CA",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Vans Warped Tour - Montreal",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Vans Warped Tour - Orlando, FL",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Vegan Camp Out",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Victorious Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Voodoo Festival 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Wacken Open Air Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "WAH Malta 2026",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Waterworks Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "We Are Family Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "We Out Here Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Weeley Tribute Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Werchter Boutique",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Westival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Whitby Blues, Rhythm & Rock Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Wilderness Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Womanifest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Wonderland Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Woodford Folk Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Woodland Dance Project - Edinburgh",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "WV1fest",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Y Not Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    },
+    {
+      "name": "Zombie Fest 9 - East Anglia's Biggest Indoor Halloween Festival",
+      "dates": null,
+      "location": null,
+      "genre": null,
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    }
+  ]
+}
