@@ -30,7 +30,7 @@ export function BasemapSwitcher() {
   const premiumProviders = allProviders.filter((p) => p.tier === "premium");
 
   return (
-    <div ref={panelRef} className="absolute bottom-2 left-2 z-10">
+    <div ref={panelRef} className="absolute bottom-[max(0.5rem,env(safe-area-inset-bottom,0px))] left-2 z-10">
       {open && (
         <div className="mb-2 w-64 rounded-xl bg-white shadow-xl border border-gray-200 overflow-hidden">
           <div className="px-3 py-2 border-b border-gray-100">
