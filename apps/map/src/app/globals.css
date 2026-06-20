@@ -6,6 +6,8 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
+  /* 100vh includes mobile browser chrome; dvh matches the visible viewport */
+  height: 100dvh;
   overflow: hidden;
   font-family: system-ui, -apple-system, sans-serif;
 }

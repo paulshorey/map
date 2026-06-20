@@ -31,7 +31,7 @@ export function UserMenu() {
   return (
     <div
       ref={menuRef}
-      className="absolute bottom-2 right-2 z-10 flex flex-col items-end"
+      className="absolute bottom-[max(0.5rem,env(safe-area-inset-bottom,0px))] right-2 z-10 flex flex-col items-end"
     >
       {open && (
         <div className="mb-2 w-64 rounded-xl bg-white shadow-xl border border-gray-200 overflow-hidden">
