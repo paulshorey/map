@@ -1,0 +1,90 @@
+{
+  "_meta": {
+    "source": "JamBase Data API",
+    "endpoint": "https://api.data.jambase.com/v3/genres",
+    "extracted_at": "2026-06-20T23:32:50.756602Z",
+    "total_genres": 20
+  },
+  "genres": [
+    {
+      "identifier": "bluegrass",
+      "name": "Bluegrass"
+    },
+    {
+      "identifier": "blues",
+      "name": "Blues"
+    },
+    {
+      "identifier": "christian",
+      "name": "Christian"
+    },
+    {
+      "identifier": "classical",
+      "name": "Classical"
+    },
+    {
+      "identifier": "country-music",
+      "name": "Country Music"
+    },
+    {
+      "identifier": "edm",
+      "name": "EDM"
+    },
+    {
+      "identifier": "folk",
+      "name": "Folk"
+    },
+    {
+      "identifier": "hip-hop-rap",
+      "name": "Hip Hop & Rap"
+    },
+    {
+      "identifier": "indie",
+      "name": "Indie"
+    },
+    {
+      "identifier": "jamband",
+      "name": "Jamband"
+    },
+    {
+      "identifier": "jazz",
+      "name": "Jazz"
+    },
+    {
+      "identifier": "kpop",
+      "name": "K-pop"
+    },
+    {
+      "identifier": "latin",
+      "name": "Latin"
+    },
+    {
+      "identifier": "metal",
+      "name": "Metal"
+    },
+    {
+      "identifier": "pop",
+      "name": "Pop"
+    },
+    {
+      "identifier": "punk",
+      "name": "Punk"
+    },
+    {
+      "identifier": "rhythm-and-blues-soul",
+      "name": "R&B / Soul"
+    },
+    {
+      "identifier": "reggae",
+      "name": "Reggae"
+    },
+    {
+      "identifier": "rock",
+      "name": "Rock"
+    },
+    {
+      "identifier": "tribute",
+      "name": "Tribute"
+    }
+  ]
+}

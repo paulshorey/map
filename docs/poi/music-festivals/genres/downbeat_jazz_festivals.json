@@ -19,7 +19,8 @@
       "dates_2026": "July 10–12",
       "notes": "50th anniversary, DownBeat 2026 Spotlight",
       "source": "downbeat.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "website": "https://www.northseajazz.com/"
     },
     {
       "name": "Syracuse Jazz Festival",
@@ -28,7 +29,9 @@
       "year": 2026,
       "notes": "40th anniversary, DownBeat 2026 Spotlight",
       "source": "downbeat.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "website": "https://www.syracusejazzfest.com",
+      "dates_2026": "June 2026"
     },
     {
       "name": "San Diego Tijuana Jazz Festival",
@@ -45,21 +48,27 @@
       "country": "USA",
       "notes": "avant garde",
       "source": "downbeat.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "website": "https://www.edgefest.com",
+      "dates_2026": "July 2026"
     },
     {
       "name": "Vision Fest",
       "location": "New York City, New York",
       "country": "USA",
       "source": "downbeat.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "website": "https://www.visionfestival.org",
+      "dates_2026": "June 2026"
     },
     {
       "name": "Guelph Jazz Festival",
       "location": "Guelph, Ontario",
       "country": "Canada",
       "source": "downbeat.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "website": "https://guelphjazz.com",
+      "dates_2026": "September 2026"
     },
     {
       "name": "Mitrovica International Jazz Days",
@@ -73,21 +82,25 @@
       "location": "Tallinn, Estonia",
       "country": "Estonia",
       "source": "downbeat.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "website": "https://www.jazzkaar.ee",
+      "dates_2026": "April 2026"
     },
     {
       "name": "Port Hope Jazz Festival",
       "location": "Port Hope, Ontario",
       "country": "Canada",
       "source": "downbeat.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "website": "https://www.porthopejazz.ca"
     },
     {
       "name": "Springfield Jazz & Roots Festival",
       "location": "Springfield, Massachusetts",
       "country": "USA",
       "source": "downbeat.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "website": "https://www.springfieldjazzroots.org"
     },
     {
       "name": "Detroit Jazz Festival",
@@ -96,7 +109,8 @@
       "dates_2026": "September 4–7 (Labor Day weekend)",
       "year": 2026,
       "source": "downbeat.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "website": "https://detroitjazzfest.org"
     },
     {
       "name": "Jazz Fest Wien",
@@ -249,7 +263,8 @@
       "country": "Mexico",
       "month": "November",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "October 2026"
     },
     {
       "name": "A To Jazz Festival",
@@ -266,7 +281,8 @@
       "country": "Portugal",
       "month": "May",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "website": "https://algarvesmoothJazz.com"
     },
     {
       "name": "Aloha Jazz Festival",
@@ -380,7 +396,8 @@
       "country": "USA",
       "month": "June",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "Columbia"
     },
     {
       "name": "Catalina Island JazzTrax Festival",
@@ -406,7 +423,9 @@
       "state_region": "England",
       "month": "May",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "Cheltenham",
+      "website": "https://www.cheltenhamfestivals.com/jazz"
     },
     {
       "name": "Clifford Brown Jazz Festival",
@@ -441,7 +460,10 @@
       "country": "Curacao",
       "month": "September",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "July 10–12",
+      "website": "https://www.northseajazz.com/",
+      "location": "Rotterdam"
     },
     {
       "name": "Daytona Jazz Weekend",
@@ -580,7 +602,10 @@
       "country": "Canada",
       "month": "July",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "July 7–12",
+      "website": "http://www.halifaxjazzfestival.ca/",
+      "location": "Halifax, Nova Scotia"
     },
     {
       "name": "Hot Summer Cool Jazz",
@@ -633,7 +658,10 @@
       "country": "USA",
       "month": "September",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "June 26–27",
+      "website": "https://jazzaspensnowmass.org/",
+      "location": "Aspen, Colorado"
     },
     {
       "name": "Jazz Fest Pompano Beach",
@@ -748,7 +776,10 @@
       "country": "UK",
       "month": "July",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "July 3–5",
+      "website": "https://lovesupremefestival.com/",
+      "location": "Lewes"
     },
     {
       "name": "Lowcountry Jazz Festival",
@@ -766,7 +797,10 @@
       "country": "USA",
       "month": "September",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "June 18–July 4",
+      "website": "https://www.summerfest.com/",
+      "location": "Milwaukee, Wisconsin"
     },
     {
       "name": "Melbourne International Jazz Festival",
@@ -808,7 +842,9 @@
       "country": "France",
       "month": "July",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "Nice",
+      "website": "https://nicejazzfestival.fr"
     },
     {
       "name": "North Sea Jazz Festival",
@@ -816,7 +852,10 @@
       "country": "Netherlands",
       "month": "July",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "July 10–12",
+      "website": "https://www.northseajazz.com/",
+      "location": "Rotterdam"
     },
     {
       "name": "Panama Jazz Festival",
@@ -851,7 +890,10 @@
       "country": "USA",
       "month": "August",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "September 4–6",
+      "website": "https://www.tbaalriverfrontjazzfestival.org/",
+      "location": "Dallas, Texas"
     },
     {
       "name": "Rochester International Jazz Festival",
@@ -860,7 +902,10 @@
       "country": "USA",
       "month": "June",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "June 19–27",
+      "website": "https://www.rochesterjazz.com/",
+      "location": "Rochester, New York"
     },
     {
       "name": "Saint Lucia Jazz & Artist Festival",
@@ -904,7 +949,10 @@
       "country": "USA",
       "month": "August",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "August 7–9",
+      "website": "https://scrantonjazzfestival.org/",
+      "location": "Scranton, Pennsylvania"
     },
     {
       "name": "Seabreeze Jazz Festival",
@@ -971,7 +1019,8 @@
       "state_region": "Scotland",
       "month": "June",
       "source": "smoothjazz.com",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "Glasgow"
     },
     {
       "name": "Golden Gate Jazz Festival",
@@ -1091,7 +1140,9 @@
       "city": "Berlin",
       "country": "Germany",
       "source": "downbeat.com / known",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "Berlin",
+      "website": "https://www.berlinerfestspiele.de/de/jazzfest-berlin/programm/2019/gesamt/termine.html"
     },
     {
       "name": "Big Ears Festival",
@@ -1115,7 +1166,9 @@
       "state_region": "Louisiana",
       "country": "USA",
       "source": "downbeat.com / known",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "New Orleans",
+      "website": "https://www.nojazzfest.com"
     },
     {
       "name": "Chicago Jazz Festival",
@@ -1123,28 +1176,38 @@
       "state_region": "Illinois",
       "country": "USA",
       "source": "downbeat.com / known",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "Chicago",
+      "website": "https://chicagojazzfestival.us",
+      "dates_2026": "August/September 2026"
     },
     {
       "name": "Umbria Jazz Festival",
       "city": "Perugia",
       "country": "Italy",
       "source": "downbeat.com / known",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "July 3–12",
+      "website": "https://www.umbriajazz.it/",
+      "location": "Perugia"
     },
     {
       "name": "Copenhagen Jazz Festival",
       "city": "Copenhagen",
       "country": "Denmark",
       "source": "downbeat.com / known",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "Copenhagen"
     },
     {
       "name": "Jazzaldia / San Sebastián Jazz Festival",
       "city": "San Sebastián",
       "country": "Spain",
       "source": "downbeat.com / known",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "July 22–26",
+      "website": "https://www.jazzaldia.eus/en/",
+      "location": "San Sebastian"
     },
     {
       "name": "Marciac Jazz Festival",
@@ -1167,7 +1230,10 @@
       "state_region": "Ontario",
       "country": "Canada",
       "source": "downbeat.com / known",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "dates_2026": "June 18–28",
+      "website": "https://ottawajazzfestival.com/",
+      "location": "Ottawa, Ontario"
     },
     {
       "name": "Vancouver International Jazz Festival",
@@ -1175,7 +1241,8 @@
       "state_region": "British Columbia",
       "country": "Canada",
       "source": "downbeat.com / known",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "Vancouver"
     },
     {
       "name": "Tokyo Jazz Festival",
@@ -1189,7 +1256,9 @@
       "city": "Tampere",
       "country": "Finland",
       "source": "downbeat.com / known",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "Tampere",
+      "website": "https://tamperejazz.fi/tjh-historia/2015-tampere-jazz-happening-historia/"
     },
     {
       "name": "Saalfelden Jazz Festival",
@@ -1203,7 +1272,8 @@
       "city": "Moers",
       "country": "Germany",
       "source": "downbeat.com / known",
-      "genre": "Jazz"
+      "genre": "Jazz",
+      "location": "Moers"
     },
     {
       "name": "Hague Jazz (North Sea Jazz pre-event)",

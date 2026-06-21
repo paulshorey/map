@@ -9,7 +9,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-03",
+    "end_date": "2026-06-06",
+    "status": "active"
   },
   {
     "name": "The Farm Jamb",
@@ -21,7 +24,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-04",
+    "end_date": "2026-06-06",
+    "status": "active"
   },
   {
     "name": "HOBA Spring Bluegrass Festival",
@@ -33,7 +39,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-04",
+    "end_date": "2026-06-06",
+    "status": "active"
   },
   {
     "name": "Cherokee Bluegrass Festival",
@@ -45,7 +54,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-04",
+    "end_date": "2026-06-06",
+    "status": "active"
   },
   {
     "name": "Goldendale Pickers Festival",
@@ -57,7 +69,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-04",
+    "end_date": "2026-06-07",
+    "status": "active"
   },
   {
     "name": "Bluegrass & Brews Festival",
@@ -69,7 +84,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-05",
+    "end_date": "2026-06-06",
+    "status": "active"
   },
   {
     "name": "Mount Airy Bluegrass & Old-Time Fiddlers Convention",
@@ -81,7 +99,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-05",
+    "end_date": "2026-06-06",
+    "status": "active"
   },
   {
     "name": "Palisade Bluegrass & Roots Festival",
@@ -93,7 +114,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-05",
+    "end_date": "2026-06-07",
+    "status": "active"
   },
   {
     "name": "Pickin' on the Plains",
@@ -105,7 +129,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-05",
+    "end_date": "2026-06-07",
+    "status": "active"
   },
   {
     "name": "Eagleview Bluegrass Family Reunion Pickout",
@@ -117,7 +144,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-05",
+    "end_date": "2026-06-07",
+    "status": "active"
   },
   {
     "name": "Bluegrass on the Bluff Festival",
@@ -129,7 +159,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-05",
+    "end_date": "2026-06-07",
+    "status": "active"
   },
   {
     "name": "San Francisco Bluegrass and Old-Time Festival",
@@ -141,7 +174,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-06",
+    "end_date": "2026-06-06",
+    "status": "active"
   },
   {
     "name": "Bluegrass on the Bluff",
@@ -153,7 +189,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-06",
+    "end_date": "2026-06-06",
+    "status": "active"
   },
   {
     "name": "AFLO Music Festival",
@@ -165,7 +204,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-07",
+    "end_date": "2026-06-07",
+    "status": "active"
   },
   {
     "name": "Hampton Bluegrass and Country Music Festival",
@@ -177,7 +219,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-10",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Turkey Track Bluegrass Gospel Festival",
@@ -189,7 +234,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-11",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Spirit in the Bluegrass Music Fest",
@@ -201,7 +249,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-11",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Blazin' Bluegrass Festival",
@@ -213,7 +264,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-11",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Thousand Islands Bluegrass Festival",
@@ -225,7 +279,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-11",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Charlie Poole Festival",
@@ -237,7 +294,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-11",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Bluegrass in the Burg",
@@ -249,7 +309,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-11",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Bluegrass at the Lake",
@@ -261,7 +324,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-11",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Wind Gap Bluegrass Festival",
@@ -273,7 +339,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-11",
+    "end_date": "2026-06-14",
+    "status": "active"
   },
   {
     "name": "Sacajawea Bluegrass Festival",
@@ -285,7 +354,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-11",
+    "end_date": "2026-06-14",
+    "status": "active"
   },
   {
     "name": "Blueberry Bluegrass Concert in the Park",
@@ -297,7 +369,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-12",
+    "end_date": "2026-06-12",
+    "status": "active"
   },
   {
     "name": "Pammy Fest",
@@ -309,7 +384,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-12",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Defeated Creek Bluegrass Festival",
@@ -321,7 +399,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-12",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Nor-East'r Music & Art Festival",
@@ -333,7 +414,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-12",
+    "end_date": "2026-06-14",
+    "status": "active"
   },
   {
     "name": "Music on the Mountain",
@@ -345,7 +429,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-12",
+    "end_date": "2026-06-14",
+    "status": "active"
   },
   {
     "name": "Bluff Mountain Festival",
@@ -357,7 +444,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-13",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Coke Ovens Bluegrass Festival",
@@ -369,7 +459,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-13",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "CBA Summer Music Camp",
@@ -381,7 +474,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-14",
+    "end_date": "2026-06-17",
+    "status": "active"
   },
   {
     "name": "Bill Monroe's Bluegrass Festival",
@@ -393,7 +489,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-17",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Upperco Jam Camp Bluegrass Festival",
@@ -405,7 +504,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-17",
+    "end_date": "2026-06-21",
+    "status": "active"
   },
   {
     "name": "Willow Oak Music Festival",
@@ -417,7 +519,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-18",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Summertown Bluegrass Reunion Spring Festival",
@@ -429,7 +534,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-18",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Father's Day Bluegrass Festival",
@@ -441,7 +549,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-18",
+    "end_date": "2026-06-21",
+    "status": "active"
   },
   {
     "name": "Telluride Bluegrass Festival",
@@ -453,7 +564,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-18",
+    "end_date": "2026-06-21",
+    "status": "active"
   },
   {
     "name": "Blistered Fingers Bluegrass Festival",
@@ -465,7 +579,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-18",
+    "end_date": "2026-06-21",
+    "status": "active"
   },
   {
     "name": "West Virginia State Folk Festival",
@@ -477,7 +594,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-18",
+    "end_date": "2026-06-21",
+    "status": "active"
   },
   {
     "name": "Harmony Woods Music & Arts Fest",
@@ -489,7 +609,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Missouri River Bluegrass Festival",
@@ -501,7 +624,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Abingdon Old-Time and Bluegrass Fiddlers Convention",
@@ -513,7 +639,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Maury River Fiddlers Convention",
@@ -525,7 +654,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Sól Grass Music Festival",
@@ -537,7 +669,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Boonerang Music & Arts Festival",
@@ -549,7 +684,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-21",
+    "status": "active"
   },
   {
     "name": "Red Wing Roots Music Festival",
@@ -561,7 +699,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-21",
+    "status": "active"
   },
   {
     "name": "Wenatchee River Bluegrass Festival",
@@ -573,7 +714,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-21",
+    "status": "active"
   },
   {
     "name": "Georgia State Fiddlers Convention",
@@ -585,7 +729,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-20",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Savage Bluegrass Festival",
@@ -597,7 +744,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-20",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Porch Stomp Festival",
@@ -609,7 +759,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-20",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Rattling Brook Bluegrass Festival",
@@ -621,7 +774,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-20",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Prescott Bluegrass Festival",
@@ -633,7 +789,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-20",
+    "end_date": "2026-06-21",
+    "status": "active"
   },
   {
     "name": "Rudy Fest Bluegrass Festival",
@@ -645,7 +804,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-20",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "National Oldtime Fiddler's Contest and Festival",
@@ -657,7 +819,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-21",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "Susanville Bluegrass Festival Music Camp",
@@ -669,7 +834,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-23",
+    "end_date": "2026-06-25",
+    "status": "active"
   },
   {
     "name": "ROMP Festival",
@@ -681,7 +849,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-24",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "Remington Ryde Bluegrass Festival",
@@ -693,7 +864,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-24",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "Charlotte Bluegrass Festival",
@@ -705,7 +879,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-25",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "Doc McCabe Bluegrass Festival",
@@ -717,7 +894,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-25",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "Blue Ox Music Festival",
@@ -729,7 +909,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-25",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "10th Annual Get Down",
@@ -741,7 +924,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-25",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "Jenny Brook Bluegrass Festival",
@@ -753,7 +939,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-25",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "Big Ponderoo",
@@ -765,7 +954,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "9 Mile Bluegrass Festival",
@@ -777,7 +969,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "Grayson County Old-Time & Bluegrass Fiddlers' Convention",
@@ -789,7 +984,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "Ten Mile Creek Revival",
@@ -801,7 +999,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "Susanville Bluegrass Festival",
@@ -813,7 +1014,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "Indiana Fiddlers' Gathering",
@@ -825,7 +1029,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "Ligonier Valley Bluegrass Festival",
@@ -837,7 +1044,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "Black Hills Bluegrass & BBQ Festival",
@@ -849,7 +1059,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "Siskiyou Folk & Bluegrass Festival",
@@ -861,7 +1074,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-27",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "South Branch Valley Bluegrass Festival",
@@ -873,7 +1089,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-27",
+    "end_date": "2026-06-27",
+    "status": "active"
   },
   {
     "name": "Bluegrass in the Country",
@@ -885,7 +1104,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-12",
+    "end_date": "2026-06-14",
+    "status": "active"
   },
   {
     "name": "Kluane Mountain Bluegrass Festival",
@@ -897,7 +1119,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-12",
+    "end_date": "2026-06-14",
+    "status": "active"
   },
   {
     "name": "Galop Canal Bluegrass Festival",
@@ -909,7 +1134,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-17",
+    "end_date": "2026-06-20",
+    "status": "active"
   },
   {
     "name": "Chemainus Bluegrass Extravaganza",
@@ -921,7 +1149,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-18",
+    "end_date": "2026-06-19",
+    "status": "active"
   },
   {
     "name": "Cowichan Valley Bluegrass Festival",
@@ -933,7 +1164,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-21",
+    "status": "active"
   },
   {
     "name": "Summertime Bluegrass Festival",
@@ -945,7 +1179,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "Tottenham Bluegrass Festival",
@@ -957,7 +1194,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "St. Louis Bluegrass & Old Time Music Festival",
@@ -969,7 +1209,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-26",
+    "end_date": "2026-06-28",
+    "status": "active"
   },
   {
     "name": "GODY Festival of Country, Folk, Bluegrass and Allied Genres",
@@ -981,7 +1224,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-07",
+    "end_date": "2026-06-07",
+    "status": "active"
   },
   {
     "name": "Banjo Jamboree",
@@ -993,7 +1239,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-12",
+    "end_date": "2026-06-13",
+    "status": "active"
   },
   {
     "name": "Rootsinpyhtaa Bluegrass Festival",
@@ -1005,7 +1254,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-05",
+    "end_date": "2026-06-07",
+    "status": "active"
   },
   {
     "name": "Westport Folk and Bluegrass Festival",
@@ -1017,7 +1269,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-04",
+    "end_date": "2026-06-07",
+    "status": "active"
   },
   {
     "name": "Arisaig Americana Music Festival",
@@ -1029,7 +1284,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-06-05",
+    "end_date": "2026-06-07",
+    "status": "active"
   },
   {
     "name": "No Bull … Just Bluegrass Festival",
@@ -1041,7 +1299,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-02",
+    "end_date": "2026-07-04",
+    "status": "active"
   },
   {
     "name": "Great Blue Heron Music Festival",
@@ -1053,7 +1314,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-02",
+    "end_date": "2026-07-05",
+    "status": "active"
   },
   {
     "name": "South Park Bluegrass Festival",
@@ -1065,7 +1329,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-03",
+    "end_date": "2026-07-04",
+    "status": "active"
   },
   {
     "name": "Smithville Fiddler's Jamboree",
@@ -1077,7 +1344,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-03",
+    "end_date": "2026-07-04",
+    "status": "active"
   },
   {
     "name": "Grassfire Festival",
@@ -1089,7 +1359,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-03",
+    "end_date": "2026-07-05",
+    "status": "active"
   },
   {
     "name": "Wheeler County Bluegrass Festival and Jam/Camp",
@@ -1101,7 +1374,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-03",
+    "end_date": "2026-07-05",
+    "status": "active"
   },
   {
     "name": "Morris Bluegrass Festival",
@@ -1113,7 +1389,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-04",
+    "end_date": "2026-07-04",
+    "status": "active"
   },
   {
     "name": "Starvy Creek Bluegrass Festival",
@@ -1125,7 +1404,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-08",
+    "end_date": "2026-07-11",
+    "status": "active"
   },
   {
     "name": "Snowygrass Music Festival",
@@ -1137,7 +1419,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-09",
+    "end_date": "2026-07-12",
+    "status": "active"
   },
   {
     "name": "High Mountain Hay Fever",
@@ -1149,7 +1434,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-09",
+    "end_date": "2026-07-12",
+    "status": "active"
   },
   {
     "name": "Cedar Springs Bluegrass Gospel Fest",
@@ -1161,7 +1449,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-09",
+    "end_date": "2026-07-12",
+    "status": "active"
   },
   {
     "name": "Basin Bluegrass Festival",
@@ -1173,7 +1464,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-09",
+    "end_date": "2026-07-12",
+    "status": "active"
   },
   {
     "name": "Poston Lake Bluegrass Festival & Jam",
@@ -1185,7 +1479,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-10",
+    "end_date": "2026-07-11",
+    "status": "active"
   },
   {
     "name": "Tazewell County Fiddlers Convention",
@@ -1197,7 +1494,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-10",
+    "end_date": "2026-07-11",
+    "status": "active"
   },
   {
     "name": "Bluegrass from the Forest Festival",
@@ -1209,7 +1509,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-10",
+    "end_date": "2026-07-12",
+    "status": "active"
   },
   {
     "name": "Long Beach Bluegrass Festival",
@@ -1221,7 +1524,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-11",
+    "end_date": "2026-07-11",
+    "status": "active"
   },
   {
     "name": "Cline Country Bluegrass Festival",
@@ -1233,7 +1539,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-11",
+    "end_date": "2026-07-11",
+    "status": "active"
   },
   {
     "name": "Roxbury Pickin' 'n Fiddlin' Contest",
@@ -1245,7 +1554,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-11",
+    "end_date": "2026-07-11",
+    "status": "active"
   },
   {
     "name": "Beaverdale Bluegrass Festival",
@@ -1257,7 +1569,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-11",
+    "end_date": "2026-07-11",
+    "status": "active"
   },
   {
     "name": "Bluegrass on the Grass",
@@ -1269,7 +1584,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-11",
+    "end_date": "2026-07-11",
+    "status": "active"
   },
   {
     "name": "Frankfort Bluegrass Festival",
@@ -1281,7 +1599,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-11",
+    "end_date": "2026-07-12",
+    "status": "active"
   },
   {
     "name": "West Virginia's Branch Mountain Bluegrass Festival",
@@ -1293,7 +1614,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-15",
+    "end_date": "2026-07-18",
+    "status": "active"
   },
   {
     "name": "Grey Fox Bluegrass Festival",
@@ -1305,7 +1629,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-15",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "Shriners Bluegrass Festival",
@@ -1317,7 +1644,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-16",
+    "end_date": "2026-07-18",
+    "status": "active"
   },
   {
     "name": "Alleghany County Fiddlers Convention",
@@ -1329,7 +1659,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-16",
+    "end_date": "2026-07-18",
+    "status": "active"
   },
   {
     "name": "Industrial Strength Bluegrass Summer Fest",
@@ -1341,7 +1674,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-16",
+    "end_date": "2026-07-18",
+    "status": "active"
   },
   {
     "name": "4848 Festival",
@@ -1353,7 +1689,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-16",
+    "end_date": "2026-07-18",
+    "status": "active"
   },
   {
     "name": "Redwood Ramble",
@@ -1365,7 +1704,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-16",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "Fingerlakes Grassroots Festival of Music & Dance",
@@ -1377,7 +1719,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-16",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "Doc & Rosa Lee Watson MusicFest",
@@ -1389,7 +1734,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-17",
+    "end_date": "2026-07-17",
+    "status": "active"
   },
   {
     "name": "NB Roots & Branches Festival",
@@ -1401,7 +1749,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-17",
+    "end_date": "2026-07-18",
+    "status": "active"
   },
   {
     "name": "Kalona Bluegrass Festival",
@@ -1413,7 +1764,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-17",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "Hiawatha Traditional Music Festival",
@@ -1425,7 +1779,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-17",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "TedFest",
@@ -1437,7 +1794,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-17",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "Darrington Bluegrass Festival",
@@ -1449,7 +1809,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-17",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "Skyline Bluegrass Music Festival on the River",
@@ -1461,7 +1824,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-18",
+    "end_date": "2026-07-18",
+    "status": "active"
   },
   {
     "name": "Marshall Bluegrass Festival",
@@ -1473,7 +1839,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-19",
+    "end_date": "2026-07-25",
+    "status": "active"
   },
   {
     "name": "Augusta Heritage Center Old Time Week",
@@ -1485,7 +1854,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-20",
+    "end_date": "2026-07-24",
+    "status": "active"
   },
   {
     "name": "FloydFest",
@@ -1497,7 +1869,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-22",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "7 Mile Bluegrass Festival",
@@ -1509,7 +1884,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-23",
+    "end_date": "2026-07-25",
+    "status": "active"
   },
   {
     "name": "Danby Country & Bluegrass Festival",
@@ -1521,7 +1899,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-23",
+    "end_date": "2026-07-25",
+    "status": "active"
   },
   {
     "name": "Fly In Festival",
@@ -1533,7 +1914,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-23",
+    "end_date": "2026-07-25",
+    "status": "active"
   },
   {
     "name": "Ossipee Valley Music Festival",
@@ -1545,7 +1929,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-23",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "Milaca RecFest Bluegrass Festival",
@@ -1557,7 +1944,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-23",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "Columbia Gorge Bluegrass Festival",
@@ -1569,7 +1959,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-23",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "Midsummer Bluegrass Festival",
@@ -1581,7 +1974,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-23",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "Big Grass Bluegrass Festival",
@@ -1593,7 +1989,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-24",
+    "end_date": "2026-07-25",
+    "status": "active"
   },
   {
     "name": "Bluegrass Along the Harpeth",
@@ -1605,7 +2004,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-24",
+    "end_date": "2026-07-25",
+    "status": "active"
   },
   {
     "name": "Oyster Ridge Music Festival",
@@ -1617,7 +2019,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-24",
+    "end_date": "2026-07-25",
+    "status": "active"
   },
   {
     "name": "RockyGrass",
@@ -1629,7 +2034,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-24",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "Backbone Bluegrass Festival",
@@ -1641,7 +2049,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-24",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "Hardtimes Bluegrass Festival",
@@ -1653,7 +2064,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-24",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "Ashe County Bluegrass & Old Time Fiddlers Convention",
@@ -1665,7 +2079,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-24",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "Back to Bluegrass",
@@ -1677,7 +2094,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-25",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "9 Mile Bluegrass Festival",
@@ -1689,7 +2109,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-26",
+    "end_date": "2026-07-27",
+    "status": "active"
   },
   {
     "name": "Appalachian String Band Music Festival",
@@ -1701,7 +2124,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-29",
+    "end_date": "2026-08-02"
   },
   {
     "name": "Orange Army Bluegrass Festival",
@@ -1713,7 +2139,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-30",
+    "end_date": "2026-08-01"
   },
   {
     "name": "Appalachian Fiddle & Bluegrass Association Festival",
@@ -1725,7 +2154,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-30",
+    "end_date": "2026-08-02"
   },
   {
     "name": "Bluegrass at the Lake",
@@ -1737,7 +2169,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-31",
+    "end_date": "2026-08-01"
   },
   {
     "name": "Sugar Maple Music Festival",
@@ -1749,7 +2184,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-31",
+    "end_date": "2026-08-01"
   },
   {
     "name": "Sioux River Folk Festival",
@@ -1761,7 +2199,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-31",
+    "end_date": "2026-08-02"
   },
   {
     "name": "Farmers Branch Bluegrass Festival",
@@ -1773,7 +2214,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-31",
+    "end_date": "2026-08-02"
   },
   {
     "name": "WAMA Pickersfest",
@@ -1785,7 +2229,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-31",
+    "end_date": "2026-08-02"
   },
   {
     "name": "River Valley Country & Bluegrass Gathering",
@@ -1797,7 +2244,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-02",
+    "end_date": "2026-07-05",
+    "status": "active"
   },
   {
     "name": "PEI Bluegrass & Old Time Music Festival",
@@ -1809,7 +2259,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-03",
+    "end_date": "2026-07-05",
+    "status": "active"
   },
   {
     "name": "NimbleFingers Bluegrass & Old-Time Music Workshops and Festival",
@@ -1821,7 +2274,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-05",
+    "end_date": "2026-07-17",
+    "status": "active"
   },
   {
     "name": "Mud Creek Bluegrass Festival",
@@ -1833,7 +2289,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-09",
+    "end_date": "2026-07-12",
+    "status": "active"
   },
   {
     "name": "Keremeos Country & Bluegrass Jamboree",
@@ -1845,7 +2304,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-10",
+    "end_date": "2026-07-12",
+    "status": "active"
   },
   {
     "name": "Evangeline Bluegrass & Traditional Music Festival",
@@ -1857,7 +2319,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-10",
+    "end_date": "2026-07-12",
+    "status": "active"
   },
   {
     "name": "Campbellton Bluegrass Festival",
@@ -1869,7 +2334,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-16",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "Shady Grove Bluegrass Festival",
@@ -1881,7 +2349,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-17",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "Nova Scotia Bluegrass & Oldtime Music Festival",
@@ -1893,7 +2364,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-23",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "Palmer Rapids Twin Music Festival",
@@ -1905,7 +2379,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-23",
+    "end_date": "2026-07-26",
+    "status": "active"
   },
   {
     "name": "River Valley Bluegrass Jamboree",
@@ -1917,7 +2394,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-29",
+    "end_date": "2026-08-02"
   },
   {
     "name": "Coombs Bluegrass Festival",
@@ -1929,7 +2409,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-31",
+    "end_date": "2026-08-02"
   },
   {
     "name": "DuModra Bluegrass Festival",
@@ -1941,7 +2424,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-19",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "Summer Bluegrass Spectacular",
@@ -1953,7 +2439,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-19",
+    "end_date": "2026-07-19",
+    "status": "active"
   },
   {
     "name": "Bluegrass in La Roche Festival",
@@ -1965,7 +2454,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-29",
+    "end_date": "2026-08-02"
   },
   {
     "name": "Summer Takarazuka Bluegrass Festival",
@@ -1977,7 +2469,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-30",
+    "end_date": "2026-08-02"
   },
   {
     "name": "Rotterdam Bluegrass Festival",
@@ -1989,7 +2484,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-03",
+    "end_date": "2026-07-05",
+    "status": "active"
   },
   {
     "name": "Norsk Countrytreff",
@@ -2001,7 +2499,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-08",
+    "end_date": "2026-07-12",
+    "status": "active"
   },
   {
     "name": "Torsåker Bluegrass Festival",
@@ -2013,7 +2514,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-07-03",
+    "end_date": "2026-07-04",
+    "status": "active"
   },
   {
     "name": "WTHS Bluegrass Jamboree",
@@ -2025,7 +2529,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-01",
+    "end_date": "2026-08-01",
+    "status": "active"
   },
   {
     "name": "Keystone Bluegrass & Beer Festival",
@@ -2037,7 +2544,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-01",
+    "end_date": "2026-08-02",
+    "status": "active"
   },
   {
     "name": "Dillard Bluegrass & Barbecue Festival",
@@ -2049,7 +2559,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-01",
+    "end_date": "2026-08-02",
+    "status": "active"
   },
   {
     "name": "Augusta Heritage Center Bluegrass Week",
@@ -2061,7 +2574,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-03",
+    "end_date": "2026-08-07",
+    "status": "active"
   },
   {
     "name": "Old Fiddlers' Convention",
@@ -2073,7 +2589,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-03",
+    "end_date": "2026-08-08",
+    "status": "active"
   },
   {
     "name": "Pickin' in Parsons",
@@ -2085,7 +2604,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-04",
+    "end_date": "2026-08-08",
+    "status": "active"
   },
   {
     "name": "Podunk Bluegrass Music Festival",
@@ -2097,7 +2619,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-05",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "Lovegrass Music Festival",
@@ -2109,7 +2634,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-06",
+    "end_date": "2026-08-08",
+    "status": "active"
   },
   {
     "name": "Good Old Fashioned Bluegrass Festival",
@@ -2121,7 +2649,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-06",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "Minnesota Bluegrass August Festival",
@@ -2133,7 +2664,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-06",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "9 Mile Bluegrass Festival",
@@ -2145,7 +2679,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-08",
+    "status": "active"
   },
   {
     "name": "Rocky Mountain Folks Festival",
@@ -2157,7 +2694,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "Osceola Music Festival",
@@ -2169,7 +2709,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "Lake Itasca Family Music Festival",
@@ -2181,7 +2724,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "Blue Waters Bluegrass Festival",
@@ -2193,7 +2739,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "Mount St. Helens Bluegrass Festival",
@@ -2205,7 +2754,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "Targhee Bluegrass Festival",
@@ -2217,7 +2769,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "Vernon Fest",
@@ -2229,7 +2784,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-08",
+    "end_date": "2026-08-08",
+    "status": "active"
   },
   {
     "name": "The Centralia Campout",
@@ -2241,7 +2799,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-08",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "North Carolina State Bluegrass Festival",
@@ -2253,7 +2814,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-12",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "Larryfest",
@@ -2265,7 +2829,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-13",
+    "end_date": "2026-08-15",
+    "status": "active"
   },
   {
     "name": "Winding Creek Music Festival",
@@ -2277,7 +2844,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-13",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "Gettysburg Bluegrass Festival",
@@ -2289,7 +2859,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-13",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "Green Mountain Bluegrass & Roots",
@@ -2301,7 +2874,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-13",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "Fries Fiddlers Convention",
@@ -2313,7 +2889,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-14",
+    "end_date": "2026-08-15",
+    "status": "active"
   },
   {
     "name": "Wyoming State BBQ Championship & Bluegrass Festival",
@@ -2325,7 +2904,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-14",
+    "end_date": "2026-08-15",
+    "status": "active"
   },
   {
     "name": "Summergrass San Diego",
@@ -2337,7 +2919,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-14",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "Ocean State Bluegrass Festival",
@@ -2349,7 +2934,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-14",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "Long Island Bluegrass & Roots Music Festival",
@@ -2361,7 +2949,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-15",
+    "end_date": "2026-08-15",
+    "status": "active"
   },
   {
     "name": "Mayville Bluegrass Festival",
@@ -2373,7 +2964,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-15",
+    "end_date": "2026-08-15",
+    "status": "active"
   },
   {
     "name": "Gandy Dancer Bluegrass Festival",
@@ -2385,7 +2979,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-15",
+    "end_date": "2026-08-15",
+    "status": "active"
   },
   {
     "name": "Laurel Hill Bluegrass Festival",
@@ -2397,7 +2994,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-15",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "Buckeye Bluegrass Bash",
@@ -2409,7 +3009,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-16",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "Pickin' in the Pasture",
@@ -2421,7 +3024,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-20",
+    "end_date": "2026-08-22",
+    "status": "active"
   },
   {
     "name": "Brown County Bluegrass Festival",
@@ -2433,7 +3039,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-20",
+    "end_date": "2026-08-22",
+    "status": "active"
   },
   {
     "name": "CBA Golden Old-time Campout",
@@ -2445,7 +3054,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-20",
+    "end_date": "2026-08-23",
+    "status": "active"
   },
   {
     "name": "Southeast Minnesota SEMBA August Bluegrass Festival",
@@ -2457,7 +3069,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-20",
+    "end_date": "2026-08-23",
+    "status": "active"
   },
   {
     "name": "Rainier Bluegrass Festival",
@@ -2469,7 +3084,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-20",
+    "end_date": "2026-08-23",
+    "status": "active"
   },
   {
     "name": "Lake Cumberland Bluegrass Festival",
@@ -2481,7 +3099,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-21",
+    "end_date": "2026-08-22",
+    "status": "active"
   },
   {
     "name": "Carolina Hills Fiddle Fest",
@@ -2493,7 +3114,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-21",
+    "end_date": "2026-08-22",
+    "status": "active"
   },
   {
     "name": "Beef, Beans & Bluegrass Festival",
@@ -2505,7 +3129,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-21",
+    "end_date": "2026-08-23",
+    "status": "active"
   },
   {
     "name": "Bowers Bluegrass Festival",
@@ -2517,7 +3144,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-22",
+    "end_date": "2026-08-23",
+    "status": "active"
   },
   {
     "name": "Lakes Bluegrass Festival",
@@ -2529,7 +3159,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-26",
+    "end_date": "2026-08-30",
+    "status": "active"
   },
   {
     "name": "CroweFest",
@@ -2541,7 +3174,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-27",
+    "end_date": "2026-08-29",
+    "status": "active"
   },
   {
     "name": "Blistered Fingers Bluegrass Festival",
@@ -2553,7 +3189,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-27",
+    "end_date": "2026-08-30",
+    "status": "active"
   },
   {
     "name": "Crooktop Old-Time Music Festival",
@@ -2565,7 +3204,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-27",
+    "end_date": "2026-08-30",
+    "status": "active"
   },
   {
     "name": "Bluegrass in the Pines",
@@ -2577,7 +3219,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-27",
+    "end_date": "2026-08-30",
+    "status": "active"
   },
   {
     "name": "Ionia Freak Fair",
@@ -2589,7 +3234,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-28",
+    "end_date": "2026-08-29",
+    "status": "active"
   },
   {
     "name": "Oak Grove Folk Music Festival",
@@ -2601,7 +3249,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-28",
+    "end_date": "2026-08-30",
+    "status": "active"
   },
   {
     "name": "Santa Fe TradFest",
@@ -2613,7 +3264,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-28",
+    "end_date": "2026-08-31",
+    "status": "active"
   },
   {
     "name": "Three Corners Bluegrass Festival",
@@ -2625,7 +3279,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-30",
+    "end_date": "2026-08-30",
+    "status": "active"
   },
   {
     "name": "South Grenville Bluegrass Festival",
@@ -2637,7 +3294,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-05",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "Clare Bluegrass Association Festival",
@@ -2649,7 +3309,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-08",
+    "status": "active"
   },
   {
     "name": "Northern Lights Bluegrass & Old Tyme Music Camp and Festival",
@@ -2661,7 +3324,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-14",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "Rogersville Bluegrass Festival",
@@ -2673,7 +3339,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-28",
+    "end_date": "2026-08-30",
+    "status": "active"
   },
   {
     "name": "Bluegrass in the Mill",
@@ -2685,7 +3354,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-08",
+    "end_date": "2026-08-08",
+    "status": "active"
   },
   {
     "name": "Bluegrass in the Vineyard",
@@ -2697,7 +3369,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-13",
+    "end_date": "2026-08-15",
+    "status": "active"
   },
   {
     "name": "FOAOTMAD Summer Camp",
@@ -2709,7 +3384,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-16",
+    "status": "active"
   },
   {
     "name": "Bluegrass in La Roche Festival",
@@ -2721,7 +3399,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-29",
+    "end_date": "2026-08-02"
   },
   {
     "name": "International Bluegrass and Acoustic Music Festival",
@@ -2733,7 +3414,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-09",
+    "status": "active"
   },
   {
     "name": "Dunmore East Bluegrass Festival",
@@ -2745,7 +3429,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-28",
+    "end_date": "2026-08-30",
+    "status": "active"
   },
   {
     "name": "Summer Takarazuka Bluegrass Festival",
@@ -2757,7 +3444,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-07-30",
+    "end_date": "2026-08-02"
   },
   {
     "name": "Grenna Bluegrass Festival",
@@ -2769,7 +3459,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-15",
+    "end_date": "2026-08-15",
+    "status": "active"
   },
   {
     "name": "Bluegrass Openair I de Müli",
@@ -2781,7 +3474,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-08-15",
+    "end_date": "2026-08-15",
+    "status": "active"
   },
   {
     "name": "Route 23 Bluegrass Festival",
@@ -2793,7 +3489,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-02",
+    "end_date": "2026-09-06",
+    "status": "active"
   },
   {
     "name": "Camp Springs Labor Day Bluegrass Festival",
@@ -2805,7 +3504,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-03",
+    "end_date": "2026-09-05",
+    "status": "active"
   },
   {
     "name": "Summertown Bluegrass Reunion Labor Day Weekend Festival",
@@ -2817,7 +3519,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-03",
+    "end_date": "2026-09-05",
+    "status": "active"
   },
   {
     "name": "Tri-State Labor Day Weekend Bluegrass Festival",
@@ -2829,7 +3534,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-03",
+    "end_date": "2026-09-06",
+    "status": "active"
   },
   {
     "name": "Crooked River Gathering",
@@ -2841,7 +3549,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-03",
+    "end_date": "2026-09-06",
+    "status": "active"
   },
   {
     "name": "Pickin' at the Post",
@@ -2853,7 +3564,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-03",
+    "end_date": "2026-09-06",
+    "status": "active"
   },
   {
     "name": "Jackpine Jamboree",
@@ -2865,7 +3579,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-03",
+    "end_date": "2026-09-06",
+    "status": "active"
   },
   {
     "name": "RamblerFest",
@@ -2877,7 +3594,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-04",
+    "end_date": "2026-09-05",
+    "status": "active"
   },
   {
     "name": "Farmington's Bluegrass Weekend Festival Jam",
@@ -2889,7 +3609,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-04",
+    "end_date": "2026-09-05",
+    "status": "active"
   },
   {
     "name": "Delaware Valley Bluegrass Festival",
@@ -2901,7 +3624,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-04",
+    "end_date": "2026-09-06",
+    "status": "active"
   },
   {
     "name": "Earl Scruggs Music Festival",
@@ -2913,7 +3639,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-04",
+    "end_date": "2026-09-06",
+    "status": "active"
   },
   {
     "name": "Metamora Music Festival",
@@ -2925,7 +3654,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-05",
+    "end_date": "2026-09-06",
+    "status": "active"
   },
   {
     "name": "Twin Oaks Fall Bluegrass Festival",
@@ -2937,7 +3669,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-10",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Watermelon Pickers' Fest",
@@ -2949,7 +3684,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-10",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Jerusalem Ridge Bluegrass Festival",
@@ -2961,7 +3699,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-10",
+    "end_date": "2026-09-13",
+    "status": "active"
   },
   {
     "name": "Oldtone Music Festival",
@@ -2973,7 +3714,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-10",
+    "end_date": "2026-09-13",
+    "status": "active"
   },
   {
     "name": "Remington Ryde Reunion Bluegrass Festival",
@@ -2985,7 +3729,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-10",
+    "end_date": "2026-09-13",
+    "status": "active"
   },
   {
     "name": "Payson Fiddle & Food Truck Festival",
@@ -2997,7 +3744,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Backyard Bluegrass Festival",
@@ -3009,7 +3759,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Mountain Song Festival",
@@ -3021,7 +3774,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Walnut Hills Farm Bluegrass Festival",
@@ -3033,7 +3789,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Bluegrass & Chili Festival",
@@ -3045,7 +3804,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Rockbridge Mountain Music & Dance Festival",
@@ -3057,7 +3819,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Bluegrass on the Snake",
@@ -3069,7 +3834,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-13",
+    "status": "active"
   },
   {
     "name": "Silver Bay Mountain Music Festival",
@@ -3081,7 +3849,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-13",
+    "status": "active"
   },
   {
     "name": "Bristol Rhythm & Roots Reunion",
@@ -3093,7 +3864,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-13",
+    "status": "active"
   },
   {
     "name": "Cameron Bluegrass Festival",
@@ -3105,7 +3879,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-13",
+    "status": "active"
   },
   {
     "name": "Poppy Mountain Music Festival",
@@ -3117,7 +3894,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "White Squirrel Bluegrass+ Festival",
@@ -3129,7 +3909,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-12",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Carolina Bible Camp Bluegrass Festival",
@@ -3141,7 +3924,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-12",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Red River Roots Bluegrass & Folk Festival",
@@ -3153,7 +3939,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-12",
+    "end_date": "2026-09-12",
+    "status": "active"
   },
   {
     "name": "Grand Master Fiddle Championship",
@@ -3165,7 +3954,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-12",
+    "end_date": "2026-09-13",
+    "status": "active"
   },
   {
     "name": "East Troy Bluegrass Festival",
@@ -3177,7 +3969,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-12",
+    "end_date": "2026-09-13",
+    "status": "active"
   },
   {
     "name": "AmericanaFest",
@@ -3189,7 +3984,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-15",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Walnut Valley Festival",
@@ -3201,7 +3999,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-16",
+    "end_date": "2026-09-20",
+    "status": "active"
   },
   {
     "name": "Dailey & Vincent Music Fest",
@@ -3213,7 +4014,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-17",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Cumberland River Bluegrass Festival",
@@ -3225,7 +4029,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-17",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Blazin' Bluegrass Festival",
@@ -3237,7 +4044,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-17",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Hoppin' John Old-Time & Bluegrass Fiddlers' Convention",
@@ -3249,7 +4059,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-17",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Mohican Bluegrass Festival",
@@ -3261,7 +4074,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-17",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Skinnyfest Bluegrass Festival",
@@ -3273,7 +4089,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-17",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Dumplin Valley Bluegrass Festival",
@@ -3285,7 +4104,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-17",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Nothin' Fancy Bluegrass Festival",
@@ -3297,7 +4119,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-17",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Berkeley Old Time Music Convention",
@@ -3309,7 +4134,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-17",
+    "end_date": "2026-09-20",
+    "status": "active"
   },
   {
     "name": "Livingston Bluegrass Festival",
@@ -3321,7 +4149,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "9 Mile Bluegrass Festival",
@@ -3333,7 +4164,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Pickin' in the Pines",
@@ -3345,7 +4179,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-20",
+    "status": "active"
   },
   {
     "name": "Two Rivers Bluegrass Festival",
@@ -3357,7 +4194,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-20",
+    "status": "active"
   },
   {
     "name": "Top of the Swan Bluegrass Camp and Jam-bo-ree",
@@ -3369,7 +4209,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-20",
+    "status": "active"
   },
   {
     "name": "Miles City Bluegrass Festival",
@@ -3381,7 +4224,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-20",
+    "status": "active"
   },
   {
     "name": "Tygh Valley Bluegrass Jamboree",
@@ -3393,7 +4239,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-20",
+    "status": "active"
   },
   {
     "name": "George WA Bluegrass Festival",
@@ -3405,7 +4254,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-20",
+    "status": "active"
   },
   {
     "name": "Moorestown Bluegrass Festival",
@@ -3417,7 +4269,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-19",
+    "end_date": "2026-09-19",
+    "status": "active"
   },
   {
     "name": "Annapolis Baygrass Music Festival",
@@ -3429,7 +4284,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-19",
+    "end_date": "2026-09-20",
+    "status": "active"
   },
   {
     "name": "Pickin' in the Rockies",
@@ -3441,7 +4299,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-20",
+    "end_date": "2026-09-20",
+    "status": "active"
   },
   {
     "name": "Upperco Music Festival",
@@ -3453,7 +4314,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-23",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "Uncle Pen Festival",
@@ -3465,7 +4329,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-24",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "First City Music Festival",
@@ -3477,7 +4344,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-24",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "Vine Grove Bluegrass Music Festival",
@@ -3489,7 +4359,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-24",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "Boats & Bluegrass",
@@ -3501,7 +4374,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-24",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "American Mule and Music Festival",
@@ -3513,7 +4389,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-24",
+    "end_date": "2026-09-27",
+    "status": "active"
   },
   {
     "name": "Berlin Fiddlers Convention",
@@ -3525,7 +4404,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-25",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "Rock Castle Folk 'n Bluegrass Fest",
@@ -3537,7 +4419,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-25",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "Townsend Fall Heritage Festival",
@@ -3549,7 +4434,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-25",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "Sisters Folk Festival",
@@ -3561,7 +4449,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-25",
+    "end_date": "2026-09-27",
+    "status": "active"
   },
   {
     "name": "Mountain Heritage Arts & Crafts Festival",
@@ -3573,7 +4464,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-25",
+    "end_date": "2026-09-27",
+    "status": "active"
   },
   {
     "name": "MaupinFest",
@@ -3585,7 +4479,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-26",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "Richmond East Moose Lodge Apple, Cider, Bluegrass Festival",
@@ -3597,7 +4494,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-26",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "Virginia Bluegrass & Country Music Festival",
@@ -3609,7 +4509,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-26",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "Hammons Family Fiddle & Banjo Contests & World Class Jam",
@@ -3621,7 +4524,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-26",
+    "end_date": "2026-09-26",
+    "status": "active"
   },
   {
     "name": "George Portz Traditional Music Festival",
@@ -3633,7 +4539,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-26",
+    "end_date": "2026-09-27",
+    "status": "active"
   },
   {
     "name": "Tennessee Valley Old Time Fiddlers Convention",
@@ -3645,7 +4554,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-09-30",
+    "end_date": "2026-10-03"
   },
   {
     "name": "New Richmond Bluegrass Festival",
@@ -3657,7 +4569,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-02",
+    "end_date": "2026-09-06",
+    "status": "active"
   },
   {
     "name": "Keremeos Country & Bluegrass Jamboree",
@@ -3669,7 +4584,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-04",
+    "end_date": "2026-09-06",
+    "status": "active"
   },
   {
     "name": "Trafaria Bluegrass Festival",
@@ -3681,7 +4599,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-09-11",
+    "end_date": "2026-09-13",
+    "status": "active"
   },
   {
     "name": "Tennessee Valley Old Time Fiddlers Convention",
@@ -3693,7 +4614,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-09-30",
+    "end_date": "2026-10-03"
   },
   {
     "name": "Raleigh Wide Open Bluegrass Festival",
@@ -3705,7 +4629,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-01",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "Ol' Front Porch Music Festival",
@@ -3717,7 +4644,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "Mason-Dixon Bluegrass Festival",
@@ -3729,7 +4659,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "3 Sisters Bluegrass Festival",
@@ -3741,7 +4674,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "Mountain City Fiddlers Convention",
@@ -3753,7 +4689,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "Big Bend Bluegrass Festival",
@@ -3765,7 +4704,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "Huck Finn Jubilee",
@@ -3777,7 +4719,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-04",
+    "status": "active"
   },
   {
     "name": "Hardly Strictly Bluegrass",
@@ -3789,7 +4734,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-04",
+    "status": "active"
   },
   {
     "name": "Mayhaw Music Festival",
@@ -3801,7 +4749,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-03",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "Santa Barbara Old-Time Fiddlers' Festival",
@@ -3813,7 +4764,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-03",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "Bascom Lamar Lunsford Festival",
@@ -3825,7 +4779,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-03",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "Spruce Pine BBQ Festival",
@@ -3837,7 +4794,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-03",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "Mountain Magic in Fall Bluegrass, Antiques & Crafts Festival",
@@ -3849,7 +4809,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-03",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "Broken String Bluegrass Festival",
@@ -3861,7 +4824,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-03",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "BirdFest & Bluegrass Festival",
@@ -3873,7 +4839,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-03",
+    "end_date": "2026-10-03",
+    "status": "active"
   },
   {
     "name": "CBA Fall Campout",
@@ -3885,7 +4854,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-05",
+    "end_date": "2026-10-11",
+    "status": "active"
   },
   {
     "name": "Turkey Track Bluegrass Festival",
@@ -3897,7 +4869,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-07",
+    "end_date": "2026-10-10",
+    "status": "active"
   },
   {
     "name": "Hillberry Harvest Moon Festival",
@@ -3909,7 +4884,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-07",
+    "end_date": "2026-10-11",
+    "status": "active"
   },
   {
     "name": "Henderson Bluegrass Jamboree",
@@ -3921,7 +4899,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-08",
+    "end_date": "2026-10-10",
+    "status": "active"
   },
   {
     "name": "Oklahoma International Bluegrass Festival",
@@ -3933,7 +4914,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-08",
+    "end_date": "2026-10-10",
+    "status": "active"
   },
   {
     "name": "Suwannee Roots Revival",
@@ -3945,7 +4929,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-08",
+    "end_date": "2026-10-11",
+    "status": "active"
   },
   {
     "name": "Blue Highway Fest",
@@ -3957,7 +4944,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-08",
+    "end_date": "2026-10-11",
+    "status": "active"
   },
   {
     "name": "Elliott County Fiddlers Convention",
@@ -3969,7 +4959,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-09",
+    "end_date": "2026-10-10",
+    "status": "active"
   },
   {
     "name": "FreeFall Bluegrass Festival",
@@ -3981,7 +4974,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-09",
+    "end_date": "2026-10-11",
+    "status": "active"
   },
   {
     "name": "Cave Fest",
@@ -3993,7 +4989,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-09",
+    "end_date": "2026-10-11",
+    "status": "active"
   },
   {
     "name": "Richmond Folk Festival",
@@ -4005,7 +5004,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-09",
+    "end_date": "2026-10-11",
+    "status": "active"
   },
   {
     "name": "The Ramble Festival",
@@ -4017,7 +5019,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-09",
+    "end_date": "2026-10-12",
+    "status": "active"
   },
   {
     "name": "Moorefields Bluegrass Festival",
@@ -4029,7 +5034,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-10",
+    "end_date": "2026-10-10",
+    "status": "active"
   },
   {
     "name": "Lester Flatt Celebration",
@@ -4041,7 +5049,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-10",
+    "end_date": "2026-10-10",
+    "status": "active"
   },
   {
     "name": "Nelson FFA Bluegrass Festival",
@@ -4053,7 +5064,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-11",
+    "end_date": "2026-10-11",
+    "status": "active"
   },
   {
     "name": "Frost on the Pumpkin Bluegrass Festival and Jam",
@@ -4065,7 +5079,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-12",
+    "end_date": "2026-10-18",
+    "status": "active"
   },
   {
     "name": "Outer Banks Bluegrass Island Festival",
@@ -4077,7 +5094,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-14",
+    "end_date": "2026-10-17",
+    "status": "active"
   },
   {
     "name": "Headin' Home Fest – Fall",
@@ -4089,7 +5109,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-14",
+    "end_date": "2026-10-18",
+    "status": "active"
   },
   {
     "name": "Talladega Bluegrass & Fingerstyle Guitar Festival",
@@ -4101,7 +5124,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-15",
+    "end_date": "2026-10-17",
+    "status": "active"
   },
   {
     "name": "Holiday Hills Music Park Fall Bluegrass Festival",
@@ -4113,7 +5139,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-15",
+    "end_date": "2026-10-17",
+    "status": "active"
   },
   {
     "name": "Fall Strawberry Music Festival",
@@ -4125,7 +5154,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-15",
+    "end_date": "2026-10-18",
+    "status": "active"
   },
   {
     "name": "Old Time Music Ozark Heritage Festival",
@@ -4137,7 +5169,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-16",
+    "end_date": "2026-10-17",
+    "status": "active"
   },
   {
     "name": "IBMA World of Bluegrass",
@@ -4149,7 +5184,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-20",
+    "end_date": "2026-10-24",
+    "status": "active"
   },
   {
     "name": "Salmon Lake Park Bluegrass Festival",
@@ -4161,7 +5199,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-22",
+    "end_date": "2026-10-24",
+    "status": "active"
   },
   {
     "name": "Smoky Mountains Bluegrass Festival",
@@ -4173,7 +5214,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-24",
+    "end_date": "2026-10-24",
+    "status": "active"
   },
   {
     "name": "Blue Ridge Folklife Festival",
@@ -4185,7 +5229,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-24",
+    "end_date": "2026-10-24",
+    "status": "active"
   },
   {
     "name": "Stapleton Bluegrass Festival",
@@ -4197,7 +5244,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-31",
+    "end_date": "2026-10-31",
+    "status": "active"
   },
   {
     "name": "Sultana Downrigging Tall Ship and Bluegrass Festival",
@@ -4209,7 +5259,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "status": "active",
+    "start_date": "2026-10-31",
+    "end_date": "2026-11-01"
   },
   {
     "name": "Dorrigo Folk & Bluegrass Festival",
@@ -4221,7 +5274,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-23",
+    "end_date": "2026-10-25",
+    "status": "active"
   },
   {
     "name": "Fleurieu Folk Festival",
@@ -4233,7 +5289,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-09",
+    "end_date": "2026-10-11",
+    "status": "active"
   },
   {
     "name": "Sulzbach Bluegrass Festival",
@@ -4245,7 +5304,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-17",
+    "end_date": "2026-10-17",
+    "status": "active"
   },
   {
     "name": "Gifu Mountain Time Festival",
@@ -4257,7 +5319,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-10-17",
+    "end_date": "2026-10-18",
+    "status": "active"
   },
   {
     "name": "CBA South State 48 Bluegrass by the Sea",
@@ -4269,7 +5334,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-05",
+    "end_date": "2026-11-08",
+    "status": "active"
   },
   {
     "name": "Minnesota Bluegrass Fall Jam",
@@ -4281,7 +5349,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-05",
+    "end_date": "2026-11-08",
+    "status": "active"
   },
   {
     "name": "Bluegrass Sampler",
@@ -4293,7 +5364,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-06",
+    "end_date": "2026-11-07",
+    "status": "active"
   },
   {
     "name": "Mountain View Bluegrass Festival",
@@ -4305,7 +5379,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-12",
+    "end_date": "2026-11-14",
+    "status": "active"
   },
   {
     "name": "Fall Palatka Bluegrass Festival",
@@ -4317,7 +5394,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-12",
+    "end_date": "2026-11-14",
+    "status": "active"
   },
   {
     "name": "Industrial Strength Bluegrass Festival",
@@ -4329,7 +5409,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-12",
+    "end_date": "2026-11-14",
+    "status": "active"
   },
   {
     "name": "Wickenburg Bluegrass Festival",
@@ -4341,7 +5424,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-13",
+    "end_date": "2026-11-15",
+    "status": "active"
   },
   {
     "name": "Grassfed Bluegrass Festival",
@@ -4353,7 +5439,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-14",
+    "end_date": "2026-11-14",
+    "status": "active"
   },
   {
     "name": "Withlacoochee Bluegrass Festival",
@@ -4365,7 +5454,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-19",
+    "end_date": "2026-11-21",
+    "status": "active"
   },
   {
     "name": "Bluegrass Christmas in the Smokies Music Festival",
@@ -4377,7 +5469,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-19",
+    "end_date": "2026-11-21",
+    "status": "active"
   },
   {
     "name": "Thanksgiving Bluegrass Festival",
@@ -4389,7 +5484,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-26",
+    "end_date": "2026-11-28",
+    "status": "active"
   },
   {
     "name": "Mountaingrass Bluegrass and Old Time Music Festival",
@@ -4401,7 +5499,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-13",
+    "end_date": "2026-11-15",
+    "status": "active"
   },
   {
     "name": "Wirrina Bluegrass & Acoustic Roots Festival",
@@ -4413,7 +5514,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-27",
+    "end_date": "2026-11-29",
+    "status": "active"
   },
   {
     "name": "Last Chance Saloon Bluegrass Day",
@@ -4425,7 +5529,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-22",
+    "end_date": "2026-11-22",
+    "status": "active"
   },
   {
     "name": "Scots Fiddle Festival",
@@ -4437,7 +5544,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-20",
+    "end_date": "2026-11-22",
+    "status": "active"
   },
   {
     "name": "Al Ras Bluegrass and Old Time Music Festival",
@@ -4449,7 +5559,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-11-05",
+    "end_date": "2026-11-08",
+    "status": "active"
   },
   {
     "name": "Balsam Range Art of Music Festival",
@@ -4461,7 +5574,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-12-03",
+    "end_date": "2026-12-05",
+    "status": "active"
   },
   {
     "name": "Honeymoon Island Bluegrass Festival",
@@ -4473,7 +5589,10 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-12-05",
+    "end_date": "2026-12-05",
+    "status": "active"
   },
   {
     "name": "Strings & Sol",
@@ -4485,6 +5604,9 @@
     "genre": "Bluegrass",
     "website": "",
     "source": "bluegrasscountry.org",
-    "year": "2026"
+    "year": "2026",
+    "start_date": "2026-12-09",
+    "end_date": "2026-12-13",
+    "status": "active"
   }
 ]

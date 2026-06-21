@@ -5,8 +5,10 @@
     "country": "Australia",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://www.womadelaide.com.au/",
+    "source": "worldmusiccentral.org",
+    "city": "Adelaide",
+    "wikidata_qid": "Q7953896"
   },
   {
     "name": "Glatt & Verkehrt",
@@ -14,8 +16,10 @@
     "country": "Austria",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://www.cimarroncolombia.com",
+    "source": "worldmusiccentral.org",
+    "city": "Krems a.d. Donau",
+    "wikidata_qid": "Q50398989"
   },
   {
     "name": "Festival Couleur Cafe",
@@ -23,8 +27,10 @@
     "country": "Belgium",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://www.couleurcafe.be/",
+    "source": "worldmusiccentral.org",
+    "city": "Brussels",
+    "wikidata_qid": "Q1946581"
   },
   {
     "name": "Gooikoorts",
@@ -32,8 +38,10 @@
     "country": "Belgium",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://www.stornoway.eu",
+    "source": "worldmusiccentral.org",
+    "city": "Gooik",
+    "wikidata_qid": "Q956521"
   },
   {
     "name": "Sfinks Mundial Festival",
@@ -41,8 +49,10 @@
     "country": "Belgium",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://www.sfinks.be",
+    "source": "worldmusiccentral.org",
+    "city": "Boechout",
+    "wikidata_qid": "Q3938019"
   },
   {
     "name": "Celtic Colours International Festival",
@@ -50,8 +60,10 @@
     "country": "Canada",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://celticcolours.com",
+    "source": "worldmusiccentral.org",
+    "city": "Cape Breton",
+    "wikidata_qid": "Q17086459"
   },
   {
     "name": "Mushtari Begum Festival of Indian Classical Music and Dance",
@@ -60,7 +72,9 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "New Westminster",
+    "wikidata_qid": "Q6942076"
   },
   {
     "name": "Vancouver Folk Music Festival",
@@ -68,8 +82,12 @@
     "country": "Canada",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://thefestival.bc.ca/",
+    "source": "worldmusiccentral.org",
+    "city": "Vancouver",
+    "wikidata_qid": "Q1292324",
+    "lat": 49.272,
+    "lng": -123.192
   },
   {
     "name": "World Music Shanghai",
@@ -77,8 +95,10 @@
     "country": "China",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://shanghai.gov.cn",
+    "source": "worldmusiccentral.org",
+    "city": "Shanghai",
+    "wikidata_qid": "Q8686"
   },
   {
     "name": "Havana World Music",
@@ -87,7 +107,8 @@
     "description": "Annual festival held in Cuba in March; Program Director: Eme Alfonso",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Cuba"
   },
   {
     "name": "Ritmos del Mundo Festival",
@@ -96,7 +117,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Bogotá"
   },
   {
     "name": "Cyprus Rialto World Music Festival",
@@ -105,7 +127,8 @@
     "description": "Annual festival focused primarily on the music of the Mediterranean and Middle Eastern countries. Held every July.",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Cyprus"
   },
   {
     "name": "Colours of Ostrava",
@@ -113,8 +136,12 @@
     "country": "Czech Republic",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://colours.cz",
+    "source": "worldmusiccentral.org",
+    "city": "Ostrava",
+    "wikidata_qid": "Q3505136",
+    "lat": 49.830555555555556,
+    "lng": 18.3
   },
   {
     "name": "Viljandi Folk Music Festival",
@@ -122,8 +149,12 @@
     "country": "Estonia",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://www.viljandifolk.ee/",
+    "source": "worldmusiccentral.org",
+    "city": "Viljandi",
+    "wikidata_qid": "Q2524769",
+    "lat": 58.35912222,
+    "lng": 25.59532222
   },
   {
     "name": "Etnosoi!",
@@ -132,7 +163,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Helsinki"
   },
   {
     "name": "Haapavesi Folk Festival",
@@ -140,8 +172,10 @@
     "country": "Finland",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://haapavesi.fi/",
+    "source": "worldmusiccentral.org",
+    "city": "Haapavesi",
+    "wikidata_qid": "Q819387"
   },
   {
     "name": "Kaustinen Folk Music Festival",
@@ -149,8 +183,12 @@
     "country": "Finland",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://kaustinen.net/",
+    "source": "worldmusiccentral.org",
+    "city": "Kaustinen",
+    "wikidata_qid": "Q4349755",
+    "lat": 63.546111111111,
+    "lng": 23.692777777778
   },
   {
     "name": "Maailma kylassa (World Village Festival)",
@@ -158,8 +196,10 @@
     "country": "Finland",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://www.maailmakylassa.fi/",
+    "source": "worldmusiccentral.org",
+    "city": "Helsinki",
+    "wikidata_qid": "Q8036405"
   },
   {
     "name": "Africolor",
@@ -168,7 +208,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Paris"
   },
   {
     "name": "Festival Interceltique de Lorient",
@@ -176,8 +217,12 @@
     "country": "France",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://www.festival-interceltique.bzh",
+    "source": "worldmusiccentral.org",
+    "city": "Lorient",
+    "wikidata_qid": "Q2322517",
+    "lat": 47.7456,
+    "lng": -3.36128
   },
   {
     "name": "Fiesta des Suds",
@@ -186,7 +231,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Marseilles"
   },
   {
     "name": "Les Nuits Atypiques",
@@ -195,7 +241,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Langon"
   },
   {
     "name": "Les Suds a Arles",
@@ -204,7 +251,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Arles"
   },
   {
     "name": "Musiques Metisses",
@@ -212,8 +260,10 @@
     "country": "France",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://www.musiques-metisses.com",
+    "source": "worldmusiccentral.org",
+    "city": "Angoulême",
+    "wikidata_qid": "Q3328795"
   },
   {
     "name": "International Africa Festival",
@@ -222,7 +272,9 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Würzburg",
+    "wikidata_qid": "Q134590358"
   },
   {
     "name": "Masala Welt-Beat Festival",
@@ -231,7 +283,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Hannover"
   },
   {
     "name": "Rudolstadt Festival",
@@ -239,8 +292,10 @@
     "country": "Germany",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://www.tff-rudolstadt.de/",
+    "source": "worldmusiccentral.org",
+    "city": "Rudolstadt",
+    "wikidata_qid": "Q2384158"
   },
   {
     "name": "Stimmen",
@@ -249,7 +304,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Lörrach"
   },
   {
     "name": "Jeonju Sori Festival",
@@ -257,8 +313,10 @@
     "country": "Korea",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://www.jeonju.go.kr/open_content/en/main_page.jsp",
+    "source": "worldmusiccentral.org",
+    "city": "Jeonju",
+    "wikidata_qid": "Q42140"
   },
   {
     "name": "Ulsan World Music Festival",
@@ -267,7 +325,9 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Ulsan",
+    "wikidata_qid": "Q113486023"
   },
   {
     "name": "Rainforest World Music Festival",
@@ -275,8 +335,10 @@
     "country": "Malaysia",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://rainforestmusic-borneo.com",
+    "source": "worldmusiccentral.org",
+    "city": "Sarawak",
+    "wikidata_qid": "Q7284881"
   },
   {
     "name": "Festival on the Niger",
@@ -285,7 +347,9 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Segu",
+    "wikidata_qid": "Q1032"
   },
   {
     "name": "WOMAD Mexico",
@@ -293,8 +357,9 @@
     "country": "Mexico",
     "description": "The first WOMAD Mexico will take place in Morelia in March 2020.",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://womad.org",
+    "source": "worldmusiccentral.org",
+    "city": "Morelia"
   },
   {
     "name": "Fes Festival of World Sacred Music",
@@ -302,8 +367,10 @@
     "country": "Morocco",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://fesfestival.com",
+    "source": "worldmusiccentral.org",
+    "city": "Fez",
+    "wikidata_qid": "Q5137610"
   },
   {
     "name": "Amsterdam Roots Festival",
@@ -311,8 +378,9 @@
     "country": "Netherlands",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://www.amsterdamroots.nl",
+    "source": "worldmusiccentral.org",
+    "city": "Amsterdam"
   },
   {
     "name": "International Gypsy Festival",
@@ -321,7 +389,8 @@
     "description": "A festival dedicated to the art and culture of the Roma, Sinti and Gitano communities.",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Tilburg"
   },
   {
     "name": "Houtfestival",
@@ -330,7 +399,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Haarlem"
   },
   {
     "name": "Festival Musica Mundo",
@@ -339,7 +409,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Amersfoort"
   },
   {
     "name": "Stichting Music Meeting",
@@ -348,7 +419,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Nijmegen"
   },
   {
     "name": "Førde Internasjonale Folkemusikkfestival",
@@ -356,8 +428,10 @@
     "country": "Norway",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://www.fordefestival.no",
+    "source": "worldmusiccentral.org",
+    "city": "Førde",
+    "wikidata_qid": "Q1480357"
   },
   {
     "name": "Oslo World Music Festival",
@@ -365,8 +439,10 @@
     "country": "Norway",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://osloworld.no",
+    "source": "worldmusiccentral.org",
+    "city": "Oslo",
+    "wikidata_qid": "Q11994260"
   },
   {
     "name": "Festival Internacional de Música de Alturas",
@@ -374,8 +450,10 @@
     "country": "Peru",
     "description": "Highlands music festival",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://rosalia.com",
+    "source": "worldmusiccentral.org",
+    "city": "Lima",
+    "wikidata_qid": "Q28843759"
   },
   {
     "name": "Festival Intermunicipal de músicas de mundo (FESTIM)",
@@ -384,7 +462,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Águeda"
   },
   {
     "name": "Festival Med",
@@ -392,8 +471,10 @@
     "country": "Portugal",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://www.annecy.org/",
+    "source": "worldmusiccentral.org",
+    "city": "Loulé",
+    "wikidata_qid": "Q1408677"
   },
   {
     "name": "Méra World Music Festival",
@@ -402,7 +483,9 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Romania",
+    "wikidata_qid": "Q205049"
   },
   {
     "name": "Wild Mint",
@@ -411,7 +494,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Russia"
   },
   {
     "name": "Kamwa",
@@ -420,7 +504,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Russia"
   },
   {
     "name": "Taibola",
@@ -429,7 +514,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Russia"
   },
   {
     "name": "Mir Sibiri",
@@ -438,7 +524,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Russia"
   },
   {
     "name": "Vot Etno",
@@ -447,7 +534,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Russia"
   },
   {
     "name": "Folk Summer Fest",
@@ -456,7 +544,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Russia"
   },
   {
     "name": "World Music Festival Bratislava",
@@ -465,7 +554,8 @@
     "description": "",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Bratislava"
   },
   {
     "name": "Cantos Na Maré",
@@ -474,7 +564,8 @@
     "description": "Galician and lusophone music festival",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Pontevedra"
   },
   {
     "name": "Festival de Ortigueira",
@@ -482,8 +573,9 @@
     "country": "Spain",
     "description": "Celtic and world music festival",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://festivaldeortigueira.com",
+    "source": "worldmusiccentral.org",
+    "city": "Ortigueira"
   },
   {
     "name": "Festival Intercéltico do Morrazo",
@@ -492,7 +584,8 @@
     "description": "Celtic music festival",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Moaña"
   },
   {
     "name": "La Mar de Músicas",
@@ -500,8 +593,9 @@
     "country": "Spain",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://lamardemusicas.com",
+    "source": "worldmusiccentral.org",
+    "city": "Cartagena"
   },
   {
     "name": "Etnosur",
@@ -509,8 +603,9 @@
     "country": "Spain",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://etnosur.com",
+    "source": "worldmusiccentral.org",
+    "city": "Alcalá la Real"
   },
   {
     "name": "Parapanda Folk",
@@ -519,7 +614,8 @@
     "description": "Annual festival featuring contemporary folk music bands from Spain.",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Illora"
   },
   {
     "name": "Pirineos Sur",
@@ -527,8 +623,9 @@
     "country": "Spain",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://pirineos-sur.es",
+    "source": "worldmusiccentral.org",
+    "city": "Lanuza and Sallent de Gállego"
   },
   {
     "name": "Suma Flamenca",
@@ -536,8 +633,9 @@
     "country": "Spain",
     "description": "One of the largest flamenco festivals in Spain featuring vocalists, guitarists, fusionists and dance",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://www.madrid.es/flamenca",
+    "source": "worldmusiccentral.org",
+    "city": "Madrid"
   },
   {
     "name": "Los Veranos de la Villa",
@@ -546,7 +644,8 @@
     "description": "A summer series with world music content.",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Madrid"
   },
   {
     "name": "WOMAD Cáceres",
@@ -554,8 +653,9 @@
     "country": "Spain",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://womad.es",
+    "source": "worldmusiccentral.org",
+    "city": "Cáceres"
   },
   {
     "name": "Re:ORIENT",
@@ -564,7 +664,8 @@
     "description": "Program Director: Cecilia Hörnell-Sunar; Box 4215; SE-102 65 Stockholm, Sweden",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Stockholm"
   },
   {
     "name": "Sauti za Busara",
@@ -572,8 +673,10 @@
     "country": "Tanzania",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://busaramusic.org/",
+    "source": "worldmusiccentral.org",
+    "city": "Zanzibar",
+    "wikidata_qid": "Q7427625"
   },
   {
     "name": "Africa Oye",
@@ -581,8 +684,9 @@
     "country": "UK",
     "description": "Annual African and world music festival.",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://africaoye.com",
+    "source": "worldmusiccentral.org",
+    "city": "Liverpool"
   },
   {
     "name": "Celtic Connections",
@@ -590,8 +694,10 @@
     "country": "UK",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://www.celticconnections.com",
+    "source": "worldmusiccentral.org",
+    "city": "Glasgow",
+    "wikidata_qid": "Q3753881"
   },
   {
     "name": "Knockengorroch Festival",
@@ -600,7 +706,8 @@
     "description": "Traditional folk, electronic and world music.",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Carsphairn"
   },
   {
     "name": "London International Festival of Exploratory Music (LIFEM)",
@@ -608,8 +715,10 @@
     "country": "UK",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "http://lifem.org.uk/",
+    "source": "worldmusiccentral.org",
+    "city": "London",
+    "wikidata_qid": "Q6670505"
   },
   {
     "name": "Musicport Festival",
@@ -617,8 +726,9 @@
     "country": "UK",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://musicportfestival.com",
+    "source": "worldmusiccentral.org",
+    "city": "Whitby"
   },
   {
     "name": "WOMAD Charlton Park",
@@ -626,8 +736,10 @@
     "country": "UK",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://www.womad.co.uk/",
+    "source": "worldmusiccentral.org",
+    "city": "Charlton Park",
+    "wikidata_qid": "Q7953894"
   },
   {
     "name": "BU Global Music Festival",
@@ -636,7 +748,8 @@
     "description": "A new world music festival developed in 2018 by Boston University.",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Boston"
   },
   {
     "name": "California WorldFest",
@@ -644,8 +757,9 @@
     "country": "USA",
     "description": "",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://worldfest.org",
+    "source": "worldmusiccentral.org",
+    "city": "Grass Valley"
   },
   {
     "name": "globalFEST",
@@ -653,8 +767,9 @@
     "country": "USA",
     "description": "International world music festival and showcase.",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://www.globalfest.org",
+    "source": "worldmusiccentral.org",
+    "city": "New York City"
   },
   {
     "name": "Globalquerque!",
@@ -662,8 +777,10 @@
     "country": "USA",
     "description": "Annual world music festival in New Mexico.",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://globalquerque.org",
+    "source": "worldmusiccentral.org",
+    "city": "Albuquerque",
+    "wikidata_qid": "Q8076360"
   },
   {
     "name": "Lotus World Music and Arts Festival",
@@ -671,8 +788,9 @@
     "country": "USA",
     "description": "Annual world music festival.",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://lotusfest.org",
+    "source": "worldmusiccentral.org",
+    "city": "Bloomington"
   },
   {
     "name": "Madison World Music Festival",
@@ -681,7 +799,8 @@
     "description": "Annual world music festival.",
     "genre": "World Music",
     "website": "",
-    "source": "worldmusiccentral.org"
+    "source": "worldmusiccentral.org",
+    "city": "Madison"
   },
   {
     "name": "Sierra Nevada World Music Festival",
@@ -689,8 +808,10 @@
     "country": "USA",
     "description": "3-day reggae festival with some non-reggae world music content.",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://snwmf.com",
+    "source": "worldmusiccentral.org",
+    "city": "Mendocino County Fairgrounds",
+    "wikidata_qid": "Q7511528"
   },
   {
     "name": "World Music Festival Chicago",
@@ -698,7 +819,9 @@
     "country": "USA",
     "description": "Annual world music festival.",
     "genre": "World Music",
-    "website": "",
-    "source": "worldmusiccentral.org"
+    "website": "https://worldmusicfestivalchicago.org",
+    "source": "worldmusiccentral.org",
+    "city": "Chicago",
+    "wikidata_qid": "Q5095846"
   }
 ]

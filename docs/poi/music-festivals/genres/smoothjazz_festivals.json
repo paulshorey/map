@@ -96,7 +96,10 @@
     "country": "USA",
     "dates": "September",
     "website": "https://womeninjazz.org/event/festival2026/",
-    "source": "smoothjazz.com"
+    "source": "smoothjazz.com",
+    "start_date": "2026-09-05",
+    "end_date": "2026-09-05",
+    "venue": "Austin PBS"
   },
   {
     "name": "Barcelona Int Jazz Festival",
@@ -321,7 +324,10 @@
     "country": "USA",
     "dates": "June",
     "website": "http://www.creeksidebluesandjazz.com",
-    "source": "smoothjazz.com"
+    "source": "smoothjazz.com",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-21",
+    "venue": "Gahanna Ohio"
   },
   {
     "name": "Cully Jazz Festival",
@@ -591,7 +597,10 @@
     "country": "Indonesia",
     "dates": "May",
     "website": "http://www.javajazzfestival.com/",
-    "source": "smoothjazz.com"
+    "source": "smoothjazz.com",
+    "start_date": "2026-05-29",
+    "end_date": "2026-05-31",
+    "venue": "NICE PIK2"
   },
   {
     "name": "Jazz & Jackie : A Musical Salute to Jackie Robinson",
@@ -600,7 +609,10 @@
     "country": "USA",
     "dates": "May",
     "website": "https://www.nlbm.com/events/jazz-jackie-a-musical-salute-to-jackie-robinson/",
-    "source": "smoothjazz.com"
+    "source": "smoothjazz.com",
+    "start_date": "2025-05-24",
+    "end_date": "2025-05-24",
+    "venue": "Gem Theater"
   },
   {
     "name": "Jazz & Rib Fest",
@@ -654,7 +666,10 @@
     "country": "USA",
     "dates": "April",
     "website": "https://www.pompanobeacharts.org/events/jazz-fest",
-    "source": "smoothjazz.com"
+    "source": "smoothjazz.com",
+    "start_date": "2026-04-18",
+    "end_date": "2026-04-19",
+    "venue": "Pompano Beach Pier"
   },
   {
     "name": "Jazz In The Country",
@@ -825,7 +840,8 @@
     "country": "Arizona",
     "dates": "March",
     "website": "https://www.eventbrite.com/e/maricopa-desert-music-arts-festival-2026-presented-by-aarp-arizona-tickets-1974940987658",
-    "source": "smoothjazz.com"
+    "source": "smoothjazz.com",
+    "venue": "Maricopa High School"
   },
   {
     "name": "Martha's Vineyard Jazz & Blues Summerfest",
@@ -1176,7 +1192,10 @@
     "country": "USA",
     "dates": "June",
     "website": "https://www.eventbrite.com/e/stocktons-waterfront-smooth-jazz-fete-tickets-1759132756429",
-    "source": "smoothjazz.com"
+    "source": "smoothjazz.com",
+    "start_date": "2026-06-20",
+    "end_date": "2026-06-21",
+    "venue": "Weber Point Events Center"
   },
   {
     "name": "Summer Concert Series",
@@ -1338,7 +1357,10 @@
     "country": "USA",
     "dates": "January",
     "website": "http://tucsonjazzfestival.org",
-    "source": "smoothjazz.com"
+    "source": "smoothjazz.com",
+    "start_date": "2026-09-20",
+    "end_date": "2026-09-20",
+    "venue": "Fox Tucson Theatre"
   },
   {
     "name": "Vail Jazz Series",
@@ -1374,7 +1396,10 @@
     "country": "USA",
     "dates": "August",
     "website": "http://vanportjazzfestival.com",
-    "source": "smoothjazz.com"
+    "source": "smoothjazz.com",
+    "start_date": "2026-08-07",
+    "end_date": "2026-08-08",
+    "venue": "University of Portland"
   },
   {
     "name": "Vienna Smooth Jazz Festival",
