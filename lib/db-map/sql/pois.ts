@@ -10,6 +10,12 @@ export interface NewPoi {
   photo_url?: string | null;
   lng: number;
   lat: number;
+  /** Event start (ISO 8601). NULL/omitted for permanent (non-event) POIs. */
+  starts_at?: string | null;
+  /** Event end (ISO 8601). NULL/omitted = single-instant or unknown end. */
+  ends_at?: string | null;
+  /** How precisely starts_at is known: 'datetime' | 'day' | 'month' | 'year'. */
+  date_precision?: string | null;
 }
 
 export interface InsertPoisOptions {
@@ -83,7 +89,32 @@ ON CONFLICT (lng, lat) DO UPDATE SET
   address = EXCLUDED.address,
   website = EXCLUDED.website,
   hours = EXCLUDED.hours,
-  photo_url = EXCLUDED.photo_url`;
+  photo_url = EXCLUDED.photo_url,
+  starts_at = EXCLUDED.starts_at,
+  ends_at = EXCLUDED.ends_at,
+  date_precision = EXCLUDED.date_precision`;
+
+const INSERT_COLUMNS =
+  "name, category, description, address, website, hours, photo_url, lng, lat, starts_at, ends_at, date_precision";
+
+function poiParams(poi: NewPoi): (string | number | null)[] {
+  return [
+    poi.name,
+    poi.category,
+    poi.description ?? null,
+    poi.address ?? null,
+    poi.website ?? null,
+    poi.hours ?? null,
+    poi.photo_url ?? null,
+    poi.lng,
+    poi.lat,
+    poi.starts_at ?? null,
+    poi.ends_at ?? null,
+    poi.date_precision ?? null,
+  ];
+}
+
+const COLS_PER_ROW = 12;
 
 async function insertBatch(db: Pool, batch: NewPoi[]): Promise<number> {
   const values: string[] = [];
@@ -91,25 +122,17 @@ async function insertBatch(db: Pool, batch: NewPoi[]): Promise<number> {
   let idx = 1;
 
   for (const poi of batch) {
-    values.push(
-      `($${idx}, $${idx + 1}, $${idx + 2}, $${idx + 3}, $${idx + 4}, $${idx + 5}, $${idx + 6}, $${idx + 7}, $${idx + 8})`,
-    );
-    params.push(
-      poi.name,
-      poi.category,
-      poi.description ?? null,
-      poi.address ?? null,
-      poi.website ?? null,
-      poi.hours ?? null,
-      poi.photo_url ?? null,
-      poi.lng,
-      poi.lat,
-    );
-    idx += 9;
+    const placeholders = Array.from(
+      { length: COLS_PER_ROW },
+      (_, k) => `$${idx + k}`,
+    ).join(", ");
+    values.push(`(${placeholders})`);
+    params.push(...poiParams(poi));
+    idx += COLS_PER_ROW;
   }
 
   const result = await db.query(
-    `INSERT INTO pois (name, category, description, address, website, hours, photo_url, lng, lat)
+    `INSERT INTO pois (${INSERT_COLUMNS})
      VALUES ${values.join(", ")}${UPSERT_SUFFIX}`,
     params,
   );
@@ -117,20 +140,14 @@ async function insertBatch(db: Pool, batch: NewPoi[]): Promise<number> {
 }
 
 async function insertSingle(db: Pool, poi: NewPoi): Promise<void> {
+  const placeholders = Array.from(
+    { length: COLS_PER_ROW },
+    (_, k) => `$${k + 1}`,
+  ).join(", ");
   await db.query(
-    `INSERT INTO pois (name, category, description, address, website, hours, photo_url, lng, lat)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)${UPSERT_SUFFIX}`,
-    [
-      poi.name,
-      poi.category,
-      poi.description ?? null,
-      poi.address ?? null,
-      poi.website ?? null,
-      poi.hours ?? null,
-      poi.photo_url ?? null,
-      poi.lng,
-      poi.lat,
-    ],
+    `INSERT INTO pois (${INSERT_COLUMNS})
+     VALUES (${placeholders})${UPSERT_SUFFIX}`,
+    poiParams(poi),
   );
 }
 
@@ -142,13 +159,32 @@ export interface ListPoisInBboxParams {
   category: string | null;
   limit: number;
   isWorldView: boolean;
+  /** Optional event-date window (ISO 8601). When both are set, events are restricted to
+   *  those overlapping [from, to]; permanent POIs (starts_at IS NULL) are always included. */
+  from?: string | null;
+  to?: string | null;
 }
+
+// Shared GeoJSON feature properties — keep the world-view and bbox queries in sync.
+const FEATURE_PROPERTIES = `jsonb_build_object(
+  'id', id, 'name', name, 'category', category, 'photo_url', photo_url,
+  'starts_at', starts_at, 'ends_at', ends_at, 'date_precision', date_precision
+)`;
+
+// Date-window predicate: no-op unless both bounds are provided; permanent POIs always pass.
+const DATE_FILTER = (from: string, to: string) => `(
+  ${from}::timestamptz IS NULL OR ${to}::timestamptz IS NULL
+  OR starts_at IS NULL
+  OR event_range && tstzrange(${from}::timestamptz, ${to}::timestamptz, '[]')
+)`;
 
 export async function listPoisGeoJson(
   db: Pool,
   params: ListPoisInBboxParams,
 ): Promise<unknown> {
   const { west, south, east, north, category, limit, isWorldView } = params;
+  const from = params.from ?? null;
+  const to = params.to ?? null;
 
   if (isWorldView) {
     const { rows } = await db.query(
@@ -165,15 +201,14 @@ export async function listPoisGeoJson(
             'type', 'Point',
             'coordinates', jsonb_build_array(lng, lat)
           ),
-          'properties', jsonb_build_object(
-            'id', id, 'name', name, 'category', category, 'photo_url', photo_url
-          )
+          'properties', ${FEATURE_PROPERTIES}
         ) AS feature
         FROM pois
         WHERE ($1::text IS NULL OR category = $1)
+          AND ${DATE_FILTER("$3", "$4")}
         LIMIT $2
       ) sub`,
-      [category, limit],
+      [category, limit, from, to],
     );
     return rows[0]?.geojson ?? { type: "FeatureCollection", features: [] };
   }
@@ -192,16 +227,15 @@ export async function listPoisGeoJson(
           'type', 'Point',
           'coordinates', jsonb_build_array(lng, lat)
         ),
-        'properties', jsonb_build_object(
-          'id', id, 'name', name, 'category', category, 'photo_url', photo_url
-        )
+        'properties', ${FEATURE_PROPERTIES}
       ) AS feature
       FROM pois
       WHERE lng >= $1 AND lat >= $2 AND lng <= $3 AND lat <= $4
         AND ($5::text IS NULL OR category = $5)
+        AND ${DATE_FILTER("$7", "$8")}
       LIMIT $6
     ) sub`,
-    [west, south, east, north, category, limit],
+    [west, south, east, north, category, limit, from, to],
   );
 
   return rows[0]?.geojson ?? { type: "FeatureCollection", features: [] };
@@ -217,7 +251,13 @@ export async function listPoiCategories(db: Pool): Promise<string[]> {
 export async function getPoiById(db: Pool, id: string) {
   const { rows } = await db.query(
     `SELECT id, name, category, description, address, website, hours, photo_url,
-            lng, lat,
+            lng, lat, starts_at, ends_at, date_precision,
+            CASE
+              WHEN starts_at IS NULL THEN NULL
+              WHEN starts_at > now() THEN 'upcoming'
+              WHEN now() <= COALESCE(ends_at, starts_at) THEN 'ongoing'
+              ELSE 'past'
+            END AS status,
             jsonb_build_object('type', 'Point', 'coordinates', jsonb_build_array(lng, lat)) AS geometry
      FROM pois WHERE id = $1`,
     [id],

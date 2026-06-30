@@ -47,7 +47,16 @@ CREATE TABLE public.pois (
     hours text,
     lng double precision NOT NULL,
     lat double precision NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    starts_at timestamp with time zone,
+    ends_at timestamp with time zone,
+    date_precision text,
+    event_range tstzrange GENERATED ALWAYS AS (
+CASE
+    WHEN (starts_at IS NULL) THEN NULL::tstzrange
+    ELSE tstzrange(starts_at, COALESCE(ends_at, starts_at), '[]'::text)
+END) STORED,
+    CONSTRAINT pois_date_precision_check CHECK ((date_precision = ANY (ARRAY['datetime'::text, 'day'::text, 'month'::text, 'year'::text])))
 );
 
 
@@ -116,6 +125,20 @@ ALTER TABLE ONLY public.users
 --
 
 CREATE INDEX pois_category_idx ON public.pois USING btree (category);
+
+
+--
+-- Name: pois_event_range_gix; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX pois_event_range_gix ON public.pois USING gist (event_range);
+
+
+--
+-- Name: pois_starts_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX pois_starts_idx ON public.pois USING btree (starts_at);
 
 
 --

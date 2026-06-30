@@ -3,6 +3,9 @@ export interface PoiFeatureProperties {
   name: string;
   category: string;
   photo_url: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  date_precision: string | null;
 }
 
 export interface PoiDetailRecord {
@@ -14,6 +17,10 @@ export interface PoiDetailRecord {
   website: string | null;
   hours: string | null;
   photo_url: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  date_precision: string | null;
+  status: string | null;
   lng: number;
   lat: number;
   geometry: unknown;
