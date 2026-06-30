@@ -1,5 +1,111 @@
 {
-  "pois": [
+  "canonical_categories": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "slug",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "display_name",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "parent_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "description",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "icon",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "color",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "sort_order",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "is_active",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "is_temporal",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "canonical_poi_categories": [
+    {
+      "column": "poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "category_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "is_primary",
+      "nullable": false,
+      "type": "boolean"
+    }
+  ],
+  "canonical_poi_occurrences": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "starts_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "ends_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "date_precision",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "occurrence_range",
+      "nullable": true,
+      "type": "unknown"
+    }
+  ],
+  "canonical_pois": [
     {
       "column": "id",
       "nullable": false,
@@ -7,11 +113,6 @@
     },
     {
       "column": "name",
-      "nullable": false,
-      "type": "string"
-    },
-    {
-      "column": "category",
       "nullable": false,
       "type": "string"
     },
@@ -41,6 +142,11 @@
       "type": "string"
     },
     {
+      "column": "phone",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "lng",
       "nullable": false,
       "type": "number"
@@ -51,9 +157,24 @@
       "type": "number"
     },
     {
-      "column": "created_at",
+      "column": "attributes",
       "nullable": false,
-      "type": "Date"
+      "type": "unknown"
+    },
+    {
+      "column": "field_provenance",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "popularity",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
     },
     {
       "column": "starts_at",
@@ -74,6 +195,338 @@
       "column": "event_range",
       "nullable": true,
       "type": "unknown"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "updated_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_category_aliases": [
+    {
+      "column": "alias",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "category_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_id",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "research_geocode_cache": [
+    {
+      "column": "query_norm",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "lat",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "lng",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "precision",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "provider",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "fetched_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_match_decisions": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "research_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "candidate_poi_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "score",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "signals",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "decision",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "method",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "llm_reason",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "decided_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_match_overrides": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "record_a",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "record_b",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "rule",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "note",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_pois": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_record_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "ingest_category",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "name_normalized",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "description",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "website",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "website_domain",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "source_url",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "phone",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "email",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "address",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "city",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "region",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "country_code",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "lng",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "lat",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "starts_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "ends_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "date_precision",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "raw_category",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "raw",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "attributes",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "content_embedding",
+      "nullable": true,
+      "type": "Array<number>"
+    },
+    {
+      "column": "content_hash",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "canonical_poi_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "first_seen_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "last_seen_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_sources": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "slug",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "homepage",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "license",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "attribution",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "trust",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "last_ingested_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
     }
   ],
   "user_preferences": [

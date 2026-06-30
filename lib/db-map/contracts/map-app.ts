@@ -1,8 +1,9 @@
 export interface PoiFeatureProperties {
   id: string;
   name: string;
-  category: string;
+  category: string | null;
   photo_url: string | null;
+  popularity: number;
   starts_at: string | null;
   ends_at: string | null;
   date_precision: string | null;
@@ -11,12 +12,17 @@ export interface PoiFeatureProperties {
 export interface PoiDetailRecord {
   id: string;
   name: string;
-  category: string;
+  category: string | null;
+  categories: Array<string>;
   description: string | null;
   address: string | null;
   website: string | null;
   hours: string | null;
+  phone: string | null;
   photo_url: string | null;
+  attributes: unknown;
+  popularity: number;
+  sources: Array<string>;
   starts_at: string | null;
   ends_at: string | null;
   date_precision: string | null;

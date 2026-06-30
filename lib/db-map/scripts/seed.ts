@@ -1,4 +1,5 @@
 import { getDb } from '../lib/db/postgres.js';
+import { insertPois, type NewPoi } from '../sql/pois.js';
 
 interface SeedPoi {
   name: string;
@@ -10,6 +11,9 @@ interface SeedPoi {
   website?: string;
   hours?: string;
   photo_url?: string;
+  starts_at?: string;
+  ends_at?: string;
+  date_precision?: string;
 }
 
 const POIS: SeedPoi[] = [
@@ -584,39 +588,51 @@ const POIS: SeedPoi[] = [
   },
 ];
 
+// A few event POIs (music festivals) to exercise the temporal data model.
+const FESTIVALS: NewPoi[] = [
+  {
+    name: 'Glastonbury Festival', category: 'Music Festival', lng: -2.5876, lat: 51.1539,
+    description: "One of the world's largest greenfield music and performing arts festivals, held at Worthy Farm in Pilton, Somerset.",
+    website: 'https://www.glastonburyfestivals.co.uk',
+    starts_at: '2026-06-28', ends_at: '2026-07-02', date_precision: 'day',
+  },
+  {
+    name: 'Tomorrowland', category: 'Music Festival', lng: 4.3686, lat: 51.0890,
+    description: 'A Belgian electronic dance music festival held in Boom, known for its elaborate stage design.',
+    website: 'https://www.tomorrowland.com',
+    starts_at: '2026-07-17', ends_at: '2026-07-19', date_precision: 'day',
+  },
+  {
+    name: 'Burning Man', category: 'Music Festival', lng: -119.2070, lat: 40.7864,
+    description: "An annual gathering in Nevada's Black Rock Desert dedicated to community, art, self-expression, and self-reliance.",
+    website: 'https://burningman.org',
+    starts_at: '2026-08-30', ends_at: '2026-09-07', date_precision: 'day',
+  },
+  {
+    name: 'Coachella Valley Music and Arts Festival', category: 'Music Festival', lng: -116.2156, lat: 33.6803,
+    description: 'A music and arts festival held at the Empire Polo Club in Indio, California.',
+    website: 'https://www.coachella.com',
+    starts_at: '2026-04-10', ends_at: '2026-04-19', date_precision: 'day',
+  },
+  {
+    name: 'Fuji Rock Festival', category: 'Music Festival', lng: 138.7600, lat: 36.7900,
+    description: "Japan's largest outdoor music event, held at the Naeba Ski Resort.",
+    website: 'https://www.fujirockfestival.com',
+    starts_at: '2027-01-01', date_precision: 'year',
+  },
+];
+
 async function seed() {
-  const values: string[] = [];
-  const params: (string | number | null)[] = [];
-  let idx = 1;
+  const db = getDb();
+  const all: NewPoi[] = [...POIS, ...FESTIVALS];
+  const result = await insertPois(db, all, { replace: true });
 
-  for (const poi of POIS) {
-    values.push(
-      `($${idx}, $${idx + 1}, $${idx + 2}, $${idx + 3}, $${idx + 4}, $${idx + 5}, $${idx + 6}, $${idx + 7}, $${idx + 8})`,
-    );
-    params.push(
-      poi.name,
-      poi.category,
-      poi.description,
-      poi.address ?? null,
-      poi.website ?? null,
-      poi.hours ?? null,
-      poi.photo_url ?? null,
-      poi.lng,
-      poi.lat,
-    );
-    idx += 9;
+  if (result.failed.length > 0) {
+    console.warn(`${result.failed.length} POIs failed to insert:`);
+    for (const f of result.failed) console.warn(`  [${f.index}] ${f.name}: ${f.error}`);
   }
-
-  await getDb().query('DELETE FROM pois');
-  await getDb().query(
-    `INSERT INTO pois (name, category, description, address, website, hours, photo_url, lng, lat)
-     VALUES ${values.join(', ')}`,
-    params,
-  );
-
-  const { rows } = await getDb().query('SELECT count(*) FROM pois');
-  console.log(`Seeded ${rows[0].count} POIs across the globe`);
-  await getDb().end();
+  console.log(`Seeded ${result.inserted} canonical POIs (${POIS.length} places + ${FESTIVALS.length} festivals).`);
+  await db.end();
 }
 
 seed().catch((err) => {
