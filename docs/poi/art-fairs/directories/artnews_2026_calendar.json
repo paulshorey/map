@@ -1,0 +1,747 @@
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "url": "https://www.artnews.com",
+    "name": "ARTnews.com",
+    "logo": "https://www.artnews.com/wp-content/themes/vip/pmc-artnews-2019/assets/build/svg/artnews-logo.svg"
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "NewsArticle",
+    "url": "https://www.artnews.com/list/art-news/market/art-fair-calendar-1234654135/",
+    "name": "ARTnews.com",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.artnews.com/list/art-news/market/art-fair-calendar-1234654135/"
+    },
+    "headline": "Calendar: Every Major Art Fair Taking Place in 2026",
+    "datePublished": "2026-01-08T13:15:58+00:00",
+    "dateModified": "2026-04-23T14:24:26+00:00",
+    "articleBody": "An overview of the art market's packed fair calendar.",
+    "author": {
+      "@type": "Person",
+      "name": "Maximil\u00edano Dur\u00f3n",
+      "url": "https://www.artnews.com/author/maximiliano-duron/"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "ARTnews.com",
+      "url": "https://www.artnews.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.artnews.com/wp-content/themes/vip/pmc-artnews-2019/assets/app/icons/favicon.png"
+      }
+    },
+    "isAccessibleForFree": "false",
+    "image": {
+      "@type": "ImageObject",
+      "url": "https://www.artnews.com/wp-content/uploads/2023/01/KB_10-copy-2_blue.jpg"
+    },
+    "hasPart": {
+      "@type": "WebPageElement",
+      "isAccessibleForFree": "false",
+      "cssSelector": ".pmc-paywall"
+    }
+  },
+  {
+    "name": "Ukrainian President Volodymyr Zelenskyy Announces Replacement for Long-Toppled Lenin Monument in\u00a0Kyiv",
+    "text": "Plus IconClick to expand the Mega MenuMenuRead NextUkrainian President Volodymyr Zelenskyy Announces Replacement for Long-Toppled Lenin Monument in\u00a0KyivARTnewsSubscribeTO ART IN AMERICAPlus IconClick to Expand Search Input",
+    "url": "https://www.artnews.com/art-news/news/ukrainian-president-volodymyr-zelenskyy-announces-replacement-toppled-lenin-monument-kyiv-1234790729/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Ukrainian President Volodymyr Zelenskyy Announces Replacement for Long-Toppled Lenin Monument in\u00a0Kyiv",
+    "text": "Plus IconClick to expand the Mega MenuMenuRead NextUkrainian President Volodymyr Zelenskyy Announces Replacement for Long-Toppled Lenin Monument in\u00a0KyivARTnewsSubscribeTO ART IN AMERICAPlus IconClick to Expand Search Input",
+    "url": "https://www.artnews.com/art-news/news/ukrainian-president-volodymyr-zelenskyy-announces-replacement-toppled-lenin-monument-kyiv-1234790729/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Ukrainian President Volodymyr Zelenskyy Announces Replacement for Long-Toppled Lenin Monument in\u00a0Kyiv",
+    "text": "Read NextUkrainian President Volodymyr Zelenskyy Announces Replacement for Long-Toppled Lenin Monument in\u00a0Kyiv",
+    "url": "https://www.artnews.com/art-news/news/ukrainian-president-volodymyr-zelenskyy-announces-replacement-toppled-lenin-monument-kyiv-1234790729/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Maximil\u00edano Dur\u00f3n",
+    "text": "HomeARTnewsMarketCalendar: Every Major Art Fair Taking Place in 2026ByMaximil\u00edano Dur\u00f3nPlus IconMaximil\u00edano Dur\u00f3nSenior Editor, ARTnewsMore Stories by Maximil\u00edanoSwiss Institute to Move to Permanent Home on the Bowery Next\u00a0SpringCritic Sebastian Smee Joins The Atlantic, MIT Museum Gets I.M. Pei Archive, and More: Industry Moves for June 26,\u00a02026Untitled Art, Houston Lines Up 95 Galleries for Sopho",
+    "url": "https://www.artnews.com/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Maximil\u00edano Dur\u00f3n",
+    "text": "ByMaximil\u00edano Dur\u00f3nPlus IconMaximil\u00edano Dur\u00f3nSenior Editor, ARTnewsMore Stories by Maximil\u00edanoSwiss Institute to Move to Permanent Home on the Bowery Next\u00a0SpringCritic Sebastian Smee Joins The Atlantic, MIT Museum Gets I.M. Pei Archive, and More: Industry Moves for June 26,\u00a02026Untitled Art, Houston Lines Up 95 Galleries for Sophomore Edition in\u00a0OctoberView AllJanuary 8, 2026 8:15am",
+    "url": "https://www.artnews.com/author/maximiliano-duron/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Maximil\u00edano Dur\u00f3n",
+    "text": "ByMaximil\u00edano Dur\u00f3nPlus IconMaximil\u00edano Dur\u00f3nSenior Editor, ARTnewsMore Stories by Maximil\u00edanoSwiss Institute to Move to Permanent Home on the Bowery Next\u00a0SpringCritic Sebastian Smee Joins The Atlantic, MIT Museum Gets I.M. Pei Archive, and More: Industry Moves for June 26,\u00a02026Untitled Art, Houston Lines Up 95 Galleries for Sophomore Edition in\u00a0OctoberView All",
+    "url": "https://www.artnews.com/author/maximiliano-duron/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "FOG Design+Art, San Francisco",
+    "text": "Photo Illustration: Kat BrownIn 2026, there is no shortage of art fairs taking place around the world. When it comes to the art market this year, all eyes will be on the Gulf region as Art Basel launches a fair in Qatar this February and Frieze takes over Abu Dhabi Art, which runs in November. One other major change to the calendar is that Frieze Seoul and the Armory Show will no longer conflict w",
+    "url": "https://www.artnews.com/t/art-sg/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "FOG Design+Art, San Francisco",
+    "text": "FOG Design+Art, San FranciscoImage Credit: Courtesy FOG Design+Art FairFor its 2026 edition, FOG will bring together more than 60 galleries, across its main Galleries section and its Focus section, for emerging artists whose work is offered at \u201cmore accessible price points,\u201d according to the fair. Its preview gala benefits educative initiatives at the San Francisco Museum of Modern Art.Location:\u00a0F",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "FOG Design+Art, San Francisco",
+    "text": "FOG Design+Art, San FranciscoImage Credit: Courtesy FOG Design+Art FairFor its 2026 edition, FOG will bring together more than 60 galleries, across its main Galleries section and its Focus section, for emerging artists whose work is offered at \u201cmore accessible price points,\u201d according to the fair. Its preview gala benefits educative initiatives at the San Francisco Museum of Modern Art.Location:\u00a0F",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "ART SG, Singapore",
+    "text": "ART SG, SingaporeImage Credit: Courtesy Marina Bay SandsStaged at the iconic Marina Bay Sands, ART SG will return for its fourth edition, bringing together95 exhibitors. The 2026 iteration will introduce a performance art section, via a new partnership with Shanghai\u2019s Rockbund Art Museum, whose executive director and chief curator, X-Zhu Nowell, will take on the role of the fair\u2019s film and perform",
+    "url": "https://www.artnews.com/t/art-sg/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "ART SG, Singapore",
+    "text": "ART SG, SingaporeImage Credit: Courtesy Marina Bay SandsStaged at the iconic Marina Bay Sands, ART SG will return for its fourth edition, bringing together95 exhibitors. The 2026 iteration will introduce a performance art section, via a new partnership with Shanghai\u2019s Rockbund Art Museum, whose executive director and chief curator, X-Zhu Nowell, will take on the role of the fair\u2019s film and perform",
+    "url": "https://www.artnews.com/t/art-sg/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Basel Qatar",
+    "text": "Art Basel QatarImage Credit: Julius Hirtzberger/Courtesy Art BaselIn May 2025, Art Basel announced that it would launch a brand-new fair in Doha, the capital city of Qatar. Produced in partnership with Qatar Sports Investments (QSI) and QC+, Art Basel Qatar will bring together 87 exhibitors from 31 countries and territories for its inaugural edition, which will be split across multiple venues in d",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Basel Qatar",
+    "text": "Art Basel QatarImage Credit: Julius Hirtzberger/Courtesy Art BaselIn May 2025, Art Basel announced that it would launch a brand-new fair in Doha, the capital city of Qatar. Produced in partnership with Qatar Sports Investments (QSI) and QC+, Art Basel Qatar will bring together 87 exhibitors from 31 countries and territories for its inaugural edition, which will be split across multiple venues in d",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Mexico City Art Week",
+    "text": "Mexico City Art WeekImage Credit: Courtesy Zona MacoMexico City will once again light up in February with four fairs: Zona Maco, Feria Material, Sal\u00f3n Acme, and Unique Design X.Zona Macois one of the most important fairs in Latin America and includes sections dedicated to design, historical objects, photography, and books alongside its main contemporary art section. The 2026 edition of the fair wi",
+    "url": "https://www.artnews.com/art-news/market/material-art-fair-mexico-city-venue-change-stranger-things-1234767738/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Mexico City Art Week",
+    "text": "Mexico City Art WeekImage Credit: Courtesy Zona MacoMexico City will once again light up in February with four fairs: Zona Maco, Feria Material, Sal\u00f3n Acme, and Unique Design X.Zona Macois one of the most important fairs in Latin America and includes sections dedicated to design, historical objects, photography, and books alongside its main contemporary art section. The 2026 edition of the fair wi",
+    "url": "https://www.artnews.com/art-news/market/material-art-fair-mexico-city-venue-change-stranger-things-1234767738/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "1-54 Marrakech",
+    "text": "1-54 MarrakechImage Credit: \u00a9Nicholas Brasseur, Say WhoA sharp look at contemporary art scenes across Africa and its diaspora, 1-54 Marrakech is among the smallest of the world\u2019s art fairs but with an outsize impact, featuring top galleries from around the world in conversation with Moroccan enterprises. The 2026 edition will bring together around 20 exhibitors.Location: La Mamounia HotelPreview D",
+    "url": "https://www.artnews.com/art-news/news/1-54-marrakech-2025-fair-report-1234731314/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "1-54 Marrakech",
+    "text": "1-54 MarrakechImage Credit: \u00a9Nicholas Brasseur, Say WhoA sharp look at contemporary art scenes across Africa and its diaspora, 1-54 Marrakech is among the smallest of the world\u2019s art fairs but with an outsize impact, featuring top galleries from around the world in conversation with Moroccan enterprises. The 2026 edition will bring together around 20 exhibitors.Location: La Mamounia HotelPreview D",
+    "url": "https://www.artnews.com/art-news/news/1-54-marrakech-2025-fair-report-1234731314/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "India Art Fair, New Delhi",
+    "text": "India Art Fair, New DelhiImage Credit: Courtesy India Art FairThe India Art Fair is the subcontinent\u2019s largest art fair, gathering around130 exhibitorsfor its 2026 edition. This year\u2019s iteration will see the introduction of Swali Craft Prize; an expanded performance art program, organized by Nikhil Chopra and HH Art Spaces; and a reimagining of its facade, which will be done by Afrah Shafiq, as pa",
+    "url": "https://www.artnews.com/art-news/market/2025-india-art-fair-report-1234732089/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "India Art Fair, New Delhi",
+    "text": "India Art Fair, New DelhiImage Credit: Courtesy India Art FairThe India Art Fair is the subcontinent\u2019s largest art fair, gathering around130 exhibitorsfor its 2026 edition. This year\u2019s iteration will see the introduction of Swali Craft Prize; an expanded performance art program, organized by Nikhil Chopra and HH Art Spaces; and a reimagining of its facade, which will be done by Afrah Shafiq, as pa",
+    "url": "https://www.artnews.com/art-news/market/2025-india-art-fair-report-1234732089/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Frieze Los Angeles",
+    "text": "Frieze Los AngelesImage Credit: Casey Kelbaugh/Courtesy Frieze and CKAThe first of Frieze\u2019s international fairs to take place each year, Frieze LA will bring together95 exhibitorsfrom 22 countries to the Santa Monica Airport. The fair\u2019s Focus section will again be organized by independent curator Essence Harden, while the Art Production Fund will return to organize the public program. NXTHVN will ",
+    "url": "https://www.artnews.com/art-news/market/frieze-los-angeles-2026-exhibitor-list-1234762548/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Frieze Los Angeles",
+    "text": "Frieze Los AngelesImage Credit: Casey Kelbaugh/Courtesy Frieze and CKAThe first of Frieze\u2019s international fairs to take place each year, Frieze LA will bring together95 exhibitorsfrom 22 countries to the Santa Monica Airport. The fair\u2019s Focus section will again be organized by independent curator Essence Harden, while the Art Production Fund will return to organize the public program. NXTHVN will ",
+    "url": "https://www.artnews.com/art-news/market/frieze-los-angeles-2026-exhibitor-list-1234762548/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Outsider Art Fair, New York",
+    "text": "Outsider Art Fair, New YorkImage Credit: Olya VysotskayaFor its 2026 edition, the Outsider Art Fair in New York will bring together around 70 exhibitors and will be the firstunder the directionof former dealer Elizabeth Denny.Location: Metropolitan PavilionPreview Day: Thursday, March 19General Admission Days: Friday, March 20\u2013Sunday, March 22Website.ReadARTnews\u2019s past coverage of the Outsider Art",
+    "url": "https://www.artnews.com/art-news/news/elizabeth-denny-outsider-art-fair-director-1234753664/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Outsider Art Fair, New York",
+    "text": "Outsider Art Fair, New YorkImage Credit: Olya VysotskayaFor its 2026 edition, the Outsider Art Fair in New York will bring together around 70 exhibitors and will be the firstunder the directionof former dealer Elizabeth Denny.Location: Metropolitan PavilionPreview Day: Thursday, March 19General Admission Days: Friday, March 20\u2013Sunday, March 22Website.ReadARTnews\u2019s past coverage of the Outsider Art",
+    "url": "https://www.artnews.com/art-news/news/elizabeth-denny-outsider-art-fair-director-1234753664/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "ARCOmadrid",
+    "text": "ARCOmadridImage Credit: Courtesy ARCO MadridCelebrating its 45th edition in 2026, ARCOmadrid will bring together 170 galleries in its main section. It will also feature three curated sections: \u201cARCO2045: El Futuro, Por Ahora,\u201d curated by Jos\u00e9 Luis Blondet (of LACMA) and Magali Arriola (formerly of Museo Tamayo); \u201cOpening. New galleries,\u201d organized by independent curators Rafa Barber and Anissa Tou",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "ARCOmadrid",
+    "text": "ARCOmadridImage Credit: Courtesy ARCO MadridCelebrating its 45th edition in 2026, ARCOmadrid will bring together 170 galleries in its main section. It will also feature three curated sections: \u201cARCO2045: El Futuro, Por Ahora,\u201d curated by Jos\u00e9 Luis Blondet (of LACMA) and Magali Arriola (formerly of Museo Tamayo); \u201cOpening. New galleries,\u201d organized by independent curators Rafa Barber and Anissa Tou",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "TEFAF Maastricht",
+    "text": "TEFAF MaastrichtImage Credit: Courtesy TEFAFTEFAF Maastricht will bring together276 exhibitorsfrom 24 countries for its 2026 edition, who will present art and antiquities spanning 7,000 years. Among the first-time exhibitors are GRIMM, Ceysson & B\u00e9n\u00e9ti\u00e8re, and Proyectos Monclova Gallery. In addition to its main section, TEFAF Maastrict also includes \u201cFocus,\u201d for single-artist presentations of pion",
+    "url": "https://www.artnews.com/art-news/news/tefaf-maastricht-sales-museums-institutions-2025-1234735869/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "TEFAF Maastricht",
+    "text": "TEFAF MaastrichtImage Credit: Courtesy TEFAFTEFAF Maastricht will bring together276 exhibitorsfrom 24 countries for its 2026 edition, who will present art and antiquities spanning 7,000 years. Among the first-time exhibitors are GRIMM, Ceysson & B\u00e9n\u00e9ti\u00e8re, and Proyectos Monclova Gallery. In addition to its main section, TEFAF Maastrict also includes \u201cFocus,\u201d for single-artist presentations of pion",
+    "url": "https://www.artnews.com/art-news/news/tefaf-maastricht-sales-museums-institutions-2025-1234735869/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Basel Hong Kong",
+    "text": "Art Basel Hong KongImage Credit: Courtesy Art BaselFor its2026 edition,\u00a0Art Basel\u00a0Hong Kong bring together 240 exhibitors, with more than half of the them operating a space in the Asia-Pacific region, including 29 with locations in Hong Kong. This edition will also see 32 galleries participating for the first time. The upcoming edition will introduce a new section to the fair, called Echoes, for w",
+    "url": "https://www.artnews.com/art-news/news/art-basel-hong-kong-2026-exhibitor-list-announced-1234761975/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Basel Hong Kong",
+    "text": "Art Basel Hong KongImage Credit: Courtesy Art BaselFor its2026 edition,\u00a0Art Basel\u00a0Hong Kong bring together 240 exhibitors, with more than half of the them operating a space in the Asia-Pacific region, including 29 with locations in Hong Kong. This edition will also see 32 galleries participating for the first time. The upcoming edition will introduce a new section to the fair, called Echoes, for w",
+    "url": "https://www.artnews.com/art-news/news/art-basel-hong-kong-2026-exhibitor-list-announced-1234761975/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "SP-Arte, S\u00e3o Paulo",
+    "text": "SP-Arte, S\u00e3o PauloImage Credit: Courtesy SP-ArteSP-Arte, Brazil\u2019s largest art fair, will host its 22nd edition in 2026. With around 180 exhibitors, the fair brings together some of Latin America\u2019s most important and closely watched galleries together alongside a selection of international exhibitors. The 2026 edition will relaunch the Showcase sector for international exhibitors showing at the fai",
+    "url": "https://www.artnews.com/t/sp-arte/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "SP-Arte, S\u00e3o Paulo",
+    "text": "SP-Arte, S\u00e3o PauloImage Credit: Courtesy SP-ArteSP-Arte, Brazil\u2019s largest art fair, will host its 22nd edition in 2026. With around 180 exhibitors, the fair brings together some of Latin America\u2019s most important and closely watched galleries together alongside a selection of international exhibitors. The 2026 edition will relaunch the Showcase sector for international exhibitors showing at the fai",
+    "url": "https://www.artnews.com/t/sp-arte/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "IFPDA Print Fair",
+    "text": "IFPDA Print FairImage Credit: Annie ForrestIn November 2025, the International Fine Print Dealers Associationannouncedthat it would become the International Fine Prints & Drawings Association. This name change is meant to signify the association\u2019s embrace of dealers of drawings to its membership and its annual IFPDA Print Fair. The 2026 edition will be the first since this change, the first in 30 ",
+    "url": "https://www.artnews.com/art-news/news/ifpda-print-fair-expands-drawings-dealers-2026-1234762614/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "IFPDA Print Fair",
+    "text": "IFPDA Print FairImage Credit: Annie ForrestIn November 2025, the International Fine Print Dealers Associationannouncedthat it would become the International Fine Prints & Drawings Association. This name change is meant to signify the association\u2019s embrace of dealers of drawings to its membership and its annual IFPDA Print Fair. The 2026 edition will be the first since this change, the first in 30 ",
+    "url": "https://www.artnews.com/art-news/news/ifpda-print-fair-expands-drawings-dealers-2026-1234762614/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Expo Chicago",
+    "text": "Expo ChicagoImage Credit: Courtesy Choose ChicagoPart of the Frieze portfoliosince 2023, Expo Chicago\u2019s 2026 edition will be its 13th and the firstunder the directionof Kate Sierzputowski, with Essence Harden serving as curator. While its exhibitor list has still not been announced, the forthcoming edition will be \u201ca more focused fair with a smaller floorplan, designed to highlight the strongest w",
+    "url": "https://www.artnews.com/art-news/news/frieze-acquires-armory-show-expo-chicago-art-fairs-1234674074/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Expo Chicago",
+    "text": "Expo ChicagoImage Credit: Courtesy Choose ChicagoPart of the Frieze portfoliosince 2023, Expo Chicago\u2019s 2026 edition will be its 13th and the firstunder the directionof Kate Sierzputowski, with Essence Harden serving as curator. While its exhibitor list has still not been announced, the forthcoming edition will be \u201ca more focused fair with a smaller floorplan, designed to highlight the strongest w",
+    "url": "https://www.artnews.com/art-news/news/frieze-acquires-armory-show-expo-chicago-art-fairs-1234674074/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Dallas Art Fair and Dallas Invitational",
+    "text": "Dallas Art Fair and Dallas InvitationalImage Credit: Daniel DrienskyLong a bastion of collecting, Dallas now boasts two art fairs that run concurrently each spring. The long-running\u00a0Dallas Art Fair will host its 18th edition in 2026. The younger Dallas Invitational will mount its fourth edition this year; operating under an invite-only model, the fair plans to increase its footprint for 2026. Both",
+    "url": "https://www.artnews.com/t/dallas-art-fair/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Dallas Art Fair and Dallas Invitational",
+    "text": "Dallas Art Fair and Dallas InvitationalImage Credit: Daniel DrienskyLong a bastion of collecting, Dallas now boasts two art fairs that run concurrently each spring. The long-running\u00a0Dallas Art Fair will host its 18th edition in 2026. The younger Dallas Invitational will mount its fourth edition this year; operating under an invite-only model, the fair plans to increase its footprint for 2026. Both",
+    "url": "https://www.artnews.com/t/dallas-art-fair/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "AIPAD Photography Show",
+    "text": "AIPAD Photography ShowImage Credit: Photo Erica PriceEach year, the Association of International Photography Art Dealers (AIPAD) gathers together around 75 exhibitors, primarily drawn from its membership, for the Photography Show, one of a number of medium-focused art fairs. With the2026 edition, the fair will introduce a new section, Focal Point, for solo presentations of lens-based artists.Locat",
+    "url": "https://www.artnews.com/art-news/market/aipad-2026-photography-show-ehibitor-list-deborah-willis-1234767045/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "AIPAD Photography Show",
+    "text": "AIPAD Photography ShowImage Credit: Photo Erica PriceEach year, the Association of International Photography Art Dealers (AIPAD) gathers together around 75 exhibitors, primarily drawn from its membership, for the Photography Show, one of a number of medium-focused art fairs. With the2026 edition, the fair will introduce a new section, Focal Point, for solo presentations of lens-based artists.Locat",
+    "url": "https://www.artnews.com/art-news/market/aipad-2026-photography-show-ehibitor-list-deborah-willis-1234767045/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Brussels",
+    "text": "Art BrusselsImage Credit: JJ DE NEYERFor its 2025 edition, Art Brussels will bring together some 135 galleries to two halls within the iconic Brussels Expo, an Art Deco structure built in 1935.Location:\u00a0Brussels ExpoPreview Day:\u00a0Thursday, April 23General Admission Days: Friday, April 24\u2013Sunday, April 26Website.",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Brussels",
+    "text": "Art BrusselsImage Credit: JJ DE NEYERFor its 2025 edition, Art Brussels will bring together some 135 galleries to two halls within the iconic Brussels Expo, an Art Deco structure built in 1935.Location:\u00a0Brussels ExpoPreview Day:\u00a0Thursday, April 23General Admission Days: Friday, April 24\u2013Sunday, April 26Website.",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "New York Art Week (May)",
+    "text": "New York Art Week (May)Image Credit: Casey KelbaughThe 2026 editions of five New York art fairs will coincide over the course of one week this year: Frieze New York,\u00a0NADA New York, Independent, TEFAF New York, and 1-54 New York. While the fairs have yet to announce their exhibitor lists, they will once again bring together hundreds of dealers from around the country and the world at various venues",
+    "url": "https://www.artnews.com/t/frieze-new-york-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "New York Art Week (May)",
+    "text": "New York Art Week (May)Image Credit: Casey KelbaughThe 2026 editions of five New York art fairs will coincide over the course of one week this year: Frieze New York,\u00a0NADA New York, Independent, TEFAF New York, and 1-54 New York. While the fairs have yet to announce their exhibitor lists, they will once again bring together hundreds of dealers from around the country and the world at various venues",
+    "url": "https://www.artnews.com/t/frieze-new-york-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Dubai",
+    "text": "Art DubaiImage Credit: Courtesy Electra, Official Contractor of Art DubaiWhile Art Dubai might maintain its status as the largest art fair in the Middle East this year, it will face serious competition from Art Basel Qatar (in February) and Frieze Abu Dhabi (in November). Marking its 20th anniversary in 2026, this year\u2019s edition, the first under the direction of Dunja Gottweis, will bring together",
+    "url": "https://www.artnews.com/art-news/news/art-dubai-postpones-fair-to-may-middle-east-war-1234778153/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Dubai",
+    "text": "Art DubaiImage Credit: Courtesy Electra, Official Contractor of Art DubaiWhile Art Dubai might maintain its status as the largest art fair in the Middle East this year, it will face serious competition from Art Basel Qatar (in February) and Frieze Abu Dhabi (in November). Marking its 20th anniversary in 2026, this year\u2019s edition, the first under the direction of Dunja Gottweis, will bring together",
+    "url": "https://www.artnews.com/art-news/news/art-dubai-postpones-fair-to-may-middle-east-war-1234778153/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Basel, Switzerland",
+    "text": "Art Basel, SwitzerlandImage Credit: \u00a9Art BaselArt Basel\u2019s Swiss edition is often considered the world\u2019s world\u2019s top art fair, for which dealers typically save their best\u2014and priciest\u2014works. While its exhibitor list won\u2019t be announced for another few months, the fair typically gathers together some 250 galleries. So far, Basel has announced that Ruba Katrib, chief curator of MoMA PS1, will organize",
+    "url": "https://www.artnews.com/t/art-basel-2025",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Basel, Switzerland",
+    "text": "Art Basel, SwitzerlandImage Credit: \u00a9Art BaselArt Basel\u2019s Swiss edition is often considered the world\u2019s world\u2019s top art fair, for which dealers typically save their best\u2014and priciest\u2014works. While its exhibitor list won\u2019t be announced for another few months, the fair typically gathers together some 250 galleries. So far, Basel has announced that Ruba Katrib, chief curator of MoMA PS1, will organize",
+    "url": "https://www.artnews.com/t/art-basel-2025",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Frieze Seoul and Kiaf",
+    "text": "Frieze Seoul and KiafImage Credit: Jung Yeon-Je/AFP via Getty ImagesFor its fifth edition, Frieze Seoul will return to the massive COEX convention center in the Korean capital. Frieze Seoul typically draws top international blue-chip galleries to Seoul, many of which have since established outposts in the city; the 2025 edition featured 116 exhibitors. For 2026, its Focus section will expand its p",
+    "url": "https://www.artnews.com/t/frieze-seoul-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Frieze Seoul and Kiaf",
+    "text": "Frieze Seoul and KiafImage Credit: Jung Yeon-Je/AFP via Getty ImagesFor its fifth edition, Frieze Seoul will return to the massive COEX convention center in the Korean capital. Frieze Seoul typically draws top international blue-chip galleries to Seoul, many of which have since established outposts in the city; the 2025 edition featured 116 exhibitors. For 2026, its Focus section will expand its p",
+    "url": "https://www.artnews.com/t/frieze-seoul-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Sydney Contemporary",
+    "text": "Sydney ContemporaryImage Credit: James Horan Photography Pty LTD 2022For its 2026 edition, Sydney Contemporary, Australia\u2019s largest art fair, will bring together more than 100 galleries, with a strong showing of exhibitors from Australia and across the Asia-Pacific region.Location: CarriageworksPreview Day: Wednesday, September 2General Admission Days: Thursday, September 3\u2013Sunday, September 6Webs",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Sydney Contemporary",
+    "text": "Sydney ContemporaryImage Credit: James Horan Photography Pty LTD 2022For its 2026 edition, Sydney Contemporary, Australia\u2019s largest art fair, will bring together more than 100 galleries, with a strong showing of exhibitors from Australia and across the Asia-Pacific region.Location: CarriageworksPreview Day: Wednesday, September 2General Admission Days: Thursday, September 3\u2013Sunday, September 6Webs",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Tokyo Gendai, Yokohama",
+    "text": "Tokyo Gendai, YokohamaImage Credit: Courtesy Tokyo GendaiAfter hosting its first two editions in early July, Tokyo Gendaishifted its dateslast year to the second week of September, which it will keep for 2026. Taking place the week after Frieze Seoul, these dates pose the same dilemma for visitors as Frieze London and Art Basel Paris currently do, since those two fairs are also held in back-to-bac",
+    "url": "https://www.artnews.com/art-news/news/tokyo-gendai-art-fair-moves-september-2025-edition-1234712063/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Tokyo Gendai, Yokohama",
+    "text": "Tokyo Gendai, YokohamaImage Credit: Courtesy Tokyo GendaiAfter hosting its first two editions in early July, Tokyo Gendaishifted its dateslast year to the second week of September, which it will keep for 2026. Taking place the week after Frieze Seoul, these dates pose the same dilemma for visitors as Frieze London and Art Basel Paris currently do, since those two fairs are also held in back-to-bac",
+    "url": "https://www.artnews.com/art-news/news/tokyo-gendai-art-fair-moves-september-2025-edition-1234712063/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "The Armory Show and Independent 20th Century",
+    "text": "The Armory Show and Independent 20th CenturyImage Credit: Maximil\u00edano Dur\u00f3n/ARTnewsSince joining Frieze\u2019s portfolio in 2023, the Armory Show has conflicted with Frieze Seoul, both running the first week of September. For 2026, that will no longer be the case, as the fair shifts to later in September, away from its post\u2013Labor Day, back-to-school vibes it has had since it changed venues to the Javit",
+    "url": "https://www.artnews.com/t/armory-show-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "The Armory Show and Independent 20th Century",
+    "text": "The Armory Show and Independent 20th CenturyImage Credit: Maximil\u00edano Dur\u00f3n/ARTnewsSince joining Frieze\u2019s portfolio in 2023, the Armory Show has conflicted with Frieze Seoul, both running the first week of September. For 2026, that will no longer be the case, as the fair shifts to later in September, away from its post\u2013Labor Day, back-to-school vibes it has had since it changed venues to the Javit",
+    "url": "https://www.artnews.com/t/armory-show-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Atlanta Art Fair",
+    "text": "Atlanta Art FairImage Credit: Courtesy AMPNow in its third edition, the Atlanta Art Fair will return to Pullman Yards for 2026. The fair\u2019s exhibitor list will be released later this year, with curator Nato Thompson continuing his role as artistic director. (The fair is part of the portfolio of AMP, which runs three other fairs throughout the year: San Francisco Art Fair, Seattle Art Fair, Art on P",
+    "url": "https://www.artnews.com/t/atlanta-art-fair/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Atlanta Art Fair",
+    "text": "Atlanta Art FairImage Credit: Courtesy AMPNow in its third edition, the Atlanta Art Fair will return to Pullman Yards for 2026. The fair\u2019s exhibitor list will be released later this year, with curator Nato Thompson continuing his role as artistic director. (The fair is part of the portfolio of AMP, which runs three other fairs throughout the year: San Francisco Art Fair, Seattle Art Fair, Art on P",
+    "url": "https://www.artnews.com/t/atlanta-art-fair/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Untitled Art, Houston",
+    "text": "Untitled Art, HoustonImage Credit: Courtesy Houston FirstAfter having expanded to Houston in 2025, Untitled Art, Houston will stage its sophomore edition this year. While the inaugural edition, which hosted 88 exhibitors, took place in mid-September, the upcoming fair will shift to the first week of October.Location: George R. Brown Convention CenterPreview Day: Thursday, October 1General Admissio",
+    "url": "https://www.artnews.com/t/untitled-art-houston/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Untitled Art, Houston",
+    "text": "Untitled Art, HoustonImage Credit: Courtesy Houston FirstAfter having expanded to Houston in 2025, Untitled Art, Houston will stage its sophomore edition this year. While the inaugural edition, which hosted 88 exhibitors, took place in mid-September, the upcoming fair will shift to the first week of October.Location: George R. Brown Convention CenterPreview Day: Thursday, October 1General Admissio",
+    "url": "https://www.artnews.com/t/untitled-art-houston/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Frieze London and Frieze Masters",
+    "text": "Frieze London and Frieze MastersImage Credit: Maximil\u00edano Dur\u00f3n/ARTnewsFrieze London, the fair company\u2019s hallmark contemporary art event in the British capital, runs each October in a custom-built tent in the Regent\u2019s Park. Just across the park, in another custom tent, is its sister fair Frieze Masters, dedicated to work made before 2000. Also running throughout Regent\u2019s Park at this time is Friez",
+    "url": "https://www.artnews.com/t/frieze-london-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Frieze London and Frieze Masters",
+    "text": "Frieze London and Frieze MastersImage Credit: Maximil\u00edano Dur\u00f3n/ARTnewsFrieze London, the fair company\u2019s hallmark contemporary art event in the British capital, runs each October in a custom-built tent in the Regent\u2019s Park. Just across the park, in another custom tent, is its sister fair Frieze Masters, dedicated to work made before 2000. Also running throughout Regent\u2019s Park at this time is Friez",
+    "url": "https://www.artnews.com/t/frieze-london-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Basel Paris",
+    "text": "Art Basel ParisImage Credit: Telmo Pinto/SOPA Images/LightRocket via Getty ImagesSince launching in 2022, Art Basel Paris (n\u00e9e Paris+ par Art Basel) has slowly begun to eclipse its older sibling, Art Basel\u2019s original Swiss edition, with many American collectors preferring the French capital to Basel. Now firmly established in its permanent home, the iconic Grand Palais, the 2026 edition will be do",
+    "url": "https://www.artnews.com/t/art-basel-paris-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Basel Paris",
+    "text": "Art Basel ParisImage Credit: Telmo Pinto/SOPA Images/LightRocket via Getty ImagesSince launching in 2022, Art Basel Paris (n\u00e9e Paris+ par Art Basel) has slowly begun to eclipse its older sibling, Art Basel\u2019s original Swiss edition, with many American collectors preferring the French capital to Basel. Now firmly established in its permanent home, the iconic Grand Palais, the 2026 edition will be do",
+    "url": "https://www.artnews.com/t/art-basel-paris-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Artissima, Turin",
+    "text": "Artissima, TurinImage Credit: Courtesy ArtissimaEstablished in 1994, Artissima is one of Italy\u2019s most important art fairs. The fair is spilt into a number of sections, including its Main Section, Monologue/Dialogue,\u00a0and New Entries, as well as curated sections chosen by a panel of curators.Location:\u00a0OVAL Lingotto FierePreview Day: Thursday, October 29General Admission Days:\u00a0Friday, October 30\u2013Sund",
+    "url": "https://www.artnews.com/t/artissima/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Artissima, Turin",
+    "text": "Artissima, TurinImage Credit: Courtesy ArtissimaEstablished in 1994, Artissima is one of Italy\u2019s most important art fairs. The fair is spilt into a number of sections, including its Main Section, Monologue/Dialogue,\u00a0and New Entries, as well as curated sections chosen by a panel of curators.Location:\u00a0OVAL Lingotto FierePreview Day: Thursday, October 29General Admission Days:\u00a0Friday, October 30\u2013Sund",
+    "url": "https://www.artnews.com/t/artissima/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Cologne",
+    "text": "Art CologneImage Credit: \u00a9Koelnmesse GmbH, Thomas KlerxThe world\u2019s oldest art fair celebrates its 59th edition in 2026. The 2025 edition of the fair featured 167 galleries from 25 countries, and welcomed some 45,000 visitors during its run. \u201cThe art market is stable and presents itself as fit for the future. Cologne is the best proof of this,\u201d Art Cologne director Daniel Hug said in a statement af",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Cologne",
+    "text": "Art CologneImage Credit: \u00a9Koelnmesse GmbH, Thomas KlerxThe world\u2019s oldest art fair celebrates its 59th edition in 2026. The 2025 edition of the fair featured 167 galleries from 25 countries, and welcomed some 45,000 visitors during its run. \u201cThe art market is stable and presents itself as fit for the future. Cologne is the best proof of this,\u201d Art Cologne director Daniel Hug said in a statement af",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Collaboration Kyoto",
+    "text": "Art Collaboration KyotoImage Credit: Moriya Yuki/Courtesy ACKSince its launch in 2021, Art Collaboration Kyoto\u2019s star has been on the rise. Many observers have called it one of the world\u2019s best art fairs, citing the charm of Kyoto and the emphasis on collaboration and a rethinking of the art fair model.Location: Kyoto International Conference CenterVIP dates: Friday, November 6General Admission Da",
+    "url": "https://www.artnews.com/t/art-collaboration-kyoto/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art Collaboration Kyoto",
+    "text": "Art Collaboration KyotoImage Credit: Moriya Yuki/Courtesy ACKSince its launch in 2021, Art Collaboration Kyoto\u2019s star has been on the rise. Many observers have called it one of the world\u2019s best art fairs, citing the charm of Kyoto and the emphasis on collaboration and a rethinking of the art fair model.Location: Kyoto International Conference CenterVIP dates: Friday, November 6General Admission Da",
+    "url": "https://www.artnews.com/t/art-collaboration-kyoto/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "ADAA Fair, New York",
+    "text": "ADAA Fair, New YorkImage Credit: Jason WycheIn July 2025, the Art Dealers Association of America made the startling decision to cancel its annual art fair, called the Art Show. That cancelation was termed a \u201cstrategic pause\u201d by its board, likely having to do, in part, with the ADAA ending its partnership with Henry Street Settlement. (For years, the Art Show\u2019s opening night severed as a benefit fo",
+    "url": "https://www.artnews.com/art-news/news/adaa-fair-rebrand-park-avenue-armory-1234764512/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "ADAA Fair, New York",
+    "text": "ADAA Fair, New YorkImage Credit: Jason WycheIn July 2025, the Art Dealers Association of America made the startling decision to cancel its annual art fair, called the Art Show. That cancelation was termed a \u201cstrategic pause\u201d by its board, likely having to do, in part, with the ADAA ending its partnership with Henry Street Settlement. (For years, the Art Show\u2019s opening night severed as a benefit fo",
+    "url": "https://www.artnews.com/art-news/news/adaa-fair-rebrand-park-avenue-armory-1234764512/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Frieze Abu Dhabi",
+    "text": "Frieze Abu DhabiImage Credit: \u00a9Department of Culture and Tourism, Abu DhabiIn October 2025, Friezeannouncedthat it would take over the homegrown Abu Dhabi Art fair, working in collaboration with the Department of Culture and Tourism \u2013 Abu Dhabi (DCT Abu Dhabi). Because that fair launched in 2007, Frieze is coming into the region with a certain amount of groundwork already laid. (Its competitor, Ar",
+    "url": "https://www.artnews.com/art-news/news/frieze-abu-dhabi-fair-announced-1234756413/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Frieze Abu Dhabi",
+    "text": "Frieze Abu DhabiImage Credit: \u00a9Department of Culture and Tourism, Abu DhabiIn October 2025, Friezeannouncedthat it would take over the homegrown Abu Dhabi Art fair, working in collaboration with the Department of Culture and Tourism \u2013 Abu Dhabi (DCT Abu Dhabi). Because that fair launched in 2007, Frieze is coming into the region with a certain amount of groundwork already laid. (Its competitor, Ar",
+    "url": "https://www.artnews.com/art-news/news/frieze-abu-dhabi-fair-announced-1234756413/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Miami Art Week",
+    "text": "Miami Art WeekImage Credit: Maximil\u00edano Dur\u00f3n/ARTnewsTo close out each year, the art world\u2014and industries like fashion and entertainment\u2014descend on Miami Beach in early December for a bevy of art fairs. The most important of these is Art Basel Miami Beach, which has been led by former dealer Bridget Finn since 2023. The other two notable satellite fairs aligned with ABMB are Untitled Art, which se",
+    "url": "https://www.artnews.com/t/art-basel-miami-beach-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Miami Art Week",
+    "text": "Miami Art WeekImage Credit: Maximil\u00edano Dur\u00f3n/ARTnewsTo close out each year, the art world\u2014and industries like fashion and entertainment\u2014descend on Miami Beach in early December for a bevy of art fairs. The most important of these is Art Basel Miami Beach, which has been led by former dealer Bridget Finn since 2023. The other two notable satellite fairs aligned with ABMB are Untitled Art, which se",
+    "url": "https://www.artnews.com/t/art-basel-miami-beach-2025/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "What the Hell Is That Weird Painting Donald Trump Just\u2026",
+    "text": "What the Hell Is That Weird Painting Donald Trump Just\u2026",
+    "url": "https://www.artnews.com/art-news/news/donald-trump-painting-truth-social-ray-simon-explained-1234790600/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "What the Hell Is That Weird Painting Donald Trump Just\u2026",
+    "text": "What the Hell Is That Weird Painting Donald Trump Just\u2026",
+    "url": "https://www.artnews.com/art-news/news/donald-trump-painting-truth-social-ray-simon-explained-1234790600/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Heir of German Jewish Collector Seeks Return of Van Gogh\u2026",
+    "text": "Heir of German Jewish Collector Seeks Return of Van Gogh\u2026",
+    "url": "https://www.artnews.com/art-news/news/heir-german-jewish-collector-van-gogh-painting-musee-dorsay-1234790703/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Heir of German Jewish Collector Seeks Return of Van Gogh\u2026",
+    "text": "Heir of German Jewish Collector Seeks Return of Van Gogh\u2026",
+    "url": "https://www.artnews.com/art-news/news/heir-german-jewish-collector-van-gogh-painting-musee-dorsay-1234790703/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Family of Venezuelan Artist Trapped in Earthquake Rubble\u2026",
+    "text": "Family of Venezuelan Artist Trapped in Earthquake Rubble\u2026",
+    "url": "https://www.artnews.com/art-news/news/venezuela-artist-earthquake-jr-dismantled-morning-links-1234790592/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Family of Venezuelan Artist Trapped in Earthquake Rubble\u2026",
+    "text": "Family of Venezuelan Artist Trapped in Earthquake Rubble\u2026",
+    "url": "https://www.artnews.com/art-news/news/venezuela-artist-earthquake-jr-dismantled-morning-links-1234790592/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "95 Percent of Museums' Collections Are Hidden from View. Is\u2026",
+    "text": "95 Percent of Museums' Collections Are Hidden from View. Is\u2026",
+    "url": "https://www.artnews.com/art-in-america/aia-reviews/open-storage-va-east-depot-museum-boijmans-van-beuningen-keeping-culture-1234790311/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "95 Percent of Museums' Collections Are Hidden from View. Is\u2026",
+    "text": "95 Percent of Museums' Collections Are Hidden from View. Is\u2026",
+    "url": "https://www.artnews.com/art-in-america/aia-reviews/open-storage-va-east-depot-museum-boijmans-van-beuningen-keeping-culture-1234790311/",
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art in America",
+    "text": "Art in AmericaThe World's Premier Art Magazine since 1913. Subscribe today and save!SubscribeSign Up",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Art in America",
+    "text": "Art in AmericaThe World's Premier Art Magazine since 1913. Subscribe today and save!SubscribeSign Up",
+    "url": null,
+    "_source": "artnews.com"
+  },
+  {
+    "name": "Our Sites",
+    "text": "Icon LinkPlus IconARTnews is a part of Penske Media Corporation. \u00a9 2026 Art Media, LLC. All Rights Reserved.Powered by WordPress.com VIPOur SitesArt in AmericaArtforumARTnewsBillboardBlogHerDeadlineFlow SpaceFootwear NewsGold DerbyIndieWireRobb ReportRolling StoneSheKnowsSoapsSourcing JournalSporticoStyleCasterThe Hollywood ReporterVarietyVibeWWD",
+    "url": "https://www.artnews.com/c/art-in-america/",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "In 2026, there is no shortage of art fairs taking place around the world. When it comes to the art market this year, all eyes will be on the Gulf region as Art Basel launches a fair in Qatar this February and Frieze takes over Abu Dhabi Art, which runs in November. One other major change to the calendar is that Frieze Seoul and the Armory Show will no longer conflict with each other.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Since last summer, there have been a slew of gallery closures, running the gamut from blue-chip dealerships to emerging enterprises. Several of the exhibitor lists that have already been announced reflect these changes, and it seems that galleries are being more selective with how many fairs they will be participating in 2026.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "For its 2026 edition, FOG will bring together more than 60 galleries, across its main Galleries section and its Focus section, for emerging artists whose work is offered at \u201cmore accessible price points,\u201d according to the fair. Its preview gala benefits educative initiatives at the San Francisco Museum of Modern Art.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Staged at the iconic Marina Bay Sands, ART SG will return for its fourth edition, bringing together95 exhibitors. The 2026 iteration will introduce a performance art section, via a new partnership with Shanghai\u2019s Rockbund Art Museum, whose executive director and chief curator, X-Zhu Nowell, will take on the role of the fair\u2019s film and performance art curator. The fair will also launch ART SG Futures Prize with UBS, which will go to an emerging artist featured in the Futures section. Additionally, S.E.A. Focus, previously an independent fair, will stage its eighth edition at ART SG this year.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "In May 2025, Art Basel announced that it would launch a brand-new fair in Doha, the capital city of Qatar. Produced in partnership with Qatar Sports Investments (QSI) and QC+, Art Basel Qatar will bring together 87 exhibitors from 31 countries and territories for its inaugural edition, which will be split across multiple venues in downtown Doha. This version of an Art Basel fair is also unique, since its artistic director is neither a curator nor a market figure but Wael Shawky, an acclaimed artist. In another unusual move for a major fair, every booth will focus on a single artist. Each booth\u2019s subject was announced ahead of the fair.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Mexico City will once again light up in February with four fairs: Zona Maco, Feria Material, Sal\u00f3n Acme, and Unique Design X.Zona Macois one of the most important fairs in Latin America and includes sections dedicated to design, historical objects, photography, and books alongside its main contemporary art section. The 2026 edition of the fair will introduce a new section called Forma, that is a collaboration between the contemporary art and design sectors of the fair. Aim\u00e9 Iglesias Lukin, director of Americas Society in New York, will curate the fair\u2019s Ejes section for the first time.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Sal\u00f3n Acmeis an artist-focused fair staged in two historic buildings in the city\u2019s Colonia Ju\u00e1rez; artists are selected by a curatorial board from an open call, and one section will focus on art from the state of Puebla, curated by art historian Nina Fiocco.Unique Design X\u2019s 2026 iteration will focus on \u201cthe innate, intricate and symbiotic essence of how objects and our surroundings inform how we live.\u201d",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s coverage of Mexico City Art Week 2025.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "A sharp look at contemporary art scenes across Africa and its diaspora, 1-54 Marrakech is among the smallest of the world\u2019s art fairs but with an outsize impact, featuring top galleries from around the world in conversation with Moroccan enterprises. The 2026 edition will bring together around 20 exhibitors.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s coverage of the 2025 edition 1-54 Marrakech.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "The India Art Fair is the subcontinent\u2019s largest art fair, gathering around130 exhibitorsfor its 2026 edition. This year\u2019s iteration will see the introduction of Swali Craft Prize; an expanded performance art program, organized by Nikhil Chopra and HH Art Spaces; and a reimagining of its facade, which will be done by Afrah Shafiq, as part of the fair\u2019s \u201cThe Future is Born of Art Commission.\u201d",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s coverage of the 2025 India Art Fair.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s 2025 coverage of Frieze LA and Felix LA.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "For its 2026 edition, the Outsider Art Fair in New York will bring together around 70 exhibitors and will be the firstunder the directionof former dealer Elizabeth Denny.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Celebrating its 45th edition in 2026, ARCOmadrid will bring together 170 galleries in its main section. It will also feature three curated sections: \u201cARCO2045: El Futuro, Por Ahora,\u201d curated by Jos\u00e9 Luis Blondet (of LACMA) and Magali Arriola (formerly of Museo Tamayo); \u201cOpening. New galleries,\u201d organized by independent curators Rafa Barber and Anissa Touati; and \u201cProfiles. Latin American Art,\u201d curated by Jos\u00e9 Esparza Chong Cuy, the executive director and chief Curator of the Storefront for Art and Architecture in New York. Around a third of the fair will be comprised of Spanish galleries, while nearly 20 percent comes from Latin America.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "TEFAF Maastricht will bring together276 exhibitorsfrom 24 countries for its 2026 edition, who will present art and antiquities spanning 7,000 years. Among the first-time exhibitors are GRIMM, Ceysson & B\u00e9n\u00e9ti\u00e8re, and Proyectos Monclova Gallery. In addition to its main section, TEFAF Maastrict also includes \u201cFocus,\u201d for single-artist presentations of pioneering artists from throughout art history, and \u201cShowcase,\u201d which this year will feature nine emerging dealers, whose specialities span Renaissance art and 21st-century Mexican design.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s 2025 coverage of TEFAF Maastricht.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s 2025 coverage of Art Basel Hong Kong.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "SP-Arte, Brazil\u2019s largest art fair, will host its 22nd edition in 2026. With around 180 exhibitors, the fair brings together some of Latin America\u2019s most important and closely watched galleries together alongside a selection of international exhibitors. The 2026 edition will relaunch the Showcase sector for international exhibitors showing at the fair for the first time or after a hiatus, as well as the launch of Design Now, a platform for contemporary design. It will also have two stages for talks, about the art market and artistic practice.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "In November 2025, the International Fine Print Dealers Associationannouncedthat it would become the International Fine Prints & Drawings Association. This name change is meant to signify the association\u2019s embrace of dealers of drawings to its membership and its annual IFPDA Print Fair. The 2026 edition will be the first since this change, the first in 30 years. The IFPDA Print Fair has also slightly shifted its dates a few weeks back, from late March to mid-April.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Part of the Frieze portfoliosince 2023, Expo Chicago\u2019s 2026 edition will be its 13th and the firstunder the directionof Kate Sierzputowski, with Essence Harden serving as curator. While its exhibitor list has still not been announced, the forthcoming edition will be \u201ca more focused fair with a smaller floorplan, designed to highlight the strongest work and ideas,\u201d according to a release. The fair will also take place in early April this year, instead of the final weeks of the month as it did in 2025.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Long a bastion of collecting, Dallas now boasts two art fairs that run concurrently each spring. The long-running\u00a0Dallas Art Fair will host its 18th edition in 2026. The younger Dallas Invitational will mount its fourth edition this year; operating under an invite-only model, the fair plans to increase its footprint for 2026. Both fairs plan to release their exhibitor lists in the coming week.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "For its 2025 edition, Art Brussels will bring together some 135 galleries to two halls within the iconic Brussels Expo, an Art Deco structure built in 1935.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "The 2026 editions of five New York art fairs will coincide over the course of one week this year: Frieze New York,\u00a0NADA New York, Independent, TEFAF New York, and 1-54 New York. While the fairs have yet to announce their exhibitor lists, they will once again bring together hundreds of dealers from around the country and the world at various venues across the city. Frieze, NADA, and 1-54 are both within walking distance of New York\u2019s Chelsea gallery district, while TEFAF will be once again held at the Park Avenue Armory.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "For 2026, Independent will relocate to Pier 36, at the south of Chinatown and the Lower East Side; architecture firm SO-il will oversee the exterior look of the fair, while Diogo Passarinho Studio will manage the exhibition design. This year, the fair will alsopartnerwith the Henry Street Settlement for the latter\u2019s annual gala fundraiser on opening night.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s coverage of May 2025 New York art fairs.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "While Art Dubai might maintain its status as the largest art fair in the Middle East this year, it will face serious competition from Art Basel Qatar (in February) and Frieze Abu Dhabi (in November). Marking its 20th anniversary in 2026, this year\u2019s edition, the first under the direction of Dunja Gottweis, will bring together more than 100 galleries from over 35 countries, including 36 first-time exhibitors.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "In addition to the main fair, Basel also sees several satellite fairs pop up around the Messe and elsewhere. Liste was founded in 1996 as \u201cThe Young Art Fair in Basel\u201d and is known for bringing together more cutting-edge international galleries; the fair now takes place at the Messe Basel, with its entrance around the corner from the main fair. In 2025, Liste introduced a new section titled Wall for artist-run spaces; four such organizations are expected to participate in 2026.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "The Basel Social Club was founded in 2022 as an anti\u2013art fair, with an emphasis on creating a social space for casual conversation that is filled with art. The event has not announced details for 2025.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s 2025 coverage of Art Basel.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "For its fifth edition, Frieze Seoul will return to the massive COEX convention center in the Korean capital. Frieze Seoul typically draws top international blue-chip galleries to Seoul, many of which have since established outposts in the city; the 2025 edition featured 116 exhibitors. For 2026, its Focus section will expand its purview from solely focusing on Asia-based galleries to include international galleries in operation for fewer than 15 years, with independent curator Seolhui Lee advising. This year, Frieze Seoul will not overlap with the Armory Show in New York, which it has owned since 2023. Frieze also aligns with Kiaf Seoul, a homegrown fair founded in 2002 that focuses on the Korean market. The two fairs recently renewed their collaboration for another five years.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s 2025 coverage of Frieze Seoul.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "For its 2026 edition, Sydney Contemporary, Australia\u2019s largest art fair, will bring together more than 100 galleries, with a strong showing of exhibitors from Australia and across the Asia-Pacific region.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "After hosting its first two editions in early July, Tokyo Gendaishifted its dateslast year to the second week of September, which it will keep for 2026. Taking place the week after Frieze Seoul, these dates pose the same dilemma for visitors as Frieze London and Art Basel Paris currently do, since those two fairs are also held in back-to-back weeks in October. Taking place at a convention center in the nearby city of Yokohama, the 2026 edition of Tokyo Gendai will be split into five sections, including a new one called Miki (Trunk) for works on paper and photography.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Since joining Frieze\u2019s portfolio in 2023, the Armory Show has conflicted with Frieze Seoul, both running the first week of September. For 2026, that will no longer be the case, as the fair shifts to later in September, away from its post\u2013Labor Day, back-to-school vibes it has had since it changed venues to the Javits Center.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Running concurrently with the Armory Show is Independent 20th Century, which focuses on art from that era with the aim of revising the art historical canon. For 2026, the fair has also relocated to the Breuer building in the Upper East Side, now the headquarters of Sotheby\u2019s. The floor plan for this edition will be designed by international starchitect firm Herzog & de Meuron.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s 2025 coverage of the Armory Show.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Now in its third edition, the Atlanta Art Fair will return to Pullman Yards for 2026. The fair\u2019s exhibitor list will be released later this year, with curator Nato Thompson continuing his role as artistic director. (The fair is part of the portfolio of AMP, which runs three other fairs throughout the year: San Francisco Art Fair, Seattle Art Fair, Art on Paper.)",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "After having expanded to Houston in 2025, Untitled Art, Houston will stage its sophomore edition this year. While the inaugural edition, which hosted 88 exhibitors, took place in mid-September, the upcoming fair will shift to the first week of October.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "ReadARTnews\u2019s 2025 coverage of Frieze London.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Since launching in 2022, Art Basel Paris (n\u00e9e Paris+ par Art Basel) has slowly begun to eclipse its older sibling, Art Basel\u2019s original Swiss edition, with many American collectors preferring the French capital to Basel. Now firmly established in its permanent home, the iconic Grand Palais, the 2026 edition will be done under the direction of its new leader, Karim Crippa. The fair is accompanied by at least one major satellite, Paris Internationale, which has run since 2015.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Read ARTnews\u2019s 2025 coverage of Art Basel Paris.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "The world\u2019s oldest art fair celebrates its 59th edition in 2026. The 2025 edition of the fair featured 167 galleries from 25 countries, and welcomed some 45,000 visitors during its run. \u201cThe art market is stable and presents itself as fit for the future. Cologne is the best proof of this,\u201d Art Cologne director Daniel Hug said in a statement after the 2025 fair.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "In July 2025, the Art Dealers Association of America made the startling decision to cancel its annual art fair, called the Art Show. That cancelation was termed a \u201cstrategic pause\u201d by its board, likely having to do, in part, with the ADAA ending its partnership with Henry Street Settlement. (For years, the Art Show\u2019s opening night severed as a benefit for the Lower Side East nonprofit; Henry Street will partner with Independent going forward.) Now, the Art Show will return in 2026,changing its nameto the ADAA Fair and shifting its dates a few weeks back to mid-November.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "In October 2025, Friezeannouncedthat it would take over the homegrown Abu Dhabi Art fair, working in collaboration with the Department of Culture and Tourism \u2013 Abu Dhabi (DCT Abu Dhabi). Because that fair launched in 2007, Frieze is coming into the region with a certain amount of groundwork already laid. (Its competitor, Art Basel, will launch a wholly new fair in Qatar, which did not previously host a major art fair.) The details for Frieze Abu Dhabi\u2019s inaugural edition are still under wraps, as the fair has not confirmed the planned number of exhibitors or its run dates in November. The2025 edition of Abu Dhabi Artran from November 19\u201323 and hosted more than 140 exhibitors.",
+    "_source": "artnews.com"
+  },
+  {
+    "text": "Read ARTnews\u2019s 2025 coverage of Miami Art Week.",
+    "_source": "artnews.com"
+  }
+]
