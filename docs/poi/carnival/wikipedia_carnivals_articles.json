@@ -1,0 +1,747 @@
+{
+  "source_articles": [
+    {
+      "title": "Carnival_in_Italy",
+      "url": "https://en.wikipedia.org/wiki/Carnival_in_Italy",
+      "country": "Italy",
+      "records_extracted": 9,
+      "record_names": [
+        "Venice Carnival",
+        "Viareggio Carnival",
+        "Carnival of Ivrea",
+        "Carnival of Cento",
+        "Putignano Carnival",
+        "Acireale Carnival",
+        "Carnival of Sciacca",
+        "Ambrosian Carnival",
+        "Sardinian Carrasecare"
+      ]
+    },
+    {
+      "title": "Carnival_in_the_Netherlands",
+      "url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands",
+      "country": "Netherlands",
+      "records_extracted": 13,
+      "record_names": [
+        "Bergen op Zoom Carnival",
+        "Eindhoven Carnival",
+        "Den Bosch Carnival",
+        "Breda Carnival",
+        "Tilburg Carnival",
+        "Maastricht Carnival",
+        "Asia Carnival",
+        "Europe Carnival",
+        "North America Carnival",
+        "Caribbean Carnival",
+        "South America Carnival",
+        "Oceania Carnival",
+        "Related Carnival"
+      ]
+    },
+    {
+      "title": "Patras_Carnival",
+      "url": "https://en.wikipedia.org/wiki/Patras_Carnival",
+      "country": "Greece",
+      "records_extracted": 1,
+      "record_names": [
+        "Patras Carnival"
+      ]
+    },
+    {
+      "title": "Kukeri",
+      "url": "https://en.wikipedia.org/wiki/Kukeri",
+      "country": "Bulgaria",
+      "records_extracted": 26,
+      "record_names": [
+        "Kukeri",
+        "Kukeri in Do",
+        "Kukeri in You",
+        "Kukeri in For",
+        "Kukeri in Consider",
+        "Kukeri in Do",
+        "Kukeri in You",
+        "Kukeri in For",
+        "Kukeri in Kukeri",
+        "Kukeri in Kukeri",
+        "Kukeri in Kukeri",
+        "Kukeri in Kukeri",
+        "Kukeri in Kukeri",
+        "Kukeri in Kukeri",
+        "Kukeri in Kukeri",
+        "Kukeri in Kukeri",
+        "Kukeri in Kukeri",
+        "Kukeri in Kukeri",
+        "Kukeri in Kuker",
+        "Kukeri in Acta",
+        "Kukeri in Capra",
+        "Kukeri in Kukeri",
+        "Kukeri in Mari",
+        "Kukeri in Phallic",
+        "Kukeri in Slavic",
+        "Kukeri in Surva"
+      ]
+    },
+    {
+      "title": "Busójárás",
+      "url": "https://en.wikipedia.org/wiki/Busójárás",
+      "country": "Hungary",
+      "records_extracted": 1,
+      "record_names": [
+        "Busójárás"
+      ]
+    },
+    {
+      "title": "Fastelavn",
+      "url": "https://en.wikipedia.org/wiki/Fastelavn",
+      "country": "Denmark/Nordic",
+      "records_extracted": 8,
+      "record_names": [
+        "Fastelavn",
+        "Fastelavn in Denmark",
+        "Fastelavn in Norway",
+        "Fastelavn in Sweden",
+        "Fastelavn in Latvia",
+        "Fastelavn in Estonia",
+        "Fastelavn in Iceland",
+        "Fastelavn in Finland"
+      ]
+    },
+    {
+      "title": "Notting_Hill_Carnival",
+      "url": "https://en.wikipedia.org/wiki/Notting_Hill_Carnival",
+      "country": "United Kingdom",
+      "records_extracted": 1,
+      "record_names": [
+        "Notting Hill Carnival"
+      ]
+    },
+    {
+      "title": "Carnival_in_Germany",
+      "url": "https://en.wikipedia.org/wiki/Carnival_in_Germany",
+      "country": "Germany",
+      "records_extracted": 6,
+      "record_names": [
+        "Carnival in Germany (Karneval/Fasching/Fastnacht)",
+        "Cologne Carnival (Kölner Karneval)",
+        "Düsseldorf Carnival",
+        "Mainz Carnival",
+        "Munich Fasching",
+        "Rottweil Narrensprung"
+      ]
+    }
+  ],
+  "total_records": 65,
+  "records": [
+    {
+      "name": "Venice Carnival",
+      "city": "Venice",
+      "country": "Italy",
+      "description": "Carnival in Italy plays a very important role in Italian folklore, traditionally linked to regional masks, and is celebrated in many cities, some of which are known throughout the world for the special celebrations they organize for this occasion. It is a farewell party to eat, drink, and have fun before the limitations and solemnity of Lent. About a month before Ash Wednesday, Italians celebrate over many weekends with parades, masks, and confetti. The most famous Carnivals in Italy are those h",
+      "dates": "Ash Wednesday",
+      "source_article": "Carnival_in_Italy",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Italy"
+    },
+    {
+      "name": "Viareggio Carnival",
+      "city": "Viareggio",
+      "country": "Italy",
+      "description": "Carnival in Italy plays a very important role in Italian folklore, traditionally linked to regional masks, and is celebrated in many cities, some of which are known throughout the world for the special celebrations they organize for this occasion. It is a farewell party to eat, drink, and have fun before the limitations and solemnity of Lent. About a month before Ash Wednesday, Italians celebrate over many weekends with parades, masks, and confetti. The most famous Carnivals in Italy are those h",
+      "dates": "Ash Wednesday",
+      "source_article": "Carnival_in_Italy",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Italy"
+    },
+    {
+      "name": "Carnival of Ivrea",
+      "city": "Ivrea",
+      "country": "Italy",
+      "description": "Carnival in Italy plays a very important role in Italian folklore, traditionally linked to regional masks, and is celebrated in many cities, some of which are known throughout the world for the special celebrations they organize for this occasion. It is a farewell party to eat, drink, and have fun before the limitations and solemnity of Lent. About a month before Ash Wednesday, Italians celebrate over many weekends with parades, masks, and confetti. The most famous Carnivals in Italy are those h",
+      "dates": "Ash Wednesday",
+      "source_article": "Carnival_in_Italy",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Italy"
+    },
+    {
+      "name": "Carnival of Cento",
+      "city": "Cento",
+      "country": "Italy",
+      "description": "Carnival in Italy plays a very important role in Italian folklore, traditionally linked to regional masks, and is celebrated in many cities, some of which are known throughout the world for the special celebrations they organize for this occasion. It is a farewell party to eat, drink, and have fun before the limitations and solemnity of Lent. About a month before Ash Wednesday, Italians celebrate over many weekends with parades, masks, and confetti. The most famous Carnivals in Italy are those h",
+      "dates": "Ash Wednesday",
+      "source_article": "Carnival_in_Italy",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Italy"
+    },
+    {
+      "name": "Putignano Carnival",
+      "city": "Putignano",
+      "country": "Italy",
+      "description": "Carnival in Italy plays a very important role in Italian folklore, traditionally linked to regional masks, and is celebrated in many cities, some of which are known throughout the world for the special celebrations they organize for this occasion. It is a farewell party to eat, drink, and have fun before the limitations and solemnity of Lent. About a month before Ash Wednesday, Italians celebrate over many weekends with parades, masks, and confetti. The most famous Carnivals in Italy are those h",
+      "dates": "Ash Wednesday",
+      "source_article": "Carnival_in_Italy",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Italy"
+    },
+    {
+      "name": "Acireale Carnival",
+      "city": "Acireale",
+      "country": "Italy",
+      "description": "Carnival in Italy plays a very important role in Italian folklore, traditionally linked to regional masks, and is celebrated in many cities, some of which are known throughout the world for the special celebrations they organize for this occasion. It is a farewell party to eat, drink, and have fun before the limitations and solemnity of Lent. About a month before Ash Wednesday, Italians celebrate over many weekends with parades, masks, and confetti. The most famous Carnivals in Italy are those h",
+      "dates": "Ash Wednesday",
+      "source_article": "Carnival_in_Italy",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Italy"
+    },
+    {
+      "name": "Carnival of Sciacca",
+      "city": "Sciacca",
+      "country": "Italy",
+      "description": "Carnival in Italy plays a very important role in Italian folklore, traditionally linked to regional masks, and is celebrated in many cities, some of which are known throughout the world for the special celebrations they organize for this occasion. It is a farewell party to eat, drink, and have fun before the limitations and solemnity of Lent. About a month before Ash Wednesday, Italians celebrate over many weekends with parades, masks, and confetti. The most famous Carnivals in Italy are those h",
+      "dates": "Ash Wednesday",
+      "source_article": "Carnival_in_Italy",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Italy"
+    },
+    {
+      "name": "Ambrosian Carnival",
+      "city": "Milan",
+      "country": "Italy",
+      "description": "The Carnival in Venice was first documented in 1296, with a proclamation by the Venetian Senate announcing a public festival the day before the start of Lent. Today, about 3 million people travel to Venice to take part in the famous Carnival.1 The Carnival of Viareggio is the second-most popular in Italy. The first Carnival of Viareggio parade was held in 1873.2 Every year, the Carnival of Viareggio attracts more than 500,000 spectators.3 The Carnival of Ivrea is famous for its \"Battle of the Or",
+      "dates": "Lent",
+      "source_article": "Carnival_in_Italy",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Italy"
+    },
+    {
+      "name": "Sardinian Carrasecare",
+      "city": "Sardinia",
+      "country": "Italy",
+      "description": "In Sardinia, the Carnival (in Sardinian language Carrasecare or Carrasegare9) varies greatly from the one in the mainland of Italy. the majority of the Sardinian celebrations features not only feasts and parades but also crude fertility rites such as bloodsheds to fertilize the land,10 the death and the resurrection of the Carnival characters11 and representations of violence and torture.10 The typical characters of the Sardinian Carnival are zoomorphic and/or androgynous, such as the Mamuthones",
+      "dates": "",
+      "source_article": "Carnival_in_Italy",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Italy"
+    },
+    {
+      "name": "Bergen op Zoom Carnival",
+      "city": "Bergen op Zoom",
+      "country": "Netherlands",
+      "description": "",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Eindhoven Carnival",
+      "city": "Eindhoven",
+      "country": "Netherlands",
+      "description": "The Burgundian Carnaval does not necessarily use the green, red and yellow which is used in the Rhenish Carnaval. In Den Bosch for example, the traditional carnaval colors are red, white and yellow. These colors are the combined colors of the catholic church (white and yellow), and the Brabantian flag (red and white). A flag with these colors is already seen on the painting The Fight Between Carnival and Lent by Pieter Bruegel in 1559, 's-Hertogenbosch.59 Tilburg uses green and orange as carnava",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Den Bosch Carnival",
+      "city": "'s-Hertogenbosch",
+      "country": "Netherlands",
+      "description": "In the sixteenth century, public and massive carnaval celebration from the Middle Ages came to an end. The council of Trent (1545–1563) and the reformation caused a complete reverse in attitude towards the carnaval.12 The schism within Christianity as a result of the reformation, led to a religious divide in the territory of the present Netherlands. Protestantism became the dominant religion north of the rivers Meuse and Rhine. In the areas that cover today the provinces of Limburg and North Bra",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Breda Carnival",
+      "city": "Breda",
+      "country": "Netherlands",
+      "description": "Motto's of \"Kielegat\" (Breda) since 2000",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Tilburg Carnival",
+      "city": "Tilburg",
+      "country": "Netherlands",
+      "description": "The Burgundian Carnaval does not necessarily use the green, red and yellow which is used in the Rhenish Carnaval. In Den Bosch for example, the traditional carnaval colors are red, white and yellow. These colors are the combined colors of the catholic church (white and yellow), and the Brabantian flag (red and white). A flag with these colors is already seen on the painting The Fight Between Carnival and Lent by Pieter Bruegel in 1559, 's-Hertogenbosch.59 Tilburg uses green and orange as carnava",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Maastricht Carnival",
+      "city": "Maastricht",
+      "country": "Netherlands",
+      "description": "From Den Bosch is according to a document from 1383 known that public stage performances, jousting tournaments, games, cockfights and role dressing were organized.29 Around 1400 it was prohibited to roll dice (gambling), but an exception was made during carnaval. This appears from a letter from the council of Maastricht in 1405. The ban was temporarily lifted and people were allowed to play dice during the carnaval.12",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Asia Carnival",
+      "city": "Asia",
+      "country": "Netherlands",
+      "description": "Indonesia Solo Jember Jakarta Philippines Sinulog Ati-Atihan festival",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Europe Carnival",
+      "city": "Europe",
+      "country": "Netherlands",
+      "description": "Austria Belgium Aalst Binche Denmark England Finland France Nice Paris Germany Cologne Mainz Greece Patras Hungary Italy Venice Viareggio Ivrea Foiano della Chiana Satriano di Lucania Lithuania Malta Netherlands Portugal Madeira Ovar Slavic Belarus, Russia, Ukraine Croatia Slovenia Spain Cádiz Las P",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "North America Carnival",
+      "city": "North America",
+      "country": "Netherlands",
+      "description": "Canada Ottawa Quebec City Toronto México Vera Cruz Mazatlán United States Mobile New Orleans New York City",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Caribbean Carnival",
+      "city": "Caribbean",
+      "country": "Netherlands",
+      "description": "Antigua Bahamas Barbados Cayman Islands Cuba Dominica Dominican Republic Haiti Jamaica Nevis Puerto Rico (Ponce) Trinidad and Tobago",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "South America Carnival",
+      "city": "South America",
+      "country": "Netherlands",
+      "description": "Argentina Buenos Aires Gualeguaychú Murga Bolivia Oruro Brazil Rio São Paulo Bahia Recife Colombia Barranquilla Negros y Blancos French Guiana Cayenne Guyana Panama Las Tablas Peru Cajamarca Uruguay",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Oceania Carnival",
+      "city": "Oceania",
+      "country": "Netherlands",
+      "description": "Australia",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Related Carnival",
+      "city": "Related",
+      "country": "Netherlands",
+      "description": "Mardi Gras",
+      "dates": "Three days before Ash Wednesday",
+      "source_article": "Carnival_in_the_Netherlands",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands"
+    },
+    {
+      "name": "Patras Carnival",
+      "city": "",
+      "country": "Greece",
+      "description": "The Patras Carnival, or Patrino karnavali, is the largest event of its kind in Greece. The Carnival was first held in 1829.1 The events begin on 17 January and last up to Clean Monday. The carnival of Patras is not a single event but a variety of events that includes balls, parades, hidden treasure hunt and the children's carnival amongst others. It climaxes in the last weekend of Carnival with the Saturday evening parade of carnival groups, the extravagant Sunday parade of floats and groups, and finally the ritual burning of the carnival king at the St. Nikolaos Street pier in the harbour of ",
+      "dates": "Lent",
+      "infobox": {},
+      "headings": [],
+      "source_article": "Patras_Carnival",
+      "source_url": "https://en.wikipedia.org/wiki/Patras_Carnival"
+    },
+    {
+      "name": "Kukeri",
+      "city": "Various villages",
+      "country": "Bulgaria",
+      "description": "Kukeri (Bulgarian: кукери; singular: kuker, кукер) are elaborately costumed Bulgarian men who perform traditional rituals intended to scare away evil spirits.",
+      "dates": "Late January to early March (before Lent)",
+      "infobox": {},
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Do",
+      "city": "Do",
+      "country": "Bulgaria",
+      "description": "Do not translate text that appears unreliable or low-quality. If possible, verify the text with references provided in the foreign-language article.",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in You",
+      "city": "You",
+      "country": "Bulgaria",
+      "description": "You may also add the template {{Translated|bg|Кукери}} to the talk page.",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in For",
+      "city": "For",
+      "country": "Bulgaria",
+      "description": "For more guidance, see Wikipedia:Translation.",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Consider",
+      "city": "Consider",
+      "country": "Bulgaria",
+      "description": "Consider adding a topic to this template: there are already 1,985 articles in the main category, and specifyingtopic will aid in categorization.",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Do",
+      "city": "Do",
+      "country": "Bulgaria",
+      "description": "Do not translate text that appears unreliable or low-quality. If possible, verify the text with references provided in the foreign-language article.",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in You",
+      "city": "You",
+      "country": "Bulgaria",
+      "description": "You may also add the template {{Translated|de|Kukeri}} to the talk page.",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in For",
+      "city": "For",
+      "country": "Bulgaria",
+      "description": "For more guidance, see Wikipedia:Translation.",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri in Smolyan",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri in Blagoevgrad",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri in Gorna Vasilitsa",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri masks from Zidarovo",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri masks from Pernik",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri in Brezhani",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri parade in the village of Drugan",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri in the village of Pudarevo",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri in Kalishte during Survakibg",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri in Begunovti during Survaki in 2012",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kuker",
+      "city": "Kuker",
+      "country": "Bulgaria",
+      "description": "Kuker in Burgas",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Acta",
+      "city": "Acta",
+      "country": "Bulgaria",
+      "description": "Acta Dasii",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Capra",
+      "city": "Capra",
+      "country": "Bulgaria",
+      "description": "Capra (goat dance)",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Kukeri",
+      "city": "Kukeri",
+      "country": "Bulgaria",
+      "description": "Kukeri Nunataks",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Mari",
+      "city": "Mari",
+      "country": "Bulgaria",
+      "description": "Mari Lwyd",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Phallic",
+      "city": "Phallic",
+      "country": "Bulgaria",
+      "description": "Phallic processions",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Slavic",
+      "city": "Slavic",
+      "country": "Bulgaria",
+      "description": "Slavic Carnival",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Kukeri in Surva",
+      "city": "Surva",
+      "country": "Bulgaria",
+      "description": "Surva Festival",
+      "dates": "",
+      "source_article": "Kukeri",
+      "source_url": "https://en.wikipedia.org/wiki/Kukeri"
+    },
+    {
+      "name": "Busójárás",
+      "city": "",
+      "country": "Hungary",
+      "description": "The busójárás (Hungarian, meaning \"Busó-walking\"; in Croatian: Pohod bušara1) is an annual celebration of the Šokci living in the town of Mohács, Hungary, held at the end of the Carnival season (\"farsang\"), ending the day before Ash Wednesday. The celebration features Busós (people wearing traditional masks) and includes folk music, masquerading, parades and dancing. Busójárás lasts six days, usually during February. It starts on a Thursday, followed by the Kisfarsang (Little Farsang) carnival on Friday, with the biggest celebration, farsang vasárnap (Farsang Sunday) on the Sunday before Easte",
+      "dates": "Annual",
+      "infobox": {
+        "Status": "Active",
+        "Genre": "Carnival",
+        "Frequency": "Annual",
+        "Locations": "Mohács, Hungary"
+      },
+      "headings": [],
+      "source_article": "Busójárás",
+      "source_url": "https://en.wikipedia.org/wiki/Busójárás"
+    },
+    {
+      "name": "Fastelavn",
+      "city": "Various",
+      "country": "Denmark/Nordic/Baltic",
+      "description": "Fastelavn1 is a Carnival tradition in the Northern European, and historically Lutheran, nations of Denmark, Norway, Sweden, Latvia, Estonia, Iceland, Faroe Islands, as well as Greenland.23",
+      "dates": "7 weeks before Easter (February/March)",
+      "infobox": {},
+      "headings": [],
+      "source_article": "Fastelavn",
+      "source_url": "https://en.wikipedia.org/wiki/Fastelavn"
+    },
+    {
+      "name": "Fastelavn in Denmark",
+      "city": "",
+      "country": "Denmark",
+      "description": "Fastelavn1 is a Carnival tradition in the Northern European, and historically Lutheran, nations of Denmark, Norway, Sweden, Latvia, Estonia, Iceland, Faroe Islands, as well as Greenland.23",
+      "dates": "7 weeks before Easter",
+      "source_article": "Fastelavn",
+      "source_url": "https://en.wikipedia.org/wiki/Fastelavn"
+    },
+    {
+      "name": "Fastelavn in Norway",
+      "city": "",
+      "country": "Norway",
+      "description": "Fastelavn1 is a Carnival tradition in the Northern European, and historically Lutheran, nations of Denmark, Norway, Sweden, Latvia, Estonia, Iceland, Faroe Islands, as well as Greenland.23",
+      "dates": "7 weeks before Easter",
+      "source_article": "Fastelavn",
+      "source_url": "https://en.wikipedia.org/wiki/Fastelavn"
+    },
+    {
+      "name": "Fastelavn in Sweden",
+      "city": "",
+      "country": "Sweden",
+      "description": "Fastelavn1 is a Carnival tradition in the Northern European, and historically Lutheran, nations of Denmark, Norway, Sweden, Latvia, Estonia, Iceland, Faroe Islands, as well as Greenland.23",
+      "dates": "7 weeks before Easter",
+      "source_article": "Fastelavn",
+      "source_url": "https://en.wikipedia.org/wiki/Fastelavn"
+    },
+    {
+      "name": "Fastelavn in Latvia",
+      "city": "",
+      "country": "Latvia",
+      "description": "Fastelavn1 is a Carnival tradition in the Northern European, and historically Lutheran, nations of Denmark, Norway, Sweden, Latvia, Estonia, Iceland, Faroe Islands, as well as Greenland.23",
+      "dates": "7 weeks before Easter",
+      "source_article": "Fastelavn",
+      "source_url": "https://en.wikipedia.org/wiki/Fastelavn"
+    },
+    {
+      "name": "Fastelavn in Estonia",
+      "city": "",
+      "country": "Estonia",
+      "description": "Fastelavn1 is a Carnival tradition in the Northern European, and historically Lutheran, nations of Denmark, Norway, Sweden, Latvia, Estonia, Iceland, Faroe Islands, as well as Greenland.23",
+      "dates": "7 weeks before Easter",
+      "source_article": "Fastelavn",
+      "source_url": "https://en.wikipedia.org/wiki/Fastelavn"
+    },
+    {
+      "name": "Fastelavn in Iceland",
+      "city": "",
+      "country": "Iceland",
+      "description": "Fastelavn1 is a Carnival tradition in the Northern European, and historically Lutheran, nations of Denmark, Norway, Sweden, Latvia, Estonia, Iceland, Faroe Islands, as well as Greenland.23",
+      "dates": "7 weeks before Easter",
+      "source_article": "Fastelavn",
+      "source_url": "https://en.wikipedia.org/wiki/Fastelavn"
+    },
+    {
+      "name": "Fastelavn in Finland",
+      "city": "",
+      "country": "Finland",
+      "description": "The related word Fastelovend is used for Carnival in Germany in Cologne and Bonn with the same meaning. Fastelavn is related to the Roman Catholic tradition of Carnival in the days before Lent, although after Denmark became a Protestant nation the festival adopted certain distinctive characteristics. The holiday occurs the week before the Christian penitential season of Lent, culminating on Shrove Tuesday, the day before Ash Wednesday, the first day of Lent.7 The Swedish counterpart is Fastlagen",
+      "dates": "7 weeks before Easter",
+      "source_article": "Fastelavn",
+      "source_url": "https://en.wikipedia.org/wiki/Fastelavn"
+    },
+    {
+      "name": "Notting Hill Carnival",
+      "city": "",
+      "country": "United Kingdom",
+      "description": "The Notting Hill Carnival is an annual Caribbean Carnival event that has taken place in London since 19662 on the streets of the Notting Hill area of Kensington, over the August Bank Holiday weekend.3",
+      "dates": "Annually – August Bank Holiday weekend",
+      "infobox": {
+        "Genre": "Carnival",
+        "Frequency": "Annually – August Bank Holiday weekend",
+        "Locations": "Ladbroke Grove, London, England",
+        "Yearsactive": "1966–present",
+        "Founders": "Claudia Jones, Rhaune Laslett, Leslie Palmer, Sam King, Duke Vin",
+        "Most recent": "23August2025(2025-08-23) – 25August2025(2025-08-25)",
+        "Next event": "29August2026(2026-08-29) – 31August2026(2026-08-31)",
+        "Attendance": "2 million attendees, 40,000 volunteers and 9,000 police1",
+        "Website": "nhcarnival.org"
+      },
+      "headings": [],
+      "source_article": "Notting_Hill_Carnival",
+      "source_url": "https://en.wikipedia.org/wiki/Notting_Hill_Carnival"
+    },
+    {
+      "name": "Carnival in Germany (Karneval/Fasching/Fastnacht)",
+      "city": "Various",
+      "country": "Germany",
+      "description": "",
+      "dates": "November 11 - Ash Wednesday",
+      "infobox": {},
+      "headings": [],
+      "source_article": "Carnival_in_Germany",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Germany"
+    },
+    {
+      "name": "Cologne Carnival (Kölner Karneval)",
+      "city": "Cologne",
+      "country": "Germany",
+      "description": "",
+      "dates": "November 11 start, peak in February/March before Lent",
+      "source_article": "Carnival_in_Germany",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Germany"
+    },
+    {
+      "name": "Düsseldorf Carnival",
+      "city": "Düsseldorf",
+      "country": "Germany",
+      "description": "",
+      "dates": "November 11 start, peak in February/March before Lent",
+      "source_article": "Carnival_in_Germany",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Germany"
+    },
+    {
+      "name": "Mainz Carnival",
+      "city": "Mainz",
+      "country": "Germany",
+      "description": "",
+      "dates": "November 11 start, peak in February/March before Lent",
+      "source_article": "Carnival_in_Germany",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Germany"
+    },
+    {
+      "name": "Munich Fasching",
+      "city": "Munich",
+      "country": "Germany",
+      "description": "",
+      "dates": "November 11 start, peak in February/March before Lent",
+      "source_article": "Carnival_in_Germany",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Germany"
+    },
+    {
+      "name": "Rottweil Narrensprung",
+      "city": "Rottweil",
+      "country": "Germany",
+      "description": "",
+      "dates": "November 11 start, peak in February/March before Lent",
+      "source_article": "Carnival_in_Germany",
+      "source_url": "https://en.wikipedia.org/wiki/Carnival_in_Germany"
+    }
+  ]
+}

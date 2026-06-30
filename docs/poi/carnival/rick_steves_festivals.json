@@ -1,0 +1,3138 @@
+[
+  {
+    "name": "Green Sauce Festival",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "dates": "Through May 29, 2026",
+    "description": "Street music and green-sauce sampling.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Dresden Music Festival",
+    "city": "Dresden",
+    "country": "Germany",
+    "dates": "Through June 14, 2026",
+    "description": "Classical music performances.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Weindorf wine festival",
+    "city": "Würzburg",
+    "country": "Germany",
+    "dates": "2026-05-29 to 2026-06-07",
+    "description": "Local wine festival in Würzburg.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Mozartfest",
+    "city": "Würzburg",
+    "country": "Germany",
+    "dates": "2026-05-29 to 2026-06-28",
+    "description": "Classical music festival dedicated to Mozart.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Corpus Christi (Fronleichnam)",
+    "city": "Bavaria and Baden-Württemberg",
+    "country": "Germany",
+    "dates": "2026-06-04",
+    "description": "Religious processions and flower carpets; closures across southern and western Germany.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Elbjazz",
+    "city": "Hamburg",
+    "country": "Germany",
+    "dates": "2026-06-05 to 2026-06-06",
+    "description": "Jazz festival held in Hamburg.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rock am Ring",
+    "city": "Nürburg",
+    "country": "Germany",
+    "dates": "2026-06-05 to 2026-06-07",
+    "description": "Major rock festival near Koblenz.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Handel Festival",
+    "city": "Halle",
+    "country": "Germany",
+    "dates": "2026-06-05 to 2026-06-14",
+    "description": "Music festival celebrating George Frideric Handel.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Bach Festival",
+    "city": "Leipzig",
+    "country": "Germany",
+    "dates": "2026-06-11 to 2026-06-21",
+    "description": "Music festival celebrating Johann Sebastian Bach.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Luther's Wedding festival",
+    "city": "Wittenberg",
+    "country": "Germany",
+    "dates": "2026-06-12 to 2026-06-14",
+    "description": "Historical festival commemorating Martin Luther's marriage.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Bunter Sommer Neustadt",
+    "city": "Dresden",
+    "country": "Germany",
+    "dates": "2026-06-19 to 2026-06-21",
+    "description": "Block party in Dresden's Outer New Town.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Traumzeit Music Festival",
+    "city": "Duisburg",
+    "country": "Germany",
+    "dates": "2026-06-19 to 2026-06-21",
+    "description": "Eclectic music line-up staged in a former industrial site.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "St. Katharina Open air",
+    "city": "Nürnberg",
+    "country": "Germany",
+    "dates": "2026-06-19 to 2026-07-05",
+    "description": "Concert series of eclectic acts in the Old Town.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Tollwood Summer Festival",
+    "city": "Munich",
+    "country": "Germany",
+    "dates": "2026-06-19 to 2026-07-19",
+    "description": "Concert series, art, and street theater.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Kieler Woche",
+    "city": "Kiel",
+    "country": "Germany",
+    "dates": "2026-06-20 to 2026-06-28",
+    "description": "World's largest sailing festival with ship parades and cultural events.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fusion Festival",
+    "city": "Neustrelitz",
+    "country": "Germany",
+    "dates": "2026-06-24 to 2026-06-28",
+    "description": "Counterculture festival held on a former airfield north of Berlin.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Oberlindenhock",
+    "city": "Freiburg",
+    "country": "Germany",
+    "dates": "2026-06-25 to 2026-06-28",
+    "description": "Street food and live music.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Elbhangfest",
+    "city": "Dresden",
+    "country": "Germany",
+    "dates": "2026-06-26 to 2026-06-28",
+    "description": "Festival featuring music, dance, and wine.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Freiburg Wine Festival",
+    "city": "Freiburg",
+    "country": "Germany",
+    "dates": "2026-07-02 to 2026-07-07",
+    "description": "Local wines and live music.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Cologne Pride Street Festival",
+    "city": "Cologne",
+    "country": "Germany",
+    "dates": "2026-07-03 to 2026-07-05",
+    "description": "Street festival celebrating LGBTQ+ pride.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Kiliani Volksfest",
+    "city": "Würzburg",
+    "country": "Germany",
+    "dates": "2026-07-03 to 2026-07-19",
+    "description": "County fair–type folk festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rhine in Flames festival (Bingen / Rüdesheim)",
+    "city": "Bingen / Rüdesheim",
+    "country": "Germany",
+    "dates": "2026-07-05",
+    "description": "Spectacular fireworks display on the Rhine.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Classic Open Air",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "2026-07-08 to 2026-07-12",
+    "description": "Music performances on Gendarmenmarkt.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Kaltenberg Knights' Tournament",
+    "city": "near Munich",
+    "country": "Germany",
+    "dates": "Weekends July 10–26, 2026",
+    "description": "Huge jousting festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Kinderzeche",
+    "city": "Dinkelsbühl",
+    "country": "Germany",
+    "dates": "2026-07-17 to 2026-07-26",
+    "description": "Traditional dancing and parades.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Sommerwerft",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "dates": "2026-07-24 to 2026-08-09",
+    "description": "Theatre and arts festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Berlin Pride",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "2026-07-25",
+    "description": "Also known as Christopher Street Day Berlin.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Klassik Open Air",
+    "city": "Nürnberg",
+    "country": "Germany",
+    "dates": "2026-07-26 & 2026-08-08",
+    "description": "Series of free classical concerts and fireworks in Luitpoldhain park.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Bardentreffen Nürnberg",
+    "city": "Nürnberg",
+    "country": "Germany",
+    "dates": "2026-07-30 to 2026-08-02",
+    "description": "World music festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Kölner Lichter",
+    "city": "Cologne",
+    "country": "Germany",
+    "dates": "2026-08-01",
+    "description": "Fireworks and music festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rhine in Flames festival (Koblenz)",
+    "city": "Koblenz",
+    "country": "Germany",
+    "dates": "2026-08-08",
+    "description": "Fireworks display on the Rhine.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Weindorf wine festival (Rothenburg)",
+    "city": "Rothenburg ob der Tauber",
+    "country": "Germany",
+    "dates": "2026-08-12 to 2026-08-16",
+    "description": "Wine festival in Rothenburg.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Assumption (Mariä Himmelfahrt)",
+    "city": "Bavaria and Saarland",
+    "country": "Germany",
+    "dates": "2026-08-15",
+    "description": "Religious holiday; closures in Bavaria and Saarland.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Sandkerwa Bavarian folk festival",
+    "city": "Bamberg",
+    "country": "Germany",
+    "dates": "2026-08-20 to 2026-08-24",
+    "description": "Bavarian folk festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Potsdamer Schössernacht",
+    "city": "Potsdam",
+    "country": "Germany",
+    "dates": "August 21–22, 2026 (likely)",
+    "description": "Palaces lit up, nighttime performances, and midnight fireworks.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Wine festival (Cochem)",
+    "city": "Cochem",
+    "country": "Germany",
+    "dates": "2026-08-27 to 2026-08-31",
+    "description": "Music, Sunday parade, and fireworks.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Museumsuferfest",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "dates": "2026-08-28 to 2026-08-30",
+    "description": "Music, food, and culture festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Berlin Beer Week",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "2026-08-28 to 2026-09-06",
+    "description": "Festival celebrating beer culture.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Nürnberg Fall Folk Festival",
+    "city": "Nürnberg",
+    "country": "Germany",
+    "dates": "2026-08-28 to 2026-09-13",
+    "description": "Costumes and rides in Luitpoldhain park.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Long Night of Museums",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "2026-08-29",
+    "description": "Museums open until 2 a.m. with special performances.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rheingau Wine Festival",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "dates": "2026-09-02 to 2026-09-11",
+    "description": "Wine festival held in Frankfurt.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Reichsstadt Festival",
+    "city": "Rothenburg ob der Tauber",
+    "country": "Germany",
+    "dates": "2026-09-04 to 2026-09-06",
+    "description": "Historical festival in Rothenburg.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Medieval festival (Selb)",
+    "city": "Selb",
+    "country": "Germany",
+    "dates": "2026-09-11 to 2026-09-13",
+    "description": "Medieval-themed festival on the Czech border.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Wurstmarkt",
+    "city": "Bad Dürkheim",
+    "country": "Germany",
+    "dates": "September 11–15 & 18–21, 2026",
+    "description": "The world's biggest wine festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rhine in Flames festival (Oberwesel)",
+    "city": "Oberwesel",
+    "country": "Germany",
+    "dates": "2026-09-12",
+    "description": "Fireworks display on the Rhine.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "International Literature Festival Berlin",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "September 13–22, 2026",
+    "description": "Global literature festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rhine in Flames festival (St. Goar)",
+    "city": "St. Goar",
+    "country": "Germany",
+    "dates": "2026-09-19",
+    "description": "Fireworks display on the Rhine.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Oktoberfest",
+    "city": "Munich",
+    "country": "Germany",
+    "dates": "2026-09-19 to 2026-10-04",
+    "description": "The world-famous beer festival, also known as Wies'n.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Filmfest Hamburg",
+    "city": "Hamburg",
+    "country": "Germany",
+    "dates": "2026-09-24 to 2026-10-03",
+    "description": "International film festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Cannstatter Volksfest",
+    "city": "Stuttgart",
+    "country": "Germany",
+    "dates": "2026-09-25 to 2026-10-11",
+    "description": "The Stuttgart version of Oktoberfest.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Wine harvest festival (Neustadt)",
+    "city": "Neustadt an der Weinstrasse",
+    "country": "Germany",
+    "dates": "2026-09-25 to 2026-10-11",
+    "description": "Wine harvest celebration.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "German Unity Day",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2026-10-03",
+    "description": "National holiday commemorating reunification; widespread closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Frankfurter Buchmesse",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "dates": "2026-10-07 to 2026-10-11",
+    "description": "Huge book fair and publishers' convention.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Onion Market festival",
+    "city": "Weimar",
+    "country": "Germany",
+    "dates": "October 9–11, 2026 (likely)",
+    "description": "Traditional market festival in Weimar.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Berlin Festival of Lights",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "October 9–18, 2026 (likely)",
+    "description": "Light installations on landmark buildings.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Frankenstein Halloween",
+    "city": "Königstein Castle",
+    "country": "Germany",
+    "dates": "Weekends October 16–November 1, 2026",
+    "description": "Halloween event at a castle near Frankfurt.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Jazzfest Berlin",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "2026-10-29 to 2026-11-01",
+    "description": "Annual jazz festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Reformation Day celebration",
+    "city": "Wittenberg",
+    "country": "Germany",
+    "dates": "2026-10-31",
+    "description": "Religious celebration; closures in Protestant areas.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "All Saints' Day (Allerheiligen)",
+    "city": "southern and western Germany",
+    "country": "Germany",
+    "dates": "2026-11-01",
+    "description": "Public holiday with closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Leonhardifahrt",
+    "city": "Bad Tölz",
+    "country": "Germany",
+    "dates": "2026-11-06",
+    "description": "Traditional Bavarian religious procession.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Night of Broken Glass Remembrance Day / Anniversary of the fall of the Berlin Wall",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2026-11-09",
+    "description": "Remembrances but no closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Martinstag and official start to Karneval season",
+    "city": "Cologne",
+    "country": "Germany",
+    "dates": "2026-11-11",
+    "description": "Costumes and revelry, particularly in Cologne.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas Garden",
+    "city": "Multiple cities",
+    "country": "Germany",
+    "dates": "Mid-November–mid-January 2026",
+    "description": "Light show in gardens in Berlin, Dresden, Hamburg, Leipzig, and Mainau Island.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Repentance Day",
+    "city": "Saxony",
+    "country": "Germany",
+    "dates": "2026-11-22",
+    "description": "Closures in Saxony.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Tollwood Winter Festival",
+    "city": "Munich",
+    "country": "Germany",
+    "dates": "November 24–December 23, 2026 (likely)",
+    "description": "Christmas market with music, circus, and cultural events.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas markets",
+    "city": "Multiple cities",
+    "country": "Germany",
+    "dates": "December 2026",
+    "description": "Traditional markets in Nürnberg, Munich, Rothenburg, Freiburg, and Berlin.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Nikolaustag (St. Nicholas Day)",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2026-12-06",
+    "description": "St. Nick and his companion appear around town.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas Eve (Der Heilige Abend)",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2026-12-24",
+    "description": "Tree decorating and gift opening; shops close at noon.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas Day",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2026-12-25",
+    "description": "Public holiday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Boxing Day",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2026-12-26",
+    "description": "Public holiday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "New Year's Eve (Silvester)",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "2026-12-31",
+    "description": "Fireworks celebrations, particularly big in Berlin.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "New Year's Day",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2027-01-01",
+    "description": "Public holiday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Epiphany (Heilige Drei Könige)",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2027-01-06",
+    "description": "Volunteers dressed as Three Kings go door-to-door caroling; some closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "CTM Festival",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "January 22–31, 2027 (likely)",
+    "description": "Electronic, experimental music and art.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Hot-Air Balloon Festival",
+    "city": "Lake Tegern",
+    "country": "Germany",
+    "dates": "2027-01-30 to 2027-02-07",
+    "description": "Balloon festival east of Oberammergau.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fasching/Fastnacht/Karneval",
+    "city": "Cologne and southern regions",
+    "country": "Germany",
+    "dates": "February–March 2027",
+    "description": "Carnival season; Cologne's Rosenmontag parade is February 8.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Berlin International Film Festival (Berlinale)",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "2027-02-10 to 2027-02-21",
+    "description": "Major international film festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Good Friday (Karfreitag)",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2027-03-26",
+    "description": "Public holiday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Thuringian Bach Weeks",
+    "city": "Erfurt",
+    "country": "Germany",
+    "dates": "March 26–April 18, 2027 (likely)",
+    "description": "Classical music festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Spring Festival",
+    "city": "Nürnberg",
+    "country": "Germany",
+    "dates": "2027-03-27 to 2027-04-11",
+    "description": "Rides and costumes in Luitpoldhain park.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Easter (Ostern)",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2027-03-28 to 2027-03-29",
+    "description": "Easter Sunday and Monday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "May Day",
+    "city": "Berlin",
+    "country": "Germany",
+    "dates": "2027-05-01",
+    "description": "Labor demonstrations in Berlin's Kreuzberg; maypole dances in rural areas.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rhine in Flames festival (Bonn)",
+    "city": "Bonn",
+    "country": "Germany",
+    "dates": "2027-05-01 (likely)",
+    "description": "Fireworks on the Rhine.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Green Sauce Festival (2027)",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "dates": "May 1–28, 2027 (likely)",
+    "description": "Street music and sauce sampling.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ascension Day (Christi Himmelfahrt)",
+    "city": "unknown",
+    "country": "Germany",
+    "dates": "2027-05-06",
+    "description": "Public holiday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "International Garden Festival",
+    "city": "Charmont-sur-Loire",
+    "country": "France",
+    "dates": "Through October 2026",
+    "description": "Garden festival in Charmont-sur-Loire.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Labor Day",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-05-01",
+    "description": "Fête due Travail or Fête du Premier Mai; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "VE (Victory in Europe) Day",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-05-08",
+    "description": "Fête de la Victoire 1945 or Jour de la Liberation; closures, parades.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Cannes Film Festival",
+    "city": "Cannes",
+    "country": "France",
+    "dates": "2026-05-12 to 2026-05-23",
+    "description": "Major international film festival in Cannes.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Nuits Sonores",
+    "city": "Lyon",
+    "country": "France",
+    "dates": "2026-05-13 to 2026-05-17",
+    "description": "Electronic music festival in Lyon.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ascension",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-05-14",
+    "description": "Religious holiday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fête de la Bretagne",
+    "city": "Brittany",
+    "country": "France",
+    "dates": "2026-05-14 to 2026-05-24",
+    "description": "Cultural celebrations across Brittany, centered around St. Yves' Day on May 19.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Night of Museums",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-05-23",
+    "description": "Museums stay open late and for free.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Pentecost and Whit Monday",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-05-24 to 2026-05-25",
+    "description": "Religious holidays with closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Paris Beer Festival",
+    "city": "Paris",
+    "country": "France",
+    "dates": "2026-05-25 to 2026-05-31",
+    "description": "Festival celebrating craft beer in Paris.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Joan of Arc Festival",
+    "city": "Rouen",
+    "country": "France",
+    "dates": "2026-05-28 to 2026-05-30",
+    "description": "Pageants in Rouen.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "D-Day Festival",
+    "city": "Normandy",
+    "country": "France",
+    "dates": "2026-05-30 to 2026-06-14",
+    "description": "Events across Normandy commemorating D-Day.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festival of St. Denis",
+    "city": "Paris",
+    "country": "France",
+    "dates": "June 2026",
+    "description": "Classical concerts by international artists.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Nuits de Fourvière",
+    "city": "Lyon",
+    "country": "France",
+    "dates": "June to July 2026",
+    "description": "Theater and music in a Roman theater in Lyon.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Monaco Grand Prix",
+    "city": "Monaco",
+    "country": "France",
+    "dates": "2026-06-04 to 2026-06-07",
+    "description": "Famous auto race in Monaco.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rendez-vous aux Jardins",
+    "city": "Paris and elsewhere",
+    "country": "France",
+    "dates": "2026-06-05 to 2026-06-07",
+    "description": "Noteworthy gardens open to the public.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "D-Day (Jour J) anniversary",
+    "city": "Normandy",
+    "country": "France",
+    "dates": "2026-06-06",
+    "description": "Anniversary of the D-Day landings.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Paris Nuit Blanche",
+    "city": "Paris",
+    "country": "France",
+    "dates": "2026-06-06",
+    "description": "Illuminated public art, concerts, and all-night public transit.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Le Mans auto race",
+    "city": "Le Mans",
+    "country": "France",
+    "dates": "2026-06-10 to 2026-06-14",
+    "description": "Famous auto race near the Loire Valley.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Chorégies d'Orange",
+    "city": "Orange",
+    "country": "France",
+    "dates": "2026-06-19 to 2026-07-18",
+    "description": "Performances in the Roman theater of Orange.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fête de la Musique",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-06-21",
+    "description": "Concerts and dancing in the streets throughout France.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Jazz à Vienne",
+    "city": "Vienne",
+    "country": "France",
+    "dates": "2026-06-25 to 2026-07-11",
+    "description": "Concert series south of Lyon.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Carcassonne Festival",
+    "city": "Carcassonne",
+    "country": "France",
+    "dates": "July 2026",
+    "description": "Theater, music, dance, plus jousting matches and medieval festivities.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Open Air Cinema at La Villette park",
+    "city": "Paris",
+    "country": "France",
+    "dates": "July to August 2026",
+    "description": "Outdoor movie screenings in Paris.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "International Fireworks Festival",
+    "city": "Cannes",
+    "country": "France",
+    "dates": "July to August 2026",
+    "description": "Six nonconsecutive nights of fireworks in Cannes.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Aix Festival",
+    "city": "Aix-en-Provence",
+    "country": "France",
+    "dates": "2026-07-02 to 2026-07-21",
+    "description": "Classical music and opera.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Beaune International Festival of Baroque Opera",
+    "city": "Beaune",
+    "country": "France",
+    "dates": "2026-07-03 to 2026-07-26",
+    "description": "Opera festival in Beaune.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Avignon Festival",
+    "city": "Avignon",
+    "country": "France",
+    "dates": "2026-07-04 to 2026-07-25",
+    "description": "Major theater, dance, and music festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Tour de France",
+    "city": "Paris",
+    "country": "France",
+    "dates": "2026-07-04 to 2026-07-26",
+    "description": "World-famous bicycle race culminating on the Champs-Elysées.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Paris Plages",
+    "city": "Paris",
+    "country": "France",
+    "dates": "2026-07-04 to 2026-08-30 (likely)",
+    "description": "Ersatz beaches along the Seine and several canals.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Colmar International Festival",
+    "city": "Colmar",
+    "country": "France",
+    "dates": "2026-07-05 to 2026-07-14",
+    "description": "Classical music festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Jazz à Juan",
+    "city": "Antibes/Juan-les-Pins",
+    "country": "France",
+    "dates": "2026-07-09 to 2026-07-19",
+    "description": "International jazz festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festival Paris l'Été",
+    "city": "Paris",
+    "country": "France",
+    "dates": "2026-07-11 to 2026-08-04 (likely)",
+    "description": "Theater, dance, and concerts in Paris.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Bastille Day",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-07-14",
+    "description": "National Day celebrations with closures, fireworks, and revelry.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Vieilles Charrues Festival",
+    "city": "Carhaix",
+    "country": "France",
+    "dates": "2026-07-16 to 2026-07-19",
+    "description": "France's biggest music festival, held in Brittany.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Jazz in Marciac",
+    "city": "Marciac",
+    "country": "France",
+    "dates": "2026-07-20 to 2026-08-05",
+    "description": "Jazz festival in southwest France.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Nice Jazz Festival",
+    "city": "Nice",
+    "country": "France",
+    "dates": "2026-07-23 to 2026-07-26",
+    "description": "Jazz festival on the Riviera.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Cornouaille Festival",
+    "city": "Quimper",
+    "country": "France",
+    "dates": "2026-07-23 to 2026-07-26",
+    "description": "Breton music and cultural festivities.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Jasmine Festival",
+    "city": "Grasse",
+    "country": "France",
+    "dates": "2026-07-31 to 2026-08-02",
+    "description": "Flower-themed parades in Grasse.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Corso de la Lavande",
+    "city": "Digne-les-Bains",
+    "country": "France",
+    "dates": "2026-07-31 to 2026-08-05",
+    "description": "Lavender festival with parades, music, and fireworks.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "La Route du Rock Summer",
+    "city": "St-Malo",
+    "country": "France",
+    "dates": "2026-08-12 to 2026-08-15",
+    "description": "Summer rock music festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Assumption",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-08-15",
+    "description": "Religious holiday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fête de la Saint-Louis",
+    "city": "Sète",
+    "country": "France",
+    "dates": "2026-08-20 to 2026-08-24 (likely)",
+    "description": "Parades, fireworks, and canal-boat water-jousting near Montpellier.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Jazz at La Villette",
+    "city": "Paris",
+    "country": "France",
+    "dates": "2026-08-27 to 2026-09-06",
+    "description": "Jazz festival in Paris.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Silhouette Festival",
+    "city": "Paris",
+    "country": "France",
+    "dates": "2026-08-28 to 2026-09-05 (likely)",
+    "description": "Short-film festival in Paris.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Wine harvest festivals",
+    "city": "across France",
+    "country": "France",
+    "dates": "September 2026",
+    "description": "Various festivals celebrating the grape harvest.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festival d'Automne à Paris",
+    "city": "Paris",
+    "country": "France",
+    "dates": "September 2026 to mid-January 2027",
+    "description": "Major arts festival in the capital.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Braderie de Lille",
+    "city": "Lille",
+    "country": "France",
+    "dates": "2026-09-06 to 2026-09-07",
+    "description": "World's largest flea market.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festival Musica",
+    "city": "Strasbourg",
+    "country": "France",
+    "dates": "2026-09-18 to 2026-10-04 (likely)",
+    "description": "Contemporary classical music festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Heritage days (Journée du patrimoine)",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-09-19 to 2026-09-20 (likely)",
+    "description": "Special openings and tours of monuments and historical sites.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Monaco Yacht Show",
+    "city": "Monaco",
+    "country": "France",
+    "dates": "2026-09-23 to 2026-09-26",
+    "description": "Exhibition of mega-yachts.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fête des Vendanges",
+    "city": "Paris",
+    "country": "France",
+    "dates": "2026-10-07 to 2026-10-11 (likely)",
+    "description": "Grape harvest festival in the Montmartre neighborhood.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festival de La Pomme",
+    "city": "Trévières",
+    "country": "France",
+    "dates": "2026-10-25 (likely)",
+    "description": "Apple-harvest festival near Honfleur.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Dijon International and Gastronomic Fair",
+    "city": "Dijon",
+    "country": "France",
+    "dates": "2026-10-31 to 2026-11-11",
+    "description": "Large fair focused on food and gastronomy.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "All Saints' Day (La Toussaint)",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-11-01",
+    "description": "Religious holiday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Armistice Day",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-11-11",
+    "description": "Holiday commemorating the end of WWI; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Les Trois Glorieuses",
+    "city": "Beaune",
+    "country": "France",
+    "dates": "2026-11-13 to 2026-11-16 (likely)",
+    "description": "Famous wine auction and festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas markets",
+    "city": "Strasbourg, Colmar, and Sarlat-la-Canéda",
+    "country": "France",
+    "dates": "Late November to 2026-12-24",
+    "description": "Traditional holiday markets.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas carousels, skating rinks, and trees",
+    "city": "Paris",
+    "country": "France",
+    "dates": "December 2026",
+    "description": "Holiday activities around Paris.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Les Rencontres Trans Musicales",
+    "city": "Rennes",
+    "country": "France",
+    "dates": "2026-12-02 to 2026-12-06",
+    "description": "Music festival for up-and-coming pop and rock acts.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rise Festival",
+    "city": "Les Deux Alpes",
+    "country": "France",
+    "dates": "2026-12-05 to 2026-12-12",
+    "description": "Dance music at a ski resort.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas Day (Noël)",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-12-25",
+    "description": "Major national holiday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Second Christmas Day",
+    "city": "Alsace-Lorraine",
+    "country": "France",
+    "dates": "2026-12-26",
+    "description": "Closures in the Alsace-Lorraine region.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "New Year's Eve",
+    "city": "across France",
+    "country": "France",
+    "dates": "2026-12-31",
+    "description": "New Year's Eve celebrations.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Epiphany",
+    "city": "across France",
+    "country": "France",
+    "dates": "2027-01-06",
+    "description": "Religious feast day.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Nice Carnival",
+    "city": "Nice",
+    "country": "France",
+    "dates": "2027-02-09 to 2027-02-28",
+    "description": "Mardi Gras celebrations with parades and fireworks.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Le Corso Fleuri",
+    "city": "Bormes-les-Mimosas",
+    "country": "France",
+    "dates": "2027-02-13 to 2027-02-14",
+    "description": "Traditional flower parade in coastal Provence.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Lemon Festival",
+    "city": "Menton",
+    "country": "France",
+    "dates": "2027-02-13 to 2027-02-28 (likely)",
+    "description": "Festival celebrating lemons in Menton.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "La Route du Rock Winter",
+    "city": "St-Malo and Rennes",
+    "country": "France",
+    "dates": "2027-03-03 to 2027-03-06 (likely)",
+    "description": "Winter edition of the rock and post-punk music festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Good Friday",
+    "city": "across France",
+    "country": "France",
+    "dates": "2027-03-26",
+    "description": "Religious holiday; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Easter Sunday and Monday",
+    "city": "across France",
+    "country": "France",
+    "dates": "2027-03-28 to 2027-03-29",
+    "description": "Easter holidays; closures.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Roman Days",
+    "city": "Nîmes",
+    "country": "France",
+    "dates": "2027-04-23 to 2027-04-25 (likely)",
+    "description": "Historical re-enactment in Nîmes.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "International Garden Festival",
+    "city": "Charmont-sur-Loire",
+    "country": "France",
+    "dates": "April to October 2027",
+    "description": "2027 edition of the garden festival.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Bullfights and zarzuelas",
+    "city": "Madrid",
+    "country": "Spain",
+    "dates": "2026-05",
+    "description": "Bullfights and zarzuelas all month long",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Los Patios de Córdoba",
+    "city": "Córdoba",
+    "country": "Spain",
+    "dates": "2026-05-04 to 2026-05-17",
+    "description": "courtyard-decorating competition",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feria del Caballo",
+    "city": "Jerez de la Frontera",
+    "country": "Spain",
+    "dates": "2026-05-09 to 2026-05-16",
+    "description": "horse pageantry",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Titirimundi International Puppet Theatre Festival",
+    "city": "Segovia",
+    "country": "Spain",
+    "dates": "2026-05-12 to 2026-05-17",
+    "description": "performances, street theatre",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fiestas de San Isidro Labrador",
+    "city": "Madrid",
+    "country": "Spain",
+    "dates": "2026-05-15 and surrounding days",
+    "description": "music, traditional dancing",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Galicia Literature Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-05-17",
+    "description": "closures in Galicia",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "El Rocío pilgrimage (Romería del Rocío)",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-05-22 to 2026-05-25",
+    "description": "pilgrimage in Andalucía",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Pentecost and Whit Monday",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-05-24 and 2026-05-25",
+    "description": "some closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Spring Fair",
+    "city": "Córdoba",
+    "country": "Spain",
+    "dates": "2026-05-24 to 2026-05-31",
+    "description": "smaller version of Sevilla's April Fair; kicks off with midnight fireworks",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Canary Islands Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-05-30",
+    "description": "closures in the islands",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "La Patum",
+    "city": "Berga",
+    "country": "Spain",
+    "dates": "2026-06-03 to 2026-06-07",
+    "description": "religious festival with lively parades",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Corpus Christi",
+    "city": "Toledo and Valencia",
+    "country": "Spain",
+    "dates": "2026-06-04",
+    "description": "colorful flower-centric festivities",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Primavera Sound",
+    "city": "Barcelona",
+    "country": "Spain",
+    "dates": "2026-06-04 to 2026-06-06",
+    "description": "indie rock festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Murcia/La Rioja Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-06-09",
+    "description": "closures in Murcia and La Rioja",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Barcelona Grand Prix",
+    "city": "Barcelona",
+    "country": "Spain",
+    "dates": "2026-06-12 to 2026-06-14",
+    "description": "Formula 1 racing",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Granada International Festival of Music and Dance",
+    "city": "Granada",
+    "country": "Spain",
+    "dates": "2026-06-12 to 2026-07-12",
+    "description": "arts and dance performances",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Sónar Festival",
+    "city": "Barcelona",
+    "country": "Spain",
+    "dates": "2026-06-18 to 2026-06-20",
+    "description": "electronic music festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Azkena Rock Festival",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-06-18 to 2026-06-20",
+    "description": "rock festival in the Basque Country",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Nit de Sant Joan/Hogueras de San Juan",
+    "city": "Alicante, Valencia, and Catalunya",
+    "country": "Spain",
+    "dates": "2026-06-23 to 2026-06-24",
+    "description": "Festival of St. John the Baptist with bonfires and fireworks",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "La Batalla del Vino",
+    "city": "Haro",
+    "country": "Spain",
+    "dates": "2026-06-29",
+    "description": "wine battle celebrating Feast of San Pedro",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Madrid Orgullo",
+    "city": "Madrid",
+    "country": "Spain",
+    "dates": "2026-06-25 to 2026-07-05",
+    "description": "pride festival with big parade",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Running of the Bulls (Fiesta de San Fermín)",
+    "city": "Pamplona",
+    "country": "Spain",
+    "dates": "2026-07-07 to 2026-07-14",
+    "description": "traditional bull running festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Jazz de Vitoria-Gasteiz",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-07-13 to 2026-07-18",
+    "description": "jazz festival in the Basque Country",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festival Internacional de Benicàssim",
+    "city": "Benicàssim",
+    "country": "Spain",
+    "dates": "2026-07-16 to 2026-07-18",
+    "description": "huge rock concert near Valencia",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festas do Apóstolo (St. James Festival)",
+    "city": "Santiago de Compostela",
+    "country": "Spain",
+    "dates": "Last two weeks of July 2026",
+    "description": "St. James Day / Diá de Santiago and Galicia Day celebration",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Institution Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-07-28",
+    "description": "closures in Cantabria",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fiesta de Santa Marta de Ribarteme",
+    "city": "Las Nieves",
+    "country": "Spain",
+    "dates": "2026-07-29",
+    "description": "coffin parade celebrating survival of near-death experiences",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Sanlúcar de Barrameda horse races",
+    "city": "Sanlúcar de Barrameda",
+    "country": "Spain",
+    "dates": "2026-08-04 to 2026-08-20",
+    "description": "English-style races along the beach",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Assumption / Verbena de la Paloma festival",
+    "city": "Madrid",
+    "country": "Spain",
+    "dates": "2026-08-12 to 2026-08-15",
+    "description": "fairs, parades, and general revelry",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Gràcia Festival",
+    "city": "Barcelona",
+    "country": "Spain",
+    "dates": "2026-08-15 to 2026-08-21",
+    "description": "colorful street festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festival of St. Bartholomew",
+    "city": "Sitges",
+    "country": "Spain",
+    "dates": "2026-08-23 to 2026-08-24",
+    "description": "part of Sitges' Festa Major",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Tomatina Festival",
+    "city": "Buñol",
+    "country": "Spain",
+    "dates": "2026-08-26",
+    "description": "tomato-throwing melee/party",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festival of Pedro Romero",
+    "city": "Ronda",
+    "country": "Spain",
+    "dates": "First week of September 2026",
+    "description": "music, dance, traditional costumes, and parade",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Asturias/Extremadura Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-09-08",
+    "description": "street parties; closures in Asturias and Extremadura",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fiestas de la Vendimia",
+    "city": "Jerez",
+    "country": "Spain",
+    "dates": "First two weeks of September 2026",
+    "description": "sherry/harvest festival with flamenco and bullfights",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fiesta de Cascamorras",
+    "city": "Guadix and Baza",
+    "country": "Spain",
+    "dates": "2026-09-06 and 2026-09-09",
+    "description": "paint-throwing battle between rival towns",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Catalunya National Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-09-11",
+    "description": "closures in Barcelona",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Nuestra Señora de la Bien Aparecida",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-09-15",
+    "description": "closures in Cantabria",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fiesta de San Mateo",
+    "city": "Logroño",
+    "country": "Spain",
+    "dates": "2026-09-20 to 2026-09-26",
+    "description": "grape-harvest festival with sangria, food fights, and parades",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festes de Santa Tecla",
+    "city": "Sitges",
+    "country": "Spain",
+    "dates": "2026-09-22 to 2026-09-23",
+    "description": "processions featuring costumed kids and fireworks",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "La Mercè",
+    "city": "Barcelona",
+    "country": "Spain",
+    "dates": "2026-09-23 to 2026-09-27",
+    "description": "street theater, music, parades, and light shows",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "San Fermín Txikito",
+    "city": "Pamplona",
+    "country": "Spain",
+    "dates": "2026-09-25",
+    "description": "little San Fermín with concerts and parades",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feria de San Miguel",
+    "city": "Sevilla",
+    "country": "Spain",
+    "dates": "2026-09-25 to 2026-09-27",
+    "description": "bullfights",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Valencia Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-10-09",
+    "description": "parades and closures in Valencia",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fires de Sant Narcis",
+    "city": "Girona",
+    "country": "Spain",
+    "dates": "2026-10-23 to 2026-11-01",
+    "description": "procession, human-tower building, and fireworks",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Cartagena Jazz Festival",
+    "city": "Cartagena",
+    "country": "Spain",
+    "dates": "2026-10-28 to 2026-11-15",
+    "description": "jazz music festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "All Saints' Day (Todos Los Santos)",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-11-01",
+    "description": "national holiday and closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Sevilla European Film Festival",
+    "city": "Sevilla",
+    "country": "Spain",
+    "dates": "2026-11-06 to 2026-11-14",
+    "description": "European film screenings",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of the Almudena",
+    "city": "Madrid",
+    "country": "Spain",
+    "dates": "2026-11-09",
+    "description": "processions and music",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Zinebi International Documentary Film Festival",
+    "city": "Bilbao",
+    "country": "Spain",
+    "dates": "2026-11-20 to 2026-11-27",
+    "description": "documentary film festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Navarre Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-12-03",
+    "description": "religious parades and closures in Navarre",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Constitution Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-12-06",
+    "description": "national holiday closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of the Immaculate Conception",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-12-08",
+    "description": "national holiday closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas Eve",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-12-24",
+    "description": "family meal and midnight Mass",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-12-25",
+    "description": "national holiday closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "St. Stephen's Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-12-26",
+    "description": "closures in Catalunya",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "New Year's Eve",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2026-12-31",
+    "description": "New Year celebrations",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "New Year's Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2027-01-01",
+    "description": "national holiday closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Reconquest Day",
+    "city": "Granada",
+    "country": "Spain",
+    "dates": "2027-01-02",
+    "description": "closures in Granada",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Dia de los Reyes Magos",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2027-01-06",
+    "description": "Epiphany / Three Kings Day parades",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "La Candelaria (Candlemas)",
+    "city": "Madrid",
+    "country": "Spain",
+    "dates": "2027-02-02",
+    "description": "processions, pageantry, and mock bull fights",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Carnival celebrations",
+    "city": "Cádiz, Sitges, Madrid, Barcelona, and Santa Cruz de Tenerife",
+    "country": "Spain",
+    "dates": "2027-02 to 2027-03",
+    "description": "major carnival celebrations across Spain",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Seville Marathon",
+    "city": "Sevilla",
+    "country": "Spain",
+    "dates": "2027-02-21",
+    "description": "marathon race",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Day of Andalucía",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2027-02-28",
+    "description": "closures in Andalucía",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Balearic Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2027-03-01",
+    "description": "closures in the islands",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Las Fallas",
+    "city": "Valencia",
+    "country": "Spain",
+    "dates": "2027-03-15 to 2027-03-19",
+    "description": "parades and fireworks festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "San José (St. Joseph's Day)",
+    "city": "Madrid, Valencia, Extremadura",
+    "country": "Spain",
+    "dates": "2027-03-19",
+    "description": "regional holiday closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Semana Santa (Holy Week)",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2027-03-21 to 2027-03-27",
+    "description": "passion plays and grand processions",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Easter (Pascua) Sunday and Monday",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2027-03-28 to 2027-03-29",
+    "description": "some closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feria de Abril (April Fair)",
+    "city": "Sevilla",
+    "country": "Spain",
+    "dates": "2027-04-13 to 2027-04-18",
+    "description": "traditional Sevilla fair",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Diada de Sant Jordi (St. George's Day)",
+    "city": "Catalunya",
+    "country": "Spain",
+    "dates": "2027-04-23",
+    "description": "flower markets in Barcelona and regional celebrations",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Battle of the Flowers",
+    "city": "Córdoba",
+    "country": "Spain",
+    "dates": "2027-04-25",
+    "description": "major parade with flower-bedecked floats",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "May Day/Labor Day",
+    "city": "unknown",
+    "country": "Spain",
+    "dates": "2027-05-01",
+    "description": "closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Dos de Mayo/Madrid Day",
+    "city": "Madrid",
+    "country": "Spain",
+    "dates": "2027-05-02",
+    "description": "street parties centered on Plaza 2 de Mayo",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Cruces de Mayo",
+    "city": "Córdoba and Granada",
+    "country": "Spain",
+    "dates": "May 3, 2027",
+    "description": "towns decorated with crosses made of flowers and flamenco dancing",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Los Patios de Córdoba (2027)",
+    "city": "Córdoba",
+    "country": "Spain",
+    "dates": "2027-05-03 to 2027-05-16",
+    "description": "courtyard-decorating competition",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "WOMAD",
+    "city": "Cáceres",
+    "country": "Spain",
+    "dates": "2027-05-06 to 2027-05-09",
+    "description": "world music festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ibiza Medieval Fair",
+    "city": "Ibiza",
+    "country": "Spain",
+    "dates": "2027-05-06 to 2027-05-09",
+    "description": "medieval themed fair",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "May Day/Labor Day",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2026-05-01",
+    "description": "National holiday with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Calendimaggio",
+    "city": "Assisi",
+    "country": "Italy",
+    "dates": "2026-05-06 to 2026-05-09",
+    "description": "Medieval-themed celebration of spring",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festa della Sensa",
+    "city": "Venice",
+    "country": "Italy",
+    "dates": "2026-05-14",
+    "description": "Parade of traditional boats and ritual of Venice's 'marriage' to the sea",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Cricket Festival (Festa del Grillo)",
+    "city": "Florence",
+    "country": "Italy",
+    "dates": "2026-05-14",
+    "description": "Music, entertainment, food, crickets sold in cages",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Infiorata di Noto",
+    "city": "Noto",
+    "country": "Italy",
+    "dates": "2026-05-15 to 2026-05-19",
+    "description": "Flower festival in Sicily",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Sagra del Limone",
+    "city": "Monterosso",
+    "country": "Italy",
+    "dates": "2026-05-16",
+    "description": "Lemon festival in the Cinque Terre",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Venice Biennale",
+    "city": "Venice",
+    "country": "Italy",
+    "dates": "2026-05-19 to 2026-11-22",
+    "description": "International art exhibition",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Vogalonga Regatta",
+    "city": "Venice",
+    "country": "Italy",
+    "dates": "2026-05-24",
+    "description": "Noncompetitive rowing race celebrating traditional Venetian boats",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of San Giorgio",
+    "city": "Ragusa Ibla",
+    "country": "Italy",
+    "dates": "2026-05-29 to 2026-05-31",
+    "description": "Processions, fireworks, mostly on final day in Sicily",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festa delle Madonna delle Milizie",
+    "city": "Scicli",
+    "country": "Italy",
+    "dates": "2026-05-30",
+    "description": "Processions and Norman battle reenactments in Sicily",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Fashion conventions",
+    "city": "Florence",
+    "country": "Italy",
+    "dates": "June 2026",
+    "description": "unknown",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Verona opera season",
+    "city": "Verona",
+    "country": "Italy",
+    "dates": "June–August 2026",
+    "description": "unknown",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Anniversary of the Republic",
+    "city": "Rome",
+    "country": "Italy",
+    "dates": "2026-06-02",
+    "description": "National holiday with grandest festivities in Rome; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Le Infiorate",
+    "city": "Spello",
+    "country": "Italy",
+    "dates": "2026-06-06 to 2026-06-07",
+    "description": "Giant flower-carpet competition near Assisi",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Kastelruther Spatzen Open Air",
+    "city": "Seis",
+    "country": "Italy",
+    "dates": "2026-06-12 to 2026-06-13",
+    "description": "Concert series featuring hometown Schlager group",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of St. Ranieri",
+    "city": "Pisa",
+    "country": "Italy",
+    "dates": "2026-06-16 to 2026-06-17",
+    "description": "Illuminated facades, candles on the Arno, fireworks, and regatta",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Florence Dance Festival",
+    "city": "Florence",
+    "country": "Italy",
+    "dates": "Mid-June–late July 2026",
+    "description": "unknown",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of St. John the Baptist",
+    "city": "Florence",
+    "country": "Italy",
+    "dates": "2026-06-24",
+    "description": "Water lanterns, boat races, dancing, medieval tournaments, and fireworks",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Calcio Storico",
+    "city": "Florence",
+    "country": "Italy",
+    "dates": "2026-06-24",
+    "description": "Renaissance ball game played on Piazza Santa Croce",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Outdoor cinema season",
+    "city": "Florence",
+    "country": "Italy",
+    "dates": "Late June–early September 2026",
+    "description": "Contemporary films",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Spoleto Festival dei Due Mondi",
+    "city": "Spoleto",
+    "country": "Italy",
+    "dates": "2026-06-26 to 2026-07-12",
+    "description": "Visual arts and performances from US and across Europe",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Gioco del Ponte",
+    "city": "Pisa",
+    "country": "Italy",
+    "dates": "2026-06-27",
+    "description": "Colorful parade and battle for control of the Ponte di Mezzo",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Sts. Peter and Paul Day",
+    "city": "Rome",
+    "country": "Italy",
+    "dates": "2026-06-29",
+    "description": "Fireworks and flower carpet in St. Peter's Square",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Sts. Peter and Paul Day Festival",
+    "city": "Modica",
+    "country": "Italy",
+    "dates": "2026-06-29",
+    "description": "Three-day festival in Sicily",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Palio horse race",
+    "city": "Siena",
+    "country": "Italy",
+    "dates": "2026-07-02",
+    "description": "Historical horse race",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Marostica Summer Festival",
+    "city": "Marostica",
+    "country": "Italy",
+    "dates": "Early July 2026",
+    "description": "Eclectic concert series northwest of Venice",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Umbria Jazz",
+    "city": "Perugia",
+    "country": "Italy",
+    "dates": "2026-07-03 to 2026-07-12",
+    "description": "unknown",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Unicorn Festival",
+    "city": "Vinci",
+    "country": "Italy",
+    "dates": "2026-07-10 to 2026-07-12",
+    "description": "Fantasy concerts, parades, and exhibitions in Tuscany",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of Saint Rosalia (U Fistinu)",
+    "city": "Palermo",
+    "country": "Italy",
+    "dates": "2026-07-10 to 2026-07-15",
+    "description": "Huge processions and fireworks",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Noantri Festival",
+    "city": "Rome",
+    "country": "Italy",
+    "dates": "Mid-July 2026",
+    "description": "Music and folklore in the Trastevere district",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Stresa Festival",
+    "city": "Lake Maggiore",
+    "country": "Italy",
+    "dates": "2026-07-16 to 2026-09-09",
+    "description": "Classical music festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festa del Redentore",
+    "city": "Venice",
+    "country": "Italy",
+    "dates": "2026-07-17 to 2026-07-19",
+    "description": "Floating bridge, fireworks, and gondola regatta",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ferragosto (Feast of the Assumption)",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2026-08-15",
+    "description": "National holiday with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Palio horse race",
+    "city": "Siena",
+    "country": "Italy",
+    "dates": "2026-08-16",
+    "description": "Historical horse race",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Chestnut festivals",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "September–October 2026",
+    "description": "Chestnut roasts and related festivities mainly north of Rome",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Historical Regatta",
+    "city": "Venice",
+    "country": "Italy",
+    "dates": "2026-09-06",
+    "description": "Traditional boat races",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festa della Rificolona",
+    "city": "Florence",
+    "country": "Italy",
+    "dates": "2026-09-07",
+    "description": "Children's procession with lanterns, street performances, and parade",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Volto Santo",
+    "city": "Lucca",
+    "country": "Italy",
+    "dates": "2026-09-13",
+    "description": "Procession and fair",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of St. Januarius (La Festa di San Gennaro)",
+    "city": "Naples",
+    "country": "Italy",
+    "dates": "2026-09-19",
+    "description": "Religious celebration with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Kastelruther Spatzenfest",
+    "city": "Castelrotto/Kastelruth",
+    "country": "Italy",
+    "dates": "2026-10-09 to 2026-10-11",
+    "description": "Concert series featuring hometown Schlager group",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Pistachio Festival (Sagra del Pistacchio)",
+    "city": "Bronte",
+    "country": "Italy",
+    "dates": "October 9–18, 2026 (likely)",
+    "description": "Pistachio celebration near Mount Etna, Sicily",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "International White Truffle Fair",
+    "city": "Alba",
+    "country": "Italy",
+    "dates": "2026-10-10 to 2026-12-06",
+    "description": "Cooking demonstrations, historical reenactments, and truffles",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "All Saints' Day",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2026-11-01",
+    "description": "National holiday with some closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festival dei Popoli",
+    "city": "Florence",
+    "country": "Italy",
+    "dates": "2026-11-03 to 2026-11-09",
+    "description": "Documentary film festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of Our Lady of Good Health",
+    "city": "Venice",
+    "country": "Italy",
+    "dates": "2026-11-21",
+    "description": "Religious festival with a bridge built over the Grand Canal",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of Santa Lucia",
+    "city": "Siracusa",
+    "country": "Italy",
+    "dates": "2026-11-30 to 2026-12-20",
+    "description": "Culminates with a procession of the saint's statue to the cathedral on Dec 13",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas Market",
+    "city": "Rome",
+    "country": "Italy",
+    "dates": "December 2026",
+    "description": "Market on Piazza Navona",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of St. Ambrose",
+    "city": "Milan",
+    "country": "Italy",
+    "dates": "2026-12-07",
+    "description": "Special street markets and closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Feast of the Immaculate Conception",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2026-12-08",
+    "description": "National holiday with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2026-12-25",
+    "description": "National holiday with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "St. Stephen's Day",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2026-12-26",
+    "description": "National holiday with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Umbria Jazz Winter",
+    "city": "Orvieto",
+    "country": "Italy",
+    "dates": "2026-12-30 to 2027-01-03",
+    "description": "Winter jazz festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "New Year's Day",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2027-01-01",
+    "description": "National holiday with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Epiphany",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2027-01-06",
+    "description": "National holiday with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Epiphany Fair",
+    "city": "Rome",
+    "country": "Italy",
+    "dates": "2027-01-06",
+    "description": "Religious festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Carnival celebrations",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "January–March 2027",
+    "description": "Street parties throughout Italy",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Carnevale",
+    "city": "Venice",
+    "country": "Italy",
+    "dates": "2027-01-23 to 2027-02-09",
+    "description": "Famous mask and street festival; most festive on weekends",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Carnevale di Viareggio",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "January 30 and February 4, 7, 9, 14, 20, 2027",
+    "description": "Carnival events in Tuscany",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Festa di Sant'Agata",
+    "city": "Catania",
+    "country": "Italy",
+    "dates": "2027-02-03 to 2027-02-05",
+    "description": "Processions and fireworks",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ivrea Carnevale",
+    "city": "Ivrea",
+    "country": "Italy",
+    "dates": "2027-02-07 to 2027-02-09",
+    "description": "Orange-throwing free-for-all",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rome Marathon",
+    "city": "Rome",
+    "country": "Italy",
+    "dates": "2027-03-14",
+    "description": "unknown",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Good Friday",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2027-03-26",
+    "description": "Processions across Italy",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Procession of I Misteri",
+    "city": "Trapani",
+    "country": "Italy",
+    "dates": "2027-03-26",
+    "description": "Good Friday procession in Sicily",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Easter Sunday",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2027-03-28",
+    "description": "National holiday with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Scoppio del Carro",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2027-03-28",
+    "description": "Easter Sunday fireworks",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Easter Monday",
+    "city": "unknown",
+    "country": "Italy",
+    "dates": "2027-03-29",
+    "description": "National holiday with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Vinitaly",
+    "city": "Verona",
+    "country": "Italy",
+    "dates": "April 6–8, 2027 (likely)",
+    "description": "Wine festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rome's city birthday celebration",
+    "city": "Rome",
+    "country": "Italy",
+    "dates": "2027-04-21",
+    "description": "Parades and fireworks",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Artichoke Festival",
+    "city": "Chiusure",
+    "country": "Italy",
+    "dates": "April 22–25, 2027 (likely)",
+    "description": "Food festival near Pienza",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Liberation Day",
+    "city": "Rome",
+    "country": "Italy",
+    "dates": "2027-04-25",
+    "description": "Parades across Italy, particularly big in Rome",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "St. Mark's Day",
+    "city": "Venice",
+    "country": "Italy",
+    "dates": "2027-04-25",
+    "description": "Traghetto races and concerts",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Holland Arts Festival",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-06",
+    "description": "concerts, theater, etc.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Grachtenloop",
+    "city": "Haarlem",
+    "country": "Netherlands",
+    "dates": "2026-06-19",
+    "description": "run around canals",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Pinkpop",
+    "city": "near Maastricht",
+    "country": "Netherlands",
+    "dates": "2026-06-19–21",
+    "description": "rock festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "De Parade Theatre Festival",
+    "city": "Rotterdam",
+    "country": "Netherlands",
+    "dates": "2026-06-19–28",
+    "description": "outdoor theater with some \"language no problem\" performances",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Amsterdam Roots Festival",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-06-28",
+    "description": "ethnic food, music, world culture",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "De Parade Theatre Festival",
+    "city": "The Hague",
+    "country": "Netherlands",
+    "dates": "2026-07-03–18",
+    "description": "outdoor theater with some \"language no problem\" performances",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "North Sea Jazz Festival",
+    "city": "Rotterdam",
+    "country": "Netherlands",
+    "dates": "2026-07-10–12",
+    "description": "jazz festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rotterdam Unlimited",
+    "city": "Rotterdam",
+    "country": "Netherlands",
+    "dates": "2026-07-24–25",
+    "description": "street festival with live performances",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "De Parade Theatre Festival",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-07-24–2026-08-09",
+    "description": "outdoor theater with some \"language no problem\" performances",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Amsterdam Pride",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-07-25–2026-08-08",
+    "description": "LGBTQ+ pride celebrations",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Pluk de Nacht Utrecht",
+    "city": "Utrecht",
+    "country": "Netherlands",
+    "dates": "2026-08-06–15 (likely)",
+    "description": "outdoor film festival on the site of a former industrial park",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Haarlem Jazz & More",
+    "city": "Haarlem",
+    "country": "Netherlands",
+    "dates": "2026-08-13–15",
+    "description": "free jazz festival on Grote Markt",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Grachtenfestival",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-08-07–16",
+    "description": "music and festivities on Prinsengracht barges",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "De Parade Theatre Festival",
+    "city": "Utrecht",
+    "country": "Netherlands",
+    "dates": "2026-08-14–30",
+    "description": "outdoor theater with some \"language no problem\" performances",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Assumption",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2026-08-15",
+    "description": "religious holiday with closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Pluk de Nacht Amsterdam",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-08-19–29 (likely)",
+    "description": "outdoor film festival on the site of an old harbor",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Jazz in the Canal (Jazz in de Gracht)",
+    "city": "The Hague",
+    "country": "Netherlands",
+    "dates": "2026-08-27–29 (likely)",
+    "description": "jazz festival along the canals",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Corso Zundert",
+    "city": "Zundert",
+    "country": "Netherlands",
+    "dates": "2026-09-06–07",
+    "description": "flower parade on canals from Aalsmeer to Amsterdam",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Open Monumentendag",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2026-09-12–13",
+    "description": "otherwise-closed historical sites open and free to the public",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Yom Kippur",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-09-20–21",
+    "description": "closures of Jewish-history sights, including Anne Frank House",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Amsterdam Marathon",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-10-25",
+    "description": "annual city marathon",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Amsterdam Dance Event",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-10-21–25",
+    "description": "electronic music festival and conference",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Crossing Border Festival",
+    "city": "The Hague",
+    "country": "Netherlands",
+    "dates": "2026-11-03–08",
+    "description": "books, music, spoken word; much of it in English",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Museum Night Amsterdam",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-11-07",
+    "description": "museums open late with special events",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "International Documentary Film Festival Amsterdam",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-11-12–22",
+    "description": "world-renowned documentary film festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ice skating on Museumplein",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "Mid-November–early February",
+    "description": "seasonal ice skating rink in front of the Rijksmuseum",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Sinterklaas Procession",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-11-16",
+    "description": "when Sinterklaas and Zwarte Piet arrive from Spain",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Amsterdam Light Festival",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-11-26–2027-01-17 (likely)",
+    "description": "light installations along city canals",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "St. Nicholas' Eve (Sinterklaasavond)",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2026-12-05",
+    "description": "when Dutch children get their presents from Sinterklaas",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Amsterdam Winter Paradise",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2026-12-12–2027-01-02 (likely)",
+    "description": "skating rinks, music, light shows, wintry activities",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas (Kerstmis)",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2026-12-25",
+    "description": "national holiday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Second Day of Christmas (Tweede Kerstdag)",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2026-12-26",
+    "description": "national holiday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "New Year's Day",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2027-01-01",
+    "description": "closures; icewater swims across the Netherlands, most notably in Scheveningen",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "National Tulip Day",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2027-01-16",
+    "description": "official start of tulip season; tulips free for picking at Museumplein",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Jumping Amsterdam",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2027-01-28–31",
+    "description": "international equestrian competition",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Carnival (Mardi Gras)",
+    "city": "various towns",
+    "country": "Netherlands",
+    "dates": "2027-02–03",
+    "description": "celebrations mostly in the south",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Chocolate Festival Amsterdam",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2027-02-20–21",
+    "description": "festival dedicated to chocolate",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Keukenhof flower show",
+    "city": "near Lisse",
+    "country": "Netherlands",
+    "dates": "2027-03-18–2027-05-09",
+    "description": "huge gardens in bloom",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Amsterdam Tulip Festival",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2027-03-18–2027-05-09",
+    "description": "tulips on display throughout the city",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Easter Sunday and Monday",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2027-03-28–29",
+    "description": "national holidays; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rotterdam Marathon",
+    "city": "Rotterdam",
+    "country": "Netherlands",
+    "dates": "2027-04-10–11 (likely)",
+    "description": "annual city marathon",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Bloemencorso",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2027-04-14–18 (likely)",
+    "description": "25-mile flower parade from Noordwijk to Haarlem",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "KunstRAI Art Amsterdam",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2027-04-21–25 (likely)",
+    "description": "contemporary-art exhibition",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "King's Day (Koningsdag)",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2027-04-27",
+    "description": "King Willem-Alexander's birthday; party in the streets",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Remembrance of WWII Dead (Dodenherdenking)",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2027-05-04",
+    "description": "laying of wreaths and two-minute silence",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Liberation Day (Bevrijdingsdag)",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2027-05-05",
+    "description": "national holiday; closures; Liberation Festival in Amsterdam with live music",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ascension",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2027-05-06",
+    "description": "national holiday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Pentecost and Whit Monday",
+    "city": "unknown",
+    "country": "Netherlands",
+    "dates": "2027-05-16–17",
+    "description": "national holiday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Holland Arts Festival",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "dates": "2027-06",
+    "description": "concerts, theater, etc.",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Labor Day",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2026-05-01",
+    "description": "National holiday; some closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ascension",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2026-05-14",
+    "description": "National holiday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Procession of the Holy Blood",
+    "city": "Bruges",
+    "country": "Belgium",
+    "dates": "2026-05-14",
+    "description": "Religious procession",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Brussels Pride",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "2026-05-16",
+    "description": "LGBT pride parade",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Brussels Jazz Weekend",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "2026-05-22 to 2026-05-24",
+    "description": "Free concerts around town",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Pentecost and Whit Monday",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2026-05-24 to 2026-05-25",
+    "description": "National holiday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Zinneke Parade",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "2026-05-30",
+    "description": "Procession with music, dance, and floats, but no combustion engines",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ducasse de Mons",
+    "city": "Mons",
+    "country": "Belgium",
+    "dates": "2026-05-31",
+    "description": "Procession, enactment of battle between St. George and the dragon",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Battle of Waterloo Reenactment",
+    "city": "Waterloo",
+    "country": "Belgium",
+    "dates": "2026-06-19 to 2026-06-22",
+    "description": "Historic battle reenactment",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ommegang Pageant",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "2026-07-01 and 2026-07-03",
+    "description": "Historic costumed parade to Grand Place",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Rock Werchter",
+    "city": "Werchter (near Leuven)",
+    "country": "Belgium",
+    "dates": "2026-07-02 to 2026-07-05",
+    "description": "Huge pop and rock festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Summer Wonders",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "2026-07-02 to 2026-08-30 (likely)",
+    "description": "Arts festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Cactus Festival",
+    "city": "Bruges",
+    "country": "Belgium",
+    "dates": "2026-07-10 to 2026-07-12",
+    "description": "Alternative pop and rock in Minnewater",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Tomorrowland",
+    "city": "Boom",
+    "country": "Belgium",
+    "dates": "2026-07-17 to 2026-07-19 and 2026-07-24 to 2026-07-26",
+    "description": "Electronic music festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ghent Festival",
+    "city": "Ghent",
+    "country": "Belgium",
+    "dates": "2026-07-17 to 2026-07-26",
+    "description": "Free concerts, fireworks, street performers, market",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Belgian Independence Day",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2026-07-21",
+    "description": "National holiday with parades and fireworks",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Sfinks Mixed",
+    "city": "near Antwerp",
+    "country": "Belgium",
+    "dates": "2026-07-23 to 2026-07-26",
+    "description": "World music festival; free",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Musica Antiqua Festival",
+    "city": "Bruges",
+    "country": "Belgium",
+    "dates": "2026-07-31 to 2026-08-09",
+    "description": "Medieval music",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Brussels Flower Carpet",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "2026-08-13 to 2026-08-16",
+    "description": "Biannual floral display",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Assumption Day",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2026-08-15",
+    "description": "National holiday; closures across Belgium",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Assumption Day Procession",
+    "city": "Bruges",
+    "country": "Belgium",
+    "dates": "2026-08-15",
+    "description": "Religious procession",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Bathtub Regatta",
+    "city": "Dinant",
+    "country": "Belgium",
+    "dates": "2026-08-15",
+    "description": "Whimsical river race",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Pukkelpop",
+    "city": "near Hasselt",
+    "country": "Belgium",
+    "dates": "2026-08-20 to 2026-08-23",
+    "description": "Progressive music festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "La Ducasse in Ath",
+    "city": "Ath",
+    "country": "Belgium",
+    "dates": "2026-08-21 to 2026-09-08",
+    "description": "Traditional procession featuring giant puppets",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Brussels International Film Festival",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "2026-09-04 to 2026-09-12",
+    "description": "Film festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Ghent Film Festival",
+    "city": "Ghent",
+    "country": "Belgium",
+    "dates": "2026-10-14 to 2026-10-25",
+    "description": "Film festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "All Saints' Day",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2026-11-01",
+    "description": "National holiday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Armistice Day",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2026-11-11",
+    "description": "National holiday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Winter Wonders Christmas Market",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "2026-12",
+    "description": "Major Christmas market",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "St. Nicholas' Eve and St. Nicholas' Day",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2026-12-05 to 2026-12-06",
+    "description": "Processions celebrating the arrival of Sinterklaas",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Christmas",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2026-12-25",
+    "description": "National holiday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "New Year's Day",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2027-01-01",
+    "description": "National holiday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Carnival season",
+    "city": "Binche and Stavelot",
+    "country": "Belgium",
+    "dates": "2027-02 to 2027-04",
+    "description": "Lively and bizarre celebrations in various French-speaking cities",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Anima international animation film festival",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "2027-02-19 to 2027-02-28 (likely)",
+    "description": "International animation film festival",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Easter weekend",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "2027-03-26 to 2027-03-29",
+    "description": "Good Friday through Easter Monday; closures",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  },
+  {
+    "name": "Brussels International Fantastic Film Festival",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "2027-04-02 to 2027-04-17 (likely)",
+    "description": "Series of cult films",
+    "source_url": "https://www.ricksteves.com/europe/festivals"
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Carnival in Venice",
+    "city": "Venice",
+    "country": "Italy",
+    "dates": "unknown",
+    "description": "One of the oldest recorded carnivals, defined by mysterious hand-decorated masks, concerts, and dancing in plazas.",
+    "source_url": "https://catavino.net/guide-carnival-spain/"
+  },
+  {
+    "name": "Carnival in Rio de Janeiro",
+    "city": "Rio de Janeiro",
+    "country": "Brazil",
+    "dates": "unknown",
+    "description": "A massive celebration known for its jewel-studded headdresses, vibrant costumes, and rhythmic Samba music.",
+    "source_url": "https://catavino.net/guide-carnival-spain/"
+  },
+  {
+    "name": "Carnival in Sao Paulo",
+    "city": "Sao Paulo",
+    "country": "Brazil",
+    "dates": "unknown",
+    "description": "Features huge, organized parades with vibrant costumes and diverse Samba cultures.",
+    "source_url": "https://catavino.net/guide-carnival-spain/"
+  },
+  {
+    "name": "Gran Canaria Carnival",
+    "city": "Las Palmas",
+    "country": "Spain",
+    "dates": "January 31-February 21",
+    "description": "A historic festival famous for its drag queen gala, the Cabalgata parade, and the symbolic funeral of the sardine.",
+    "source_url": "https://catavino.net/guide-carnival-spain/"
+  },
+  {
+    "name": "Tenerife Carnival",
+    "city": "Santa Cruz de Tenerife",
+    "country": "Spain",
+    "dates": "January 21-February 22",
+    "description": "A spectacular month-long celebration featuring elaborate sequined costumes, floats, and masked dances with themes like The Future.",
+    "source_url": "https://catavino.net/guide-carnival-spain/"
+  },
+  {
+    "name": "La Palma Carnival",
+    "city": "Santa Cruz de la Palma",
+    "country": "Spain",
+    "dates": "February 13-22",
+    "description": "Distinctive for the Indios parade where participants dress in white and talcum powder fills the air to Caribbean rhythms.",
+    "source_url": "https://catavino.net/guide-carnival-spain/"
+  },
+  {
+    "name": "Avilés Carnival",
+    "city": "Avilés",
+    "country": "Spain",
+    "dates": "February 11-18",
+    "description": "A smaller carnival in northern Spain featuring music, dance, costumes, and a funeral for the sardine.",
+    "source_url": "https://catavino.net/guide-carnival-spain/"
+  },
+  {
+    "name": "Cadiz Carnival",
+    "city": "Cadiz",
+    "country": "Spain",
+    "dates": "February",
+    "description": "Well known for its social satire, vocal ensembles, and gastronomic events involving pastries, sea urchins, and oysters.",
+    "source_url": "https://catavino.net/guide-carnival-spain/"
+  },
+  {
+    "name": "Sitges Carnival",
+    "city": "Sitges",
+    "country": "Spain",
+    "dates": "February 12-18",
+    "description": "A spirited seaside festival with a large gay community presence, drag queens, and all-night parties.",
+    "source_url": "https://catavino.net/guide-carnival-spain/"
+  }
+]

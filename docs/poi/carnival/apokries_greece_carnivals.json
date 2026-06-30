@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Apokries (Greek Carnival Season)",
+    "city": "Nationwide",
+    "country": "Greece",
+    "region": "Greece",
+    "dates": "Begins ten weeks before Greek Orthodox Easter; culminates on the weekend before Clean Monday (Ash Monday). Key dates: Tsiknopempto (Smoky/BBQ Thursday), Meatfare Sunday (last day of meat), Cheesefare Sunday, Clean Monday (public holiday).",
+    "start_date": null,
+    "end_date": null,
+    "description": "Greece's Carnival season ('Apokries', literally 'goodbye to meat', from apo-kreo) is the festive season preceding Lent, featuring masquerading, feasting, drinking, and dancing. It begins ten weeks before Orthodox Easter and peaks on the weekend before Clean Monday. Key dates: Tsiknopempto (Smoky Thursday, the Thursday before Meatfare Sunday) marks the start of heavy celebrations with all-pervading scent of grilled meat. Meatfare Sunday is the last day of meat until Easter. Cheesefare Sunday (Tyrofagos) allows only dairy. Clean Monday (Kathari Deftera) is a public holiday marking the start of Lent — families picnic outdoors, fly kites, and eat special Lenten foods: lagana (unleavened bread), taramosalata, grilled octopus, halvas.",
+    "tradition_type": "Apokries / Greek Carnival",
+    "source_url": "https://www.greeknewsagenda.gr/apokries-the-greek-carnival/"
+  },
+  {
+    "name": "Patras Carnival",
+    "city": "Patras",
+    "country": "Greece",
+    "region": "Achaea, Peloponnese",
+    "dates": "January through Shrove weekend (last Saturday and Sunday before Clean Monday); peak on final weekend",
+    "start_date": null,
+    "end_date": null,
+    "description": "The largest carnival in Greece and one of the largest in Europe. Begins in January with a proclamation by the town crier. Events include balls, parades, street theatre. Peak: Saturday night torchlit parade and Sunday's spectacular float parade featuring floral, artistic, and satirical floats with a Carnival King and Queen. Tens of thousands of participants of all ages transform the entire city into a party.",
+    "tradition_type": "Apokries / Greek Carnival",
+    "source_url": "https://www.greeknewsagenda.gr/apokries-the-greek-carnival/"
+  },
+  {
+    "name": "Xanthi Carnival (Folk Carnival)",
+    "city": "Xanthi",
+    "country": "Greece",
+    "region": "Thrace, Eastern Macedonia",
+    "dates": "Saturday before Clean Monday (Folk Parade); Cheesefare Sunday (Burning of the Tzaros)",
+    "start_date": null,
+    "end_date": null,
+    "description": "Founded in 1966, the Xanthi Carnival reflects the city's multicultural character, making it the most folkloric of urban Greek carnivals. Highlight: the Folk Parade through the Old Town's picturesque neighbourhoods, with folk dance groups from local Cultural Associations and guest groups from across Greece, culminating in an all-night Balkan folk music fiesta in the main square. Cheesefare Sunday features the custom of 'Burning the Tzaros' — a human effigy placed atop a pile of brushwood and set alight.",
+    "tradition_type": "Apokries / Greek Carnival",
+    "source_url": "https://www.greeknewsagenda.gr/apokries-the-greek-carnival/"
+  },
+  {
+    "name": "Skyros Carnival (Geros — Old Men)",
+    "city": "Skyros",
+    "country": "Greece",
+    "region": "Sporades islands, Aegean Sea",
+    "dates": "Carnival season (Cheesefare week), primarily Cheesefare Sunday",
+    "start_date": null,
+    "end_date": null,
+    "description": "Unique Aegean island carnival tradition on Skyros. Local men wear the role of 'geros' (old man) — a figure in a hooded black cape and hanging goat skin, with large goat bells clanging around the waist. The 'old men' run through the streets individually or in groups, singing, dancing, and making maximum noise, while locals and guests toast and dance with them. The goat bells connect this tradition to the wider Balkan and Alpine cowbell-wearing carnival family.",
+    "tradition_type": "Apokries / Aegean Island Carnival",
+    "source_url": "https://www.greeknewsagenda.gr/apokries-the-greek-carnival/"
+  },
+  {
+    "name": "Alevromoutzouromata (Flour War)",
+    "city": "Galaxidi",
+    "country": "Greece",
+    "region": "Phocis, Central Greece",
+    "dates": "Clean Monday (Kathari Deftera)",
+    "start_date": null,
+    "end_date": null,
+    "description": "Galaxidi's unique carnival custom of 'alevromoutzouromata' (flour smearing) on Clean Monday. Hundreds of people pelt each other with large quantities of coloured flour in the town's streets, transforming the picturesque harbour town into a battlefield of colour. The custom dates to the heyday of the town's merchant fleet, when departing sailors celebrated at the end of Carnival season. The most daring participants also jump over bonfires.",
+    "tradition_type": "Apokries / Clean Monday Flour War",
+    "source_url": "https://www.greeknewsagenda.gr/apokries-the-greek-carnival/"
+  },
+  {
+    "name": "Genitsaroi and Boules",
+    "city": "Naoussa",
+    "country": "Greece",
+    "region": "Imathia, Central Macedonia",
+    "dates": "Carnival season (Cheesefare week)",
+    "start_date": null,
+    "end_date": null,
+    "description": "Naoussa's most renowned carnival custom. Participants (exclusively unmarried men) dress as 'Genitsaroi' (Janissary soldiers) in elaborate uniforms. 'Boula' (the bride) is also performed by a man. Children and musicians with traditional instruments accompany the procession through the streets.",
+    "tradition_type": "Apokries / Greek Carnival",
+    "source_url": "https://www.greeknewsagenda.gr/apokries-the-greek-carnival/"
+  },
+  {
+    "name": "Ragoutsaria",
+    "city": "Kastoria",
+    "country": "Greece",
+    "region": "Western Macedonia",
+    "dates": "January 6–8 (Epiphany/Orthodox Christmas period) — held in January, ahead of the main Apokries season",
+    "start_date": null,
+    "end_date": null,
+    "description": "Kastoria's carnival ('Ragoutsaria') refers to the revival of ancient Dionysian ceremonies. Aims to help locals forget the troubles of the year with a playful, festive atmosphere. Attracts visitors from across Greece. Takes place around Epiphany (January 6), making it one of the earliest winter festivals in Greece.",
+    "tradition_type": "Apokries / Dionysian Carnival Revival",
+    "source_url": "https://www.greeknewsagenda.gr/apokries-the-greek-carnival/"
+  }
+]

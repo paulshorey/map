@@ -1,0 +1,1076 @@
+{
+  "source_category": "Category:Carnivals_in_Europe",
+  "api_url": "https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:Carnivals_in_Europe&cmlimit=500&format=json",
+  "total_articles": 99,
+  "category_tree": {
+    "Category:Carnivals_in_Europe": {
+      "articles": [
+        "Carnivals from the Basque Country",
+        "Federation of European Carnival Cities",
+        "Leading the bear",
+        "Užgavėnės"
+      ],
+      "subcategories": [
+        "Category:Carnivals in Europe by country"
+      ]
+    },
+    "Category:Carnivals in Europe by country": {
+      "articles": [],
+      "subcategories": [
+        "Category:Carnivals in Austria",
+        "Category:Carnivals in Belarus",
+        "Category:Carnivals in Belgium",
+        "Category:Carnivals in Croatia",
+        "Category:Carnivals in Cyprus",
+        "Category:Carnivals in Denmark",
+        "Category:Carnivals in Finland",
+        "Category:Carnivals in France",
+        "Category:Carnivals in Germany",
+        "Category:Carnivals in Greece",
+        "Category:Carnivals in Hungary",
+        "Category:Carnivals in Italy",
+        "Category:Carnivals in Malta",
+        "Category:Carnivals in the Netherlands",
+        "Category:Carnivals in Portugal",
+        "Category:Carnivals in Russia",
+        "Category:Carnivals in Spain",
+        "Category:Carnivals in Switzerland",
+        "Category:Carnivals in Turkey",
+        "Category:Carnivals in Ukraine",
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    "Category:Carnivals in Austria": {
+      "articles": [
+        "Carnival in Germany, Switzerland and Austria",
+        "Guggenmusik"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Belarus": {
+      "articles": [
+        "Maslenitsa"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Belgium": {
+      "articles": [
+        "Carnival of Aalst",
+        "Carnival of Binche",
+        "Carnival of Nivelles",
+        "Cwarmê",
+        "Gilles",
+        "Carnival Parade of Maaseik",
+        "Scharnaval",
+        "Laetare de Stavelot"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Croatia": {
+      "articles": [
+        "Lastovo Poklad"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Cyprus": {
+      "articles": [
+        "Limassol Carnival Festival"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Denmark": {
+      "articles": [
+        "Aalborg Carnival",
+        "Copenhagen Carnival",
+        "Fastelavn"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Finland": {
+      "articles": [
+        "Helsinki Samba Carnaval"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in France": {
+      "articles": [
+        "Carnaval de Périgueux",
+        "The Cavalcade of Scaër",
+        "Fête du Citron",
+        "Carnival of Limoux",
+        "Maskarada (carnival of Soule)",
+        "Nice Carnival",
+        "Parade of the Fat Ox at the Paris Carnival",
+        "Paris Carnival",
+        "Soufflaculs of Nontron"
+      ],
+      "subcategories": [
+        "Category:Carnivals in French Guiana"
+      ]
+    },
+    "Category:Carnivals in French Guiana": {
+      "articles": [
+        "Carnival in French Guiana",
+        "Carnival of Cayenne",
+        "Touloulou"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Germany": {
+      "articles": [
+        "Carnival in Germany, Switzerland and Austria",
+        "1862 Fairytale Maskenfest",
+        "Carnival society",
+        "Cologne Carnival",
+        "Die Grosse von 1823",
+        "Düsseldorfer Karneval",
+        "Fidele Sandhasen",
+        "Guggenmusik",
+        "Karneval der Kulturen",
+        "Mainz carnival",
+        "Malkasten-Redoute",
+        "Narrhallamarsch",
+        "Nubbel",
+        "Rosenmontag",
+        "Schembart Carnival"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Greece": {
+      "articles": [
+        "Patras Carnival",
+        "Xanthi Carnival"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Hungary": {
+      "articles": [
+        "Busójárás"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Italy": {
+      "articles": [
+        "Carnival in Italy",
+        "Campo San Polo",
+        "Carnival of Ivrea",
+        "Carnival of Foiano della Chiana",
+        "Sartiglia",
+        "Carnival of Satriano di Lucania",
+        "Carnival of Venice",
+        "Carnival of Viareggio"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Malta": {
+      "articles": [
+        "Carnival tragedy of 1823",
+        "Maltese Carnival"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in the Netherlands": {
+      "articles": [
+        "Carnival in the Netherlands",
+        "Summer Carnival"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Portugal": {
+      "articles": [
+        "Careto",
+        "Carnival of Madeira",
+        "Carnival of Ovar",
+        "Festivals of Póvoa de Varzim"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Russia": {
+      "articles": [
+        "Kamyshin Watermelon Festival",
+        "Maslenitsa"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Spain": {
+      "articles": [
+        "Carnival of Cádiz",
+        "Carnival of La Bañeza",
+        "Carnival of Las Palmas",
+        "Carnival of Santa Cruz de Tenerife",
+        "Carnival of Tarazona de la Mancha",
+        "Carnival of Vinaròs",
+        "Carnival Queen",
+        "Ituren",
+        "Lantz carnivals",
+        "Ravachol (parrot)",
+        "La Vijanera"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Switzerland": {
+      "articles": [
+        "Carnival in Germany, Switzerland and Austria",
+        "Carnival in Bern",
+        "Carnival of Basel",
+        "Chienbäse",
+        "Eis-zwei-Geissebei",
+        "Guggenmusik",
+        "Rabadan"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Turkey": {
+      "articles": [
+        "Baklahorani",
+        "Orange Blossom Carnival"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Ukraine": {
+      "articles": [
+        "Maslenitsa"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in the United Kingdom": {
+      "articles": [
+        "Birmingham International Carnival",
+        "Hythe Venetian Fete",
+        "Leeds West Indian Carnival",
+        "Luton Carnival",
+        "Manchester Caribbean Carnival",
+        "Nickanan Night",
+        "Northampton Carnival",
+        "Notting Hill Carnival",
+        "St Pauls Carnival",
+        "Sneinton Festival",
+        "Titchfield Carnival",
+        "West Country Carnival"
+      ],
+      "subcategories": [
+        "Category:Carnivals in the Cayman Islands",
+        "Category:Carnivals in Jersey",
+        "Category:Latin American carnivals in the United Kingdom"
+      ]
+    },
+    "Category:Carnivals in the Cayman Islands": {
+      "articles": [
+        "Batabano"
+      ],
+      "subcategories": []
+    },
+    "Category:Carnivals in Jersey": {
+      "articles": [
+        "Jersey Battle of Flowers"
+      ],
+      "subcategories": []
+    },
+    "Category:Latin American carnivals in the United Kingdom": {
+      "articles": [
+        "Brazilica Festival"
+      ],
+      "subcategories": []
+    }
+  },
+  "articles": [
+    {
+      "pageid": 81625705,
+      "title": "1862 Fairytale Maskenfest",
+      "url": "https://en.wikipedia.org/wiki/1862_Fairytale_Maskenfest",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 24054865,
+      "title": "Aalborg Carnival",
+      "url": "https://en.wikipedia.org/wiki/Aalborg_Carnival",
+      "categories": [
+        "Category:Carnivals in Denmark"
+      ]
+    },
+    {
+      "pageid": 34061094,
+      "title": "Baklahorani",
+      "url": "https://en.wikipedia.org/wiki/Baklahorani",
+      "categories": [
+        "Category:Carnivals in Turkey"
+      ]
+    },
+    {
+      "pageid": 6770342,
+      "title": "Batabano",
+      "url": "https://en.wikipedia.org/wiki/Batabano",
+      "categories": [
+        "Category:Carnivals in the Cayman Islands"
+      ]
+    },
+    {
+      "pageid": 637060,
+      "title": "Birmingham International Carnival",
+      "url": "https://en.wikipedia.org/wiki/Birmingham_International_Carnival",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 32452453,
+      "title": "Brazilica Festival",
+      "url": "https://en.wikipedia.org/wiki/Brazilica_Festival",
+      "categories": [
+        "Category:Latin American carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 2753652,
+      "title": "Busójárás",
+      "url": "https://en.wikipedia.org/wiki/Busójárás",
+      "categories": [
+        "Category:Carnivals in Hungary"
+      ]
+    },
+    {
+      "pageid": 4596418,
+      "title": "Campo San Polo",
+      "url": "https://en.wikipedia.org/wiki/Campo_San_Polo",
+      "categories": [
+        "Category:Carnivals in Italy"
+      ]
+    },
+    {
+      "pageid": 4230074,
+      "title": "Careto",
+      "url": "https://en.wikipedia.org/wiki/Careto",
+      "categories": [
+        "Category:Carnivals in Portugal"
+      ]
+    },
+    {
+      "pageid": 76361741,
+      "title": "Carnaval de Périgueux",
+      "url": "https://en.wikipedia.org/wiki/Carnaval_de_Périgueux",
+      "categories": [
+        "Category:Carnivals in France"
+      ]
+    },
+    {
+      "pageid": 38814115,
+      "title": "Carnival Parade of Maaseik",
+      "url": "https://en.wikipedia.org/wiki/Carnival_Parade_of_Maaseik",
+      "categories": [
+        "Category:Carnivals in Belgium"
+      ]
+    },
+    {
+      "pageid": 41219113,
+      "title": "Carnival Queen",
+      "url": "https://en.wikipedia.org/wiki/Carnival_Queen",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 27026503,
+      "title": "Carnival in Bern",
+      "url": "https://en.wikipedia.org/wiki/Carnival_in_Bern",
+      "categories": [
+        "Category:Carnivals in Switzerland"
+      ]
+    },
+    {
+      "pageid": 46615323,
+      "title": "Carnival in French Guiana",
+      "url": "https://en.wikipedia.org/wiki/Carnival_in_French_Guiana",
+      "categories": [
+        "Category:Carnivals in French Guiana"
+      ]
+    },
+    {
+      "pageid": 27648535,
+      "title": "Carnival in Germany, Switzerland and Austria",
+      "url": "https://en.wikipedia.org/wiki/Carnival_in_Germany,_Switzerland_and_Austria",
+      "categories": [
+        "Category:Carnivals in Austria",
+        "Category:Carnivals in Germany",
+        "Category:Carnivals in Switzerland"
+      ]
+    },
+    {
+      "pageid": 27657276,
+      "title": "Carnival in Italy",
+      "url": "https://en.wikipedia.org/wiki/Carnival_in_Italy",
+      "categories": [
+        "Category:Carnivals in Italy"
+      ]
+    },
+    {
+      "pageid": 40904397,
+      "title": "Carnival in the Netherlands",
+      "url": "https://en.wikipedia.org/wiki/Carnival_in_the_Netherlands",
+      "categories": [
+        "Category:Carnivals in the Netherlands"
+      ]
+    },
+    {
+      "pageid": 45187746,
+      "title": "Carnival of Aalst",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Aalst",
+      "categories": [
+        "Category:Carnivals in Belgium"
+      ]
+    },
+    {
+      "pageid": 4719370,
+      "title": "Carnival of Basel",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Basel",
+      "categories": [
+        "Category:Carnivals in Switzerland"
+      ]
+    },
+    {
+      "pageid": 10493642,
+      "title": "Carnival of Binche",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Binche",
+      "categories": [
+        "Category:Carnivals in Belgium"
+      ]
+    },
+    {
+      "pageid": 60278252,
+      "title": "Carnival of Cayenne",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Cayenne",
+      "categories": [
+        "Category:Carnivals in French Guiana"
+      ]
+    },
+    {
+      "pageid": 7091213,
+      "title": "Carnival of Cádiz",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Cádiz",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 38800894,
+      "title": "Carnival of Foiano della Chiana",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Foiano_della_Chiana",
+      "categories": [
+        "Category:Carnivals in Italy"
+      ]
+    },
+    {
+      "pageid": 23646829,
+      "title": "Carnival of Ivrea",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Ivrea",
+      "categories": [
+        "Category:Carnivals in Italy"
+      ]
+    },
+    {
+      "pageid": 30780628,
+      "title": "Carnival of La Bañeza",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_La_Bañeza",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 24141061,
+      "title": "Carnival of Las Palmas",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Las_Palmas",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 39409022,
+      "title": "Carnival of Limoux",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Limoux",
+      "categories": [
+        "Category:Carnivals in France"
+      ]
+    },
+    {
+      "pageid": 30536777,
+      "title": "Carnival of Madeira",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Madeira",
+      "categories": [
+        "Category:Carnivals in Portugal"
+      ]
+    },
+    {
+      "pageid": 49599588,
+      "title": "Carnival of Nivelles",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Nivelles",
+      "categories": [
+        "Category:Carnivals in Belgium"
+      ]
+    },
+    {
+      "pageid": 61880246,
+      "title": "Carnival of Ovar",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Ovar",
+      "categories": [
+        "Category:Carnivals in Portugal"
+      ]
+    },
+    {
+      "pageid": 21731097,
+      "title": "Carnival of Santa Cruz de Tenerife",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Santa_Cruz_de_Tenerife",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 53332342,
+      "title": "Carnival of Satriano di Lucania",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Satriano_di_Lucania",
+      "categories": [
+        "Category:Carnivals in Italy"
+      ]
+    },
+    {
+      "pageid": 46233475,
+      "title": "Carnival of Tarazona de la Mancha",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Tarazona_de_la_Mancha",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 3645626,
+      "title": "Carnival of Venice",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Venice",
+      "categories": [
+        "Category:Carnivals in Italy"
+      ]
+    },
+    {
+      "pageid": 9602938,
+      "title": "Carnival of Viareggio",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Viareggio",
+      "categories": [
+        "Category:Carnivals in Italy"
+      ]
+    },
+    {
+      "pageid": 49187003,
+      "title": "Carnival of Vinaròs",
+      "url": "https://en.wikipedia.org/wiki/Carnival_of_Vinaròs",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 71586205,
+      "title": "Carnival society",
+      "url": "https://en.wikipedia.org/wiki/Carnival_society",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 51115090,
+      "title": "Carnival tragedy of 1823",
+      "url": "https://en.wikipedia.org/wiki/Carnival_tragedy_of_1823",
+      "categories": [
+        "Category:Carnivals in Malta"
+      ]
+    },
+    {
+      "pageid": 39347172,
+      "title": "Carnivals from the Basque Country",
+      "url": "https://en.wikipedia.org/wiki/Carnivals_from_the_Basque_Country",
+      "categories": [
+        "Category:Carnivals_in_Europe"
+      ]
+    },
+    {
+      "pageid": 583650,
+      "title": "Chienbäse",
+      "url": "https://en.wikipedia.org/wiki/Chienbäse",
+      "categories": [
+        "Category:Carnivals in Switzerland"
+      ]
+    },
+    {
+      "pageid": 4218026,
+      "title": "Cologne Carnival",
+      "url": "https://en.wikipedia.org/wiki/Cologne_Carnival",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 23015734,
+      "title": "Copenhagen Carnival",
+      "url": "https://en.wikipedia.org/wiki/Copenhagen_Carnival",
+      "categories": [
+        "Category:Carnivals in Denmark"
+      ]
+    },
+    {
+      "pageid": 49599855,
+      "title": "Cwarmê",
+      "url": "https://en.wikipedia.org/wiki/Cwarmê",
+      "categories": [
+        "Category:Carnivals in Belgium"
+      ]
+    },
+    {
+      "pageid": 82266532,
+      "title": "Die Grosse von 1823",
+      "url": "https://en.wikipedia.org/wiki/Die_Grosse_von_1823",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 68705353,
+      "title": "Düsseldorfer Karneval",
+      "url": "https://en.wikipedia.org/wiki/Düsseldorfer_Karneval",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 26228003,
+      "title": "Eis-zwei-Geissebei",
+      "url": "https://en.wikipedia.org/wiki/Eis-zwei-Geissebei",
+      "categories": [
+        "Category:Carnivals in Switzerland"
+      ]
+    },
+    {
+      "pageid": 7668289,
+      "title": "Fastelavn",
+      "url": "https://en.wikipedia.org/wiki/Fastelavn",
+      "categories": [
+        "Category:Carnivals in Denmark"
+      ]
+    },
+    {
+      "pageid": 16994015,
+      "title": "Federation of European Carnival Cities",
+      "url": "https://en.wikipedia.org/wiki/Federation_of_European_Carnival_Cities",
+      "categories": [
+        "Category:Carnivals_in_Europe"
+      ]
+    },
+    {
+      "pageid": 6131660,
+      "title": "Festivals of Póvoa de Varzim",
+      "url": "https://en.wikipedia.org/wiki/Festivals_of_Póvoa_de_Varzim",
+      "categories": [
+        "Category:Carnivals in Portugal"
+      ]
+    },
+    {
+      "pageid": 82265910,
+      "title": "Fidele Sandhasen",
+      "url": "https://en.wikipedia.org/wiki/Fidele_Sandhasen",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 63064551,
+      "title": "Fête du Citron",
+      "url": "https://en.wikipedia.org/wiki/Fête_du_Citron",
+      "categories": [
+        "Category:Carnivals in France"
+      ]
+    },
+    {
+      "pageid": 2483182,
+      "title": "Gilles",
+      "url": "https://en.wikipedia.org/wiki/Gilles",
+      "categories": [
+        "Category:Carnivals in Belgium"
+      ]
+    },
+    {
+      "pageid": 26242675,
+      "title": "Guggenmusik",
+      "url": "https://en.wikipedia.org/wiki/Guggenmusik",
+      "categories": [
+        "Category:Carnivals in Austria",
+        "Category:Carnivals in Germany",
+        "Category:Carnivals in Switzerland"
+      ]
+    },
+    {
+      "pageid": 43018241,
+      "title": "Helsinki Samba Carnaval",
+      "url": "https://en.wikipedia.org/wiki/Helsinki_Samba_Carnaval",
+      "categories": [
+        "Category:Carnivals in Finland"
+      ]
+    },
+    {
+      "pageid": 3447571,
+      "title": "Hythe Venetian Fete",
+      "url": "https://en.wikipedia.org/wiki/Hythe_Venetian_Fete",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 2925550,
+      "title": "Ituren",
+      "url": "https://en.wikipedia.org/wiki/Ituren",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 1683094,
+      "title": "Jersey Battle of Flowers",
+      "url": "https://en.wikipedia.org/wiki/Jersey_Battle_of_Flowers",
+      "categories": [
+        "Category:Carnivals in Jersey"
+      ]
+    },
+    {
+      "pageid": 59648448,
+      "title": "Kamyshin Watermelon Festival",
+      "url": "https://en.wikipedia.org/wiki/Kamyshin_Watermelon_Festival",
+      "categories": [
+        "Category:Carnivals in Russia"
+      ]
+    },
+    {
+      "pageid": 35180440,
+      "title": "Karneval der Kulturen",
+      "url": "https://en.wikipedia.org/wiki/Karneval_der_Kulturen",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 31030613,
+      "title": "La Vijanera",
+      "url": "https://en.wikipedia.org/wiki/La_Vijanera",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 54012177,
+      "title": "Laetare de Stavelot",
+      "url": "https://en.wikipedia.org/wiki/Laetare_de_Stavelot",
+      "categories": [
+        "Category:Carnivals in Belgium"
+      ]
+    },
+    {
+      "pageid": 45558744,
+      "title": "Lantz carnivals",
+      "url": "https://en.wikipedia.org/wiki/Lantz_carnivals",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 4430197,
+      "title": "Lastovo Poklad",
+      "url": "https://en.wikipedia.org/wiki/Lastovo_Poklad",
+      "categories": [
+        "Category:Carnivals in Croatia"
+      ]
+    },
+    {
+      "pageid": 66293393,
+      "title": "Leading the bear",
+      "url": "https://en.wikipedia.org/wiki/Leading_the_bear",
+      "categories": [
+        "Category:Carnivals_in_Europe"
+      ]
+    },
+    {
+      "pageid": 976764,
+      "title": "Leeds West Indian Carnival",
+      "url": "https://en.wikipedia.org/wiki/Leeds_West_Indian_Carnival",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 48637966,
+      "title": "Limassol Carnival Festival",
+      "url": "https://en.wikipedia.org/wiki/Limassol_Carnival_Festival",
+      "categories": [
+        "Category:Carnivals in Cyprus"
+      ]
+    },
+    {
+      "pageid": 7660814,
+      "title": "Luton Carnival",
+      "url": "https://en.wikipedia.org/wiki/Luton_Carnival",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 26030372,
+      "title": "Mainz carnival",
+      "url": "https://en.wikipedia.org/wiki/Mainz_carnival",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 68652320,
+      "title": "Malkasten-Redoute",
+      "url": "https://en.wikipedia.org/wiki/Malkasten-Redoute",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 9592012,
+      "title": "Maltese Carnival",
+      "url": "https://en.wikipedia.org/wiki/Maltese_Carnival",
+      "categories": [
+        "Category:Carnivals in Malta"
+      ]
+    },
+    {
+      "pageid": 61322762,
+      "title": "Manchester Caribbean Carnival",
+      "url": "https://en.wikipedia.org/wiki/Manchester_Caribbean_Carnival",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 15545406,
+      "title": "Maskarada (carnival of Soule)",
+      "url": "https://en.wikipedia.org/wiki/Maskarada_(carnival_of_Soule)",
+      "categories": [
+        "Category:Carnivals in France"
+      ]
+    },
+    {
+      "pageid": 3978442,
+      "title": "Maslenitsa",
+      "url": "https://en.wikipedia.org/wiki/Maslenitsa",
+      "categories": [
+        "Category:Carnivals in Belarus",
+        "Category:Carnivals in Russia",
+        "Category:Carnivals in Ukraine"
+      ]
+    },
+    {
+      "pageid": 15639071,
+      "title": "Narrhallamarsch",
+      "url": "https://en.wikipedia.org/wiki/Narrhallamarsch",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 2890170,
+      "title": "Nice Carnival",
+      "url": "https://en.wikipedia.org/wiki/Nice_Carnival",
+      "categories": [
+        "Category:Carnivals in France"
+      ]
+    },
+    {
+      "pageid": 8262616,
+      "title": "Nickanan Night",
+      "url": "https://en.wikipedia.org/wiki/Nickanan_Night",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 22561651,
+      "title": "Northampton Carnival",
+      "url": "https://en.wikipedia.org/wiki/Northampton_Carnival",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 241103,
+      "title": "Notting Hill Carnival",
+      "url": "https://en.wikipedia.org/wiki/Notting_Hill_Carnival",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 16386565,
+      "title": "Nubbel",
+      "url": "https://en.wikipedia.org/wiki/Nubbel",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 46289109,
+      "title": "Orange Blossom Carnival",
+      "url": "https://en.wikipedia.org/wiki/Orange_Blossom_Carnival",
+      "categories": [
+        "Category:Carnivals in Turkey"
+      ]
+    },
+    {
+      "pageid": 78845600,
+      "title": "Parade of the Fat Ox at the Paris Carnival",
+      "url": "https://en.wikipedia.org/wiki/Parade_of_the_Fat_Ox_at_the_Paris_Carnival",
+      "categories": [
+        "Category:Carnivals in France"
+      ]
+    },
+    {
+      "pageid": 21452357,
+      "title": "Paris Carnival",
+      "url": "https://en.wikipedia.org/wiki/Paris_Carnival",
+      "categories": [
+        "Category:Carnivals in France"
+      ]
+    },
+    {
+      "pageid": 6826145,
+      "title": "Patras Carnival",
+      "url": "https://en.wikipedia.org/wiki/Patras_Carnival",
+      "categories": [
+        "Category:Carnivals in Greece"
+      ]
+    },
+    {
+      "pageid": 932129,
+      "title": "Rabadan",
+      "url": "https://en.wikipedia.org/wiki/Rabadan",
+      "categories": [
+        "Category:Carnivals in Switzerland"
+      ]
+    },
+    {
+      "pageid": 67230856,
+      "title": "Ravachol (parrot)",
+      "url": "https://en.wikipedia.org/wiki/Ravachol_(parrot)",
+      "categories": [
+        "Category:Carnivals in Spain"
+      ]
+    },
+    {
+      "pageid": 5391219,
+      "title": "Rosenmontag",
+      "url": "https://en.wikipedia.org/wiki/Rosenmontag",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 82369143,
+      "title": "Sartiglia",
+      "url": "https://en.wikipedia.org/wiki/Sartiglia",
+      "categories": [
+        "Category:Carnivals in Italy"
+      ]
+    },
+    {
+      "pageid": 82023656,
+      "title": "Scharnaval",
+      "url": "https://en.wikipedia.org/wiki/Scharnaval",
+      "categories": [
+        "Category:Carnivals in Belgium"
+      ]
+    },
+    {
+      "pageid": 3773953,
+      "title": "Schembart Carnival",
+      "url": "https://en.wikipedia.org/wiki/Schembart_Carnival",
+      "categories": [
+        "Category:Carnivals in Germany"
+      ]
+    },
+    {
+      "pageid": 42208643,
+      "title": "Sneinton Festival",
+      "url": "https://en.wikipedia.org/wiki/Sneinton_Festival",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 76277230,
+      "title": "Soufflaculs of Nontron",
+      "url": "https://en.wikipedia.org/wiki/Soufflaculs_of_Nontron",
+      "categories": [
+        "Category:Carnivals in France"
+      ]
+    },
+    {
+      "pageid": 22191400,
+      "title": "St Pauls Carnival",
+      "url": "https://en.wikipedia.org/wiki/St_Pauls_Carnival",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 12500948,
+      "title": "Summer Carnival",
+      "url": "https://en.wikipedia.org/wiki/Summer_Carnival",
+      "categories": [
+        "Category:Carnivals in the Netherlands"
+      ]
+    },
+    {
+      "pageid": 39292134,
+      "title": "The Cavalcade of Scaër",
+      "url": "https://en.wikipedia.org/wiki/The_Cavalcade_of_Scaër",
+      "categories": [
+        "Category:Carnivals in France"
+      ]
+    },
+    {
+      "pageid": 9160147,
+      "title": "Titchfield Carnival",
+      "url": "https://en.wikipedia.org/wiki/Titchfield_Carnival",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 53374366,
+      "title": "Touloulou",
+      "url": "https://en.wikipedia.org/wiki/Touloulou",
+      "categories": [
+        "Category:Carnivals in French Guiana"
+      ]
+    },
+    {
+      "pageid": 6687678,
+      "title": "Užgavėnės",
+      "url": "https://en.wikipedia.org/wiki/Užgavėnės",
+      "categories": [
+        "Category:Carnivals_in_Europe"
+      ]
+    },
+    {
+      "pageid": 4895134,
+      "title": "West Country Carnival",
+      "url": "https://en.wikipedia.org/wiki/West_Country_Carnival",
+      "categories": [
+        "Category:Carnivals in the United Kingdom"
+      ]
+    },
+    {
+      "pageid": 63110730,
+      "title": "Xanthi Carnival",
+      "url": "https://en.wikipedia.org/wiki/Xanthi_Carnival",
+      "categories": [
+        "Category:Carnivals in Greece"
+      ]
+    }
+  ]
+}

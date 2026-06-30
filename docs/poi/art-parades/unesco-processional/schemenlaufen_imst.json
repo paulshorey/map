@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Schemenlaufen (Imst Carnival)",
+    "city": "Imst",
+    "country": "Austria",
+    "start_date": null,
+    "end_date": null,
+    "annual_date": "Every 4 years on the Sunday before Shrove Tuesday (February/March)",
+    "venue_name": "Imst town centre",
+    "street_address": "Imst, Tyrol 6460, Austria",
+    "lat": 47.2451,
+    "lng": 10.7393,
+    "website_url": "https://www.schemenlaufen.at/",
+    "description": "Every four years Imst hosts their Fasnacht, or carnival before Lent. This carnival is listed by UNESCO as one of their Lists of Intangible Cultural Heritage. As part of Schemenlaufen pairs of men wear bells, tuned differently, while performing dances of jumps and bows. They are accompanied by masked characters imitating their dance.",
+    "unesco_id": "UNESCO ICH Austria 2012",
+    "source": "https://en.wikipedia.org/wiki/Imst"
+  }
+]

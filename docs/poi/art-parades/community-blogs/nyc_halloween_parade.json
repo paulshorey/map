@@ -1,0 +1,15 @@
+[
+  {
+    "name": "Village Halloween Parade",
+    "city": "New York City",
+    "country": "United States",
+    "start_date": null,
+    "end_date": null,
+    "annual_date": "October 31",
+    "lat": 40.7282,
+    "lng": -74.0027,
+    "website_url": "https://www.halloween-nyc.com/",
+    "description": "The world's largest Halloween parade, held annually on October 31 in Greenwich Village, NYC. Marches northward along 6th Avenue (Avenue of the Americas) from Spring Street to 16th Street. Features giant puppets crafted by Jeanne Fleming (artistic director for decades), theatrical companies, marching bands, and over 50,000 participants. The only major night parade in NYC. Open to all in costume.",
+    "source": "https://www.halloween-nyc.com/"
+  }
+]
