@@ -29,6 +29,7 @@ throughout as the worked examples.
 12. [Phased rollout](#12-phased-rollout)
 13. [Product decisions (resolved)](#13-product-decisions-resolved)
 14. [Implementation risks & refinements to watch](#14-implementation-risks--refinements-to-watch)
+15. [Lessons from real source data (validity, value-checking, event POIs)](#15-lessons-from-real-source-data-validity-value-checking-event-pois)
 
 ---
 
@@ -296,8 +297,9 @@ CREATE TABLE research_pois (
   name            text,
   name_normalized text,                       -- NULL ⇒ needs normalize
   description     text,
-  website         text,
+  website         text,                       -- the place's OFFICIAL site (not a directory/listing page)
   website_domain  text,                       -- normalized eTLD+1, a strong-ID signal
+  source_url      text,                       -- the listing/detail page on the SOURCE (provenance, ≠ website)
   phone           text,                       -- E.164 where possible, a strong-ID signal
   email           text,
   address         text,
@@ -517,16 +519,32 @@ of them; a re-pull of an existing source flows through the same steps and self-h
 
 ### Stage 2 — Normalize & categorize (`ingest:normalize`)
 
+- **Validity gate (is this even a POI we want?).** A source dump routinely contains records that
+  are *not* the place type we're collecting. Each source has a small **inclusion predicate**; rows
+  that fail it stay in `research_pois` (for provenance) but are **never matched or published**.
+  Real examples from the music-festivals dump (§15): the EDM Dance directory has `is_festival=true`
+  on only 55 of 9,901 rows (the rest are club nights); Festivalando rows are editorial blog posts,
+  not events. **Never promote non-POI rows.**
 - **Names:** lowercase, strip diacritics, drop stopwords ("the", "el", "le"), expand/normalize
   abbreviations ("Bot. Gard." → "botanical garden", "Mt" → "mount"), strip legal suffixes →
   `name_normalized`.
 - **Coordinates:** parse strings → numbers; detect & fix swapped lat/lng (the existing skill
   already documents this heuristic); range-check; set `geom`.
+- **Value validation, not just presence (don't trust a field because it's non-empty).** Validate
+  and sanitize each mapped value: normalize `country` (a value like "Bavaria" → "Germany"); confirm
+  a `date` is an *event* date, not a publish/scrape timestamp; reject obviously-bad coordinates.
+  A field being populated does not mean it's correct or means what its name says.
+- **`website` vs `source_url`:** the place's **official** site goes in `website`; the source's own
+  listing/detail page (MFW/Resident Advisor/FestivalAtlas URLs, etc.) goes in `source_url`. Never
+  copy a directory/listing URL into `website` — that pollutes the canonical record and hides the
+  fact that an official site is still missing.
 - **Address:** split into city/region/country_code where possible.
 - **website_domain / phone:** normalize to comparable forms (strong-ID signals).
 - **Category mapping:** map `raw_category` → canonical category via `research_category_aliases`
   (§7). Unmapped raw categories are reported, not guessed, so the **developer** can extend the
   code-owned alias seed (Decision 5).
+- **Coverage report, measured not assumed:** `ingest:normalize --report-coverage` prints the
+  *actual* per-field fill rate per source (don't plan enrichment off guessed yields — §15).
 
 ### Stage 3 — Geocode the gaps (`ingest:geocode`)
 
@@ -693,6 +711,14 @@ the last line of defense. When it gets something wrong in production, fix it wit
 
 **Cluster transitivity.** Matches are pairwise; collapse them with union-find so A≡B and
 B≡C ⇒ one cluster {A,B,C} → one canonical POI.
+
+**Recurring events collapse to one canonical (don't duplicate per edition).** For event-type
+POIs (festivals), sources list multiple **editions** of the same festival (2024, 2025, 2026) and
+multiple sources list the same edition. All of these must merge into **one** canonical festival —
+not one POI per year. Same-venue + same-name editions merge naturally (high name similarity, ~0 m
+distance). The merge keeps the festival as the entity and stores edition dates in `attributes`
+(§15). Edge case to watch: a festival that **changes city/venue** between years may not block
+together geographically — flag for the golden set.
 
 ---
 
@@ -1017,3 +1043,85 @@ now so they're not rediscovered the hard way.
 11. **Confirm pgvector on the host.** Same caveat as PostGIS — verify the Railway Postgres
     image ships the `vector` extension (or switch images) before Phase 4.
 
+---
+
+## 15. Lessons from real source data (validity, value-checking, event POIs)
+
+The music-festivals dump (`docs/poi/music-festivals/`, see its `GAP_ANALYSIS.md` and the review on
+PR #12) stress-tested this plan against 35 messy sources and surfaced concrete pitfalls. Each maps
+to a rule the pipeline must enforce. These generalize to **every** future category.
+
+### 15.1 A source dump is not a POI list — gate validity per source
+
+Many rows in a "festivals" dump are not festivals: the EDM Dance directory marks only **55 of
+9,901** rows `is_festival=true` (the rest are club nights); Festivalando rows are **editorial blog
+posts**, not events. → Stage 2's **inclusion predicate** (per source) decides what is promotable;
+failing rows stay in `research_pois` for provenance but never reach `canonical_pois`. Without this
+we'd import club nights and blog articles as map POIs.
+
+### 15.2 Listing/source URLs are not official websites
+
+Several sources expose a `url`/`source_url` that is their **own listing page** (Music Festival
+Wizard has an official `website` on 1 of 10,800 rows but an MFW `url` on all of them; Resident
+Advisor and FestivalAtlas have **zero** official sites but a source page each). Counting those as
+"website covered" both hides the real gap and risks publishing a directory page as the festival's
+site. → Keep `website` (official) and `source_url` (provenance/listing) **separate** (schema +
+normalize rule, §4.2 / §5). Detail-page enrichment (below) is what actually fills `website`.
+
+### 15.3 Validate values, don't trust field presence
+
+A populated field can be wrong or mean something else:
+
+- **`country` holding sub-national regions** — Festival Alarm stores "Bavaria" etc. instead of
+  "Germany". Normalize regions → country (lookup table).
+- **publish/scrape timestamps masquerading as event dates** — Festivalando `date` is the article's
+  publish time; using it would put non-festival articles on the map with bogus dates.
+- **misread yields** — MusicBrainz location/website live nested in `relations[]`; coordinates are
+  present on only ~15.7k of 30.3k rows and `country` on ~123, far below an eyeballed "99%".
+  → Stage 2 **validates/sanitizes** values, and `--report-coverage` measures *actual* per-field
+  fill rates so we never plan enrichment off phantom data.
+
+### 15.4 Status/recency is computed from dates, never stored as a frozen flag
+
+This is the same principle that removed our status columns (§4.2). A festival's
+upcoming/active/past state depends on its dates **vs. the current date**: hard-coding "max year ≥
+2025 = active" (on a 2026 run) or "all Resident Advisor rows are active" (3,202 of 3,525 are
+already past) is wrong. MusicBrainz `life_span.ended=true` is set on 29,887 of 30,276 rows
+including future events, so it is **not** an active flag either. → For event POIs, store
+`start_date`/`end_date` in `attributes` and **derive** status at read/query time from those dates;
+store no `active` boolean.
+
+### 15.5 Time-bound / event POIs (festivals) are a new POI shape
+
+Gardens and campgrounds are permanent places; festivals are **events**. The model already handles
+them, with these specifics:
+
+- **Dates in `attributes`** (`start_date`, `end_date`, recurrence) — typed core columns stay
+  place-generic; event specifics live in the per-category `attributes` jsonb.
+- **One canonical per festival, not per edition** — sources list 2024/2025/2026 editions of the
+  same festival; they merge into one canonical (§6 "Recurring events collapse"). Keep the
+  next/most-recent edition's dates; optionally keep an edition history in `attributes`.
+- **Status derived at read time** (15.4). The map/search can then filter "upcoming this season"
+  without any stored, staleness-prone flag.
+- **Geocoding by text location is fine** — festivals rarely ship coordinates, but they have
+  city/country/venue. Our Stage 3 already geocodes `"name, city, region, country"`; the festivals
+  data simply leans on it more heavily than gardens/campgrounds did.
+
+### 15.6 Detail-page enrichment is a legitimate stage — with one guardrail
+
+The festivals plan fills gaps (official `website`, dates, venue) by fetching each record's **own
+detail page** (JSON-LD `Event` schema / Wikidata via `wikipedia_url`). This is a reasonable
+optional **enrichment stage** between geocode and embed — but only when the stored URL is **truly
+per-record**: Festival Alarm's `source_url` has just **27 distinct values across 5,104 rows**
+(category/listing pages), so crawling it as if it were per-festival would fetch the same listing
+repeatedly and fill nothing. → If we add enrichment, gate it on "URL is unique per record," cache
+fetched pages, and obey the same budget/robots discipline as geocoding. (Public Nominatim's
+bulk-use limits, flagged in the review, are already why we use LocationIQ + cache, §5/§14.)
+
+### 15.7 Net effect on the plan
+
+No architectural change — the two-layer model, NULL-ness processing, and conflation all hold. The
+additions are: a per-source **validity predicate** and **value validation** in Stage 2, the
+`source_url`/`website` split, **measured** coverage reporting, **read-time status** for event
+POIs, **recurring-edition** dedup in matching, and an optional **detail-page enrichment** stage
+with a per-record-URL guardrail.

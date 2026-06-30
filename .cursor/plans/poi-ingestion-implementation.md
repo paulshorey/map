@@ -2,7 +2,9 @@
 
 > **Companion to [`poi-ingestion-pipeline.md`](./poi-ingestion-pipeline.md)** — that document is
 > the design/goal; this one is the **ordered, do-this-then-that build plan** grounded in the
-> current codebase, the current database, and the two example dumps in `docs/poi/`.
+> current codebase, the current database, and the example dumps in `docs/poi/` (gardens,
+> campgrounds, and now music festivals — whose `GAP_ANALYSIS.md` + PR #12 review drove the
+> data-quality rules in overview §15).
 >
 > **Decision taken (per product owner):** the current data is experimental, so we **start from
 > a fresh database** and **rewrite the baseline migration + contracts**. This is far cleaner
@@ -36,7 +38,7 @@
 | M7 | Embed | `content_embedding` populated | next |
 | M8 | Match + merge (the core) | `canonical_pois` built & de-duplicated | next |
 | M9 | Orchestrate + report + ops | `ingest:run`, metrics, migrate old importers | after |
-| M10 | End-to-end validation | Gardens + campgrounds proven on the map | after |
+| M10 | End-to-end validation | Gardens + campgrounds + festivals proven on the map | after |
 
 ---
 
@@ -311,8 +313,9 @@ CREATE TABLE public.research_pois (
   name             text,
   name_normalized  text,              -- NULL ⇒ needs normalize
   description      text,
-  website          text,
+  website          text,             -- the place's OFFICIAL site (never a directory/listing page)
   website_domain   text,
+  source_url       text,             -- the listing/detail page on the SOURCE (provenance, ≠ website)
   phone            text,
   email            text,
   address          text,
@@ -576,6 +579,10 @@ Point all reads at `canonical_pois` and the category join. Keep function names/s
   primary `category`, `attributes`, `popularity`, and `sources` (distinct
   `research_sources.attribution`/`slug` via `research_pois` join on `canonical_poi_id`). Keep
   `geometry`, `lng`, `lat`.
+- **Event status is derived here, never stored (overview §15.4).** For event POIs (festivals),
+  compute `upcoming`/`active`/`past` at read time from `attributes.start_date`/`end_date` vs.
+  `now()` — there is no stored `active` flag to go stale. (A future map filter like "upcoming this
+  season" is a `WHERE` on those dates, evaluated per request.)
 - **`listPoiCategories`** — `SELECT display_name FROM canonical_categories WHERE is_active ORDER BY
   sort_order, display_name`. Returns `string[]` (unchanged shape).
 - **`insertPois` / `NewPoi`** — remove the direct-to-canonical insert (the `ON CONFLICT (lng,lat)`
@@ -624,17 +631,30 @@ Now fill the research layer. New code area: `lib/db-map/scripts/ingest/`.
   ```ts
   export interface RawRecord {
     source_record_id: string; name?: string; description?: string;
-    website?: string; phone?: string; email?: string; address?: string;
+    website?: string;          // OFFICIAL site only — leave undefined if the source has only a listing URL
+    source_url?: string;       // the source's own listing/detail page (provenance, ≠ website)
+    phone?: string; email?: string; address?: string;
     city?: string; region?: string; country_code?: string;
     lat?: number; lng?: number; raw_category?: string;
-    attributes?: Record<string, unknown>; raw: unknown;
+    attributes?: Record<string, unknown>; // event POIs put start_date/end_date here
+    raw: unknown;
   }
-  export interface Extractor { slug: string; parse(file: string): AsyncIterable<RawRecord>; }
+  export interface Extractor {
+    slug: string;
+    parse(file: string): AsyncIterable<RawRecord>;
+    // Optional per-source inclusion predicate — return false to keep a row in research_pois
+    // for provenance but NEVER promote it (e.g. EDM rows with is_festival=false; blog posts).
+    isPoi?(raw: unknown): boolean;
+  }
   ```
 - `ingest/sources.ts` — registry mapping `slug → { meta, extractor }` and a `research_sources`
   upsert/seed (slug, name, homepage, license, attribution, trust). Seed the example sources:
-  `osm`, `bgci`, `wikidata`, `wikipedia_us`, `wikipedia_intl`, `arbnet`, `iabg`, `gardenology`,
-  `ridb`, `thedyrt`, `osm_camp`, `uscampgrounds`.
+  gardens (`bgci`, `wikidata`, `osm`, `arbnet`, `iabg`, `gardenology`, `wikipedia_us`,
+  `wikipedia_intl`), campgrounds (`ridb`, `thedyrt`, `osm_camp`, `uscampgrounds`), and the ~35
+  music-festival sources (`musicbrainz`, `ticketmaster`, `resident_advisor`, `musicfestivalwizard`,
+  `edm_dance_directory`, `jambase`, … — see `docs/poi/music-festivals/GAP_ANALYSIS.md`). The
+  festivals dump is the proving ground for per-source `isPoi` predicates and `source_url`/`website`
+  separation (M5, overview §15).
 - `ingest/io.ts` — **streaming** parsers: `csv-parse` (stream) for CSV, a JSONL line reader for
   `.jsonl`, and a streaming JSON-array reader for large `.json` (e.g. `stream-json`). Never load
   a 78 MB file fully into memory (overview §10).
@@ -677,9 +697,16 @@ gardens set (smaller), then campgrounds:
 - Campgrounds: `ridb.ts` (**facilities → one record each**; carry hookup attrs; do not emit a
   record per campsite — see M5.4), `thedyrt.ts` (CSV; hookup booleans → `attributes`),
   `osm_camp.ts` (caravan sites), `uscampgrounds.ts` (amenity codes → `attributes`).
+- Festivals (events): one extractor per source. These are where the overview §15 rules bite —
+  e.g. `edm_dance_directory.ts` sets `isPoi = raw.is_festival === true` (only 55/9,901 are real
+  festivals); `musicbrainz.ts` flattens nested `relations[]` for location/`website` and must
+  **not** map `life_span.ended` to a status; MFW/Resident Advisor/FestivalAtlas put their listing
+  URL in `source_url`, never `website`; date fields go to `attributes.start_date`/`end_date`
+  (rejecting publish-timestamps like Festivalando's). Keep coordinates if a source has them; most
+  don't and rely on Stage 3 geocoding by city/venue/country.
 
-Map raw fields → `RawRecord`; stash source-specific extras (hookups, area_ha, QID, osm id) in
-`attributes` and keep everything in `raw`.
+Map raw fields → `RawRecord`; stash source-specific extras (hookups, area_ha, QID, osm id,
+start/end dates) in `attributes` and keep everything in `raw`.
 
 > **Acceptance (M4):**
 > - `pnpm --filter @lib/db-map ingest:extract bgci /workspace/docs/poi/botanical_gardens_data/bgci_gardens_full.json --limit 50 --dry-run` prints a sane preview.
@@ -694,6 +721,10 @@ Map raw fields → `RawRecord`; stash source-specific extras (hookups, area_ha, 
 `ingest/normalize.ts` + `"ingest:normalize"`. Resumable loop over `research_pois` where
 `name_normalized IS NULL` (set NULL on first insert and whenever the `content_hash` changes).
 
+- **Validity gate (overview §15.1)** → apply the source's `isPoi` predicate. Rows that fail stay
+  in `research_pois` (provenance) but are flagged non-promotable (e.g. set `canonical_poi_id` to a
+  sentinel/skip so the matcher never picks them up — simplest is to just not normalize them, so
+  they never become matchable). Catches club nights in the EDM dump, blog posts in Festivalando, etc.
 - **Names** → `name_normalized` (lowercase, strip diacritics, drop stopwords, expand
   abbreviations, strip legal suffixes).
 - **Coordinates** → parse the source's lat/lng strings to numbers, detect/fix swapped lat/lng
@@ -701,14 +732,24 @@ Map raw fields → `RawRecord`; stash source-specific extras (hookups, area_ha, 
   `lng`/`lat`. (`geom` updates automatically via the generated column.) If the source had no
   coordinates, leave `lat`/`lng` NULL — that NULL is exactly what tells the geocode step (M6) to
   resolve it; no status flag needed.
-- **website_domain** (eTLD+1) and **phone** (E.164) normalized for matching signals.
+- **Value validation, not presence (overview §15.3)** → sanitize mapped values: normalize
+  `country` (sub-national regions like "Bavaria" → "Germany"); confirm a date is an *event* date,
+  not a publish/scrape timestamp, before writing `attributes.start_date`/`end_date`; drop
+  implausible coordinates. A non-empty field is not assumed correct.
+- **`website` vs `source_url` (overview §15.2)** → only an **official** site goes in `website`
+  (and `website_domain`); a source's own listing/detail URL goes in `source_url`. Never promote a
+  listing URL to `website`.
+- **phone** (E.164) normalized for matching signals.
 - **Address** → city/region/country_code where parseable.
 - **Category mapping** → look up `raw_category` (and source-specific tag) in
   `research_category_aliases`; on no match, do **not** guess — emit to the **unmapped-category
   report** so the developer extends `taxonomy.ts` (M2) and re-seeds.
 - **Attribute normalization** → map source attribute keys to a **canonical per-category attribute
   vocabulary** defined in `taxonomy.ts`/code (e.g. `electric_hookups|Electricity Hookup|E` →
-  `has_electric`), so `attributes` merges are consistent later (overview §14.4).
+  `has_electric`; festival `start_date`/`end_date`), so `attributes` merges are consistent later
+  (overview §14.4).
+- **Coverage report (overview §15.3)** → `ingest:normalize --report-coverage` prints the *actual*
+  per-field fill rate per source, so enrichment is planned off real numbers, not guesses.
 
 > **Acceptance (M5):** after running, `research_pois` rows have `name_normalized`, parsed
 > `lng`/`lat` where the source provided coordinates (NULL otherwise), and a resolved category
@@ -787,12 +828,17 @@ method, and LLM reason go to `research_match_decisions` (not onto the row).
    city/region + website/phone signal (denylist-guarded).
 5. **Decide**: `≥ T_high` auto-merge; `≤ T_low` new; gray zone → **LLM binary** (merge/new,
    `llm_reason` stored). Record everything in `research_match_decisions`.
-6. **Attach/create** the `canonical_pois` row, set `research_pois.canonical_poi_id` + status,
-   then **rebuild that one canonical** from all its `research_pois` (field precedence by source
+6. **Attach/create** the `canonical_pois` row, set `research_pois.canonical_poi_id`, then
+   **rebuild that one canonical** from all its `research_pois` (field precedence by source
    `trust`; verbatim description for single-source, LLM fusion when multiple disagree;
    union `attributes`; union categories into `canonical_poi_categories`; recompute
    `popularity = COUNT(DISTINCT source_id)`; write `field_provenance`).
 7. **Transitivity**: union-find across pairwise matches.
+8. **Recurring events collapse to one canonical (overview §6, §15.5).** For festivals, different
+   *editions* (2024/2025/2026) of the same festival share name + venue, so they block and merge
+   into one canonical — **not** one POI per year. On merge, fold edition dates into
+   `attributes` (keep the next/most-recent `start_date`/`end_date`, optionally an edition history);
+   never store an `active` flag (status is derived at read time from those dates — see M3).
 
 ### M8.2 Supporting pieces
 
@@ -842,7 +888,7 @@ method, and LLM reason go to `research_match_decisions` (not onto the row).
 
 ---
 
-## M10 — End-to-end validation (the two example dumps)
+## M10 — End-to-end validation (gardens, campgrounds, festivals)
 
 1. Ingest a coherent chunk per category × source, e.g.:
    ```bash
@@ -852,15 +898,22 @@ method, and LLM reason go to `research_match_decisions` (not onto the row).
    pnpm --filter @lib/db-map ingest:run osm       docs/poi/botanical_gardens_data/osm_botanical_gardens.csv
    # Campgrounds (chunked; large)
    pnpm --filter @lib/db-map ingest:run ridb      docs/poi/rv_campgrounds_data/ridb/facilities.csv --limit 2000
+   # Festivals (events — exercises §15: isPoi filter, source_url vs website, read-time status)
+   pnpm --filter @lib/db-map ingest:run resident_advisor docs/poi/music-festivals/apis/resident_advisor_festivals.json
+   pnpm --filter @lib/db-map ingest:run edm_dance_directory docs/poi/music-festivals/...   # only 55/9,901 promote
    ```
 2. Verify in SQL: duplicate gardens collapsed; popularity reflects source count; campgrounds
-   carry hookup `attributes`; `field_provenance` populated.
+   carry hookup `attributes`; `field_provenance` populated. **For festivals also confirm:**
+   non-festival rows (EDM club nights, Festivalando blog posts) did **not** create canonical POIs;
+   `website` is never a directory/listing URL (those are in `source_url`); recurring editions
+   collapsed to one canonical; status is computed from dates at read time (no stored flag).
 3. **Manual GUI test:** `pnpm dev`, pan to a dense region, confirm clustered POIs render, the
-   category filter (Botanical Garden / RV Park) works, and the detail drawer shows merged data.
-   Capture a screenshot + short screen recording for the walkthrough.
+   category filter (Botanical Garden / RV Park / Music Festival) works, and the detail drawer shows
+   merged data. Capture a screenshot + short screen recording for the walkthrough.
 
 > **Acceptance (M10):** the map shows de-duplicated, categorized, attributed POIs from multiple
-> sources; re-running any chunk changes nothing (idempotent).
+> sources across all three categories; non-POI rows are excluded; re-running any chunk changes
+> nothing (idempotent).
 
 ---
 
