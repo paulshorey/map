@@ -13,6 +13,10 @@ export interface PoisRow {
   "lng": number;
   "lat": number;
   "created_at": Date;
+  "starts_at": Date | null;
+  "ends_at": Date | null;
+  "date_precision": string | null;
+  "event_range": unknown | null;
 }
 
 export interface UserPreferencesRow {

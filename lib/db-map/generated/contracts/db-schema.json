@@ -54,6 +54,26 @@
       "column": "created_at",
       "nullable": false,
       "type": "Date"
+    },
+    {
+      "column": "starts_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "ends_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "date_precision",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "event_range",
+      "nullable": true,
+      "type": "unknown"
     }
   ],
   "user_preferences": [

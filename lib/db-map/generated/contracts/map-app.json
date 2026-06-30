@@ -29,6 +29,27 @@
           "kind": "scalar",
           "type": "string",
           "nullable": true
+        },
+        {
+          "name": "starts_at",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "ends_at",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "date_precision",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
         }
       ]
     },
@@ -85,6 +106,34 @@
         },
         {
           "name": "photo_url",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "starts_at",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "ends_at",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "date_precision",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "status",
           "optional": false,
           "kind": "scalar",
           "type": "string",
