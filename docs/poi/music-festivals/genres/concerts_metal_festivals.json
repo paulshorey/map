@@ -2,34 +2,42 @@
   {
     "name": "Light The Dark",
     "date": "28/03/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Norrköping"
   },
   {
     "name": "Materia Oscura Fest 2025",
     "date": "28/03/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Busto Arsizio",
+    "lat": 45.7037647,
+    "lng": 8.8744851
   },
   {
     "name": "Sphinxblick Open Air 2025",
     "date": "28/03/2025",
-    "country": "",
+    "country": "Namibia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Usakos",
+    "lat": -22.4281875,
+    "lng": 15.3973572
   },
   {
     "name": "Wacken Metal Battle Spain - Semifinal Centro - 2025",
     "date": "28/03/2025",
-    "country": "",
+    "country": "2025",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Semifinal Centro"
   },
   {
     "name": "Witch's Hollow Festival",
@@ -42,66 +50,78 @@
   {
     "name": "Iber Rock 2025",
     "date": "29/03/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Logroño, La Rioja"
   },
   {
     "name": "La Berguedana de Thrash 2025",
     "date": "29/03/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gironella"
   },
   {
     "name": "Punkspring 2025 Osaka",
     "date": "29/03/2025",
-    "country": "",
+    "country": "Japan",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Osaka"
   },
   {
     "name": "Samhain Antwerp 2025",
     "date": "29/03/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Antwerpen",
+    "lat": 51.2194261,
+    "lng": 4.4483945
   },
   {
     "name": "The Bë För AÜTFËST 2025",
     "date": "29/03/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bruay-la-Buissière"
   },
   {
     "name": "Punkspring 2025 Tokyo",
     "date": "30/03/2025",
-    "country": "",
+    "country": "Japan",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tokyo",
+    "lat": 35.648206,
+    "lng": 140.0346307
   },
   {
     "name": "Summer Blast Fest 2025",
     "date": "30/03/2025",
-    "country": "",
+    "country": "Thailand",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bangkok"
   },
   {
     "name": "Full Metal Mayrhofen 2025",
     "date": "31/03/2025",
-    "country": "",
+    "country": "Austria",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hippach"
   },
   {
     "name": "Blacktron Festival 2025",
@@ -114,127 +134,158 @@
   {
     "name": "Decibel Magazine Metal & Beer Fest 2025",
     "date": "04/04/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Philadelphia"
   },
   {
     "name": "Demenology fest 2025",
     "date": "04/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Oberhausen",
+    "lat": 51.4689261,
+    "lng": 6.8485953
   },
   {
     "name": "Endurock Fest' 2025",
     "date": "04/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mûrs-Erigné",
+    "lat": 47.4020518,
+    "lng": -0.54094766
   },
   {
     "name": "Epic Fest 2025",
     "date": "04/04/2025",
-    "country": "",
+    "country": "Denmark",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Roskilde"
   },
   {
     "name": "Still Here!? Fest",
     "date": "04/04/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ghent",
+    "lat": 51.0367224,
+    "lng": 3.7659367
   },
   {
     "name": "Underground For The Masses Festival 2025",
     "date": "04/04/2025",
-    "country": "",
+    "country": "Romania",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bucharest",
+    "lat": 44.4379977,
+    "lng": 26.059582
   },
   {
     "name": "Metalmeria Fest 2025",
     "date": "05/04/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Almeria"
   },
   {
     "name": "Over The Top Fest",
     "date": "05/04/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milano",
+    "lat": 45.5161661,
+    "lng": 9.1793207
   },
   {
     "name": "We Metal Fest 2025",
     "date": "05/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ris-Orangis",
+    "lat": 48.6373669,
+    "lng": 2.403527
   },
   {
     "name": "Hyperspace Metal Festival 2025",
     "date": "10/04/2025",
-    "country": "",
+    "country": "Canada",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vancouver"
   },
   {
     "name": "Acherontic Arts Festival 2025",
     "date": "11/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Oberhausen",
+    "lat": 51.4835848,
+    "lng": 6.8667053
   },
   {
     "name": "Durbuy Rock Festival 2025",
     "date": "11/04/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bomal sur Ourthe"
   },
   {
     "name": "Dying Victims Attack! Vol. 3",
     "date": "11/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Essen"
   },
   {
     "name": "GMF Gullegem Metal Festival",
     "date": "11/04/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gullegem"
   },
   {
     "name": "Licorne Fest 2025",
     "date": "11/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cesson-Sévigné",
+    "lat": 48.1053711,
+    "lng": -1.62347
   },
   {
     "name": "Rossometile Metal Fest",
     "date": "11/04/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
     "source": "en.concerts-metal.com/festivals.html"
@@ -242,10 +293,11 @@
   {
     "name": "Saurom Juglar Fest 2025",
     "date": "11/04/2025",
-    "country": "",
+    "country": "Chile",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Santiago"
   },
   {
     "name": "Atone Mass Festival II",
@@ -258,18 +310,22 @@
   {
     "name": "Firenze Metal Festival - Burn The Clubs Vol.1",
     "date": "12/04/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Florence"
   },
   {
     "name": "Hellbrigade Festival 2025",
     "date": "12/04/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milano (Paderno Dugnano)",
+    "lat": 45.5755716,
+    "lng": 9.1517078
   },
   {
     "name": "In Your Fest #4",
@@ -282,90 +338,117 @@
   {
     "name": "Inferno Metal Festival 2025",
     "date": "17/04/2025",
-    "country": "",
+    "country": "Norway",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Oslo",
+    "lat": 59.911191,
+    "lng": 10.7381908
   },
   {
     "name": "Roadburn 2025",
     "date": "17/04/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tilburg",
+    "lat": 51.5576283,
+    "lng": 5.0907687
   },
   {
     "name": "Chaulnes Metal Fest 2025",
     "date": "18/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Chaulnes",
+    "lat": 49.81965,
+    "lng": 2.804047
   },
   {
     "name": "Eternal Flame Metal Festival 2025",
     "date": "18/04/2025",
-    "country": "",
+    "country": "Bosnia and Herzegovina",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Sarajevo"
   },
   {
     "name": "Festival On N'a Plus 20 Ans IX",
     "date": "18/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Fontenay-le-Comte"
   },
   {
     "name": "Festival Trolls et Legend 2025",
     "date": "18/04/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mons",
+    "lat": 50.4582106,
+    "lng": 3.9375829
   },
   {
     "name": "Manchester Punk Festival 2025",
     "date": "18/04/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Manchester"
   },
   {
     "name": "Paaspop 2025",
     "date": "18/04/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Schijndel",
+    "lat": 51.6422633,
+    "lng": 5.4175351
   },
   {
     "name": "Brutal Swamp Fest 2025",
     "date": "19/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Omer",
+    "lat": 50.7451016,
+    "lng": 2.2517033
   },
   {
     "name": "Bus 666 Festival",
     "date": "19/04/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Parma",
+    "lat": 44.766928,
+    "lng": 10.3266013
   },
   {
     "name": "Dark Easter Metal Meeting 2025",
     "date": "19/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "München",
+    "lat": 48.1449542,
+    "lng": 11.5216207
   },
   {
     "name": "Dark Sunset Summoning II",
@@ -378,58 +461,69 @@
   {
     "name": "Dark Woods 2025",
     "date": "19/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Heinrichsthal"
   },
   {
     "name": "Depravation Festival",
     "date": "19/04/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Swindon"
   },
   {
     "name": "Easter Cross Festival 2025",
     "date": "19/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Oberndorf am Neckar"
   },
   {
     "name": "FurioUs CirKus III",
     "date": "19/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lille",
+    "lat": 50.6407191,
+    "lng": 2.9917732
   },
   {
     "name": "Monsters of Rock Brazil",
     "date": "19/04/2025",
-    "country": "",
+    "country": "Brazil",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "São Paulo"
   },
   {
     "name": "Maximum Festival 2025",
     "date": "21/04/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Zero Branco",
+    "lat": 45.6203446,
+    "lng": 12.1229134
   },
   {
     "name": "SWR Barroselas Metalfest 2025",
     "date": "23/04/2025",
-    "country": "",
+    "country": "Portugal",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Barroselas"
   },
   {
     "name": "Just Another Punk & Oi! Fest Vol.2",
@@ -442,242 +536,312 @@
   {
     "name": "Ragnarok Festival 2025",
     "date": "24/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lichtenfels",
+    "lat": 50.148449,
+    "lng": 11.0578363
   },
   {
     "name": "Dark Malta Festival 2025",
     "date": "25/04/2025",
-    "country": "",
+    "country": "Malta",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Zebbug"
   },
   {
     "name": "Festival Rose Chaos - Chez Narcisse",
     "date": "25/04/2025",
-    "country": "",
+    "country": "Le Val-d'Ajol",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Chez Narcisse"
   },
   {
     "name": "Frontiers Rock Festival VII",
     "date": "25/04/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milano (Trezzo sull’Adda)",
+    "lat": 45.5990404,
+    "lng": 9.5168821
   },
   {
     "name": "Hexentanz Festival 2025",
     "date": "25/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Thallichtenberg",
+    "lat": 49.1822593,
+    "lng": 6.8138961
   },
   {
     "name": "Keep It True XXV",
     "date": "25/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lauda-Königshofen",
+    "lat": 49.55137,
+    "lng": 9.72955
   },
   {
     "name": "MOSHnMAY Indoor Metal Festival 2025",
     "date": "25/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Schapen"
   },
   {
     "name": "Metalodrome Tribute Fest 2025",
     "date": "25/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Compiegne",
+    "lat": 49.3883148,
+    "lng": 2.7829098
   },
   {
     "name": "Drakk Metal Fest 2025",
     "date": "26/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lorient",
+    "lat": 47.7333421,
+    "lng": -3.3798182
   },
   {
     "name": "From Enslavement To Obliteration Fest (F.E.T.O.) Fest 2025",
     "date": "26/04/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Torelló",
+    "lat": 42.0503729,
+    "lng": 2.2487531
   },
   {
     "name": "Mosh im Mai 2025",
     "date": "26/04/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Kiel",
+    "lat": 54.3077726,
+    "lng": 10.1451474
   },
   {
     "name": "Northern Darkness Fest",
     "date": "26/04/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Erba",
+    "lat": 45.8016986,
+    "lng": 9.2388065
   },
   {
     "name": "Stage Dive Festival #3",
     "date": "26/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Toulouges"
   },
   {
     "name": "Festival Echos et Merveilles 2025",
     "date": "30/04/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bruguières",
+    "lat": 43.731986,
+    "lng": 1.4068952
   },
   {
     "name": "Black Hole Festival 2025",
     "date": "01/05/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Aarburg",
+    "lat": 47.3202309,
+    "lng": 7.9070622
   },
   {
     "name": "Karmøygeddon Metal Festival 2025",
     "date": "01/05/2025",
-    "country": "",
+    "country": "Norway",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Kopervik",
+    "lat": 59.2837687,
+    "lng": 5.3032483
   },
   {
     "name": "Rituel Noir",
     "date": "01/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Querrien",
+    "lat": 47.9378386,
+    "lng": -3.5467139
   },
   {
     "name": "Viña Rock 2025",
     "date": "01/05/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Villarrobledo"
   },
   {
     "name": "Church of Crow Doom Festival 2025",
     "date": "02/05/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Pinerolo",
+    "lat": 44.8879835,
+    "lng": 7.3282042
   },
   {
     "name": "Grailfest 2025",
     "date": "02/05/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "Hell over Halen",
     "date": "02/05/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Emstek"
   },
   {
     "name": "Horns Up Festival -Metal- 2025",
     "date": "02/05/2025",
-    "country": "",
+    "country": "Greece",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Trikala"
   },
   {
     "name": "Le Bal des Vauriens #5",
     "date": "02/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vitry-sur-Seine",
+    "lat": 48.7878298,
+    "lng": 2.4151815
   },
   {
     "name": "Le Gros Tonneau",
     "date": "02/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Artonne"
   },
   {
     "name": "Prog Metal Mania 2025",
     "date": "02/05/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "München",
+    "lat": 48.1449542,
+    "lng": 11.5216207
   },
   {
     "name": "Skullcrusher Fest IV Freiburg",
     "date": "02/05/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Freiburg",
+    "lat": 47.9929625,
+    "lng": 7.8325581
   },
   {
     "name": "Sounds Of Rebellion",
     "date": "02/05/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Trieste"
   },
   {
     "name": "Anvinium MetalFest 2025",
     "date": "03/05/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Frasnes-Lez-Anvaing",
+    "lat": 50.6820867,
+    "lng": 3.562585
   },
   {
     "name": "Bangers Open Air 2025",
     "date": "03/05/2025",
-    "country": "",
+    "country": "Brazil",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "São Paulo",
+    "lat": -23.5274003,
+    "lng": -46.6656625
   },
   {
     "name": "Dark Medieval Fest 2025",
     "date": "03/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lamure-sur-Azergues",
+    "lat": 46.0612442,
+    "lng": 4.4914699
   },
   {
     "name": "Deathtoberfest 2025 - Spring Edition",
@@ -690,170 +854,227 @@
   {
     "name": "Incineration Festival 2025",
     "date": "03/05/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "London",
+    "lat": 51.5407134,
+    "lng": -0.1676347
   },
   {
     "name": "Viva La Rock Japan 2025",
     "date": "03/05/2025",
-    "country": "",
+    "country": "Japan",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tokyo",
+    "lat": 35.89521571571535,
+    "lng": 139.6306889846
   },
   {
     "name": "A Colossal Weekend 2025",
     "date": "08/05/2025",
-    "country": "",
+    "country": "Denmark",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Copenhagen",
+    "lat": 55.6679417,
+    "lng": 12.5442778
   },
   {
     "name": "Anthems Of Steel VII - 2025",
     "date": "08/05/2025",
-    "country": "",
+    "country": "Chauvigny",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "2025",
+    "lat": 46.5667716,
+    "lng": 0.6435325
   },
   {
     "name": "Festival Zikenstock 2025",
     "date": "08/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Le Cateau",
+    "lat": 50.0929881,
+    "lng": 3.5362026
   },
   {
     "name": "Isola Rock 2025",
     "date": "08/05/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Isola della Scala"
   },
   {
     "name": "Re-Animator Festival 2025",
     "date": "08/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Nolff",
+    "lat": 47.7001466,
+    "lng": -2.6343162
   },
   {
     "name": "Rock am Kuhteich 2025",
     "date": "08/05/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Deutzen",
+    "lat": 51.1100882,
+    "lng": 12.4329698
   },
   {
     "name": "Sonic Temple 2025",
     "date": "08/05/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Columbus",
+    "lat": 40.0094998,
+    "lng": -82.9911368
   },
   {
     "name": "The Black Lab Tribute Fest 2025",
     "date": "08/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lille (Wasquehal)",
+    "lat": 50.6524312,
+    "lng": 3.1222596
   },
   {
     "name": "A Journey In Darkness 2025",
     "date": "09/05/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Erba",
+    "lat": 45.8016986,
+    "lng": 9.2388065
   },
   {
     "name": "Desertfest Oslo 2025",
     "date": "09/05/2025",
-    "country": "",
+    "country": "Norway",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Oslo",
+    "lat": 59.915863,
+    "lng": 10.7501068
   },
   {
     "name": "Devil's Days 3",
     "date": "09/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Barsac"
   },
   {
     "name": "Marillion Weekend 2025",
     "date": "09/05/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Padova",
+    "lat": 45.4173266,
+    "lng": 11.8557769
   },
   {
     "name": "Rock in Rautheim 2025",
     "date": "09/05/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Braunschweig",
+    "lat": 52.2534915,
+    "lng": 10.5748584
   },
   {
     "name": "Wall Of Death Fest 3",
     "date": "09/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Les Barthes",
+    "lat": 44.0933803,
+    "lng": 1.1754565
   },
   {
     "name": "Winds of Agony 2025",
     "date": "09/05/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Granollers",
+    "lat": 41.6018454,
+    "lng": 2.283548
   },
   {
     "name": "Haeresis Metal Fest 2025",
     "date": "10/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Sains-en-Gohelle",
+    "lat": 50.4392156,
+    "lng": 2.6832967
   },
   {
     "name": "Vind'Hell Fest #IV",
     "date": "10/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vindelle"
   },
   {
     "name": "Warm-Up Daimonion Fest #2",
     "date": "10/05/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Fontaine-l'Évêque",
+    "lat": 50.4077446,
+    "lng": 4.3341713
   },
   {
     "name": "Milwaukee Metal Fest 2025",
     "date": "15/05/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milwaukee",
+    "lat": 43.0378642,
+    "lng": -87.9434632
   },
   {
     "name": "Nice to Eat You Deathfest 2025",
@@ -866,234 +1087,291 @@
   {
     "name": "Obsidian Dust",
     "date": "15/05/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bruxelles",
+    "lat": 50.8546778,
+    "lng": 4.3661713
   },
   {
     "name": "Steelfest Open Air 2025",
     "date": "15/05/2025",
-    "country": "",
+    "country": "Finland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hyvinkää",
+    "lat": 60.6327757,
+    "lng": 24.8681842
   },
   {
     "name": "Welcome To Rockville 2025",
     "date": "15/05/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Daytona Beach",
+    "lat": 29.185169,
+    "lng": -81.070528
   },
   {
     "name": "Desertfest London 2025",
     "date": "16/05/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "London"
   },
   {
     "name": "Les Rencontres du Recluses",
     "date": "16/05/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Thônex",
+    "lat": 46.19745885,
+    "lng": 6.20819287
   },
   {
     "name": "Sonic Whip 2025",
     "date": "16/05/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nijmegen",
+    "lat": 51.8308155,
+    "lng": 5.8602719
   },
   {
     "name": "Valhalla festival 2025",
     "date": "16/05/2025",
-    "country": "",
+    "country": "Croatia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Zagreb",
+    "lat": 45.79099845,
+    "lng": 15.97622818
   },
   {
     "name": "Venezia Hardcore Fest 2025",
     "date": "16/05/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Marghera"
   },
   {
     "name": "ADN Fest 2025",
     "date": "17/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vaugneray"
   },
   {
     "name": "Antwerp Metal Fest 2025",
     "date": "17/05/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Antwerp"
   },
   {
     "name": "DraigFest 2025",
     "date": "17/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "La Roche-Maurice"
   },
   {
     "name": "Elsrock 2025",
     "date": "17/05/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Almelo",
+    "lat": 52.3639439,
+    "lng": 6.6496129
   },
   {
     "name": "Ever Fest 2025",
     "date": "17/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ecourt St Quentin"
   },
   {
     "name": "Feudalesimo e Libertà Adunata VII",
     "date": "17/05/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milano (Trezzo sull’Adda)"
   },
   {
     "name": "Grand Paris Sludge 2025",
     "date": "17/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Savigny Le Temple",
+    "lat": 48.5952778,
+    "lng": 2.585
   },
   {
     "name": "Kill The Brain Fest",
     "date": "17/05/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Roma",
+    "lat": 41.8934347,
+    "lng": 12.5880611
   },
   {
     "name": "Visbek Rockt 2025",
     "date": "17/05/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Visbeck"
   },
   {
     "name": "La Plaine Du Rock 2025",
     "date": "18/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Cyr-sur-Loire"
   },
   {
     "name": "Maryland Deathfest 2025",
     "date": "21/05/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Baltimore"
   },
   {
     "name": "Baillarock Festival 2025",
     "date": "23/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Georges-lès-Baillargeaux",
+    "lat": 46.6804321,
+    "lng": 0.4068154
   },
   {
     "name": "Burning Lake Festival",
     "date": "23/05/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Pförring"
   },
   {
     "name": "Courts of Chaos Festival 2025",
     "date": "23/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Plozévet",
+    "lat": 47.9862002,
+    "lng": -4.4205452
   },
   {
     "name": "Desertfest Berlin 2025",
     "date": "23/05/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Berlin",
+    "lat": 52.4847464,
+    "lng": 13.3924835
   },
   {
     "name": "Europopcorn 2025",
     "date": "23/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mervans"
   },
   {
     "name": "Festival Europopcorn",
     "date": "23/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mervans"
   },
   {
     "name": "Messa + Fulci @ Mi Ami Festival 2025",
     "date": "23/05/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milan"
   },
   {
     "name": "Rock Metal Camp Fest 2025",
     "date": "23/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "St Hilaire les Places",
+    "lat": 45.6446606,
+    "lng": 1.1585731
   },
   {
     "name": "Rock the Hell 2025",
     "date": "23/05/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "Spring Break Festival 2025",
     "date": "23/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Jean-de-Védas",
+    "lat": 43.5737639,
+    "lng": 3.8532272
   },
   {
     "name": "Tricinty Fest",
@@ -1106,138 +1384,173 @@
   {
     "name": "Warriors of Steel Festival 2025",
     "date": "23/05/2025",
-    "country": "",
+    "country": "Norway",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ålesund"
   },
   {
     "name": "Wildfest 2025",
     "date": "23/05/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Geraardsbergen"
   },
   {
     "name": "Artificial Waves Festival 2025",
     "date": "24/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tours",
+    "lat": 47.439079,
+    "lng": 0.6855929
   },
   {
     "name": "Doom City Fest 2025",
     "date": "24/05/2025",
-    "country": "",
+    "country": "Mexico",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mexico"
   },
   {
     "name": "Lid Ar Morrigan 2025",
     "date": "24/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vallet",
+    "lat": 47.1665422,
+    "lng": -1.2652446
   },
   {
     "name": "Slam Dunk Festival South 2025",
     "date": "24/05/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hatfield",
+    "lat": 51.7605168,
+    "lng": -0.2148874
   },
   {
     "name": "Slam Dunk Festival North 2025",
     "date": "25/05/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Leeds",
+    "lat": 53.784362,
+    "lng": -1.4596994
   },
   {
     "name": "Slam Dunk Festival Belgium 2025",
     "date": "27/05/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Antwerpen",
+    "lat": 51.2194261,
+    "lng": 4.4483945
   },
   {
     "name": "Avenches Open Air 2025",
     "date": "29/05/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Avenches"
   },
   {
     "name": "Call Of The Wild Festival 2025",
     "date": "29/05/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lincoln"
   },
   {
     "name": "Dark Troll Festival 2025",
     "date": "29/05/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bornstedt",
+    "lat": 51.4834016,
+    "lng": 11.4902552
   },
   {
     "name": "Kreiz Y Fest 2025",
     "date": "29/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Glomel",
+    "lat": 48.2198032,
+    "lng": -3.3911765
   },
   {
     "name": "L'Arsenal Rock Festival #5",
     "date": "29/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Beautor"
   },
   {
     "name": "MPOA 25 - Metal Power Open Air - Volume 2",
     "date": "29/05/2025",
-    "country": "",
+    "country": "Volume 2",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Metal Power Open Air"
   },
   {
     "name": "Slam Dunk Festival Netherlands 2025",
     "date": "29/05/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Utrecht",
+    "lat": 52.0926197,
+    "lng": 5.1129775
   },
   {
     "name": "Tomavistas Festival 2025",
     "date": "29/05/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Madrid"
   },
   {
     "name": "dunk!festival 2025",
     "date": "29/05/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ghent",
+    "lat": 51.0472825,
+    "lng": 3.7280131
   },
   {
     "name": "Aching Metal Fest 2025",
@@ -1250,391 +1563,493 @@
   {
     "name": "Evol Festival 2025",
     "date": "30/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Nolff"
   },
   {
     "name": "Graf Zeppelin Festival 2025",
     "date": "30/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lessay",
+    "lat": 49.2074358,
+    "lng": -1.5237921
   },
   {
     "name": "Madritallica Fest 2025",
     "date": "30/05/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Malagón, Ciudad Real",
+    "lat": 39.1714405,
+    "lng": -3.8587605
   },
   {
     "name": "Montbout'd'Son Festival 2025",
     "date": "30/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Montbout"
   },
   {
     "name": "Skallyfest 2025",
     "date": "30/05/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Halle"
   },
   {
     "name": "Vestrock Festival 2025",
     "date": "30/05/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hulst"
   },
   {
     "name": "Bloodaxe Festival 2025",
     "date": "31/05/2025",
-    "country": "",
+    "country": "Japan",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Kawasaki"
   },
   {
     "name": "Fortress Festival 2025",
     "date": "31/05/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Scarborough",
+    "lat": 54.2755452,
+    "lng": -0.3980415
   },
   {
     "name": "La Lenteja Metálica 2025",
     "date": "31/05/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Pajares de la Laguna, Salamanca"
   },
   {
     "name": "Normandy Metal Fest 7",
     "date": "31/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Normandy"
   },
   {
     "name": "Slam Dunk Festival France 2025",
     "date": "31/05/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lyon",
+    "lat": 45.7851291,
+    "lng": 4.8580259
   },
   {
     "name": "Slam Dunk Festival Switzerland 2025",
     "date": "01/06/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Zurich",
+    "lat": 47.3875,
+    "lng": 8.4997222
   },
   {
     "name": "Slam Dunk Festival Italy 2025",
     "date": "02/06/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milano (Sesto San Giovanni)",
+    "lat": 45.529574,
+    "lng": 9.22092174
   },
   {
     "name": "Mystic Festival 2025",
     "date": "04/06/2025",
-    "country": "",
+    "country": "Poland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gdańsk",
+    "lat": 54.3631052,
+    "lng": 18.6507943
   },
   {
     "name": "Sweden Rock Festival 2025",
     "date": "04/06/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Sölvesborg",
+    "lat": 56.1184645,
+    "lng": 14.6759962
   },
   {
     "name": "BetiZFest 2025",
     "date": "05/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cambrai",
+    "lat": 50.1698453,
+    "lng": 3.2402083
   },
   {
     "name": "Sátan Festival 2025",
     "date": "05/06/2025",
-    "country": "",
+    "country": "Iceland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Stykkishólmur"
   },
   {
     "name": "Trondheim Rocks 2025",
     "date": "05/06/2025",
-    "country": "",
+    "country": "Norway",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Trondheim",
+    "lat": 63.4410061,
+    "lng": 10.4269931
   },
   {
     "name": "Battle Cry Fest",
     "date": "06/06/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "Chronical Moshers Open Air 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hirschfeld",
+    "lat": 50.6221803,
+    "lng": 12.3961026
   },
   {
     "name": "DoomShip 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hamburg",
+    "lat": 53.5370337,
+    "lng": 10.0109999
   },
   {
     "name": "Frozen Fest 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nantes",
+    "lat": 47.2005256,
+    "lng": -1.5737329
   },
   {
     "name": "Fuzztival 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Denmark",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Esbjerg"
   },
   {
     "name": "Heavy Agger Metal Festival 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Denmark",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Aalumvej"
   },
   {
     "name": "Heavy Sound Festival 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Poperinge",
+    "lat": 50.8592991,
+    "lng": 2.7267224
   },
   {
     "name": "Heavy Weekend - Nancy Open Air 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Nancy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nancy Open Air 2025"
   },
   {
     "name": "Karpaty Hard Fest 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Slavicin"
   },
   {
     "name": "L'Ska Punk Tarrega 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tàrrega"
   },
   {
     "name": "Metalfest Open Air 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Plzen",
+    "lat": 49.7597247,
+    "lng": 13.3611029
   },
   {
     "name": "Open Air am Berg 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Eichstätt",
+    "lat": 48.8916366,
+    "lng": 11.1511211
   },
   {
     "name": "Red Bridge Fest",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Canada",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Pont-Rouge"
   },
   {
     "name": "Rock Hard Festival 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gelsenkirchen",
+    "lat": 51.5222985,
+    "lng": 7.0340279
   },
   {
     "name": "Rock am Berg Merkers 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Merkers",
+    "lat": 50.8162272,
+    "lng": 10.1104368
   },
   {
     "name": "Rock am Ring 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nürburg",
+    "lat": 50.332596,
+    "lng": 6.9443282
   },
   {
     "name": "Rock im Park 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nürnberg",
+    "lat": 49.4301609,
+    "lng": 11.1230123
   },
   {
     "name": "The Rock House Festival 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Loxstedt"
   },
   {
     "name": "Wave-Gotik-Treffen 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Leipzig",
+    "lat": 51.2836123,
+    "lng": 12.3913722
   },
   {
     "name": "Zobens un Lemess 2025",
     "date": "06/06/2025",
-    "country": "",
+    "country": "Latvia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bauska"
   },
   {
     "name": "Lions Metal Festival 2025",
     "date": "07/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Montagny",
+    "lat": 45.6111686,
+    "lng": 4.768201
   },
   {
     "name": "Metal Hunting Open Air 2025",
     "date": "07/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hunting"
   },
   {
     "name": "South of Heaven Open Air 2025",
     "date": "07/06/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Maastricht"
   },
   {
     "name": "Metal Frenzy Open Air 2025",
     "date": "11/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gardelegen",
+    "lat": 52.5136617,
+    "lng": 11.41962336
   },
   {
     "name": "Nova Rock 2025",
     "date": "11/06/2025",
-    "country": "",
+    "country": "Austria",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nickelsdorf",
+    "lat": 47.9125059,
+    "lng": 17.0831806
   },
   {
     "name": "Rock For People 2025",
     "date": "11/06/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hradec Králové",
+    "lat": 50.241843,
+    "lng": 15.8353596
   },
   {
     "name": "Greenfield Festival 2025",
     "date": "12/06/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Interlaken",
+    "lat": 46.6730847,
+    "lng": 7.8810603
   },
   {
     "name": "Guns N' Roses @ Firenze Rocks 2025",
     "date": "12/06/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Firenze"
   },
   {
     "name": "Iron Fest Open Air 2025",
     "date": "12/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Schönenberg-Kübelberg"
   },
   {
     "name": "Itawak Fest 2025",
     "date": "12/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Strasbourg",
+    "lat": 48.5755495,
+    "lng": 7.7293044
   },
   {
     "name": "Mahlstrom Open Air 2025",
     "date": "12/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
     "source": "en.concerts-metal.com/festivals.html"
@@ -1642,234 +2057,297 @@
   {
     "name": "MetalGate Czech Death Fest 2025",
     "date": "12/06/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Červený Kostelec",
+    "lat": 50.465513,
+    "lng": 16.101677
   },
   {
     "name": "RockFest 2025",
     "date": "12/06/2025",
-    "country": "",
+    "country": "Finland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Turku",
+    "lat": 60.6527611,
+    "lng": 24.8798373
   },
   {
     "name": "Z! Live Rock Fest 2025",
     "date": "12/06/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Zamora",
+    "lat": 41.5196375,
+    "lng": -5.7183243
   },
   {
     "name": "Balarock Festival 2025",
     "date": "13/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bad Laasphe"
   },
   {
     "name": "Black Silesia Open Air VIII",
     "date": "13/06/2025",
-    "country": "",
+    "country": "Poland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Biskupice",
+    "lat": 51.084890345515305,
+    "lng": 18.161513048
   },
   {
     "name": "Concerts del Pinar 2025",
     "date": "13/06/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Castelló"
   },
   {
     "name": "Devil Stage Festival 2025",
     "date": "13/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Friedrichroda"
   },
   {
     "name": "Download Festival 2025",
     "date": "13/06/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Donington",
+    "lat": 52.8239636,
+    "lng": -1.3851609
   },
   {
     "name": "Festival Les Feux de l'été 2025",
     "date": "13/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Prouant"
   },
   {
     "name": "Fonsstock 2025",
     "date": "13/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nordenham"
   },
   {
     "name": "Into The Grave 2025",
     "date": "13/06/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Leeuwarden",
+    "lat": 53.2026607,
+    "lng": 5.7881445
   },
   {
     "name": "Lizig celt Fest",
     "date": "13/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "samatan"
   },
   {
     "name": "Manowar - Tour 2025",
     "date": "13/06/2025",
-    "country": "",
+    "country": "Tallinn",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tour 2025"
   },
   {
     "name": "Outbreak Fest 2025 - London",
     "date": "13/06/2025",
-    "country": "",
+    "country": "London",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "London",
+    "lat": 53.4692143,
+    "lng": -2.3313861
   },
   {
     "name": "Underground DeathFest IV",
     "date": "13/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Remptendorf"
   },
   {
     "name": "Fort Metal Fest 2025",
     "date": "14/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Chalindrey",
+    "lat": 47.8076341,
+    "lng": 5.4036702
   },
   {
     "name": "Outbreak Fest 2025",
     "date": "14/06/2025",
-    "country": "",
+    "country": "London",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "London",
+    "lat": 53.4692143,
+    "lng": -2.3313861
   },
   {
     "name": "Vans Warped Tour 2025 - Washington",
     "date": "14/06/2025",
-    "country": "",
+    "country": "Washington",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Washington"
   },
   {
     "name": "Green Day @ Firenze Rocks 2025",
     "date": "15/06/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Firenze"
   },
   {
     "name": "Hellfest Le Off By Leclerc Clisson 2025",
     "date": "17/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Clisson"
   },
   {
     "name": "Alpen Flair 2025",
     "date": "18/06/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Natz",
+    "lat": 46.7598082,
+    "lng": 11.6727205
   },
   {
     "name": "Copenhell 2025",
     "date": "18/06/2025",
-    "country": "",
+    "country": "Denmark",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Refshalevej",
+    "lat": 55.6917039,
+    "lng": 12.6161583
   },
   {
     "name": "Nummirock Metal Festival 2025",
     "date": "18/06/2025",
-    "country": "",
+    "country": "Finland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Kauhajoki",
+    "lat": 62.2978536,
+    "lng": 22.4335574
   },
   {
     "name": "Azkena Rock Festival 2025",
     "date": "19/06/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vitoria-Gasteiz"
   },
   {
     "name": "Freak Valley Festival 2025",
     "date": "19/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Netphen",
+    "lat": 50.8906749,
+    "lng": 8.1270119
   },
   {
     "name": "Graspop Metal Meeting 2025",
     "date": "19/06/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Dessel",
+    "lat": 51.2276728,
+    "lng": 5.071533
   },
   {
     "name": "Hellfest 2025",
     "date": "19/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Clisson",
+    "lat": 47.0969105,
+    "lng": -1.2699866
   },
   {
     "name": "MISE Open Air 2025",
     "date": "19/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Büßfeld",
+    "lat": 50.6952027,
+    "lng": 8.998717
   },
   {
     "name": "Protzen Open Air 2025",
     "date": "19/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Protzen",
+    "lat": 52.844264,
+    "lng": 12.7194697
   },
   {
     "name": "6K Fest FDM 2025",
@@ -1882,18 +2360,22 @@
   {
     "name": "Hurricane Festival 2025",
     "date": "20/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Scheeßel",
+    "lat": 53.1591643,
+    "lng": 9.522086
   },
   {
     "name": "Kilkim Zaibu 2025",
     "date": "20/06/2025",
-    "country": "",
+    "country": "Lithuania",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ukmergė"
   },
   {
     "name": "LOW-L Fest 2025",
@@ -1906,338 +2388,424 @@
   {
     "name": "Moto Niedźwiedź Punk Festival",
     "date": "20/06/2025",
-    "country": "",
+    "country": "Poland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "NADA - Na Alma do Alentejo",
     "date": "20/06/2025",
-    "country": "",
+    "country": "Portugal",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Beja"
   },
   {
     "name": "Pinkpop Festival 2025",
     "date": "20/06/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Landgraaf",
+    "lat": 50.8806412,
+    "lng": 6.0207747
   },
   {
     "name": "Return To Strength Festival 2025",
     "date": "20/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Querfurt",
+    "lat": 51.3841295,
+    "lng": 11.6115131
   },
   {
     "name": "Rock for Tolerance Open Air Festival 2025",
     "date": "20/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hann. Münden"
   },
   {
     "name": "Southside Festival 2025",
     "date": "20/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Neuhausen ob Eck",
+    "lat": 47.9769696,
+    "lng": 8.9032593
   },
   {
     "name": "Comendatio Music Fest 2025",
     "date": "21/06/2025",
-    "country": "",
+    "country": "Tomar",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Paço da Comenda"
   },
   {
     "name": "Ghostfest 2025",
     "date": "21/06/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Leeds"
   },
   {
     "name": "Monteuhell 2025",
     "date": "21/06/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Monteu Da Po"
   },
   {
     "name": "Ranger-Rock 2025",
     "date": "21/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Brand"
   },
   {
     "name": "Rock The Square 2025",
     "date": "21/06/2025",
-    "country": "",
+    "country": "Poland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lublin",
+    "lat": 51.2473557,
+    "lng": 22.5481946
   },
   {
     "name": "Dissonance Festival 2025",
     "date": "22/06/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milano (Segrate)",
+    "lat": 45.4636191,
+    "lng": 9.2860766
   },
   {
     "name": "I-Days Milano 2025 - Linkin Park",
     "date": "24/06/2025",
-    "country": "",
+    "country": "Milano",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Linkin Park"
   },
   {
     "name": "Basinfirefest 2025",
     "date": "25/06/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Spálené Poříčí",
+    "lat": 49.6060356,
+    "lng": 13.6099946
   },
   {
     "name": "Resurrection Fest 2025",
     "date": "25/06/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Viveiro",
+    "lat": 43.6754671,
+    "lng": -7.5943367
   },
   {
     "name": "Tons Of Rock 2025",
     "date": "25/06/2025",
-    "country": "",
+    "country": "Norway",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Oslo",
+    "lat": 59.898332,
+    "lng": 10.7737388
   },
   {
     "name": "Arsenal Fest 2025",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Serbia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Kragujevac"
   },
   {
     "name": "Broken Summer 2025",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Stockholm"
   },
   {
     "name": "Hole In The Svn Festival 2025",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Rauschenberg"
   },
   {
     "name": "Jera On Air Festival 2025",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ysselsteyn",
+    "lat": 51.4900033,
+    "lng": 5.8908669
   },
   {
     "name": "Moos Meadow Festival 2025",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Feuchtwangen"
   },
   {
     "name": "Odyssea Rock Fusion Festival",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Romania",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Constanța"
   },
   {
     "name": "Provinssirock Festival 2025",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Finland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Seinäjoki",
+    "lat": 62.763484,
+    "lng": 22.835435
   },
   {
     "name": "Rock Fest Barcelona 2025",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Barcelona",
+    "lat": 41.4566939,
+    "lng": 2.1965697
   },
   {
     "name": "Rock Imperium Festival 2025",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cartagena",
+    "lat": 37.6013479,
+    "lng": -0.9773355
   },
   {
     "name": "Rockwave Festival 2025 - Blind Guardian & Beast In Black",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Athens",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Blind Guardian &amp; Beast In Black"
   },
   {
     "name": "Subkult Festival 2025",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vänersborg"
   },
   {
     "name": "Summerside Festival 2025",
     "date": "26/06/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Grenchen",
+    "lat": 47.1854918,
+    "lng": 7.4091182
   },
   {
     "name": "29 Show Bike Aquitaine 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Aquitaine"
   },
   {
     "name": "Abyss Festival 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hauteville"
   },
   {
     "name": "Barb'n'Rock Festival 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Crèvecoeur-le-Grand"
   },
   {
     "name": "Evil Live Open Air 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "Portugal",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lisboa",
+    "lat": 38.7027849,
+    "lng": -9.2081717
   },
   {
     "name": "Impericon Festival 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Leipzig",
+    "lat": 51.39635095,
+    "lng": 12.39645565
   },
   {
     "name": "Mighty Sounds Festival 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tabor",
+    "lat": 49.3932101,
+    "lng": 14.7027185
   },
   {
     "name": "Perche En Rock",
     "date": "27/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Perche"
   },
   {
     "name": "Rock In Bourlon 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bourlon",
+    "lat": 50.1792804,
+    "lng": 3.1204154
   },
   {
     "name": "Rétro C Trop",
     "date": "27/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tilloloy"
   },
   {
     "name": "Superbowl of Hardcore 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Rennes",
+    "lat": 48.102266,
+    "lng": -1.7256532
   },
   {
     "name": "Tallinn Rock Festival 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "Estonia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tallinn",
+    "lat": 59.4259579,
+    "lng": 24.6472462
   },
   {
     "name": "Tuska Open Air 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "Finland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Helsinki",
+    "lat": 60.1851031,
+    "lng": 24.9664151
   },
   {
     "name": "Vainstream RockFest 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Münster",
+    "lat": 51.9445354,
+    "lng": 7.6389273
   },
   {
     "name": "Ziegelei Open Air 2025",
     "date": "27/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Twistringen",
+    "lat": 52.8130049,
+    "lng": 8.61153705
   },
   {
     "name": "lixiviat festival vol.3",
@@ -2250,263 +2818,331 @@
   {
     "name": "Gezgin Salon Festivali 2025",
     "date": "28/06/2025",
-    "country": "",
+    "country": "Turkey",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Istanbul"
   },
   {
     "name": "Roskilde Festival 2025",
     "date": "28/06/2025",
-    "country": "",
+    "country": "Denmark",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Roskilde",
+    "lat": 55.6172249,
+    "lng": 12.0870126
   },
   {
     "name": "Sol Sonic Ride Part II",
     "date": "28/06/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Wiesbaden",
+    "lat": 50.0661553,
+    "lng": 8.2477547
   },
   {
     "name": "Southammer Metal Fest 2025",
     "date": "28/06/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Castel Volturno"
   },
   {
     "name": "Road To Bay Fest 2025",
     "date": "29/06/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bellaria-Igea Marina"
   },
   {
     "name": "Open'er Festival 2025",
     "date": "02/07/2025",
-    "country": "",
+    "country": "Poland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gdynia"
   },
   {
     "name": "Rockharz Open Air 2025",
     "date": "02/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ballenstedt",
+    "lat": 51.7399927,
+    "lng": 11.2289477
   },
   {
     "name": "Rockmaraton 2025",
     "date": "02/07/2025",
-    "country": "",
+    "country": "Hungary",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Dunaújváros",
+    "lat": 46.9837361,
+    "lng": 18.9438673
   },
   {
     "name": "Bear Stone Festival 2025",
     "date": "03/07/2025",
-    "country": "",
+    "country": "Croatia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Slunj",
+    "lat": 45.1943311,
+    "lng": 15.4328244
   },
   {
     "name": "Eurockéennes 2025",
     "date": "03/07/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Sermamagny (Belfort)"
   },
   {
     "name": "Fajtfest 2025",
     "date": "03/07/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Velké Mezirici",
+    "lat": 49.3601613,
+    "lng": 16.0244102
   },
   {
     "name": "Rock Werchter 2025",
     "date": "03/07/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Werchter",
+    "lat": 50.9688057,
+    "lng": 4.6850574
   },
   {
     "name": "Under The Black Sun 2025",
     "date": "03/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Friesack",
+    "lat": 52.7376654,
+    "lng": 12.589896
   },
   {
     "name": "Burning Pants Festival 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "Castle Rock 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mülheim"
   },
   {
     "name": "Comfort Festival 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cinisello Balsamo"
   },
   {
     "name": "Eastside Open Air 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Halle"
   },
   {
     "name": "Green Hell Festival 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Freudenberg"
   },
   {
     "name": "Headbangers' Weekend 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Turkey",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Istanbul",
+    "lat": 41.1671934,
+    "lng": 29.0008284
   },
   {
     "name": "Ieper Hardcore Fest 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ieper",
+    "lat": 50.8489506,
+    "lng": 2.8763382
   },
   {
     "name": "Kave Fest 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gisors",
+    "lat": 49.281118,
+    "lng": 1.7737293
   },
   {
     "name": "Les Chariots Furieux 4",
     "date": "04/07/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Caudry",
+    "lat": 50.1248915,
+    "lng": 3.4228283
   },
   {
     "name": "Main Square Festival 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Arras",
+    "lat": 50.2827053,
+    "lng": 2.7572936
   },
   {
     "name": "Metal Theatre Festival 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Kalmar"
   },
   {
     "name": "Mondra&Roll 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "Plane R Fest 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Colombier-Saugnieu",
+    "lat": 45.7204104,
+    "lng": 5.1321334
   },
   {
     "name": "RIIP Fest 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Notre-Dame-d'Oé",
+    "lat": 47.4505246,
+    "lng": 0.6980509
   },
   {
     "name": "Radar Festival 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Manchester"
   },
   {
     "name": "Ruhrpott Rodeo 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hünxe",
+    "lat": 51.6080628,
+    "lng": 6.8460127
   },
   {
     "name": "SOS Festival 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Oldham"
   },
   {
     "name": "South of Heaven 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Zbytiny",
+    "lat": 48.9422668,
+    "lng": 13.977598
   },
   {
     "name": "Time To Rock Festival 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Knislinge",
+    "lat": 56.1920344,
+    "lng": 14.0974919
   },
   {
     "name": "Tuhdimmat Tahdit 2025",
     "date": "04/07/2025",
-    "country": "",
+    "country": "Finland",
     "genre": "Metal",
     "website": "",
     "source": "en.concerts-metal.com/festivals.html"
@@ -2514,47 +3150,56 @@
   {
     "name": "Ar' Vran Fest 2025",
     "date": "05/07/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Janzé",
+    "lat": 47.9656019,
+    "lng": -1.4945869
   },
   {
     "name": "Athens Rocks 2025",
     "date": "05/07/2025",
-    "country": "",
+    "country": "Greece",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Athens"
   },
   {
     "name": "Black Sabbath - Back To The Beginning",
     "date": "05/07/2025",
-    "country": "",
+    "country": "Birmingham",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Back To The Beginning"
   },
   {
     "name": "Move Your Fucking Brain Extreme Fest 2025",
     "date": "05/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Molins de Rei"
   },
   {
     "name": "Save The Core Festival 2025",
     "date": "05/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nürnberg",
+    "lat": 49.4254614,
+    "lng": 11.1232672
   },
   {
     "name": "Um Metaleiro Também Chora 2025",
     "date": "05/07/2025",
-    "country": "",
+    "country": "Brazil",
     "genre": "Metal",
     "website": "",
     "source": "en.concerts-metal.com/festivals.html"
@@ -2562,498 +3207,616 @@
   {
     "name": "2000 Trees Festival 2025",
     "date": "09/07/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cheltenham"
   },
   {
     "name": "Cruilla Festival 2025",
     "date": "09/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Barcelona"
   },
   {
     "name": "Obscene Extreme 2025",
     "date": "09/07/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Trutnov",
+    "lat": 50.55255,
+    "lng": 15.9060993
   },
   {
     "name": "Area 53 Festival 2025",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Austria",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Leoben",
+    "lat": 47.3547292,
+    "lng": 15.0685111
   },
   {
     "name": "Castle Party Festival 2025",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Poland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bolków",
+    "lat": 50.9217634,
+    "lng": 16.0956807
   },
   {
     "name": "Dark River Festival",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Finland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Kotka"
   },
   {
     "name": "EXIT Festival 2025",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Serbia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Novi Sad"
   },
   {
     "name": "In Flammen Open Air 2025",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Torgau",
+    "lat": 51.54713,
+    "lng": 12.9658013
   },
   {
     "name": "Mad Cool Festival 2025",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Madrid",
+    "lat": 40.3303352,
+    "lng": -3.7081749
   },
   {
     "name": "Masters of Rock 2025",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vizovice",
+    "lat": 49.2173871,
+    "lng": 17.8406803
   },
   {
     "name": "Metal Magic 2025",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Denmark",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Fredericia"
   },
   {
     "name": "Pitfest 2025",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Emmen",
+    "lat": 52.7744073,
+    "lng": 6.944218
   },
   {
     "name": "RVBang Festival 2025",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Balingen",
+    "lat": 48.2618522,
+    "lng": 8.8472688
   },
   {
     "name": "Stoned From The Underground 2025",
     "date": "10/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Erfurt-Stotternheim",
+    "lat": 51.070051,
+    "lng": 11.0376516
   },
   {
     "name": "Armstrong MetalFest 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Canada",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Armstrong"
   },
   {
     "name": "Bospop 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Weert"
   },
   {
     "name": "Estaka Rock 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Jódar, Jaén"
   },
   {
     "name": "Forest Fest Open Air 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Chevenez"
   },
   {
     "name": "Krach am Bach Prölsdorf 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Prölsdorf"
   },
   {
     "name": "Luarca Metal Days 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Luarca"
   },
   {
     "name": "Midalidare Rock 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Bulgaria",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mogilovo",
+    "lat": 42.3429893,
+    "lng": 25.4057111
   },
   {
     "name": "Punk w Dolinie DIY vol.3",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Poland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Przerośl"
   },
   {
     "name": "Pure Fucking Metal FestEvil 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Laberweinting"
   },
   {
     "name": "Rock Im Ring 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Collalbo"
   },
   {
     "name": "Rock Zottegem 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Zottegem"
   },
   {
     "name": "Tollrock Festival 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nideggen"
   },
   {
     "name": "Wisdom Tooth Festival 2025",
     "date": "11/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bissingen"
   },
   {
     "name": "Stonerkras Fest 2025",
     "date": "12/07/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Prosecco"
   },
   {
     "name": "Electric Castle Festival 2025",
     "date": "16/07/2025",
-    "country": "",
+    "country": "Romania",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cluj-Napoca"
   },
   {
     "name": "Rock Fest 2025",
     "date": "16/07/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cadott",
+    "lat": 45.0439704,
+    "lng": -91.1823512
   },
   {
     "name": "Back To Future Festival 2025",
     "date": "17/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Glaubitz",
+    "lat": 51.3204406,
+    "lng": 13.3896929
   },
   {
     "name": "Baden in Blut Open Air 2025",
     "date": "17/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Weil am Rhein",
+    "lat": 47.5866791,
+    "lng": 7.6093506
   },
   {
     "name": "Deichbrand Festival 2025",
     "date": "17/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nordholz",
+    "lat": 53.7581682,
+    "lng": 8.6696304
   },
   {
     "name": "Dong Open Air 2025",
     "date": "17/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Neukirchen-Vluyn",
+    "lat": 51.4704034,
+    "lng": 6.5665631
   },
   {
     "name": "FIB Benicassim Festival 2025",
     "date": "17/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Benicassim"
   },
   {
     "name": "John Smith Rock Festival 2025",
     "date": "17/07/2025",
-    "country": "",
+    "country": "Finland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Laukaa"
   },
   {
     "name": "Munky Pride 2025",
     "date": "17/07/2025",
-    "country": "",
+    "country": "Latvia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Dignāja"
   },
   {
     "name": "Sun & Thunder Festival 2025",
     "date": "17/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "Z51 Fest. We Are Zone 2025",
     "date": "17/07/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Sélestat",
+    "lat": 48.2547961,
+    "lng": 7.4624536
   },
   {
     "name": "Zwarte Cross Festival 2025",
     "date": "17/07/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lievelde",
+    "lat": 52.0019277,
+    "lng": 6.5983379
   },
   {
     "name": "Arcanxo Festival 2025",
     "date": "18/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ponteareas"
   },
   {
     "name": "Inkcarceration Festival 2025",
     "date": "18/07/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mansfield",
+    "lat": 40.7834421,
+    "lng": -82.5036682
   },
   {
     "name": "Laurus Nobilis 2025",
     "date": "18/07/2025",
-    "country": "",
+    "country": "Portugal",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Louro",
+    "lat": 41.431788,
+    "lng": -8.53491
   },
   {
     "name": "Luppolo in Rock 2025",
     "date": "18/07/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cremona",
+    "lat": 45.1253321,
+    "lng": 10.0080125
   },
   {
     "name": "MEO Marés Vivas 2025",
     "date": "18/07/2025",
-    "country": "",
+    "country": "Portugal",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vila Nova de Gaia"
   },
   {
     "name": "Maid of Stone Festival 2025",
     "date": "18/07/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Maidstone"
   },
   {
     "name": "Tsunami Xixón Festival 2025",
     "date": "18/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gijón"
   },
   {
     "name": "Zurbarán Rock Festival Burgos 2025",
     "date": "18/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Burgos"
   },
   {
     "name": "Amphi Festival 2025",
     "date": "19/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Köln",
+    "lat": 50.945818,
+    "lng": 6.970363
   },
   {
     "name": "Can Mercader Festival 2025",
     "date": "19/07/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cornellà de Llobregat"
   },
   {
     "name": "Hammerdown Festival 2025",
     "date": "19/07/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Brighton"
   },
   {
     "name": "MozHell Open Air 2025",
     "date": "19/07/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Insming",
+    "lat": 48.9612609,
+    "lng": 6.872109
   },
   {
     "name": "Ritual Metal Festival 2025",
     "date": "20/07/2025",
-    "country": "",
+    "country": "Brazil",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lapa, Rio de Janeiro"
   },
   {
     "name": "Tolminator 2025",
     "date": "23/07/2025",
-    "country": "",
+    "country": "Slovenia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tolmin",
+    "lat": 46.1749626,
+    "lng": 13.7376146
   },
   {
     "name": "Herzberg Festival 2025",
     "date": "24/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Breitenbach am Herzberg"
   },
   {
     "name": "Riez Open Air 2025",
     "date": "24/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bausendorf"
   },
   {
     "name": "Rock im Wald 2025",
     "date": "24/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Neuensee",
+    "lat": 50.1812264,
+    "lng": 11.1171742
   },
   {
     "name": "ARTmania Festival 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Romania",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Sibiu",
+    "lat": 45.7962755,
+    "lng": 24.1513243
   },
   {
     "name": "Bulgasal Metal Fest",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Väserås",
+    "lat": 59.603182650438,
+    "lng": 16.545287224
   },
   {
     "name": "Burning Q Festival 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Osterholz-Scharmbeck",
+    "lat": 53.268983,
+    "lng": 8.7908247
   },
   {
     "name": "Fire In The Mountains 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Blackfeet Nation, Montana"
   },
   {
     "name": "Hills of Rock 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Bulgaria",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Plovdiv",
+    "lat": 42.1420157,
+    "lng": 24.70689
   },
   {
     "name": "Kanekas Metal Fest 2025",
@@ -3066,82 +3829,100 @@
   {
     "name": "Metal Fields 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Austria",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Wiesen"
   },
   {
     "name": "No Excuse Festival 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Sätila"
   },
   {
     "name": "Padova Metal Fest 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Padova"
   },
   {
     "name": "Qstock 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Finland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Oulu",
+    "lat": 65.0193946,
+    "lng": 25.4629423
   },
   {
     "name": "Rockelingen 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Petit-enghien(lettelingen)"
   },
   {
     "name": "Rotten Rock Fest 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ulrichen"
   },
   {
     "name": "Trebur Open Air 2025",
     "date": "25/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Trebur"
   },
   {
     "name": "Chania Rock Festival 2025",
     "date": "26/07/2025",
-    "country": "",
+    "country": "Greece",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Chania",
+    "lat": 35.51596804604452,
+    "lng": 24.02421247794
   },
   {
     "name": "Ostrów Rock Festival",
     "date": "26/07/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cadott",
+    "lat": 45.0439704,
+    "lng": -91.1823512
   },
   {
     "name": "Stonehenge Festival 2025",
     "date": "26/07/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Steenwijk",
+    "lat": 52.7899828,
+    "lng": 6.1148434
   },
   {
     "name": "Unhinged Fest 2025",
@@ -3154,74 +3935,93 @@
   {
     "name": "Vans Warped Tour 2025 - Long Beach",
     "date": "26/07/2025",
-    "country": "",
+    "country": "Washington",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Washington"
   },
   {
     "name": "Beyond the Gates 2025",
     "date": "30/07/2025",
-    "country": "",
+    "country": "Norway",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bergen",
+    "lat": 60.3958018,
+    "lng": 5.3093655
   },
   {
     "name": "Fezen Festival 2025",
     "date": "30/07/2025",
-    "country": "",
+    "country": "Hungary",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Székesfehérvár"
   },
   {
     "name": "Rockstadt Extreme Fest 2025",
     "date": "30/07/2025",
-    "country": "",
+    "country": "Romania",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Râsnov",
+    "lat": 45.5889704,
+    "lng": 25.4748073
   },
   {
     "name": "Wacken Open Air 2025",
     "date": "30/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Wacken",
+    "lat": 54.0211743,
+    "lng": 9.3722064
   },
   {
     "name": "Full Rewind Festival 2025",
     "date": "31/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Löbnitz",
+    "lat": 51.575641,
+    "lng": 12.4919611
   },
   {
     "name": "HelmFest 2025",
     "date": "31/07/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Büddenstedt"
   },
   {
     "name": "Skogsröjet 2025",
     "date": "31/07/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Rejmyre"
   },
   {
     "name": "Xtreme Fest 2025",
     "date": "31/07/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Le Garric",
+    "lat": 44.020028,
+    "lng": 2.1429348
   },
   {
     "name": "Dark Sun Metal Festival 2025",
@@ -3234,434 +4034,542 @@
   {
     "name": "Dortmund Deathfest 2025",
     "date": "01/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Dortmund",
+    "lat": 51.5330674,
+    "lng": 7.4725349
   },
   {
     "name": "Fährmannsfest 2025",
     "date": "01/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hannover"
   },
   {
     "name": "Krach am Bach 2025",
     "date": "01/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Beelen"
   },
   {
     "name": "Open Air Gränichen 2025",
     "date": "01/08/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gränichen"
   },
   {
     "name": "Queyrock Open Air Festival 2025",
     "date": "01/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ginestet",
+    "lat": 44.8930714,
+    "lng": 0.4375419
   },
   {
     "name": "Sylak Open Air 2025",
     "date": "01/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Maurice-de-Gourdans",
+    "lat": 45.8099672,
+    "lng": 5.1895534
   },
   {
     "name": "Vagos Metal Fest 2025",
     "date": "01/08/2025",
-    "country": "",
+    "country": "Portugal",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vagos",
+    "lat": 40.5540913,
+    "lng": -8.6767399
   },
   {
     "name": "Zappen Duster Festival 2025",
     "date": "01/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Münster",
+    "lat": 51.9439492,
+    "lng": 7.6382638
   },
   {
     "name": "Magnolia Stone 2025",
     "date": "02/08/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milano (Segrate)",
+    "lat": 45.4636191,
+    "lng": 9.2860766
   },
   {
     "name": "Riff'N'Rumble 2025",
     "date": "02/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gayan"
   },
   {
     "name": "Lokerse Feesten 2025 - Electric Callboy",
     "date": "03/08/2025",
-    "country": "",
+    "country": "Lokeren",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Electric Callboy"
   },
   {
     "name": "Lokerse Feesten 2025 - Punk Day",
     "date": "04/08/2025",
-    "country": "",
+    "country": "Lokeren",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Electric Callboy"
   },
   {
     "name": "Punk Rock Holiday 2025",
     "date": "04/08/2025",
-    "country": "",
+    "country": "Slovenia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tolmin",
+    "lat": 46.1749626,
+    "lng": 13.7376146
   },
   {
     "name": "Lokerse Feesten 2025 - Gojira",
     "date": "05/08/2025",
-    "country": "",
+    "country": "Lokeren",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Electric Callboy"
   },
   {
     "name": "Brutal Assault 2025",
     "date": "06/08/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Jaromer",
+    "lat": 50.3391774,
+    "lng": 15.9269288
   },
   {
     "name": "Leyendas Del Rock 2025",
     "date": "06/08/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Villena",
+    "lat": 38.6320381,
+    "lng": -0.8463495
   },
   {
     "name": "Montelago Celtic Festival 2025",
     "date": "06/08/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Serravalle di Chienti"
   },
   {
     "name": "Open Flair Festival 2025",
     "date": "06/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Eschwege"
   },
   {
     "name": "Sziget Festival 2025",
     "date": "06/08/2025",
-    "country": "",
+    "country": "Hungary",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Budapest"
   },
   {
     "name": "Alcatraz Metal Festival 2025",
     "date": "07/08/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Kortrijk",
+    "lat": 50.80665140551247,
+    "lng": 3.30130373716
   },
   {
     "name": "Bloodstock Open Air 2025",
     "date": "07/08/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Derbyshire"
   },
   {
     "name": "Party San Open Air 2025",
     "date": "07/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Schlotheim",
+    "lat": 51.2623857,
+    "lng": 10.6389378
   },
   {
     "name": "Rebellion Festival 2025",
     "date": "07/08/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Blackpool",
+    "lat": 53.8166226,
+    "lng": -3.0516548
   },
   {
     "name": "SonicBlast Fest 2025",
     "date": "07/08/2025",
-    "country": "",
+    "country": "Portugal",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Âncora"
   },
   {
     "name": "Bay Fest 2025",
     "date": "08/08/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bellaria-Igea Marina"
   },
   {
     "name": "Das grosse Treffen 2025",
     "date": "08/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Aach"
   },
   {
     "name": "Festival 666 2025",
     "date": "08/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Cercoux",
+    "lat": 45.1276963,
+    "lng": -0.2051041
   },
   {
     "name": "Grape Festival 2025",
     "date": "08/08/2025",
-    "country": "",
+    "country": "Slovakia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Trencin"
   },
   {
     "name": "Hellsinki Metal Festival 2025",
     "date": "08/08/2025",
-    "country": "",
+    "country": "Finland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Helsinki",
+    "lat": 60.1892751,
+    "lng": 24.9225115
   },
   {
     "name": "Summer Well Fest 2025",
     "date": "08/08/2025",
-    "country": "",
+    "country": "Romania",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Buftea"
   },
   {
     "name": "Tells Bells Festival 2025",
     "date": "08/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Villmar",
+    "lat": 50.4005283,
+    "lng": 8.1918278
   },
   {
     "name": "Elbriot Festival 2025",
     "date": "09/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hamburg",
+    "lat": 53.5421035,
+    "lng": 10.0189849
   },
   {
     "name": "M'era Luna 2025",
     "date": "09/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hildesheim"
   },
   {
     "name": "Bay Fest - Pool Party 2025",
     "date": "10/08/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bellaria-Igea Marina"
   },
   {
     "name": "ArcTanGent Festival 2025",
     "date": "13/08/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bristol",
+    "lat": 51.2971026,
+    "lng": -2.6771981
   },
   {
     "name": "Colomb'In Rock Festival 2025",
     "date": "13/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Colombe-lès-Vesoul"
   },
   {
     "name": "Midgardsblot Metal Festival 2025",
     "date": "13/08/2025",
-    "country": "",
+    "country": "Norway",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Borre",
+    "lat": 59.3844633,
+    "lng": 10.4678929
   },
   {
     "name": "Rock Metal Fest 2025",
     "date": "13/08/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Pulsano"
   },
   {
     "name": "Summer Breeze 2025",
     "date": "13/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Dinkelsbühl (Sinbronn)",
+    "lat": 49.0604268,
+    "lng": 10.4122019
   },
   {
     "name": "Frantic Fest 2025",
     "date": "14/08/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Abruzzo"
   },
   {
     "name": "Hoflärm Open Air 2025",
     "date": "14/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Seelbach"
   },
   {
     "name": "Le Cabaret Vert 2025",
     "date": "14/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Charleville-Mézières",
+    "lat": 49.7642217,
+    "lng": 4.7121163
   },
   {
     "name": "Motocultor Festival 2025",
     "date": "14/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Carhaix",
+    "lat": 48.2722997,
+    "lng": -3.5580951
   },
   {
     "name": "Reload Festival 2025",
     "date": "14/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Sulingen"
   },
   {
     "name": "Rock Castle 2025",
     "date": "14/08/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Moravský Krumlov",
+    "lat": 49.0490149,
+    "lng": 16.3068825
   },
   {
     "name": "Stella Nomine Festival 2025",
     "date": "14/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Torgau",
+    "lat": 51.54713,
+    "lng": 12.9658013
   },
   {
     "name": "Barther Metal Open Air",
     "date": "15/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Barth"
   },
   {
     "name": "Dynamo Metal Fest 2025",
     "date": "15/08/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Eindhoven",
+    "lat": 51.415686,
+    "lng": 5.471841
   },
   {
     "name": "Rabolagartija 2025",
     "date": "15/08/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Villena",
+    "lat": 38.6320381,
+    "lng": -0.8463495
   },
   {
     "name": "Rock The Lakes 2025",
     "date": "15/08/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vallamand"
   },
   {
     "name": "Summer Sonic 2025 Tokyo",
     "date": "16/08/2025",
-    "country": "",
+    "country": "Japan",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tokyo",
+    "lat": 35.648206,
+    "lng": 140.0346307
   },
   {
     "name": "Summer Sonic 2025 Osaka",
     "date": "17/08/2025",
-    "country": "",
+    "country": "Japan",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Suita"
   },
   {
     "name": "Baltic Open Air 2025",
     "date": "21/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Busdorf",
+    "lat": 54.4793271,
+    "lng": 9.5530152
   },
   {
     "name": "Deathfeast 2025",
     "date": "21/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Andernach"
   },
   {
     "name": "Electric Callboy + I Prevail @ AMA Music Festival",
@@ -3674,130 +4582,150 @@
   {
     "name": "Kaltenbach Open Air 2025",
     "date": "21/08/2025",
-    "country": "",
+    "country": "Austria",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Spital am Semmering"
   },
   {
     "name": "Leeds Festival 2025",
     "date": "21/08/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Leeds"
   },
   {
     "name": "Les Gueules de Bois 2025",
     "date": "21/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Valzin en Petite Montagne"
   },
   {
     "name": "Music Forge Festival 2025",
     "date": "21/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lich"
   },
   {
     "name": "Reading Festival 2025",
     "date": "21/08/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Reading"
   },
   {
     "name": "V and B Fest' 2025",
     "date": "21/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Château-Gontier"
   },
   {
     "name": "Ackerfest Open Air 2025",
     "date": "22/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "Back to The Symbolic 2025",
     "date": "22/08/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tři Dvory"
   },
   {
     "name": "Barbeuk Metal Fest 2025",
     "date": "22/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Champtoceaux"
   },
   {
     "name": "Hellbotn Metalfest 2025",
     "date": "22/08/2025",
-    "country": "",
+    "country": "Norway",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Kolbotn"
   },
   {
     "name": "Milagre Metaleiro Open Air 2025",
     "date": "22/08/2025",
-    "country": "",
+    "country": "Portugal",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Pindelo dos Milagres",
+    "lat": 40.8077114,
+    "lng": -7.9641208
   },
   {
     "name": "Riverside Open Air 2025",
     "date": "22/08/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Aarburg",
+    "lat": 47.3167264,
+    "lng": 7.8950834
   },
   {
     "name": "Summerock 2025",
     "date": "22/08/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Altidona"
   },
   {
     "name": "FuriosFest 2025",
     "date": "23/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Flour"
   },
   {
     "name": "Metal For Emergency 2025",
     "date": "23/08/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "Pelagic Fest 2025",
     "date": "23/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Berlin"
   },
   {
     "name": "Arbor Pagan Festival",
@@ -3810,242 +4738,288 @@
   {
     "name": "Gothoom Open Air Fest 2025",
     "date": "28/08/2025",
-    "country": "",
+    "country": "Slovakia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Žemberovce",
+    "lat": 48.2528992,
+    "lng": 18.7633295
   },
   {
     "name": "Rethymno Rocks 5",
     "date": "28/08/2025",
-    "country": "",
+    "country": "Greece",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Rethymno"
   },
   {
     "name": "Brüggen Open Air an der Burg",
     "date": "29/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Brüggen"
   },
   {
     "name": "Golden R. Festival 2025",
     "date": "29/08/2025",
-    "country": "",
+    "country": "Greece",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Volos"
   },
   {
     "name": "Hellhammer Festival OA",
     "date": "29/08/2025",
-    "country": "",
+    "country": "Serbia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Srbobran"
   },
   {
     "name": "Mearfest Space 2025",
     "date": "29/08/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nuneaton"
   },
   {
     "name": "Månegarm Open Air 2025",
     "date": "29/08/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Norrtälje"
   },
   {
     "name": "Neuborn Open Air Festival 2025",
     "date": "29/08/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Wörrstadt",
+    "lat": 49.8289595,
+    "lng": 8.1103606
   },
   {
     "name": "Posada Rock 2025",
     "date": "29/08/2025",
-    "country": "",
+    "country": "Romania",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Campulung"
   },
   {
     "name": "Ripollet Rock Festival 2025",
     "date": "29/08/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ripollet"
   },
   {
     "name": "Rocklahoma 2025",
     "date": "29/08/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Pryor"
   },
   {
     "name": "Running Free Festival 2025",
     "date": "29/08/2025",
-    "country": "",
+    "country": "Bulgaria",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Dryanovo"
   },
   {
     "name": "T-Rock Fest #4",
     "date": "29/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Maurin"
   },
   {
     "name": "XX. Prague Gothic Treffen",
     "date": "29/08/2025",
-    "country": "",
+    "country": "Czechia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Prague",
+    "lat": 50.09522225,
+    "lng": 14.4363506
   },
   {
     "name": "Fertois Metal Fest 2025",
     "date": "30/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "La Ferté-sous-Jouarre",
+    "lat": 48.9457476,
+    "lng": 3.1216277
   },
   {
     "name": "Festival Rock en Femenino 2025",
     "date": "30/08/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Torredonjimeno, Jaén"
   },
   {
     "name": "Metal On The Hill 2025",
     "date": "30/08/2025",
-    "country": "",
+    "country": "Austria",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Graz"
   },
   {
     "name": "Roosendaal Open Air 2025",
     "date": "30/08/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Roosendaal"
   },
   {
     "name": "Ugly Fest 2025",
     "date": "30/08/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Gravigny"
   },
   {
     "name": "ProgPower USA 2025",
     "date": "03/09/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Atlanta"
   },
   {
     "name": "Break Out Open Air 2025",
     "date": "04/09/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Schleiz",
+    "lat": 50.580018,
+    "lng": 11.7006666
   },
   {
     "name": "In Extremo - 30 Jahre - Das Jubiläumsfestival",
     "date": "04/09/2025",
-    "country": "",
+    "country": "Das Jubiläumsfestival",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "30 Jahre"
   },
   {
     "name": "Kill-Town Death Fest 2025",
     "date": "04/09/2025",
-    "country": "",
+    "country": "Denmark",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Copenhagen",
+    "lat": 55.6771378,
+    "lng": 12.5652232
   },
   {
     "name": "Summer Dying Loud 2025",
     "date": "04/09/2025",
-    "country": "",
+    "country": "Poland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Aleksandrów Łódzki"
   },
   {
     "name": "Depravation Festival 2025",
     "date": "05/09/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Swindon"
   },
   {
     "name": "Mennecy Metal Fest 2025",
     "date": "05/09/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mennecy"
   },
   {
     "name": "NCN Festival 2025",
     "date": "05/09/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Deutzen",
+    "lat": 51.1100882,
+    "lng": 12.4329698
   },
   {
     "name": "Punk Against Capitalism Fest 2025",
     "date": "05/09/2025",
-    "country": "",
+    "country": "Greece",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Athens"
   },
   {
     "name": "Revival Tour 2025",
     "date": "05/09/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "Candelabrum Metal Fest 2025",
     "date": "06/09/2025",
-    "country": "",
+    "country": "Mexico",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "León",
+    "lat": 21.1110755,
+    "lng": -101.6576721
   },
   {
     "name": "Punkadeka Festival 2025",
@@ -4058,66 +5032,78 @@
   {
     "name": "Tilburg Metalfest 2025",
     "date": "06/09/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Tilburg"
   },
   {
     "name": "ItalyCum TurboGathering",
     "date": "11/09/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Ravenna"
   },
   {
     "name": "Bridge To Hell 2025",
     "date": "12/09/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Crest",
+    "lat": 44.7247786,
+    "lng": 5.0236964
   },
   {
     "name": "Festival-Mediaval 2025 (Gothic-Special)",
     "date": "12/09/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Selb"
   },
   {
     "name": "RockHard Festival Greece 2025",
     "date": "12/09/2025",
-    "country": "",
+    "country": "Greece",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Athens"
   },
   {
     "name": "SidFest 2025",
     "date": "12/09/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Notre-Dame-d'Oé",
+    "lat": 47.4505246,
+    "lng": 0.6980509
   },
   {
     "name": "Une Nuit en Muscadet 2025",
     "date": "12/09/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Muscadet"
   },
   {
     "name": "Black Templar Extreme Metal Fest 2025",
     "date": "13/09/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Monzón, Aragon"
   },
   {
     "name": "Death & Damnation Fest 2025",
@@ -4130,42 +5116,53 @@
   {
     "name": "Pyrenean Warriors Open Air 2025",
     "date": "13/09/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Torreilles",
+    "lat": 42.7619186,
+    "lng": 2.9828024
   },
   {
     "name": "Louder Than Life Festival 2025",
     "date": "18/09/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Lousville",
+    "lat": 38.1955177,
+    "lng": -85.73604
   },
   {
     "name": "Blacken Open Air",
     "date": "19/09/2025",
-    "country": "",
+    "country": "Australia",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Alice Springs"
   },
   {
     "name": "Cosmic Void Festival 2025",
     "date": "19/09/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "London"
   },
   {
     "name": "Muscadeath 2025",
     "date": "19/09/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vallet",
+    "lat": 47.1665422,
+    "lng": -1.2652446
   },
   {
     "name": "Rock the Sun Festival 2025",
@@ -4178,295 +5175,383 @@
   {
     "name": "Avantgarde Music Festival",
     "date": "20/09/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milano",
+    "lat": 45.5161661,
+    "lng": 9.1793207
   },
   {
     "name": "Bosphorus Open Air Metal Fest 2025",
     "date": "20/09/2025",
-    "country": "",
+    "country": "Turkey",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Istanbul",
+    "lat": 41.10856583319407,
+    "lng": 29.007821792
   },
   {
     "name": "KOBA Live 2025",
     "date": "20/09/2025",
-    "country": "",
+    "country": "Japan",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": ""
   },
   {
     "name": "Be Prog! My Friend 2025",
     "date": "26/09/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Barcelona",
+    "lat": 41.3681714,
+    "lng": 2.1486068
   },
   {
     "name": "Languederock 2025",
     "date": "26/09/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Beziers"
   },
   {
     "name": "Metal Gates Festival 2025",
     "date": "26/09/2025",
-    "country": "",
+    "country": "Romania",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bucharest",
+    "lat": 44.4379977,
+    "lng": 26.059582
   },
   {
     "name": "Pauls Coastrock Festival",
     "date": "26/09/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Hinte (Emden)",
+    "lat": 53.4131772,
+    "lng": 7.2044299
   },
   {
     "name": "GinetaRock 2025",
     "date": "27/09/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "La Gineta, Albacete"
   },
   {
     "name": "Into The Void 2025",
     "date": "27/09/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Leeuwarden",
+    "lat": 53.2002995,
+    "lng": 5.7901165
   },
   {
     "name": "Metalitalia Festival 2025",
     "date": "27/09/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Milano (Trezzo sull’Adda)",
+    "lat": 45.5990404,
+    "lng": 9.5168821
   },
   {
     "name": "Volle Kraft Voraus Festival 2025",
     "date": "27/09/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Neu-Ulm",
+    "lat": 48.3817426,
+    "lng": 10.00473735
   },
   {
     "name": "Aftershock Festival 2025",
     "date": "02/10/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Sacramento",
+    "lat": 38.6055697,
+    "lng": -121.5035658
   },
   {
     "name": "Keep It True Rising V",
     "date": "02/10/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Würzburg",
+    "lat": 49.801624,
+    "lng": 9.9330766
   },
   {
     "name": "Metal Threat Fest 2025",
     "date": "02/10/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Elgin"
   },
   {
     "name": "Bomal Tribute Festival XXL",
     "date": "03/10/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Durbuy"
   },
   {
     "name": "Furnace Fest 2025",
     "date": "03/10/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Birmingham"
   },
   {
     "name": "Just'N'Fest 2025",
     "date": "03/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Just"
   },
   {
     "name": "Mauges Pit Fest IV",
     "date": "03/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saint-Macaire-en-Mauges",
+    "lat": 47.1259645,
+    "lng": -0.9943361
   },
   {
     "name": "ProgPower Europe 2025",
     "date": "03/10/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Baarlo",
+    "lat": 51.3304299,
+    "lng": 6.0963869
   },
   {
     "name": "Up In Smoke Festival 2025",
     "date": "03/10/2025",
-    "country": "",
+    "country": "Switzerland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Pratteln",
+    "lat": 47.5272926,
+    "lng": 7.6940782
   },
   {
     "name": "Arcanum Fest 2025",
     "date": "04/10/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Taneto",
+    "lat": 44.5372339,
+    "lng": 11.3508011
   },
   {
     "name": "AÜTFËST 2025",
     "date": "04/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bruay-la-Buissière"
   },
   {
     "name": "Vienna Metal Meeting 2025",
     "date": "04/10/2025",
-    "country": "",
+    "country": "Austria",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Wien / Vienna",
+    "lat": 48.1878371,
+    "lng": 16.4128968
   },
   {
     "name": "Old Grave Fest 2025",
     "date": "10/10/2025",
-    "country": "",
+    "country": "Romania",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bucharest",
+    "lat": 44.4379977,
+    "lng": 26.059582
   },
   {
     "name": "Omega Sound Fest 2025",
     "date": "10/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mûrs-Erigné",
+    "lat": 47.4020518,
+    "lng": -0.54094766
   },
   {
     "name": "Rising Fest 2025",
     "date": "10/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Longvic",
+    "lat": 47.2902044,
+    "lng": 5.0575377
   },
   {
     "name": "Festival Hard'n Rock 2025",
     "date": "11/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Notre-Dame-de-Gravenchon"
   },
   {
     "name": "Full Metal Holiday 2025",
     "date": "13/10/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mallorca",
+    "lat": 39.353679,
+    "lng": 3.1995046
   },
   {
     "name": "Desertfest Antwerp 2025",
     "date": "17/10/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Antwerpen",
+    "lat": 51.2194261,
+    "lng": 4.4483945
   },
   {
     "name": "Rock Your Brain Fest 2025",
     "date": "17/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Sélestat",
+    "lat": 48.2547961,
+    "lng": 7.4624536
   },
   {
     "name": "The Rock Circus 2025",
     "date": "17/10/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Den Bosch",
+    "lat": 51.6992494,
+    "lng": 5.2909537
   },
   {
     "name": "Barnacore Fest 2025",
     "date": "18/10/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Terrassa"
   },
   {
     "name": "Euskal Metalheads Fest 2025",
     "date": "18/10/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Bilbao",
+    "lat": 43.2519021,
+    "lng": -2.9262586
   },
   {
     "name": "Portals Metal Fest 2025",
     "date": "18/10/2025",
-    "country": "",
+    "country": "Turkey",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Istanbul",
+    "lat": 41.0440372,
+    "lng": 29.0064521
   },
   {
     "name": "Tyrant Fest 2025 - Jour 1 - Métaphone",
     "date": "18/10/2025",
-    "country": "",
+    "country": "Métaphone",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Jour 1",
+    "lat": 50.461134,
+    "lng": 2.9882799
   },
   {
     "name": "When We Were Young 2025",
     "date": "18/10/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Las Vegas",
+    "lat": 36.1429935,
+    "lng": -115.1621099
   },
   {
     "name": "Common Thread Tour 2025",
     "date": "19/10/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
     "source": "en.concerts-metal.com/festivals.html"
@@ -4474,199 +5559,259 @@
   {
     "name": "Tyrant Fest 2025 - Jour 2 - Aéronef",
     "date": "19/10/2025",
-    "country": "",
+    "country": "Métaphone",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Jour 1",
+    "lat": 50.461134,
+    "lng": 2.9882799
   },
   {
     "name": "FireMaster Convention 2025",
     "date": "24/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Issoudun",
+    "lat": 46.948961,
+    "lng": 2.0064861
   },
   {
     "name": "Summoning of Darkness",
     "date": "24/10/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Stockholm (Johanneshov)"
   },
   {
     "name": "Samhain Festival 2025",
     "date": "25/10/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Maastricht",
+    "lat": 50.8572975,
+    "lng": 5.6905767
   },
   {
     "name": "Bruges is Doomed 2025",
     "date": "26/10/2025",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Brugge",
+    "lat": 51.1965252,
+    "lng": 3.2257961
   },
   {
     "name": "Halloween Tribute Fest 2025",
     "date": "31/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Billy-Berclau",
+    "lat": 50.5227166,
+    "lng": 2.8690807
   },
   {
     "name": "Headbangers Boat 2025",
     "date": "31/10/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Miami",
+    "lat": 25.7733261,
+    "lng": -80.1609051
   },
   {
     "name": "Mediterranea Metal Cruise 2025",
     "date": "31/10/2025",
-    "country": "",
+    "country": "Greece",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Athens"
   },
   {
     "name": "Tomorrow's Ghosts Festival 2025",
     "date": "31/10/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Whitby"
   },
   {
     "name": "Westill 2025",
     "date": "31/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Vallet",
+    "lat": 47.1665422,
+    "lng": -1.2652446
   },
   {
     "name": "Winter Rising Fest 2025",
     "date": "31/10/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Écouen",
+    "lat": 49.018462,
+    "lng": 2.3789107
   },
   {
     "name": "House of Metal 2025",
     "date": "07/11/2025",
-    "country": "",
+    "country": "Sweden",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Umeå",
+    "lat": 63.8268468,
+    "lng": 20.2643658
   },
   {
     "name": "War Against War 2025",
     "date": "07/11/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Berlin",
+    "lat": 52.5372222,
+    "lng": 13.5297222
   },
   {
     "name": "Damnation Festival 2025",
     "date": "08/11/2025",
-    "country": "",
+    "country": "United Kingdom",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Manchester",
+    "lat": 53.4692143,
+    "lng": -2.3313861
   },
   {
     "name": "Lion Rock Fest 2025",
     "date": "08/11/2025",
-    "country": "",
+    "country": "Spain",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "León"
   },
   {
     "name": "Ascension MMXXV",
     "date": "13/11/2025",
-    "country": "",
+    "country": "Iceland",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Mosfellsbær"
   },
   {
     "name": "Metal Fest 09",
     "date": "14/11/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Saverdun",
+    "lat": 43.2460035,
+    "lng": 1.5696384
   },
   {
     "name": "South Troopers Festival 2025",
     "date": "15/11/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Les-Pennes-Mirabeau",
+    "lat": 43.3982639,
+    "lng": 5.3235356
   },
   {
     "name": "Vans Warped Tour 2025 - Orlando",
     "date": "15/11/2025",
-    "country": "",
+    "country": "Washington",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Washington"
   },
   {
     "name": "Gorebumps Night 2025",
     "date": "21/11/2025",
-    "country": "",
+    "country": "Italy",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Modena",
+    "lat": 44.6528464,
+    "lng": 10.9000881
   },
   {
     "name": "Apocalypse Metal Fest 2025",
     "date": "22/11/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Le Havre",
+    "lat": 49.5037896,
+    "lng": 0.1207729
   },
   {
     "name": "Core Fest 2025",
     "date": "22/11/2025",
-    "country": "",
+    "country": "Germany",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Stuttgart",
+    "lat": 48.808111,
+    "lng": 9.2012021
   },
   {
     "name": "Metal A Nay 2025",
     "date": "22/11/2025",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Nay",
+    "lat": 43.1821774,
+    "lng": -0.2633168
   },
   {
     "name": "Revolution Calling Festival 2025",
     "date": "22/11/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Eindhoven",
+    "lat": 51.4487818,
+    "lng": 5.457732
   },
   {
     "name": "Squirralypse Fest II",
     "date": "22/11/2025",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
     "source": "en.concerts-metal.com/festivals.html"
@@ -4682,41 +5827,54 @@
   {
     "name": "Eindhoven Metal Meeting 2025",
     "date": "12/12/2025",
-    "country": "",
+    "country": "Netherlands",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Eindhoven",
+    "lat": 51.4416551,
+    "lng": 5.4832918
   },
   {
     "name": "Battle in the Nord 2026",
     "date": "24/01/2026",
-    "country": "",
+    "country": "France",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Wattignies",
+    "lat": 50.5829089,
+    "lng": 3.0440228
   },
   {
     "name": "70000 Tons of Metal 2026",
     "date": "29/01/2026",
-    "country": "",
+    "country": "United States",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Miami",
+    "lat": 26.0990381,
+    "lng": -80.1695996
   },
   {
     "name": "Daimonion Fest 2026",
     "date": "28/02/2026",
-    "country": "",
+    "country": "Belgium",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Fontaine-l'Évêque",
+    "lat": 50.4077446,
+    "lng": 4.3341713
   },
   {
     "name": "Up The Hammers Festival 2026",
     "date": "12/03/2026",
-    "country": "",
+    "country": "Greece",
     "genre": "Metal",
     "website": "",
-    "source": "en.concerts-metal.com/festivals.html"
+    "source": "en.concerts-metal.com/festivals.html",
+    "city": "Athens"
   }
 ]

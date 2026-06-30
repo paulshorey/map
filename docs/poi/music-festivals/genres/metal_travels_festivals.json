@@ -2,8 +2,8 @@
   {
     "name": "Kaltenbach Open Air",
     "country": "AUSTRIA",
-    "location": "",
-    "dates": "",
+    "location": "Spital Am Semmering",
+    "dates": "22 Aug 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -11,8 +11,8 @@
   {
     "name": "Vienna Metal Meeting",
     "country": "AUSTRIA",
-    "location": "",
-    "dates": "",
+    "location": "Vienna",
+    "dates": "3 Oct 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -20,8 +20,8 @@
   {
     "name": "Alcatraz Metal Festival",
     "country": "BELGIUM",
-    "location": "",
-    "dates": "",
+    "location": "Kortrijk",
+    "dates": "8 Aug 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -29,25 +29,25 @@
   {
     "name": "Graspop Metal Meeting",
     "country": "BELGIUM",
-    "location": "",
-    "dates": "",
+    "location": "Dessel",
+    "dates": "21 Jun 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.graspop.be/en/",
     "source": "metaltravels.com"
   },
   {
     "name": "Brutal Assault",
     "country": "CZECH REPUBLIC",
-    "location": "",
-    "dates": "",
+    "location": "Jaromer",
+    "dates": "5 Aug 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "https://brutalassault.cz/en",
     "source": "metaltravels.com"
   },
   {
     "name": "Prague Death Mass",
     "country": "CZECH REPUBLIC",
-    "location": "",
+    "location": "Prague",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -56,7 +56,7 @@
   {
     "name": "Aalborg Metal Festival",
     "country": "DENMARK",
-    "location": "",
+    "location": "Aalborg",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -65,16 +65,16 @@
   {
     "name": "Copenhell",
     "country": "DENMARK",
-    "location": "",
-    "dates": "",
+    "location": "Copenhagen",
+    "dates": "24 Jun 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "http://copenhell.dk",
     "source": "metaltravels.com"
   },
   {
     "name": "Epic Fest",
     "country": "DENMARK",
-    "location": "",
+    "location": "Roskilde",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -83,7 +83,7 @@
   {
     "name": "Kill-Town Death Fest",
     "country": "DENMARK",
-    "location": "",
+    "location": "Copenhagen",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -92,7 +92,7 @@
   {
     "name": "Metal Magic Festival",
     "country": "DENMARK",
-    "location": "",
+    "location": "Fredericia",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -101,7 +101,7 @@
   {
     "name": "Næstved Metalfest",
     "country": "DENMARK",
-    "location": "",
+    "location": "Næstved",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -110,7 +110,7 @@
   {
     "name": "The Metal Fest",
     "country": "ECUADOR",
-    "location": "",
+    "location": "Quito",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -119,7 +119,7 @@
   {
     "name": "Bloodstock Festival",
     "country": "ENGLAND",
-    "location": "",
+    "location": "Walton-on-Trent",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -128,8 +128,8 @@
   {
     "name": "Cosmic Void Festival",
     "country": "ENGLAND",
-    "location": "",
-    "dates": "",
+    "location": "London",
+    "dates": "18 Sep 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -137,7 +137,7 @@
   {
     "name": "Fortress Festival",
     "country": "ENGLAND",
-    "location": "",
+    "location": "Chepstow",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -146,7 +146,7 @@
   {
     "name": "Incineration Festival",
     "country": "ENGLAND",
-    "location": "",
+    "location": "London",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -155,7 +155,7 @@
   {
     "name": "Kill-Town Death Fest London",
     "country": "ENGLAND",
-    "location": "",
+    "location": "London",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -164,7 +164,7 @@
   {
     "name": "Hard Rock Laager",
     "country": "ESTONIA",
-    "location": "",
+    "location": "Vana-Vigala",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -173,25 +173,25 @@
   {
     "name": "Tallinn Rock Festival",
     "country": "ESTONIA",
-    "location": "",
-    "dates": "",
+    "location": "Tallinn",
+    "dates": "2 Aug 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "https://tallinnrockfestival.ee/",
     "source": "metaltravels.com"
   },
   {
     "name": "Hellsinki Metal Festival",
     "country": "FINLAND",
-    "location": "",
-    "dates": "",
+    "location": "Helsinki",
+    "dates": "7 Aug 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.hellsinkimetalfestival.fi/",
     "source": "metaltravels.com"
   },
   {
     "name": "Helsinki Deathfest",
     "country": "FINLAND",
-    "location": "",
+    "location": "Helsinki",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -200,7 +200,7 @@
   {
     "name": "Nummirock",
     "country": "FINLAND",
-    "location": "",
+    "location": "Nummijarvi",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -209,8 +209,8 @@
   {
     "name": "SaariHelvetti",
     "country": "FINLAND",
-    "location": "",
-    "dates": "",
+    "location": "Tampere",
+    "dates": "15 Aug 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -218,25 +218,25 @@
   {
     "name": "Tuska Open Air Metal Festival",
     "country": "FINLAND",
-    "location": "",
-    "dates": "",
+    "location": "Helsinki",
+    "dates": "26 Jun 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.tuska.fi/",
     "source": "metaltravels.com"
   },
   {
     "name": "Hellfest",
     "country": "FRANCE",
-    "location": "",
-    "dates": "",
+    "location": "Clisson",
+    "dates": "June 18–21",
     "genre": "Metal",
-    "website": "",
+    "website": "https://hellfest.fr/en/",
     "source": "metaltravels.com"
   },
   {
     "name": "Braincrusher in Hell",
     "country": "GERMANY",
-    "location": "",
+    "location": "Oberhausen",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -245,8 +245,8 @@
   {
     "name": "Headbangers Open Air",
     "country": "GERMANY",
-    "location": "",
-    "dates": "",
+    "location": "Brande-Hornerkirchen",
+    "dates": "25 Jul 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -254,8 +254,8 @@
   {
     "name": "Neuborn Open Air Festival",
     "country": "GERMANY",
-    "location": "",
-    "dates": "",
+    "location": "Worrstadt",
+    "dates": "29 Aug 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -263,8 +263,8 @@
   {
     "name": "Protzen Open Air",
     "country": "GERMANY",
-    "location": "",
-    "dates": "",
+    "location": "Protzen",
+    "dates": "20 Jun 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -272,16 +272,16 @@
   {
     "name": "Summer Breeze Open Air",
     "country": "GERMANY",
-    "location": "",
-    "dates": "",
+    "location": "Dinkelsbühl",
+    "dates": "August 12–15",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.summer-breeze.de/",
     "source": "metaltravels.com"
   },
   {
     "name": "Trveheim Festival",
     "country": "GERMANY",
-    "location": "",
+    "location": "Dinkelsbuhl",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -290,17 +290,17 @@
   {
     "name": "Wacken Open Air",
     "country": "GERMANY",
-    "location": "",
-    "dates": "",
+    "location": "Wacken",
+    "dates": "31 Jul 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "http://wacken.com/en/",
     "source": "metaltravels.com"
   },
   {
     "name": "War Against War Festival",
     "country": "GERMANY",
-    "location": "",
-    "dates": "",
+    "location": "Berlin",
+    "dates": "6 Nov 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -308,7 +308,7 @@
   {
     "name": "Wolfszeit Festival",
     "country": "GERMANY",
-    "location": "",
+    "location": "Attendorn",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -317,16 +317,16 @@
   {
     "name": "Chania Rock Festival",
     "country": "GREECE",
-    "location": "",
-    "dates": "",
+    "location": "Cadott, Wisconsin",
+    "dates": "July 16–18",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.rock-fest.com/",
     "source": "metaltravels.com"
   },
   {
     "name": "Rethymno Rocks",
     "country": "GREECE",
-    "location": "",
+    "location": "Rethymno",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -344,8 +344,8 @@
   {
     "name": "Bangalore Open Air",
     "country": "INDIA",
-    "location": "",
-    "dates": "",
+    "location": "Bangalore",
+    "dates": "10 Oct 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -353,7 +353,7 @@
   {
     "name": "Outrage Festival",
     "country": "INDIA",
-    "location": "",
+    "location": "Bangalore",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -362,7 +362,7 @@
   {
     "name": "Metalitalia.com Festival",
     "country": "ITALY",
-    "location": "",
+    "location": "Milano",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -380,7 +380,7 @@
   {
     "name": "True Thrash Fest",
     "country": "JAPAN",
-    "location": "",
+    "location": "Tokyo",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -389,7 +389,7 @@
   {
     "name": "Kilkim Žaibu Festival",
     "country": "LITHUANIA",
-    "location": "",
+    "location": "Ukmerge",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -398,17 +398,17 @@
   {
     "name": "Dynamo Metalfest",
     "country": "NETHERLANDS",
-    "location": "",
-    "dates": "",
+    "location": "Eindhoven",
+    "dates": "August 14–16",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.dynamo-metalfest.nl/",
     "source": "metaltravels.com"
   },
   {
     "name": "Eindhoven Metal Meeting",
     "country": "NETHERLANDS",
-    "location": "",
-    "dates": "",
+    "location": "Eindhoven",
+    "dates": "11 Dec 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -416,7 +416,7 @@
   {
     "name": "Heavy Metal Maniacs Festival",
     "country": "NETHERLANDS",
-    "location": "",
+    "location": "Arnhem",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -425,7 +425,7 @@
   {
     "name": "Pitfest",
     "country": "NETHERLANDS",
-    "location": "",
+    "location": "Hoogeveen",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -434,7 +434,7 @@
   {
     "name": "Roadburn Festival",
     "country": "NETHERLANDS",
-    "location": "",
+    "location": "Tilburg",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -443,8 +443,8 @@
   {
     "name": "Samhain Festival",
     "country": "NETHERLANDS",
-    "location": "",
-    "dates": "",
+    "location": "Maastricht",
+    "dates": "25 Oct 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -452,16 +452,16 @@
   {
     "name": "Beyond the Gates",
     "country": "NORWAY",
-    "location": "",
-    "dates": "",
+    "location": "Bergen",
+    "dates": "29 Jul–1 Aug 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "http://beyondthegates.no/",
     "source": "metaltravels.com"
   },
   {
     "name": "Caerimonia Nidrosiæ",
     "country": "NORWAY",
-    "location": "",
+    "location": "Trondheim",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -479,7 +479,7 @@
   {
     "name": "Høstsabbat",
     "country": "NORWAY",
-    "location": "",
+    "location": "Oslo",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -488,7 +488,7 @@
   {
     "name": "Inferno Metal Festival",
     "country": "NORWAY",
-    "location": "",
+    "location": "Oslo",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -497,7 +497,7 @@
   {
     "name": "Karmøygeddon Metal Festival",
     "country": "NORWAY",
-    "location": "",
+    "location": "Kopervik",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -506,7 +506,7 @@
   {
     "name": "Legend Metalfest",
     "country": "NORWAY",
-    "location": "",
+    "location": "Halden",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -515,8 +515,8 @@
   {
     "name": "Midgardsblot",
     "country": "NORWAY",
-    "location": "",
-    "dates": "",
+    "location": "Horten",
+    "dates": "15 Aug 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -524,7 +524,7 @@
   {
     "name": "NidaRock",
     "country": "NORWAY",
-    "location": "",
+    "location": "Trondheim",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -542,7 +542,7 @@
   {
     "name": "Oslo Deathfest",
     "country": "NORWAY",
-    "location": "",
+    "location": "Oslo",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -551,7 +551,7 @@
   {
     "name": "Southern Discomfort",
     "country": "NORWAY",
-    "location": "",
+    "location": "Stavanger",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -560,8 +560,8 @@
   {
     "name": "Spetakkelfestivalen",
     "country": "NORWAY",
-    "location": "",
-    "dates": "",
+    "location": "Larvik",
+    "dates": "13 Nov–14 Nov 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -569,16 +569,16 @@
   {
     "name": "Tons of Rock",
     "country": "NORWAY",
-    "location": "",
-    "dates": "",
+    "location": "Oslo",
+    "dates": "25 Jun 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.tonsofrock.no/",
     "source": "metaltravels.com"
   },
   {
     "name": "Trondheim Rocks",
     "country": "NORWAY",
-    "location": "",
+    "location": "Trondheim",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -596,7 +596,7 @@
   {
     "name": "Winter Nekropolis Lillehammer",
     "country": "NORWAY",
-    "location": "",
+    "location": "Lillehammer",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -623,7 +623,7 @@
   {
     "name": "Mystic Festival",
     "country": "POLAND",
-    "location": "",
+    "location": "Gdansk",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -633,7 +633,7 @@
     "name": "Thunder Fest",
     "country": "POLAND",
     "location": "",
-    "dates": "",
+    "dates": "28 Aug 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -641,7 +641,7 @@
   {
     "name": "ARTmania Festival",
     "country": "ROMANIA",
-    "location": "",
+    "location": "Sibiu",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -650,7 +650,7 @@
   {
     "name": "Metal Gates Festival",
     "country": "ROMANIA",
-    "location": "",
+    "location": "Bucharest",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -659,7 +659,7 @@
   {
     "name": "Old Grave Fest",
     "country": "ROMANIA",
-    "location": "",
+    "location": "Cluj-Napoca",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -668,19 +668,19 @@
   {
     "name": "Tolminator",
     "country": "SLOVENIA",
-    "location": "",
-    "dates": "",
+    "location": "Tolmin",
+    "dates": "27 Jul 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "https://tolminator.com/",
     "source": "metaltravels.com"
   },
   {
     "name": "Barcelona Rock Fest",
     "country": "SPAIN",
-    "location": "",
-    "dates": "",
+    "location": "Barcelona",
+    "dates": "July 3–5",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.barcelonarockfest.com/en",
     "source": "metaltravels.com"
   },
   {
@@ -695,19 +695,19 @@
   {
     "name": "Resurrection Fest",
     "country": "SPAIN",
-    "location": "",
-    "dates": "",
+    "location": "Viveiro",
+    "dates": "2 Jul 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "http://www.resurrectionfest.es/",
     "source": "metaltravels.com"
   },
   {
     "name": "Rock Imperium Festival",
     "country": "SPAIN",
-    "location": "",
-    "dates": "",
+    "location": "Cartagena Spain",
+    "dates": "4 Jul 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.rockimperiumfestival.es/",
     "source": "metaltravels.com"
   },
   {
@@ -722,7 +722,7 @@
   {
     "name": "Gefle Metal Festival",
     "country": "SWEDEN",
-    "location": "",
+    "location": "Gavle",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -731,7 +731,7 @@
   {
     "name": "House of Metal",
     "country": "SWEDEN",
-    "location": "",
+    "location": "Umea",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -740,8 +740,8 @@
   {
     "name": "Malmö Massacre",
     "country": "SWEDEN",
-    "location": "",
-    "dates": "",
+    "location": "Malmo",
+    "dates": "6 Aug 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -749,8 +749,8 @@
   {
     "name": "Skogsröjet",
     "country": "SWEDEN",
-    "location": "",
-    "dates": "",
+    "location": "Rejmyre",
+    "dates": "31 Jul 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -758,17 +758,17 @@
   {
     "name": "Sweden Rock Festival",
     "country": "SWEDEN",
-    "location": "",
-    "dates": "",
+    "location": "Cadott, Wisconsin",
+    "dates": "July 16–18",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.rock-fest.com/",
     "source": "metaltravels.com"
   },
   {
     "name": "Bosphorus Open Air Metal Fest",
     "country": "TURKEY",
-    "location": "",
-    "dates": "",
+    "location": "Istanbul",
+    "dates": "19 Sep 2026",
     "genre": "Metal",
     "website": "",
     "source": "metaltravels.com"
@@ -785,7 +785,7 @@
   {
     "name": "Dubai Metal Fest",
     "country": "UNITED ARAB EMIRATES",
-    "location": "",
+    "location": "Dubai",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -794,16 +794,16 @@
   {
     "name": "Aftershock Festival",
     "country": "USA",
-    "location": "",
-    "dates": "",
+    "location": "Sacramento",
+    "dates": "4 Oct 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "https://aftershockfestival.com/",
     "source": "metaltravels.com"
   },
   {
     "name": "Legions Of Metal Festival",
     "country": "USA",
-    "location": "",
+    "location": "Chicago",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -812,16 +812,16 @@
   {
     "name": "Louder Than Life",
     "country": "USA",
-    "location": "",
-    "dates": "",
+    "location": "Louisville",
+    "dates": "17 Sep 2026",
     "genre": "Metal",
-    "website": "",
+    "website": "https://louderthanlifefestival.com/",
     "source": "metaltravels.com"
   },
   {
     "name": "Maryland Deathfest",
     "country": "USA",
-    "location": "",
+    "location": "Baltimore",
     "dates": "",
     "genre": "Metal",
     "website": "",
@@ -830,10 +830,10 @@
   {
     "name": "Steelhouse Festival",
     "country": "WALES",
-    "location": "",
-    "dates": "",
+    "location": "Abertillery",
+    "dates": "July 24–26",
     "genre": "Metal",
-    "website": "",
+    "website": "https://www.steelhousefestival.com/",
     "source": "metaltravels.com"
   }
 ]

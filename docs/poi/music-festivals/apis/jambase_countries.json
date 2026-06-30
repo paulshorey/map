@@ -1,0 +1,1795 @@
+{
+  "_meta": {
+    "source": "JamBase Data API",
+    "endpoint": "https://api.data.jambase.com/v3/geographies/countries",
+    "extracted_at": "2026-06-20T23:32:53.480112Z",
+    "total_countries": 255
+  },
+  "countries": [
+    {
+      "@type": "Country",
+      "identifier": "AF",
+      "name": "Afghanistan",
+      "alternateName": "AFG",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "QZ",
+      "name": "Akrotiri",
+      "alternateName": "XQZ",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "AL",
+      "name": "Albania",
+      "alternateName": "ALB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "DZ",
+      "name": "Algeria",
+      "alternateName": "DZA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "AS",
+      "name": "American Samoa",
+      "alternateName": "ASM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "AD",
+      "name": "Andorra",
+      "alternateName": "AND",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "AO",
+      "name": "Angola",
+      "alternateName": "AGO",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "AI",
+      "name": "Anguilla",
+      "alternateName": "AIA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "AG",
+      "name": "Antigua And Barbuda",
+      "alternateName": "ATG",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "AR",
+      "name": "Argentina",
+      "alternateName": "ARG",
+      "x-numUpcomingEvents": 109
+    },
+    {
+      "@type": "Country",
+      "identifier": "AM",
+      "name": "Armenia",
+      "alternateName": "ARM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "AW",
+      "name": "Aruba",
+      "alternateName": "ABW",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "AU",
+      "name": "Austalia",
+      "alternateName": "AUS",
+      "x-numUpcomingEvents": 1136
+    },
+    {
+      "@type": "Country",
+      "identifier": "AU",
+      "name": "Australia",
+      "alternateName": "AUS",
+      "x-numUpcomingEvents": 1136
+    },
+    {
+      "@type": "Country",
+      "identifier": "AT",
+      "name": "Austria",
+      "alternateName": "AUT",
+      "x-numUpcomingEvents": 1356
+    },
+    {
+      "@type": "Country",
+      "identifier": "AZ",
+      "name": "Azerbaijan",
+      "alternateName": "AZE",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "BS",
+      "name": "Bahamas, The",
+      "alternateName": "BHS",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "BH",
+      "name": "Bahrain",
+      "alternateName": "BHR",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "BD",
+      "name": "Bangladesh",
+      "alternateName": "BGD",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BB",
+      "name": "Barbados",
+      "alternateName": "BRB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BY",
+      "name": "Belarus",
+      "alternateName": "BLR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BE",
+      "name": "Belgium",
+      "alternateName": "BEL",
+      "x-numUpcomingEvents": 471
+    },
+    {
+      "@type": "Country",
+      "identifier": "BZ",
+      "name": "Belize",
+      "alternateName": "BLZ",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BJ",
+      "name": "Benin",
+      "alternateName": "BEN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BM",
+      "name": "Bermuda",
+      "alternateName": "BMU",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BT",
+      "name": "Bhutan",
+      "alternateName": "BTN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BO",
+      "name": "Bolivia",
+      "alternateName": "BOL",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BA",
+      "name": "Bosnia And Herzegovina",
+      "alternateName": "BIH",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "BW",
+      "name": "Botswana",
+      "alternateName": "BWA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BR",
+      "name": "Brazil",
+      "alternateName": "BRA",
+      "x-numUpcomingEvents": 221
+    },
+    {
+      "@type": "Country",
+      "identifier": "IO",
+      "name": "British Indian Ocean Territory",
+      "alternateName": "IOT",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BN",
+      "name": "Brunei",
+      "alternateName": "BRN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BG",
+      "name": "Bulgaria",
+      "alternateName": "BGR",
+      "x-numUpcomingEvents": 15
+    },
+    {
+      "@type": "Country",
+      "identifier": "BF",
+      "name": "Burkina Faso",
+      "alternateName": "BFA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MM",
+      "name": "Burma",
+      "alternateName": "MMR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BI",
+      "name": "Burundi",
+      "alternateName": "BDI",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CV",
+      "name": "Cabo Verde",
+      "alternateName": "CPV",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "KH",
+      "name": "Cambodia",
+      "alternateName": "KHM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CM",
+      "name": "Cameroon",
+      "alternateName": "CMR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CA",
+      "name": "Canada",
+      "alternateName": "CAN",
+      "x-numUpcomingEvents": 3314
+    },
+    {
+      "@type": "Country",
+      "identifier": "KY",
+      "name": "Cayman Islands",
+      "alternateName": "CYM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CF",
+      "name": "Central African Republic",
+      "alternateName": "CAF",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TD",
+      "name": "Chad",
+      "alternateName": "TCD",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CL",
+      "name": "Chile",
+      "alternateName": "CHL",
+      "x-numUpcomingEvents": 79
+    },
+    {
+      "@type": "Country",
+      "identifier": "CN",
+      "name": "China",
+      "alternateName": "CHN",
+      "x-numUpcomingEvents": 7
+    },
+    {
+      "@type": "Country",
+      "identifier": "CX",
+      "name": "Christmas Island",
+      "alternateName": "CXR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CC",
+      "name": "Cocos (Keeling) Islands",
+      "alternateName": "CCK",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CO",
+      "name": "Colombia",
+      "alternateName": "COL",
+      "x-numUpcomingEvents": 77
+    },
+    {
+      "@type": "Country",
+      "identifier": "KM",
+      "name": "Comoros",
+      "alternateName": "COM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CG",
+      "name": "Congo (Brazzaville)",
+      "alternateName": "COG",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CD",
+      "name": "Congo (Kinshasa)",
+      "alternateName": "COD",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CK",
+      "name": "Cook Islands",
+      "alternateName": "COK",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CR",
+      "name": "Costa Rica",
+      "alternateName": "CRI",
+      "x-numUpcomingEvents": 12
+    },
+    {
+      "@type": "Country",
+      "identifier": "CI",
+      "name": "Côte D’Ivoire",
+      "alternateName": "CIV",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "HR",
+      "name": "Croatia",
+      "alternateName": "HRV",
+      "x-numUpcomingEvents": 44
+    },
+    {
+      "@type": "Country",
+      "identifier": "CU",
+      "name": "Cuba",
+      "alternateName": "CUB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CW",
+      "name": "Curaçao",
+      "alternateName": "CUW",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "CY",
+      "name": "Cyprus",
+      "alternateName": "CYP",
+      "x-numUpcomingEvents": 9
+    },
+    {
+      "@type": "Country",
+      "identifier": "CZ",
+      "name": "Czechia",
+      "alternateName": "CZE",
+      "x-numUpcomingEvents": 298
+    },
+    {
+      "@type": "Country",
+      "identifier": "DK",
+      "name": "Denmark",
+      "alternateName": "DNK",
+      "x-numUpcomingEvents": 1112
+    },
+    {
+      "@type": "Country",
+      "identifier": "XD",
+      "name": "Dhekelia",
+      "alternateName": "XXD",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "DJ",
+      "name": "Djibouti",
+      "alternateName": "DJI",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "DM",
+      "name": "Dominica",
+      "alternateName": "DMA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "DO",
+      "name": "Dominican Republic",
+      "alternateName": "DOM",
+      "x-numUpcomingEvents": 5
+    },
+    {
+      "@type": "Country",
+      "identifier": "EC",
+      "name": "Ecuador",
+      "alternateName": "ECU",
+      "x-numUpcomingEvents": 19
+    },
+    {
+      "@type": "Country",
+      "identifier": "EG",
+      "name": "Egypt",
+      "alternateName": "EGY",
+      "x-numUpcomingEvents": 3
+    },
+    {
+      "@type": "Country",
+      "identifier": "SV",
+      "name": "El Salvador",
+      "alternateName": "SLV",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "GQ",
+      "name": "Equatorial Guinea",
+      "alternateName": "GNQ",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "ER",
+      "name": "Eritrea",
+      "alternateName": "ERI",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "EE",
+      "name": "Estonia",
+      "alternateName": "EST",
+      "x-numUpcomingEvents": 12
+    },
+    {
+      "@type": "Country",
+      "identifier": "ET",
+      "name": "Ethiopia",
+      "alternateName": "ETH",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "FK",
+      "name": "Falkland Islands (Islas Malvinas)",
+      "alternateName": "FLK",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "FO",
+      "name": "Faroe Islands",
+      "alternateName": "FRO",
+      "x-numUpcomingEvents": 2
+    },
+    {
+      "@type": "Country",
+      "identifier": "FJ",
+      "name": "Fiji",
+      "alternateName": "FJI",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "FI",
+      "name": "Finland",
+      "alternateName": "FIN",
+      "x-numUpcomingEvents": 252
+    },
+    {
+      "@type": "Country",
+      "identifier": "FR",
+      "name": "France",
+      "alternateName": "FRA",
+      "x-numUpcomingEvents": 4831
+    },
+    {
+      "@type": "Country",
+      "identifier": "GF",
+      "name": "French Guiana",
+      "alternateName": "GUF",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "PF",
+      "name": "French Polynesia",
+      "alternateName": "PYF",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TF",
+      "name": "French Southern And Antarctic Lands",
+      "alternateName": "ATF",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "GA",
+      "name": "Gabon",
+      "alternateName": "GAB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "GM",
+      "name": "Gambia, The",
+      "alternateName": "GMB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "XG",
+      "name": "Gaza Strip",
+      "alternateName": "XGZ",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "GE",
+      "name": "Georgia",
+      "alternateName": "GEO",
+      "x-numUpcomingEvents": 3
+    },
+    {
+      "@type": "Country",
+      "identifier": "DU",
+      "name": "Germany",
+      "alternateName": "DEU",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "DE",
+      "name": "Germany",
+      "alternateName": "DEU",
+      "x-numUpcomingEvents": 16454
+    },
+    {
+      "@type": "Country",
+      "identifier": "GH",
+      "name": "Ghana",
+      "alternateName": "GHA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "GI",
+      "name": "Gibraltar",
+      "alternateName": "GIB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "GR",
+      "name": "Greece",
+      "alternateName": "GRC",
+      "x-numUpcomingEvents": 34
+    },
+    {
+      "@type": "Country",
+      "identifier": "GR",
+      "name": "Greece",
+      "alternateName": "CHE",
+      "x-numUpcomingEvents": 34
+    },
+    {
+      "@type": "Country",
+      "identifier": "GL",
+      "name": "Greenland",
+      "alternateName": "GRL",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "DE",
+      "name": "Gremany",
+      "alternateName": "DEU",
+      "x-numUpcomingEvents": 16454
+    },
+    {
+      "@type": "Country",
+      "identifier": "GD",
+      "name": "Grenada",
+      "alternateName": "GRD",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "GP",
+      "name": "Guadeloupe",
+      "alternateName": "GLP",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "GU",
+      "name": "Guam",
+      "alternateName": "GUM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "GT",
+      "name": "Guatemala",
+      "alternateName": "GTM",
+      "x-numUpcomingEvents": 9
+    },
+    {
+      "@type": "Country",
+      "identifier": "GG",
+      "name": "Guernsey",
+      "alternateName": "GGY",
+      "x-numUpcomingEvents": 2
+    },
+    {
+      "@type": "Country",
+      "identifier": "GN",
+      "name": "Guinea",
+      "alternateName": "GIN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "GW",
+      "name": "Guinea-Bissau",
+      "alternateName": "GNB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "GY",
+      "name": "Guyana",
+      "alternateName": "GUY",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "HT",
+      "name": "Haiti",
+      "alternateName": "HTI",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "HN",
+      "name": "Honduras",
+      "alternateName": "HND",
+      "x-numUpcomingEvents": 4
+    },
+    {
+      "@type": "Country",
+      "identifier": "HK",
+      "name": "Hong Kong",
+      "alternateName": "HKG",
+      "x-numUpcomingEvents": 31
+    },
+    {
+      "@type": "Country",
+      "identifier": "HU",
+      "name": "Hungary",
+      "alternateName": "HUN",
+      "x-numUpcomingEvents": 56
+    },
+    {
+      "@type": "Country",
+      "identifier": "IS",
+      "name": "Iceland",
+      "alternateName": "ISL",
+      "x-numUpcomingEvents": 3
+    },
+    {
+      "@type": "Country",
+      "identifier": "IN",
+      "name": "India",
+      "alternateName": "IND",
+      "x-numUpcomingEvents": 5
+    },
+    {
+      "@type": "Country",
+      "identifier": "ID",
+      "name": "Indonesia",
+      "alternateName": "IDN",
+      "x-numUpcomingEvents": 16
+    },
+    {
+      "@type": "Country",
+      "identifier": "IR",
+      "name": "Iran",
+      "alternateName": "IRN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "IQ",
+      "name": "Iraq",
+      "alternateName": "IRQ",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "IE",
+      "name": "Ireland",
+      "alternateName": "IRL",
+      "x-numUpcomingEvents": 1064
+    },
+    {
+      "@type": "Country",
+      "identifier": "IE",
+      "name": "Ireland",
+      "alternateName": "IRE",
+      "x-numUpcomingEvents": 1064
+    },
+    {
+      "@type": "Country",
+      "identifier": "IM",
+      "name": "Isle Of Man",
+      "alternateName": "IMN",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "IL",
+      "name": "Israel",
+      "alternateName": "ISR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "IT",
+      "name": "Italo",
+      "alternateName": "ITA",
+      "x-numUpcomingEvents": 1378
+    },
+    {
+      "@type": "Country",
+      "identifier": "IT",
+      "name": "Italy",
+      "alternateName": "ITA",
+      "x-numUpcomingEvents": 1378
+    },
+    {
+      "@type": "Country",
+      "identifier": "IT",
+      "name": "Itay",
+      "alternateName": "ITA",
+      "x-numUpcomingEvents": 1378
+    },
+    {
+      "@type": "Country",
+      "identifier": "JM",
+      "name": "Jamaica",
+      "alternateName": "JAM",
+      "x-numUpcomingEvents": 2
+    },
+    {
+      "@type": "Country",
+      "identifier": "JP",
+      "name": "Japan",
+      "alternateName": "JPN",
+      "x-numUpcomingEvents": 237
+    },
+    {
+      "@type": "Country",
+      "identifier": "JE",
+      "name": "Jersey",
+      "alternateName": "JEY",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "JO",
+      "name": "Jordan",
+      "alternateName": "JOR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "KZ",
+      "name": "Kazakhstan",
+      "alternateName": "KAZ",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "KE",
+      "name": "Kenya",
+      "alternateName": "KEN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "KI",
+      "name": "Kiribati",
+      "alternateName": "KIR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "KP",
+      "name": "Korea, North",
+      "alternateName": "PRK",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "KR",
+      "name": "Korea, South",
+      "alternateName": "KOR",
+      "x-numUpcomingEvents": 37
+    },
+    {
+      "@type": "Country",
+      "identifier": "XK",
+      "name": "Kosovo",
+      "alternateName": "XKS",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "KW",
+      "name": "Kuwait",
+      "alternateName": "KWT",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "KG",
+      "name": "Kyrgyzstan",
+      "alternateName": "KGZ",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "LA",
+      "name": "Laos",
+      "alternateName": "LAO",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "LV",
+      "name": "Latvia",
+      "alternateName": "LVA",
+      "x-numUpcomingEvents": 6
+    },
+    {
+      "@type": "Country",
+      "identifier": "LB",
+      "name": "Lebanon",
+      "alternateName": "LBN",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "LS",
+      "name": "Lesotho",
+      "alternateName": "LSO",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "LR",
+      "name": "Liberia",
+      "alternateName": "LBR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "LY",
+      "name": "Libya",
+      "alternateName": "LBY",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "LI",
+      "name": "Liechtenstein",
+      "alternateName": "LIE",
+      "x-numUpcomingEvents": 3
+    },
+    {
+      "@type": "Country",
+      "identifier": "LT",
+      "name": "Lithuania",
+      "alternateName": "LTU",
+      "x-numUpcomingEvents": 17
+    },
+    {
+      "@type": "Country",
+      "identifier": "LU",
+      "name": "Luxembourg",
+      "alternateName": "LUX",
+      "x-numUpcomingEvents": 108
+    },
+    {
+      "@type": "Country",
+      "identifier": "MO",
+      "name": "Macau",
+      "alternateName": "MAC",
+      "x-numUpcomingEvents": 3
+    },
+    {
+      "@type": "Country",
+      "identifier": "MK",
+      "name": "Macedonia",
+      "alternateName": "MKD",
+      "x-numUpcomingEvents": 2
+    },
+    {
+      "@type": "Country",
+      "identifier": "MG",
+      "name": "Madagascar",
+      "alternateName": "MDG",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MW",
+      "name": "Malawi",
+      "alternateName": "MWI",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MY",
+      "name": "Malaysia",
+      "alternateName": "MYS",
+      "x-numUpcomingEvents": 25
+    },
+    {
+      "@type": "Country",
+      "identifier": "MV",
+      "name": "Maldives",
+      "alternateName": "MDV",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "ML",
+      "name": "Mali",
+      "alternateName": "MLI",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MT",
+      "name": "Malta",
+      "alternateName": "MLT",
+      "x-numUpcomingEvents": 12
+    },
+    {
+      "@type": "Country",
+      "identifier": "MH",
+      "name": "Marshall Islands",
+      "alternateName": "MHL",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MQ",
+      "name": "Martinique",
+      "alternateName": "MTQ",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MR",
+      "name": "Mauritania",
+      "alternateName": "MRT",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MU",
+      "name": "Mauritius",
+      "alternateName": "MUS",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "YT",
+      "name": "Mayotte",
+      "alternateName": "MYT",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MX",
+      "name": "Mexico",
+      "alternateName": "MEX",
+      "x-numUpcomingEvents": 811
+    },
+    {
+      "@type": "Country",
+      "identifier": "FM",
+      "name": "Micronesia, Federated States Of",
+      "alternateName": "FSM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MD",
+      "name": "Moldova",
+      "alternateName": "MDA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MC",
+      "name": "Monaco",
+      "alternateName": "MCO",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MN",
+      "name": "Mongolia",
+      "alternateName": "MNG",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "ME",
+      "name": "Montenegro",
+      "alternateName": "MNE",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MS",
+      "name": "Montserrat",
+      "alternateName": "MSR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MA",
+      "name": "Morocco",
+      "alternateName": "MAR",
+      "x-numUpcomingEvents": 14
+    },
+    {
+      "@type": "Country",
+      "identifier": "MZ",
+      "name": "Mozambique",
+      "alternateName": "MOZ",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "NA",
+      "name": "Namibia",
+      "alternateName": "NAM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "NR",
+      "name": "Nauru",
+      "alternateName": "NRU",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "NP",
+      "name": "Nepal",
+      "alternateName": "NPL",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "NL",
+      "name": "Netherlands",
+      "alternateName": "NLD",
+      "x-numUpcomingEvents": 1250
+    },
+    {
+      "@type": "Country",
+      "identifier": "NC",
+      "name": "New Caledonia",
+      "alternateName": "NCL",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "NZ",
+      "name": "New Zealand",
+      "alternateName": "NZL",
+      "x-numUpcomingEvents": 210
+    },
+    {
+      "@type": "Country",
+      "identifier": "NI",
+      "name": "Nicaragua",
+      "alternateName": "NIC",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "NE",
+      "name": "Niger",
+      "alternateName": "NER",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "NG",
+      "name": "Nigeria",
+      "alternateName": "NGA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "NU",
+      "name": "Niue",
+      "alternateName": "NIU",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "NF",
+      "name": "Norfolk Island",
+      "alternateName": "NFK",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MP",
+      "name": "Northern Mariana Islands",
+      "alternateName": "MNP",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "NO",
+      "name": "Norway",
+      "alternateName": "NOR",
+      "x-numUpcomingEvents": 970
+    },
+    {
+      "@type": "Country",
+      "identifier": "OM",
+      "name": "Oman",
+      "alternateName": "OMN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "PK",
+      "name": "Pakistan",
+      "alternateName": "PAK",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "PW",
+      "name": "Palau",
+      "alternateName": "PLW",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "PA",
+      "name": "Panama",
+      "alternateName": "PAN",
+      "x-numUpcomingEvents": 2
+    },
+    {
+      "@type": "Country",
+      "identifier": "PG",
+      "name": "Papua New Guinea",
+      "alternateName": "PNG",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "XP",
+      "name": "Paracel Islands",
+      "alternateName": "XPR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "PY",
+      "name": "Paraguay",
+      "alternateName": "PRY",
+      "x-numUpcomingEvents": 3
+    },
+    {
+      "@type": "Country",
+      "identifier": "PE",
+      "name": "Peru",
+      "alternateName": "PER",
+      "x-numUpcomingEvents": 51
+    },
+    {
+      "@type": "Country",
+      "identifier": "PH",
+      "name": "Philippines",
+      "alternateName": "PHL",
+      "x-numUpcomingEvents": 20
+    },
+    {
+      "@type": "Country",
+      "identifier": "PN",
+      "name": "Pitcairn Islands",
+      "alternateName": "PCN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "PL",
+      "name": "Poland",
+      "alternateName": "POL",
+      "x-numUpcomingEvents": 536
+    },
+    {
+      "@type": "Country",
+      "identifier": "PT",
+      "name": "Portugal",
+      "alternateName": "PRT",
+      "x-numUpcomingEvents": 168
+    },
+    {
+      "@type": "Country",
+      "identifier": "PR",
+      "name": "Puerto Rico",
+      "alternateName": "PRI",
+      "x-numUpcomingEvents": 20
+    },
+    {
+      "@type": "Country",
+      "identifier": "QA",
+      "name": "Qatar",
+      "alternateName": "QAT",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "RE",
+      "name": "Reunion",
+      "alternateName": "REU",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "RO",
+      "name": "Romania",
+      "alternateName": "ROU",
+      "x-numUpcomingEvents": 21
+    },
+    {
+      "@type": "Country",
+      "identifier": "RU",
+      "name": "Russia",
+      "alternateName": "RUS",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "RW",
+      "name": "Rwanda",
+      "alternateName": "RWA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "BL",
+      "name": "Saint Barthelemy",
+      "alternateName": "BLM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SH",
+      "name": "Saint Helena, Ascension, And Tristan Da Cunha",
+      "alternateName": "SHN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "KN",
+      "name": "Saint Kitts And Nevis",
+      "alternateName": "KNA",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "LC",
+      "name": "Saint Lucia",
+      "alternateName": "LCA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "MF",
+      "name": "Saint Martin",
+      "alternateName": "MAF",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "PM",
+      "name": "Saint Pierre And Miquelon",
+      "alternateName": "SPM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "VC",
+      "name": "Saint Vincent And The Grenadines",
+      "alternateName": "VCT",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "WS",
+      "name": "Samoa",
+      "alternateName": "WSM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SM",
+      "name": "San Marino",
+      "alternateName": "SMR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "ST",
+      "name": "Sao Tome And Principe",
+      "alternateName": "STP",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SA",
+      "name": "Saudi Arabia",
+      "alternateName": "SAU",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SN",
+      "name": "Senegal",
+      "alternateName": "SEN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "RS",
+      "name": "Serbia",
+      "alternateName": "SRB",
+      "x-numUpcomingEvents": 14
+    },
+    {
+      "@type": "Country",
+      "identifier": "SC",
+      "name": "Seychelles",
+      "alternateName": "SYC",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SL",
+      "name": "Sierra Leone",
+      "alternateName": "SLE",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SG",
+      "name": "Singapore",
+      "alternateName": "SGP",
+      "x-numUpcomingEvents": 41
+    },
+    {
+      "@type": "Country",
+      "identifier": "SX",
+      "name": "Sint Maarten",
+      "alternateName": "SXM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SK",
+      "name": "Slovakia",
+      "alternateName": "SVK",
+      "x-numUpcomingEvents": 17
+    },
+    {
+      "@type": "Country",
+      "identifier": "SI",
+      "name": "Slovenia",
+      "alternateName": "SVN",
+      "x-numUpcomingEvents": 16
+    },
+    {
+      "@type": "Country",
+      "identifier": "SB",
+      "name": "Solomon Islands",
+      "alternateName": "SLB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SO",
+      "name": "Somalia",
+      "alternateName": "SOM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "ZA",
+      "name": "South Africa",
+      "alternateName": "ZAF",
+      "x-numUpcomingEvents": 18
+    },
+    {
+      "@type": "Country",
+      "identifier": "GS",
+      "name": "South Georgia And South Sandwich Islands",
+      "alternateName": "SGS",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SS",
+      "name": "South Sudan",
+      "alternateName": "SSD",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "ES",
+      "name": "Spain",
+      "alternateName": "ESP",
+      "x-numUpcomingEvents": 1811
+    },
+    {
+      "@type": "Country",
+      "identifier": "XS",
+      "name": "Spratly Islands",
+      "alternateName": "XSP",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "LK",
+      "name": "Sri Lanka",
+      "alternateName": "LKA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SD",
+      "name": "Sudan",
+      "alternateName": "SDN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SR",
+      "name": "Suriname",
+      "alternateName": "SUR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "XR",
+      "name": "Svalbard",
+      "alternateName": "XSV",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SZ",
+      "name": "Swaziland",
+      "alternateName": "SWZ",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "SE",
+      "name": "Sweden",
+      "alternateName": "SWE",
+      "x-numUpcomingEvents": 557
+    },
+    {
+      "@type": "Country",
+      "identifier": "CH",
+      "name": "Switzerland",
+      "alternateName": "CHE",
+      "x-numUpcomingEvents": 429
+    },
+    {
+      "@type": "Country",
+      "identifier": "SY",
+      "name": "Syria",
+      "alternateName": "SYR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TW",
+      "name": "Taiwan",
+      "alternateName": "TWN",
+      "x-numUpcomingEvents": 31
+    },
+    {
+      "@type": "Country",
+      "identifier": "TJ",
+      "name": "Tajikistan",
+      "alternateName": "TJK",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TZ",
+      "name": "Tanzania",
+      "alternateName": "TZA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TH",
+      "name": "Thailand",
+      "alternateName": "THA",
+      "x-numUpcomingEvents": 28
+    },
+    {
+      "@type": "Country",
+      "identifier": "TL",
+      "name": "Timor-Leste",
+      "alternateName": "TLS",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TG",
+      "name": "Togo",
+      "alternateName": "TGO",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TK",
+      "name": "Tokelau",
+      "alternateName": "TKL",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TO",
+      "name": "Tonga",
+      "alternateName": "TON",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TT",
+      "name": "Trinidad And Tobago",
+      "alternateName": "TTO",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TN",
+      "name": "Tunisia",
+      "alternateName": "TUN",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "TR",
+      "name": "Turkey",
+      "alternateName": "TUR",
+      "x-numUpcomingEvents": 744
+    },
+    {
+      "@type": "Country",
+      "identifier": "TM",
+      "name": "Turkmenistan",
+      "alternateName": "TKM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TC",
+      "name": "Turks And Caicos Islands",
+      "alternateName": "TCA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "TV",
+      "name": "Tuvalu",
+      "alternateName": "TUV",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "VI",
+      "name": "U.S. Virgin Islands",
+      "alternateName": "VIR",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "UG",
+      "name": "Uganda",
+      "alternateName": "UGA",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "UA",
+      "name": "Ukraine",
+      "alternateName": "UKR",
+      "x-numUpcomingEvents": 1
+    },
+    {
+      "@type": "Country",
+      "identifier": "AE",
+      "name": "United Arab Emirates",
+      "alternateName": "ARE",
+      "x-numUpcomingEvents": 14
+    },
+    {
+      "@type": "Country",
+      "identifier": "GB",
+      "name": "United Kingdom",
+      "alternateName": "GBR",
+      "x-numUpcomingEvents": 16573
+    },
+    {
+      "@type": "Country",
+      "identifier": "US",
+      "name": "United States",
+      "alternateName": "USA",
+      "x-numUpcomingEvents": 48318
+    },
+    {
+      "@type": "Country",
+      "identifier": "UY",
+      "name": "Uruguay",
+      "alternateName": "URY",
+      "x-numUpcomingEvents": 4
+    },
+    {
+      "@type": "Country",
+      "identifier": "UZ",
+      "name": "Uzbekistan",
+      "alternateName": "UZB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "VU",
+      "name": "Vanuatu",
+      "alternateName": "VUT",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "VE",
+      "name": "Venezuela",
+      "alternateName": "VEN",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "VN",
+      "name": "Vietnam",
+      "alternateName": "VNM",
+      "x-numUpcomingEvents": 2
+    },
+    {
+      "@type": "Country",
+      "identifier": "VG",
+      "name": "Virgin Islands, British",
+      "alternateName": "VGB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "WF",
+      "name": "Wallis And Futuna",
+      "alternateName": "WLF",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "XW",
+      "name": "West Bank",
+      "alternateName": "XWB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "EH",
+      "name": "Western Sahara",
+      "alternateName": "ESH",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "YE",
+      "name": "Yemen",
+      "alternateName": "YEM",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "ZM",
+      "name": "Zambia",
+      "alternateName": "ZMB",
+      "x-numUpcomingEvents": 0
+    },
+    {
+      "@type": "Country",
+      "identifier": "ZW",
+      "name": "Zimbabwe",
+      "alternateName": "ZWE",
+      "x-numUpcomingEvents": 0
+    }
+  ]
+}

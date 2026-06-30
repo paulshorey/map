@@ -20,7 +20,9 @@
       ],
       "description": "The Coachella Valley Music and Arts Festival, or just Coachella, is one of the coolest and most talked-about music festivals out there. Every year,...",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-04-10",
+      "end_date": "2026-04-20"
     },
     {
       "name": "Cincinnati Music Festival",
@@ -37,12 +39,15 @@
       ],
       "description": "Cincinnati Music Festival blends R&B, hip-hop, jazz, soul, and funk in a vibrant urban setting with live music, multiple stages, and community-driven vibes.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-23",
+      "end_date": "2026-07-25",
+      "venue": "Cincinnati"
     },
     {
       "name": "Rock am Ring",
-      "location": "N\u00fcrburgring, N\u00fcrburg, Germany",
-      "city": "N\u00fcrburg",
+      "location": "Nürburgring, Nürburg, Germany",
+      "city": "Nürburg",
       "country": "Germany",
       "genres": [
         "rock",
@@ -52,9 +57,12 @@
         "live music",
         "multiple stages"
       ],
-      "description": "Rock am Ring is one of Europe's largest rock festivals, held annually at N\u00fcrburgring, Germany.",
+      "description": "Rock am Ring is one of Europe's largest rock festivals, held annually at Nürburgring, Germany.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-06",
+      "end_date": "2025-06-08",
+      "venue": "Nürburg"
     },
     {
       "name": "Isle of Wight Festival",
@@ -71,7 +79,10 @@
       ],
       "description": "The Isle of Wight Festival is a legendary UK music event at Seaclose Park, Newport.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-06-18",
+      "end_date": "2026-06-21",
+      "venue": "Seaclose Park"
     },
     {
       "name": "Hinterland",
@@ -88,7 +99,10 @@
       ],
       "description": "Hinterland Music Festival blends indie, alternative, folk, and country genres with a community-driven, outdoor vibe.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-30",
+      "end_date": "2026-08-02",
+      "venue": "Avenue Of The Saints Amphitheater"
     },
     {
       "name": "Oceans Calling",
@@ -105,12 +119,15 @@
       ],
       "description": "The Oceans Calling Festival is a major music event held annually in Ocean City, Maryland.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-09-25",
+      "end_date": "2026-09-27",
+      "venue": "Ocean City"
     },
     {
       "name": "Fusion",
-      "location": "M\u00fcritz Airfield, L\u00e4rz, Germany",
-      "city": "L\u00e4rz",
+      "location": "Müritz Airfield, Lärz, Germany",
+      "city": "Lärz",
       "country": "Germany",
       "genres": [
         "electronic",
@@ -120,9 +137,11 @@
         "reggae",
         "rave"
       ],
-      "description": "Fusion Festival, held annually in L\u00e4rz, Germany, blends eclectic music, immersive art, and countercultural expression.",
+      "description": "Fusion Festival, held annually in Lärz, Germany, blends eclectic music, immersive art, and countercultural expression.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-06-24",
+      "end_date": "2026-06-29"
     },
     {
       "name": "Riptide",
@@ -139,7 +158,9 @@
       ],
       "description": "Riptide Music Festival is an annual event held in Victoria, British Columbia.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-11-21",
+      "end_date": "2025-11-23"
     },
     {
       "name": "Barefoot Country",
@@ -156,7 +177,10 @@
       ],
       "description": "Barefoot Country Music Festival is an annual event that takes place on the beach in Wildwood, New Jersey.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-19",
+      "end_date": "2025-06-22",
+      "venue": "Wildwood"
     },
     {
       "name": "Roskilde Festival",
@@ -173,7 +197,10 @@
       ],
       "description": "Roskilde Festival is one of Europe's most iconic and vibrant music festivals.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-28",
+      "end_date": "2025-07-05",
+      "venue": "Roskilde"
     },
     {
       "name": "Ultra Music Festival",
@@ -190,7 +217,10 @@
       ],
       "description": "Ultra Music Festival, often simply called Ultra, is one of the most electrifying and high-energy EDM festivals in the United States.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2027-03-26",
+      "end_date": "2027-03-28",
+      "venue": "Bayfront Park"
     },
     {
       "name": "South by Southwest (SXSW)",
@@ -207,7 +237,10 @@
       ],
       "description": "South by Southwest, or simply SXSW, is one of the most vibrant and multifaceted festivals in the United States.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-03-07",
+      "end_date": "2025-03-15",
+      "venue": "Austin"
     },
     {
       "name": "Primavera Sound",
@@ -223,7 +256,9 @@
       ],
       "description": "Primavera Sound is one of Europe's most exciting and diverse music festivals.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-05-28",
+      "end_date": "2026-06-01"
     },
     {
       "name": "Tomorrowland",
@@ -240,7 +275,10 @@
       ],
       "description": "Tomorrowland is one of the most electrifying and visually stunning EDM festivals in the world.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-17",
+      "end_date": "2026-07-26",
+      "venue": "Boom"
     },
     {
       "name": "Lollapalooza (US)",
@@ -257,7 +295,9 @@
       ],
       "description": "Lollapalooza is one of the biggest and most exciting music festivals in the United States.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-08-01",
+      "end_date": "2026-08-04"
     },
     {
       "name": "Rock in Rio",
@@ -274,7 +314,10 @@
       ],
       "description": "Rock in Rio is one of the most iconic and electrifying music festivals in the world.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-09-04",
+      "end_date": "2026-09-13",
+      "venue": "Barra Olympic Park"
     },
     {
       "name": "iHeartRadio Music Festival",
@@ -291,7 +334,10 @@
       ],
       "description": "The iHeartRadio Music Festival in Las Vegas features top pop, rock, hip-hop, and country acts.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-09-18",
+      "end_date": "2026-09-19",
+      "venue": "T-Mobile Arena"
     },
     {
       "name": "Glastonbury Festival",
@@ -308,7 +354,10 @@
       ],
       "description": "The Glastonbury Festival is one of the most legendary and iconic music festivals in the world.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-25",
+      "end_date": "2025-06-29",
+      "venue": "Pilton"
     },
     {
       "name": "Untold Festival",
@@ -325,7 +374,10 @@
       ],
       "description": "Untold Festival in Cluj-Napoca, Romania, is a vibrant electronic music event.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-07",
+      "end_date": "2025-08-10",
+      "venue": "Cluj-Napoca"
     },
     {
       "name": "Reeperbahn Festival",
@@ -342,7 +394,10 @@
       ],
       "description": "Experience Europe's largest club festival at Hamburg's Reeperbahn.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-09-17",
+      "end_date": "2025-09-20",
+      "venue": "Hamburg"
     },
     {
       "name": "Lovebox Festival",
@@ -359,7 +414,9 @@
       ],
       "description": "Lovebox Festival in London blends diverse music genres, vibrant art, and interactive experiences.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-11",
+      "end_date": "2026-07-12"
     },
     {
       "name": "Amsterdam Dance Event",
@@ -376,7 +433,10 @@
       ],
       "description": "Experience the Amsterdam Dance Event: a vibrant festival with diverse electronic music.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-10-22",
+      "end_date": "2025-10-26",
+      "venue": "Amsterdam"
     },
     {
       "name": "Electric Love Festival",
@@ -393,7 +453,9 @@
       ],
       "description": "Electric Love Festival: Austria's top EDM event at Salzburgring.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-02-21",
+      "end_date": "2025-02-22"
     },
     {
       "name": "Sea Dance Festival",
@@ -410,7 +472,9 @@
       ],
       "description": "Sea Dance Festival in Malinska, Croatia, offers diverse music, stunning seaside views.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-07-24",
+      "end_date": "2025-07-26"
     },
     {
       "name": "Greenfield Festival",
@@ -427,7 +491,9 @@
       ],
       "description": "Experience rock and metal in the Swiss Alps at Greenfield Festival.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-05",
+      "end_date": "2025-06-07"
     },
     {
       "name": "Bergenfest",
@@ -444,7 +510,9 @@
       ],
       "description": "Bergenfest is a vibrant music festival in Bergen, Norway.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-11",
+      "end_date": "2025-06-14"
     },
     {
       "name": "Parklife Festival",
@@ -461,7 +529,10 @@
       ],
       "description": "Parklife Festival in Manchester is a vibrant two-day music event in June.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-06-20",
+      "end_date": "2026-06-21",
+      "venue": "Manchester"
     },
     {
       "name": "Parookaville",
@@ -478,7 +549,10 @@
       ],
       "description": "Parookaville: Germany's largest electronic music festival.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-17",
+      "end_date": "2026-07-19",
+      "venue": "Weeze"
     },
     {
       "name": "Outlook Festival",
@@ -495,7 +569,10 @@
       ],
       "description": "Outlook Festival in Tisno, Croatia, celebrates bass music with diverse genres.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-07-24",
+      "end_date": "2025-07-28",
+      "venue": "Tisno"
     },
     {
       "name": "Tycoon Music Festival",
@@ -512,7 +589,9 @@
       ],
       "description": "Tycoon Music Festival in Atlanta celebrates R&B and hip-hop with top artists.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-10",
+      "end_date": "2026-07-12"
     },
     {
       "name": "Down The Rabbit Hole",
@@ -529,7 +608,10 @@
       ],
       "description": "Down The Rabbit Hole is a vibrant three-day music festival in Ewijk, Netherlands.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-03",
+      "end_date": "2026-07-05",
+      "venue": "Down the Rabbit Hole (NL)"
     },
     {
       "name": "Garbicz Festival",
@@ -546,7 +628,10 @@
       ],
       "description": "Garbicz Festival: A unique blend of electronic music, art, and nature in Poland.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-07-31",
+      "end_date": "2025-08-04",
+      "venue": "Garbicz"
     },
     {
       "name": "Dour Festival",
@@ -563,7 +648,10 @@
       ],
       "description": "Dour Festival in Belgium is a five-day music event with diverse genres.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-15",
+      "end_date": "2026-07-19",
+      "venue": "Dour"
     },
     {
       "name": "Mad Cool Festival",
@@ -580,7 +668,10 @@
       ],
       "description": "Experience the vibrant Mad Cool Festival in Madrid.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-08",
+      "end_date": "2026-07-11",
+      "venue": "Madrid"
     },
     {
       "name": "Open'er Festival",
@@ -597,7 +688,10 @@
       ],
       "description": "Open'er Festival in Gdynia, Poland, offers diverse music, art, and culture.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-07-02",
+      "end_date": "2025-07-05",
+      "venue": "Gdynia"
     },
     {
       "name": "Best Kept Secret",
@@ -614,12 +708,14 @@
       ],
       "description": "Best Kept Secret is a diverse music festival in the Netherlands.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-06",
+      "end_date": "2025-06-08"
     },
     {
       "name": "Hurricane Festival",
-      "location": "Eichenring, Schee\u00dfel, Niedersachsen, Germany",
-      "city": "Schee\u00dfel",
+      "location": "Eichenring, Scheeßel, Niedersachsen, Germany",
+      "city": "Scheeßel",
       "country": "Germany",
       "genres": [
         "rock",
@@ -629,9 +725,12 @@
         "pop",
         "multiple stages"
       ],
-      "description": "Hurricane Festival in Schee\u00dfel, Germany, offers diverse music, vibrant culture.",
+      "description": "Hurricane Festival in Scheeßel, Germany, offers diverse music, vibrant culture.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-20",
+      "end_date": "2025-06-22",
+      "venue": "Scheeßel"
     },
     {
       "name": "Lollapalooza Berlin",
@@ -648,7 +747,10 @@
       ],
       "description": "Lollapalooza Berlin: A vibrant music festival at Olympiastadion.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-18",
+      "end_date": "2026-07-19",
+      "venue": "Berlin"
     },
     {
       "name": "INmusic Festival",
@@ -665,11 +767,14 @@
       ],
       "description": "Experience Croatia's largest open-air music festival, INmusic.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-23",
+      "end_date": "2025-06-25",
+      "venue": "Zagreb"
     },
     {
       "name": "Ultra Europe",
-      "location": "Park Mlade\u017ei, Split, Croatia",
+      "location": "Park Mladeži, Split, Croatia",
       "city": "Split",
       "country": "Croatia",
       "genres": [
@@ -682,11 +787,14 @@
       ],
       "description": "Ultra Europe is a vibrant electronic music festival in Split, Croatia.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-07-11",
+      "end_date": "2025-07-13",
+      "venue": "Split"
     },
     {
-      "name": "\u00d8ya Festival",
-      "location": "T\u00f8yen Park, Oslo, Oslo, Norway",
+      "name": "Øya Festival",
+      "location": "Tøyen Park, Oslo, Oslo, Norway",
       "city": "Oslo",
       "country": "Norway",
       "genres": [
@@ -697,9 +805,11 @@
         "indie",
         "alternative"
       ],
-      "description": "Experience \u00d8ya Festival in Oslo: a vibrant mix of top-tier music, diverse culture.",
+      "description": "Experience Øya Festival in Oslo: a vibrant mix of top-tier music, diverse culture.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-05",
+      "end_date": "2025-08-09"
     },
     {
       "name": "Boston Calling",
@@ -716,7 +826,10 @@
       ],
       "description": "New England's premier outdoor music festival featuring indie, rock, and hip-hop.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2027-06-04",
+      "end_date": "2027-06-06",
+      "venue": "Boston"
     },
     {
       "name": "March Madness Music Festival",
@@ -733,7 +846,9 @@
       ],
       "description": "Enjoy the free March Madness Music Festival with top artists.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-03-19",
+      "end_date": "2026-03-22"
     },
     {
       "name": "Four Chord Music Festival",
@@ -750,7 +865,10 @@
       ],
       "description": "Experience punk rock vibes at Pittsburgh's Four Chord Music Festival.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-09-25",
+      "end_date": "2026-09-26",
+      "venue": "F.N.B. Stadium"
     },
     {
       "name": "Country Bay Music Festival",
@@ -767,11 +885,14 @@
       ],
       "description": "Experience country music with a tropical twist at the Country Bay Music Festival.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2024-11-09",
+      "end_date": "2024-11-10",
+      "venue": "Miami"
     },
     {
       "name": "DUSK Music Festival",
-      "location": "J\u00e1come Plaza, Tucson, Arizona, USA",
+      "location": "Jácome Plaza, Tucson, Arizona, USA",
       "city": "Tucson",
       "country": "USA",
       "genres": [
@@ -784,7 +905,9 @@
       ],
       "description": "Experience diverse music, vibrant art, and delicious food at Tucson's DUSK Music Festival.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-11-13",
+      "end_date": "2026-11-14"
     },
     {
       "name": "All Things Go Music Festival",
@@ -801,7 +924,9 @@
       ],
       "description": "All Things Go is a diverse music festival in Columbia, MD.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-09-20",
+      "end_date": "2025-09-21"
     },
     {
       "name": "Northlands Music & Arts Festival",
@@ -818,7 +943,10 @@
       ],
       "description": "Experience live music, art, and nature at Northlands Festival.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-06-19",
+      "end_date": "2026-06-21",
+      "venue": "Safford Park"
     },
     {
       "name": "Shaky Knees Festival",
@@ -835,12 +963,15 @@
       ],
       "description": "Experience indie vibes and alternative rock at Shaky Knees in Atlanta.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-09-18",
+      "end_date": "2026-09-20",
+      "venue": "Atlanta"
     },
     {
       "name": "FM4 Frequency Festival",
-      "location": "VAZ St. P\u00f6lten, St. P\u00f6lten, Lower Austria, Austria",
-      "city": "St. P\u00f6lten",
+      "location": "VAZ St. Pölten, St. Pölten, Lower Austria, Austria",
+      "city": "St. Pölten",
       "country": "Austria",
       "genres": [
         "electronic",
@@ -850,14 +981,17 @@
         "indie",
         "punk"
       ],
-      "description": "Experience the FM4 Frequency Festival in St. P\u00f6lten, Austria.",
+      "description": "Experience the FM4 Frequency Festival in St. Pölten, Austria.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-14",
+      "end_date": "2025-08-16",
+      "venue": "Saint Pölten"
     },
     {
       "name": "Balaton Sound",
-      "location": "Lake Balaton, Zam\u00e1rdi, Hungary",
-      "city": "Zam\u00e1rdi",
+      "location": "Lake Balaton, Zamárdi, Hungary",
+      "city": "Zamárdi",
       "country": "Hungary",
       "genres": [
         "EDM",
@@ -869,7 +1003,10 @@
       ],
       "description": "Balaton Sound: A vibrant music festival by Lake Balaton, Hungary.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-07-02",
+      "end_date": "2025-07-05",
+      "venue": "Zamárdi"
     },
     {
       "name": "High Sierra Music Festival",
@@ -886,7 +1023,10 @@
       ],
       "description": "High Sierra Music Festival blends jam bands, bluegrass, funk, and art.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-02",
+      "end_date": "2026-07-05",
+      "venue": "Nevada County Fairgrounds"
     },
     {
       "name": "World Club Dome",
@@ -903,7 +1043,10 @@
       ],
       "description": "Experience the world's biggest club at World Club Dome in Frankfurt.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-06",
+      "end_date": "2025-06-08",
+      "venue": "Frankfurt am Main"
     },
     {
       "name": "Burning Man",
@@ -920,7 +1063,10 @@
       ],
       "description": "Burning Man is unlike any other festival, transforming a remote playa into a temporary city.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-24",
+      "end_date": "2025-09-01",
+      "venue": "Herndon"
     },
     {
       "name": "Earl Scruggs Music Festival",
@@ -937,7 +1083,10 @@
       ],
       "description": "Earl Scruggs Music Festival is an annual celebration honoring the banjo virtuoso.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-09-04",
+      "end_date": "2026-09-06",
+      "venue": "Tryon International Equestrian Center"
     },
     {
       "name": "Summer Camp Music Festival",
@@ -954,7 +1103,9 @@
       ],
       "description": "A multi-genre outdoor festival with jam bands, EDM, funk, rock, and art installations.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-05-22",
+      "end_date": "2026-05-25"
     },
     {
       "name": "Railbird Festival",
@@ -971,7 +1122,9 @@
       ],
       "description": "Railbird Music Festival blends country, folk, and alternative rock.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-07",
+      "end_date": "2025-06-08"
     },
     {
       "name": "Exit",
@@ -988,7 +1141,9 @@
       ],
       "description": "EXIT Festival is a dynamic music event in Serbia.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-07-10",
+      "end_date": "2025-07-14"
     },
     {
       "name": "Burning Mountain Festival",
@@ -1005,12 +1160,14 @@
       ],
       "description": "Burning Mountain Festival is a psychedelic trance gathering in the Swiss Alps.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-07",
+      "end_date": "2025-08-09"
     },
     {
       "name": "NOS Alive",
-      "location": "Passeio Mar\u00edtimo de Alg\u00e9s, Portugal",
-      "city": "Alg\u00e9s",
+      "location": "Passeio Marítimo de Algés, Portugal",
+      "city": "Algés",
       "country": "Portugal",
       "genres": [
         "rock",
@@ -1022,7 +1179,10 @@
       ],
       "description": "NOS Alive blends rock, pop, indie, and electronic music with vibrant art installations.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-07-10",
+      "end_date": "2025-07-12",
+      "venue": "Lisbon"
     },
     {
       "name": "Pukkelpop",
@@ -1039,7 +1199,10 @@
       ],
       "description": "Pukkelpop is an eclectic outdoor festival in Belgium.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-14",
+      "end_date": "2025-08-17",
+      "venue": "Hasselt"
     },
     {
       "name": "Mysteryland",
@@ -1056,7 +1219,10 @@
       ],
       "description": "Mysteryland is an outdoor electronic music festival in the Netherlands.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-22",
+      "end_date": "2025-08-24",
+      "venue": "Hoofddorp"
     },
     {
       "name": "Lowlands Festival",
@@ -1073,7 +1239,10 @@
       ],
       "description": "Lowlands Festival is a dynamic mix of indie, rock, EDM, and hip-hop.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-15",
+      "end_date": "2025-08-17",
+      "venue": "Biddinghuizen"
     },
     {
       "name": "Sziget Festival",
@@ -1088,9 +1257,12 @@
         "indie",
         "art installations"
       ],
-      "description": "Sziget Festival is a massive celebration of music and arts held on Budapest's \u00d3buda Island.",
+      "description": "Sziget Festival is a massive celebration of music and arts held on Budapest's Óbuda Island.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-08-11",
+      "end_date": "2026-08-15",
+      "venue": "Óbuda Island"
     },
     {
       "name": "Amsterdam Music Festival",
@@ -1107,7 +1279,9 @@
       ],
       "description": "Amsterdam Music Festival (AMF) is a massive EDM event.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-10-18",
+      "end_date": "2025-10-19"
     },
     {
       "name": "Arc Music Festival",
@@ -1124,7 +1298,10 @@
       ],
       "description": "Arc Music Festival is Chicago's premier house and techno event.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-29",
+      "end_date": "2025-08-31",
+      "venue": "Chicago"
     },
     {
       "name": "Tortuga Music Festival",
@@ -1141,7 +1318,10 @@
       ],
       "description": "The Tortuga Music Festival is a renowned 3-day festival on the beaches of Fort Lauderdale.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-04-04",
+      "end_date": "2025-04-06",
+      "venue": "Fort Lauderdale"
     },
     {
       "name": "The Peach Music Festival",
@@ -1158,7 +1338,9 @@
       ],
       "description": "The Peach Music Festival is a vibrant celebration of jam bands, rock, and blues.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-09",
+      "end_date": "2026-07-12"
     },
     {
       "name": "Portola",
@@ -1175,7 +1357,10 @@
       ],
       "description": "San Francisco's premier electronic music festival transforms Pier 80 into a massive warehouse rave.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-09-26",
+      "end_date": "2026-09-27",
+      "venue": "Pier 80 Warehouse"
     },
     {
       "name": "Boom Festival",
@@ -1192,7 +1377,10 @@
       ],
       "description": "Boom Festival in Portugal is a biennial celebration of electronic music, art, and sustainability.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-07-17",
+      "end_date": "2025-07-24",
+      "venue": "Idanha-A-Nova"
     },
     {
       "name": "Blue Ox Music Festival",
@@ -1209,10 +1397,13 @@
       ],
       "description": "Blue Ox Music Festival in Eau Claire, WI, offers a relaxed, intimate experience.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-26",
+      "end_date": "2025-06-28",
+      "venue": "Eau Claire"
     },
     {
-      "name": "S\u00f3nar",
+      "name": "Sónar",
       "location": "Barcelona, Spain",
       "city": "Barcelona",
       "country": "Spain",
@@ -1224,14 +1415,16 @@
         "techno",
         "art installations"
       ],
-      "description": "S\u00f3nar Festival is a global hub for electronic music, art installations, and digital creativity.",
+      "description": "Sónar Festival is a global hub for electronic music, art installations, and digital creativity.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-06-12",
+      "end_date": "2026-06-14"
     },
     {
       "name": "Melt Festival",
-      "location": "Gr\u00e4fenhainichen, Germany",
-      "city": "Gr\u00e4fenhainichen",
+      "location": "Gräfenhainichen, Germany",
+      "city": "Gräfenhainichen",
       "country": "Germany",
       "genres": [
         "EDM",
@@ -1243,7 +1436,9 @@
       ],
       "description": "Melt Festival blends electronic, indie, and hip-hop music with art installations.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-23",
+      "end_date": "2026-07-26"
     },
     {
       "name": "Creamfields",
@@ -1260,7 +1455,10 @@
       ],
       "description": "Creamfields is a massive outdoor EDM festival featuring house, techno, trance, and rave music.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-08-27",
+      "end_date": "2026-08-30",
+      "venue": "Daresbury"
     },
     {
       "name": "Electric Picnic",
@@ -1277,7 +1475,10 @@
       ],
       "description": "Electric Picnic is Ireland's largest outdoor festival.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-29",
+      "end_date": "2025-08-31",
+      "venue": "Portlaoise"
     },
     {
       "name": "Carolina Country Music Fest",
@@ -1294,7 +1495,9 @@
       ],
       "description": "Join the ultimate country music fest at Myrtle Beach!",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-06-05",
+      "end_date": "2025-06-08"
     },
     {
       "name": "Flow Festival",
@@ -1311,7 +1514,10 @@
       ],
       "description": "Flow Festival in Helsinki blends diverse music, immersive art, and vibrant culture.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-08",
+      "end_date": "2025-08-10",
+      "venue": "Helsinki"
     },
     {
       "name": "Echelon Festival",
@@ -1328,7 +1534,10 @@
       ],
       "description": "Echelon Festival in Bad Aibling, Germany, featuring top artists and stunning Alps views.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-08-14",
+      "end_date": "2026-08-15",
+      "venue": "Gebäude 305 / Veranstaltungshalle Sportpark Bad Aibling"
     },
     {
       "name": "Joshua Tree Music Festival",
@@ -1345,7 +1554,10 @@
       ],
       "description": "Immerse in music, art, and community at Joshua Tree Music Festival.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-10-08",
+      "end_date": "2026-10-11",
+      "venue": "Joshua Tree Lake RV & Campground"
     },
     {
       "name": "Wheatland Music Festival",
@@ -1362,7 +1574,10 @@
       ],
       "description": "Wheatland Music Festival in Remus, MI, celebrates folk, bluegrass, and roots music.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-09-05",
+      "end_date": "2025-09-07",
+      "venue": "Remus"
     },
     {
       "name": "Hopscotch Music Festival",
@@ -1379,7 +1594,10 @@
       ],
       "description": "Hopscotch Music Festival in Raleigh offers a diverse lineup across genres.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-09-10",
+      "end_date": "2026-09-12",
+      "venue": "Raleigh City Plaza"
     },
     {
       "name": "Pilgrimage Music Festival",
@@ -1396,7 +1614,9 @@
       ],
       "description": "Experience diverse music, local art, and Southern hospitality at the Pilgrimage Festival.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-09-26",
+      "end_date": "2026-09-27"
     },
     {
       "name": "Levitate Music and Arts Festival",
@@ -1413,7 +1633,9 @@
       ],
       "description": "A laid-back festival blending reggae, rock, and indie music with immersive art.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-07-18",
+      "end_date": "2026-07-20"
     },
     {
       "name": "Imagine Music Festival",
@@ -1430,7 +1652,9 @@
       ],
       "description": "Imagine Music Festival is an immersive outdoor EDM event.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2026-09-04",
+      "end_date": "2026-09-06"
     },
     {
       "name": "North Coast Music Festival",
@@ -1447,7 +1671,10 @@
       ],
       "description": "North Coast Music Festival is an EDM event featuring electronic, house, and dubstep.",
       "source": "festivals.directory",
-      "source_url": "https://festivals.directory"
+      "source_url": "https://festivals.directory",
+      "start_date": "2025-08-29",
+      "end_date": "2025-08-31",
+      "venue": "Chicago"
     }
   ]
 }

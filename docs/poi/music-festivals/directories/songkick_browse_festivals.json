@@ -94,7 +94,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -219,7 +220,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -608,7 +610,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -701,7 +704,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -1017,7 +1021,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -1335,7 +1340,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -1477,7 +1483,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -1603,7 +1610,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -1780,7 +1788,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -1945,7 +1954,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -2112,7 +2122,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -2237,7 +2248,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -2626,7 +2638,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -2719,7 +2732,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -3035,7 +3049,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -3353,7 +3368,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -3495,7 +3511,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -3621,7 +3638,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -3798,7 +3816,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -3963,7 +3982,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -4113,7 +4133,8 @@
     ],
     "genres": [
       "indie_alternative"
-    ]
+    ],
+    "official_website": "https://www.deadofwinterfilm.com/"
   },
   {
     "source": "songkick.com",
@@ -4372,7 +4393,8 @@
     ],
     "genres": [
       "country"
-    ]
+    ],
+    "official_website": "http://www.muster.com.au/"
   },
   {
     "source": "songkick.com",
@@ -4735,7 +4757,8 @@
       "Royel Otis",
       "The Rions"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "https://www.rollingloud.com/"
   },
   {
     "source": "songkick.com",
@@ -4760,7 +4783,8 @@
       "Royel Otis",
       "The Rions"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "https://www.rollingloud.com/"
   },
   {
     "source": "songkick.com",
@@ -4944,7 +4968,8 @@
       "reggae",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.hurricane.de/"
   },
   {
     "source": "songkick.com",
@@ -5053,7 +5078,8 @@
       "reggae",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.southside.de/"
   },
   {
     "source": "songkick.com",
@@ -5243,7 +5269,8 @@
       "folk_blues",
       "indie_alternative",
       "metal"
-    ]
+    ],
+    "official_website": "http://www.detroitjazzfest.com"
   },
   {
     "source": "songkick.com",
@@ -5363,7 +5390,8 @@
       "rock",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "https://flow.movie/"
   },
   {
     "source": "songkick.com",
@@ -5442,7 +5470,8 @@
       "electronic",
       "folk_blues",
       "rock"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -5531,7 +5560,8 @@
     "genres": [
       "electronic",
       "rock"
-    ]
+    ],
+    "official_website": "http://www.amphi-festival.de"
   },
   {
     "source": "songkick.com",
@@ -5591,7 +5621,8 @@
     ],
     "genres": [
       "electronic"
-    ]
+    ],
+    "official_website": "http://www.loveparade.net"
   },
   {
     "source": "songkick.com",
@@ -5759,7 +5790,8 @@
       "jazz",
       "comedy",
       "folk_blues"
-    ]
+    ],
+    "official_website": "https://www.wacken.com/"
   },
   {
     "source": "songkick.com",
@@ -6091,7 +6123,8 @@
       "rock",
       "country",
       "folk_blues"
-    ]
+    ],
+    "official_website": "http://www.off-festival.pl/"
   },
   {
     "source": "songkick.com",
@@ -6630,7 +6663,8 @@
       "indie_alternative",
       "funk_soul",
       "folk_blues"
-    ]
+    ],
+    "official_website": "https://www.fourtet.net/"
   },
   {
     "source": "songkick.com",
@@ -6732,7 +6766,8 @@
       "hip_hop",
       "comedy",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://ottawa.ca/"
   },
   {
     "source": "songkick.com",
@@ -6780,7 +6815,8 @@
       "electronic",
       "folk_blues",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.infofestival.com/"
   },
   {
     "source": "songkick.com",
@@ -6818,7 +6854,8 @@
       "rock",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://ottawajazzfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -6866,7 +6903,8 @@
       "funk_soul",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.wakarusa.com"
   },
   {
     "source": "songkick.com",
@@ -6923,7 +6961,8 @@
       "folk_blues",
       "rock",
       "indie_alternative"
-    ]
+    ],
+    "official_website": "https://jackwhiteiii.com"
   },
   {
     "source": "songkick.com",
@@ -6953,7 +6992,8 @@
       "metal",
       "indie_alternative",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.rock-am-ring.com/"
   },
   {
     "source": "songkick.com",
@@ -7010,7 +7050,8 @@
       "rock",
       "indie_alternative",
       "comedy"
-    ]
+    ],
+    "official_website": "https://thefestival.bc.ca/"
   },
   {
     "source": "songkick.com",
@@ -7074,7 +7115,8 @@
       "electronic",
       "pop",
       "rock"
-    ]
+    ],
+    "official_website": "https://veldmusicfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -7152,7 +7194,8 @@
       "rock",
       "pop",
       "indie_alternative"
-    ]
+    ],
+    "official_website": "http://www.osheaga.com/fr/"
   },
   {
     "source": "songkick.com",
@@ -7204,7 +7247,8 @@
       "folk_blues",
       "electronic",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.osheaga.com/fr/"
   },
   {
     "source": "songkick.com",
@@ -7550,7 +7594,8 @@
       "pop",
       "latin",
       "electronic"
-    ]
+    ],
+    "official_website": "http://rockinrio.com/"
   },
   {
     "source": "songkick.com",
@@ -7607,7 +7652,8 @@
       "pop",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "https://www.prefeiturademossoro.com.br"
   },
   {
     "source": "songkick.com",
@@ -7759,7 +7805,8 @@
       "Ferrugem",
       "Bruno Reis"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "https://www.accorarena.com"
   },
   {
     "source": "songkick.com",
@@ -7920,7 +7967,8 @@
     "lineup": [
       "Gilsons"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "http://www.venevision.com/sabado"
   },
   {
     "source": "songkick.com",
@@ -8757,7 +8805,8 @@
       "hip_hop",
       "jazz",
       "pop"
-    ]
+    ],
+    "official_website": "https://www.azkenarockfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -8942,7 +8991,8 @@
       "indie_alternative",
       "folk_blues",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.resurrection-fest.com"
   },
   {
     "source": "songkick.com",
@@ -9392,7 +9442,8 @@
       "funk_soul",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bilbaobbklive.com/"
   },
   {
     "source": "songkick.com",
@@ -9565,7 +9616,8 @@
       "hip_hop",
       "pop",
       "metal"
-    ]
+    ],
+    "official_website": "http://www.fiberfib.com/index.php/en/"
   },
   {
     "source": "songkick.com",
@@ -9828,7 +9880,8 @@
       "pop",
       "folk_blues",
       "electronic"
-    ]
+    ],
+    "official_website": "https://www.vivelatino.com.mx"
   },
   {
     "source": "songkick.com",
@@ -10355,7 +10408,8 @@
       "rock",
       "hip_hop",
       "metal"
-    ]
+    ],
+    "official_website": "http://www.northseajazz.com"
   },
   {
     "source": "songkick.com",
@@ -10421,7 +10475,8 @@
     ],
     "genres": [
       "electronic"
-    ]
+    ],
+    "official_website": "https://www.awakenings.nl/"
   },
   {
     "source": "songkick.com",
@@ -10844,7 +10899,8 @@
       "rock",
       "country",
       "comedy"
-    ]
+    ],
+    "official_website": "https://lowlands.nl/"
   },
   {
     "source": "songkick.com",
@@ -11096,7 +11152,8 @@
       "Sports",
       "Zoh Amba"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "https://bostoncalling.com/"
   },
   {
     "source": "songkick.com",
@@ -11512,7 +11569,8 @@
       "electronic",
       "comedy",
       "classical"
-    ]
+    ],
+    "official_website": "http://www.hellfest.fr/"
   },
   {
     "source": "songkick.com",
@@ -11621,7 +11679,8 @@
       "funk_soul",
       "r_and_b",
       "rock"
-    ]
+    ],
+    "official_website": "http://www.garorock.com"
   },
   {
     "source": "songkick.com",
@@ -11647,7 +11706,8 @@
       "Mosimann",
       "Tshegue"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "https://www.solidays.org"
   },
   {
     "source": "songkick.com",
@@ -11799,7 +11859,8 @@
       "electronic",
       "pop",
       "rock"
-    ]
+    ],
+    "official_website": "http://www.arenesdenimes.com"
   },
   {
     "source": "songkick.com",
@@ -11900,7 +11961,8 @@
       "indie_alternative",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "https://www.mainsquarefestival.fr/"
   },
   {
     "source": "songkick.com",
@@ -12004,7 +12066,8 @@
       "indie_alternative",
       "funk_soul",
       "jazz"
-    ]
+    ],
+    "official_website": "http://www.musilac.com"
   },
   {
     "source": "songkick.com",
@@ -12032,7 +12095,8 @@
       "pop",
       "indie_alternative",
       "electronic"
-    ]
+    ],
+    "official_website": "http://www.arenesdenimes.com"
   },
   {
     "source": "songkick.com",
@@ -12060,7 +12124,8 @@
       "pop",
       "indie_alternative",
       "electronic"
-    ]
+    ],
+    "official_website": "http://www.nuitsdefourviere.com/"
   },
   {
     "source": "songkick.com",
@@ -12125,7 +12190,8 @@
       "metal",
       "funk_soul",
       "reggae"
-    ]
+    ],
+    "official_website": "https://www.vieillescharrues.asso.fr/"
   },
   {
     "source": "songkick.com",
@@ -12348,7 +12414,8 @@
       "electronic",
       "country",
       "folk_blues"
-    ]
+    ],
+    "official_website": "https://www.motocultor-festival.com/"
   },
   {
     "source": "songkick.com",
@@ -12458,7 +12525,8 @@
       "hip_hop",
       "reggae",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.vfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -12502,7 +12570,8 @@
       "r_and_b",
       "pop",
       "electronic"
-    ]
+    ],
+    "official_website": "http://www.goldenplains.com.au/"
   },
   {
     "source": "songkick.com",
@@ -12728,7 +12797,8 @@
     "latitude": 41.00255,
     "longitude": 28.95102,
     "lineup": [],
-    "genres": []
+    "genres": [],
+    "official_website": "https://manifestgirlband.com/"
   },
   {
     "source": "songkick.com",
@@ -12800,7 +12870,8 @@
     "latitude": 41.04405,
     "longitude": 29.00644,
     "lineup": [],
-    "genres": []
+    "genres": [],
+    "official_website": "https://www.summergamefest.com"
   },
   {
     "source": "songkick.com",
@@ -12941,7 +13012,8 @@
     "lineup": [
       "Jembaa Groove"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "http://www.kas.bel.tr/"
   },
   {
     "source": "songkick.com",
@@ -13485,7 +13557,8 @@
       "latin",
       "rock",
       "pop"
-    ]
+    ],
+    "official_website": "http://arnold-arre.com"
   },
   {
     "source": "songkick.com",
@@ -13688,7 +13761,8 @@
       "electronic",
       "reggae",
       "latin"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -14068,7 +14142,8 @@
       "metal",
       "pop",
       "rock"
-    ]
+    ],
+    "official_website": "https://knotfest.com/"
   },
   {
     "source": "songkick.com",
@@ -14215,7 +14290,8 @@
       "Comandante Twin",
       "Oslo Ovnies"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "http://www.sonorama-aranda.com"
   },
   {
     "source": "songkick.com",
@@ -14719,7 +14795,8 @@
       "electronic",
       "pop",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -14765,7 +14842,8 @@
       "folk_blues",
       "indie_alternative",
       "pop"
-    ]
+    ],
+    "official_website": "https://start.stockholm/"
   },
   {
     "source": "songkick.com",
@@ -14972,7 +15050,8 @@
       "Judith Hill",
       "Momoko Gill"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "http://stockholmjazz.se"
   },
   {
     "source": "songkick.com",
@@ -15140,7 +15219,8 @@
       "okgiorgio",
       "Promessa"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "http://www.lumen.ws/"
   },
   {
     "source": "songkick.com",
@@ -15443,7 +15523,8 @@
     "genres": [
       "rock",
       "metal"
-    ]
+    ],
+    "official_website": "https://www.comune.pistoia.it/"
   },
   {
     "source": "songkick.com",
@@ -15751,7 +15832,8 @@
       "rock",
       "folk_blues",
       "indie_alternative"
-    ]
+    ],
+    "official_website": "http://www.realbeat.net"
   },
   {
     "source": "songkick.com",
@@ -15973,7 +16055,8 @@
     "latitude": null,
     "longitude": null,
     "lineup": [],
-    "genres": []
+    "genres": [],
+    "official_website": "https://www.myspace.com/roedelius"
   },
   {
     "source": "songkick.com",
@@ -16084,7 +16167,8 @@
     "lineup": [
       "Kila"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -16133,7 +16217,8 @@
     "lineup": [
       "Dug"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "https://www.giaf.ie/"
   },
   {
     "source": "songkick.com",
@@ -16181,7 +16266,8 @@
     "lineup": [
       "Sorcha Richardson"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "http://www.nostrangerthanlove.com/"
   },
   {
     "source": "songkick.com",
@@ -16467,7 +16553,8 @@
       "hip_hop",
       "funk_soul",
       "r_and_b"
-    ]
+    ],
+    "official_website": "http://www.electricpicnic.ie"
   },
   {
     "source": "songkick.com",
@@ -16495,7 +16582,8 @@
       "folk_blues",
       "rock",
       "indie_alternative"
-    ]
+    ],
+    "official_website": "https://jackwhiteiii.com"
   },
   {
     "source": "songkick.com",
@@ -16565,7 +16653,8 @@
     "lineup": [
       "Kelley Hunt"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "http://www.pixar.com/features_films/Brave"
   },
   {
     "source": "songkick.com",
@@ -16887,7 +16976,8 @@
       "pop",
       "comedy",
       "classical"
-    ]
+    ],
+    "official_website": "http://www.graspop.be"
   },
   {
     "source": "songkick.com",
@@ -16916,7 +17006,8 @@
     ],
     "genres": [
       "jazz"
-    ]
+    ],
+    "official_website": "http://www.couleurcafe.be/"
   },
   {
     "source": "songkick.com",
@@ -17043,7 +17134,8 @@
       "pop",
       "hip_hop",
       "latin"
-    ]
+    ],
+    "official_website": "http://www.rockwerchter.be"
   },
   {
     "source": "songkick.com",
@@ -17079,7 +17171,8 @@
       "pop",
       "folk_blues",
       "jazz"
-    ]
+    ],
+    "official_website": "https://theofficialjohncarpenter.com/they-live/"
   },
   {
     "source": "songkick.com",
@@ -17115,7 +17208,8 @@
       "indie_alternative",
       "electronic",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.parklife.uk.com/"
   },
   {
     "source": "songkick.com",
@@ -17143,7 +17237,8 @@
     "genres": [
       "electronic",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.lesardentes.be/"
   },
   {
     "source": "songkick.com",
@@ -17176,7 +17271,8 @@
     ],
     "genres": [
       "electronic"
-    ]
+    ],
+    "official_website": "https://www.filmfestival.be/"
   },
   {
     "source": "songkick.com",
@@ -17368,7 +17464,8 @@
       "rock",
       "metal",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.dourfestival.be/"
   },
   {
     "source": "songkick.com",
@@ -17569,7 +17666,8 @@
       "indie_alternative",
       "comedy",
       "rock"
-    ]
+    ],
+    "official_website": "https://www.tomorrowland.com"
   },
   {
     "source": "songkick.com",
@@ -17944,7 +18042,8 @@
       "indie_alternative",
       "funk_soul",
       "electronic"
-    ]
+    ],
+    "official_website": "https://www.pukkelpop.be/"
   },
   {
     "source": "songkick.com",
@@ -17968,7 +18067,8 @@
     "lineup": [
       "Sona Jobarteh"
     ],
-    "genres": []
+    "genres": [],
+    "official_website": "http://www.sonajobarteh.com"
   },
   {
     "source": "songkick.com",
@@ -18210,7 +18310,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -18335,7 +18436,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -18724,7 +18826,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -18817,7 +18920,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -19133,7 +19237,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -19451,7 +19556,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -19593,7 +19699,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -19719,7 +19826,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -19896,7 +20004,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -20061,7 +20170,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -20228,7 +20338,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -20353,7 +20464,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -20742,7 +20854,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -20835,7 +20948,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -21151,7 +21265,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -21469,7 +21584,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -21611,7 +21727,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -21737,7 +21854,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -21914,7 +22032,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -22079,7 +22198,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -22246,7 +22366,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -22371,7 +22492,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -22760,7 +22882,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -22853,7 +22976,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -23169,7 +23293,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -23487,7 +23612,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -23629,7 +23755,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -23755,7 +23882,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -23932,7 +24060,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -24097,7 +24226,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -24264,7 +24394,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -24389,7 +24520,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -24778,7 +24910,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -24871,7 +25004,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -25187,7 +25321,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -25505,7 +25640,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -25647,7 +25783,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -25773,7 +25910,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -25950,7 +26088,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -26115,7 +26254,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -26282,7 +26422,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -26407,7 +26548,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -26796,7 +26938,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -26889,7 +27032,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -27205,7 +27349,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -27523,7 +27668,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -27665,7 +27811,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -27791,7 +27938,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -27968,7 +28116,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -28133,7 +28282,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -28300,7 +28450,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -28425,7 +28576,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -28814,7 +28966,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -28907,7 +29060,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -29223,7 +29377,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -29541,7 +29696,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -29683,7 +29839,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -29809,7 +29966,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -29986,7 +30144,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -30151,7 +30310,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -30318,7 +30478,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -30443,7 +30604,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -30832,7 +30994,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -30925,7 +31088,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -31241,7 +31405,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -31559,7 +31724,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -31701,7 +31867,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -31827,7 +31994,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -32004,7 +32172,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -32169,7 +32338,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -32336,7 +32506,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -32461,7 +32632,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -32850,7 +33022,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -32943,7 +33116,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -33259,7 +33433,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -33577,7 +33752,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -33719,7 +33895,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -33845,7 +34022,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -34022,7 +34200,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -34187,7 +34366,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -34354,7 +34534,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -34479,7 +34660,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -34868,7 +35050,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -34961,7 +35144,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -35277,7 +35461,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -35595,7 +35780,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -35737,7 +35923,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -35863,7 +36050,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -36040,7 +36228,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -36205,7 +36394,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -36372,7 +36562,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -36497,7 +36688,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -36886,7 +37078,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -36979,7 +37172,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -37295,7 +37489,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -37613,7 +37808,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -37755,7 +37951,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -37881,7 +38078,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -38058,7 +38256,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -38223,7 +38422,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -38390,7 +38590,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -38515,7 +38716,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -38904,7 +39106,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -38997,7 +39200,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -39313,7 +39517,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -39631,7 +39836,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -39773,7 +39979,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -39899,7 +40106,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -40076,7 +40284,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -40241,7 +40450,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -40408,7 +40618,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -40533,7 +40744,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -40922,7 +41134,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -41015,7 +41228,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -41331,7 +41545,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -41649,7 +41864,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -41791,7 +42007,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -41917,7 +42134,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -42094,7 +42312,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -42259,7 +42478,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -42426,7 +42646,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -42551,7 +42772,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -42940,7 +43162,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -43033,7 +43256,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -43349,7 +43573,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -43667,7 +43892,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -43809,7 +44035,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -43935,7 +44162,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -44112,7 +44340,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -44277,7 +44506,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -44444,7 +44674,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -44569,7 +44800,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -44958,7 +45190,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -45051,7 +45284,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -45367,7 +45601,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -45685,7 +45920,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -45827,7 +46063,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -45953,7 +46190,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -46130,7 +46368,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -46295,7 +46534,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -46462,7 +46702,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -46587,7 +46828,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -46976,7 +47218,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -47069,7 +47312,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -47385,7 +47629,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -47703,7 +47948,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -47845,7 +48091,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -47971,7 +48218,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -48148,7 +48396,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -48313,7 +48562,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -48480,7 +48730,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -48605,7 +48856,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -48994,7 +49246,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -49087,7 +49340,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -49403,7 +49657,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -49721,7 +49976,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -49863,7 +50119,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -49989,7 +50246,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -50166,7 +50424,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -50331,7 +50590,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -50498,7 +50758,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -50623,7 +50884,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -51012,7 +51274,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -51105,7 +51368,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -51421,7 +51685,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -51739,7 +52004,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -51881,7 +52147,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -52007,7 +52274,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -52184,7 +52452,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -52349,7 +52618,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -52516,7 +52786,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -52641,7 +52912,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -53030,7 +53302,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -53123,7 +53396,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -53439,7 +53713,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -53757,7 +54032,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -53899,7 +54175,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -54025,7 +54302,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -54202,7 +54480,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -54367,7 +54646,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -54534,7 +54814,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -54659,7 +54940,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -55048,7 +55330,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -55141,7 +55424,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -55457,7 +55741,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -55775,7 +56060,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -55917,7 +56203,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -56043,7 +56330,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -56220,7 +56508,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -56385,7 +56674,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -56552,7 +56842,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -56677,7 +56968,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -57066,7 +57358,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -57159,7 +57452,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -57475,7 +57769,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -57793,7 +58088,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -57935,7 +58231,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -58061,7 +58358,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -58238,7 +58536,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -58403,7 +58702,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -58570,7 +58870,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -58695,7 +58996,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -59084,7 +59386,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -59177,7 +59480,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -59493,7 +59797,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -59811,7 +60116,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -59953,7 +60259,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -60079,7 +60386,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -60256,7 +60564,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -60421,7 +60730,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -60588,7 +60898,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -60713,7 +61024,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -61102,7 +61414,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -61195,7 +61508,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -61511,7 +61825,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -61829,7 +62144,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -61971,7 +62287,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -62097,7 +62414,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -62274,7 +62592,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -62439,7 +62758,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -62606,7 +62926,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -62731,7 +63052,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -63120,7 +63442,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -63213,7 +63536,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -63529,7 +63853,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -63847,7 +64172,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -63989,7 +64315,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -64115,7 +64442,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -64292,7 +64620,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -64457,7 +64786,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -64624,7 +64954,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -64749,7 +65080,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -65138,7 +65470,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -65231,7 +65564,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -65547,7 +65881,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -65865,7 +66200,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -66007,7 +66343,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -66133,7 +66470,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -66310,7 +66648,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -66475,7 +66814,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -66642,7 +66982,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -66767,7 +67108,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -67156,7 +67498,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -67249,7 +67592,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -67565,7 +67909,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -67883,7 +68228,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -68025,7 +68371,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -68151,7 +68498,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -68328,7 +68676,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -68493,7 +68842,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -68660,7 +69010,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -68785,7 +69136,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -69174,7 +69526,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -69267,7 +69620,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -69583,7 +69937,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -69901,7 +70256,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -70043,7 +70399,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -70169,7 +70526,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -70346,7 +70704,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -70511,7 +70870,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -70678,7 +71038,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -70803,7 +71164,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -71192,7 +71554,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -71285,7 +71648,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -71601,7 +71965,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -71919,7 +72284,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -72061,7 +72427,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -72187,7 +72554,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -72364,7 +72732,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -72529,7 +72898,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -72696,7 +73066,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -72821,7 +73192,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -73210,7 +73582,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -73303,7 +73676,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -73619,7 +73993,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -73937,7 +74312,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -74079,7 +74455,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -74205,7 +74582,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -74382,7 +74760,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -74547,7 +74926,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -74714,7 +75094,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -74839,7 +75220,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -75228,7 +75610,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -75321,7 +75704,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -75637,7 +76021,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -75955,7 +76340,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -76097,7 +76483,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -76223,7 +76610,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -76400,7 +76788,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -76565,7 +76954,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -76732,7 +77122,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -76857,7 +77248,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -77246,7 +77638,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -77339,7 +77732,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -77655,7 +78049,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -77973,7 +78368,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -78115,7 +78511,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -78241,7 +78638,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -78418,7 +78816,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -78583,7 +78982,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -78750,7 +79150,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -78875,7 +79276,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -79264,7 +79666,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -79357,7 +79760,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -79673,7 +80077,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -79991,7 +80396,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -80133,7 +80539,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -80259,7 +80666,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -80436,7 +80844,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -80601,7 +81010,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -80768,7 +81178,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -80893,7 +81304,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -81282,7 +81694,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -81375,7 +81788,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -81691,7 +82105,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -82009,7 +82424,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -82151,7 +82567,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -82277,7 +82694,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -82454,7 +82872,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -82619,7 +83038,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -82786,7 +83206,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -82911,7 +83332,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -83300,7 +83722,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -83393,7 +83816,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -83709,7 +84133,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -84027,7 +84452,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -84169,7 +84595,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -84295,7 +84722,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -84472,7 +84900,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -84637,7 +85066,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -84804,7 +85234,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -84929,7 +85360,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -85318,7 +85750,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -85411,7 +85844,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -85727,7 +86161,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -86045,7 +86480,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -86187,7 +86623,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -86313,7 +86750,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -86490,7 +86928,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -86655,7 +87094,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -86822,7 +87262,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -86947,7 +87388,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -87336,7 +87778,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -87429,7 +87872,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -87745,7 +88189,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -88063,7 +88508,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -88205,7 +88651,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -88331,7 +88778,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -88508,7 +88956,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -88673,7 +89122,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -88840,7 +89290,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -88965,7 +89416,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -89354,7 +89806,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -89447,7 +89900,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -89763,7 +90217,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -90081,7 +90536,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -90223,7 +90679,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -90349,7 +90806,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -90526,7 +90984,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -90691,7 +91150,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -90858,7 +91318,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -90983,7 +91444,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -91372,7 +91834,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -91465,7 +91928,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -91781,7 +92245,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -92099,7 +92564,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -92241,7 +92707,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -92367,7 +92834,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -92544,7 +93012,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -92709,7 +93178,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -92876,7 +93346,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -93001,7 +93472,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -93390,7 +93862,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -93483,7 +93956,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -93799,7 +94273,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -94117,7 +94592,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -94259,7 +94735,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -94385,7 +94862,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -94562,7 +95040,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -94727,7 +95206,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -94894,7 +95374,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -95019,7 +95500,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -95408,7 +95890,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -95501,7 +95984,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -95817,7 +96301,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -96135,7 +96620,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -96277,7 +96763,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -96403,7 +96890,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -96580,7 +97068,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -96745,7 +97234,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -96912,7 +97402,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -97037,7 +97528,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -97426,7 +97918,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -97519,7 +98012,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -97835,7 +98329,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -98153,7 +98648,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -98295,7 +98791,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -98421,7 +98918,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -98598,7 +99096,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -98763,7 +99262,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -98930,7 +99430,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -99055,7 +99556,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -99444,7 +99946,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -99537,7 +100040,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -99853,7 +100357,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -100171,7 +100676,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -100313,7 +100819,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -100439,7 +100946,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -100616,7 +101124,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -100781,7 +101290,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -100948,7 +101458,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -101073,7 +101584,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -101462,7 +101974,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -101555,7 +102068,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -101871,7 +102385,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -102189,7 +102704,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -102331,7 +102847,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -102457,7 +102974,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -102634,7 +103152,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -102799,7 +103318,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -102966,7 +103486,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -103091,7 +103612,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -103480,7 +104002,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -103573,7 +104096,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -103889,7 +104413,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -104207,7 +104732,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -104349,7 +104875,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -104475,7 +105002,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -104652,7 +105180,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -104817,7 +105346,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -104984,7 +105514,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -105109,7 +105640,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -105498,7 +106030,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -105591,7 +106124,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -105907,7 +106441,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -106225,7 +106760,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -106367,7 +106903,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -106493,7 +107030,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -106670,7 +107208,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -106835,7 +107374,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -107002,7 +107542,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -107127,7 +107668,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -107516,7 +108058,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -107609,7 +108152,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -107925,7 +108469,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -108243,7 +108788,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -108385,7 +108931,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -108511,7 +109058,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -108688,7 +109236,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -108853,7 +109402,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -109020,7 +109570,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -109145,7 +109696,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -109534,7 +110086,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -109627,7 +110180,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -109943,7 +110497,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -110261,7 +110816,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -110403,7 +110959,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -110529,7 +111086,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -110706,7 +111264,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -110871,7 +111430,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -111038,7 +111598,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -111163,7 +111724,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -111552,7 +112114,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -111645,7 +112208,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -111961,7 +112525,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -112279,7 +112844,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -112421,7 +112987,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -112547,7 +113114,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -112724,7 +113292,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -112889,7 +113458,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -113056,7 +113626,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -113181,7 +113752,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -113570,7 +114142,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -113663,7 +114236,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -113979,7 +114553,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -114297,7 +114872,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -114439,7 +115015,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -114565,7 +115142,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -114742,7 +115320,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -114907,7 +115486,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -115074,7 +115654,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -115199,7 +115780,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -115588,7 +116170,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -115681,7 +116264,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -115997,7 +116581,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -116315,7 +116900,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -116457,7 +117043,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -116583,7 +117170,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -116760,7 +117348,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -116925,7 +117514,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -117092,7 +117682,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -117217,7 +117808,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -117606,7 +118198,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -117699,7 +118292,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -118015,7 +118609,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -118333,7 +118928,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -118475,7 +119071,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -118601,7 +119198,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -118778,7 +119376,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -118943,7 +119542,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -119110,7 +119710,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -119235,7 +119836,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -119624,7 +120226,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -119717,7 +120320,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -120033,7 +120637,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -120351,7 +120956,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -120493,7 +121099,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -120619,7 +121226,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -120796,7 +121404,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -120961,7 +121570,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -121128,7 +121738,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -121253,7 +121864,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -121642,7 +122254,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -121735,7 +122348,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -122051,7 +122665,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -122369,7 +122984,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -122511,7 +123127,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -122637,7 +123254,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -122814,7 +123432,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -122979,7 +123598,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -123146,7 +123766,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -123271,7 +123892,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -123660,7 +124282,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -123753,7 +124376,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -124069,7 +124693,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -124387,7 +125012,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -124529,7 +125155,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -124655,7 +125282,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -124832,7 +125460,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -124997,7 +125626,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -125164,7 +125794,8 @@
       "country",
       "r_and_b",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -125289,7 +125920,8 @@
       "country",
       "jazz",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.summerfest.com/"
   },
   {
     "source": "songkick.com",
@@ -125678,7 +126310,8 @@
       "indie_alternative",
       "electronic",
       "reggae"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
@@ -125771,7 +126404,8 @@
       "r_and_b",
       "hip_hop",
       "funk_soul"
-    ]
+    ],
+    "official_website": "https://www.lollapalooza.com"
   },
   {
     "source": "songkick.com",
@@ -126087,7 +126721,8 @@
       "country",
       "electronic",
       "hip_hop"
-    ]
+    ],
+    "official_website": "http://www.bumbershoot.com"
   },
   {
     "source": "songkick.com",
@@ -126405,7 +127040,8 @@
       "r_and_b",
       "country",
       "classical"
-    ]
+    ],
+    "official_website": "https://www.shakykneesfestival.com/"
   },
   {
     "source": "songkick.com",
@@ -126547,7 +127183,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "https://riotfest.org/"
   },
   {
     "source": "songkick.com",
@@ -126673,7 +127310,8 @@
       "electronic",
       "folk_blues",
       "pop"
-    ]
+    ],
+    "official_website": "http://www.cbgb.com"
   },
   {
     "source": "songkick.com",
@@ -126850,7 +127488,8 @@
       "classical",
       "electronic",
       "comedy"
-    ]
+    ],
+    "official_website": "http://aftershockconcert.com"
   },
   {
     "source": "songkick.com",
@@ -127015,7 +127654,8 @@
       "r_and_b",
       "funk_soul",
       "comedy"
-    ]
+    ],
+    "official_website": "http://www.vanswarpedtour.com"
   },
   {
     "source": "songkick.com",
