@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Venice Carnival 2026",
+    "city": "Venice",
+    "country": "unknown",
+    "dates": "2026-02-07/2026-02-17",
+    "description": "A theatrical and intimate celebration in Venice with the theme \"Olympus, the origins of play,\" where masks and costumes transform the city into a living stage.",
+    "source_url": "https://www.flypgs.com/en/blog/dancing-through-europes-most-famous-carnivals/"
+  },
+  {
+    "name": "Cologne Carnival 2026",
+    "city": "Cologne",
+    "country": "Germany",
+    "dates": "2026-02-12/2026-02-17",
+    "description": "A high-energy street festival known as the \"crazy days,\" featuring marching bands, local parades, and a peak celebration on Rose Monday.",
+    "source_url": "https://www.flypgs.com/en/blog/dancing-through-europes-most-famous-carnivals/"
+  },
+  {
+    "name": "Nice Carnival 2026",
+    "city": "Nice",
+    "country": "unknown",
+    "dates": "2026-02-11/2026-03-01",
+    "description": "A sunny celebration on the French Riviera involving giant moving sculpture floats, the nighttime Parade of Lights, and fragrant flower parades.",
+    "source_url": "https://www.flypgs.com/en/blog/dancing-through-europes-most-famous-carnivals/"
+  },
+  {
+    "name": "Patras Carnival",
+    "city": "Patras",
+    "country": "Greece",
+    "dates": "Traditionally begins around January 17 and runs until the pre Lent finish",
+    "description": "A spontaneous and community-driven Greek festival featuring parades, treasure hunts, and a dramatic closing ritual near the harbor.",
+    "source_url": "https://www.flypgs.com/en/blog/dancing-through-europes-most-famous-carnivals/"
+  },
+  {
+    "name": "Basel Fasnacht 2026",
+    "city": "Basel",
+    "country": "Switzerland",
+    "dates": "2026-02-23/2026-02-25",
+    "description": "A precisely timed three-day ritual beginning at 4:00 a.m. with a lantern-lit procession through the old town accompanied by piccolos and drums.",
+    "source_url": "https://www.flypgs.com/en/blog/dancing-through-europes-most-famous-carnivals/"
+  }
+]
