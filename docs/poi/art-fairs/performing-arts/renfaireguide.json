@@ -392,8 +392,8 @@
   },
   {
     "name": "Central Missouri Renaissance Festival",
-    "start_date": "2026-04-18",
-    "end_date": "2026-04-06",
+    "start_date": "2026-04-06",
+    "end_date": "2026-04-18",
     "city": "Kingdom City",
     "state": "Missouri",
     "country": "US",
@@ -579,8 +579,8 @@
   },
   {
     "name": "Midsummer Fantasy Renaissance Faire",
-    "start_date": "2026-06-27",
-    "end_date": "2026-06-12",
+    "start_date": "2026-06-12",
+    "end_date": "2026-06-27",
     "city": "Ansonia",
     "state": "Connecticut",
     "country": "US",
@@ -6002,8 +6002,8 @@
   },
   {
     "name": "Mythical & Medieval Fest",
-    "start_date": "2026-11-07",
-    "end_date": "2026-11-06",
+    "start_date": "2026-11-06",
+    "end_date": "2026-11-07",
     "city": "Myrtle Beach",
     "state": "South Carolina",
     "country": "US",
@@ -11646,8 +11646,8 @@
   },
   {
     "name": "The Village Renaissance Faire",
-    "start_date": "2026-05-23",
-    "end_date": "2026-05-14",
+    "start_date": "2026-05-14",
+    "end_date": "2026-05-23",
     "city": "Wrightstown",
     "state": "Pennsylvania",
     "country": "US",

@@ -1,53 +1,5 @@
 [
   {
-    "name": "Europe",
-    "section": "intro",
-    "source": "wikipedia:List of new media art festivals",
-    "wiki_title": "List of film festivals in Europe"
-  },
-  {
-    "name": "North/Central America",
-    "section": "intro",
-    "source": "wikipedia:List of new media art festivals",
-    "wiki_title": "List of film festivals in North and Central America"
-  },
-  {
-    "name": "Oceania",
-    "section": "intro",
-    "source": "wikipedia:List of new media art festivals",
-    "wiki_title": "List of film festivals in Oceania"
-  },
-  {
-    "name": "Fantastic and horror film festivals",
-    "section": "intro",
-    "source": "wikipedia:List of new media art festivals",
-    "wiki_title": "List of fantastic and horror film festivals"
-  },
-  {
-    "name": "Documentary film festivals",
-    "section": "intro",
-    "source": "wikipedia:List of new media art festivals",
-    "wiki_title": "Documentary film festivals"
-  },
-  {
-    "name": "Human rights film festivals",
-    "section": "intro",
-    "source": "wikipedia:List of new media art festivals",
-    "wiki_title": "List of human rights film festivals"
-  },
-  {
-    "name": "LGBT film festivals",
-    "section": "intro",
-    "source": "wikipedia:List of new media art festivals",
-    "wiki_title": "List of LGBT film festivals"
-  },
-  {
-    "name": "New Media art festivals",
-    "section": "intro",
-    "source": "wikipedia:List of new media art festivals",
-    "wiki_title": "New Media art festivals"
-  },
-  {
     "name": "ISEA2020 in Montreal, Canada",
     "section": "International and online festivals",
     "source": "wikipedia:List of new media art festivals"
@@ -195,12 +147,6 @@
     "section": "Europe",
     "source": "wikipedia:List of new media art festivals",
     "wiki_title": "Outsider Art Fair"
-  },
-  {
-    "name": "European Media Arts Festival (EMAF) is an international platform and competition for media art, experimental film, and digital culture, held annually in Osnabrück, Germany. The festival showcases contemporary trends in media art and offers a forum for both emerging and established artists working with film, video, installation, performance, and digital media. EMAF serves as a meeting point for artists, curators, and scholars, and features screenings, exhibitions, workshops, and lectures across various venues in the city.",
-    "section": "Europe",
-    "source": "wikipedia:List of new media art festivals",
-    "wiki_title": "European Media Arts Festival (page does not exist)"
   },
   {
     "name": "Cynetart is an International competition created by Trans-Media-Akademie Hellerau (TMA) and their partners. This festival is targeted for artists and artist collectives, researchers and scientists, who deal with new technologies in media in their artistic practice. It includes formats such as installation, objects, performance, net art and VR-works.",

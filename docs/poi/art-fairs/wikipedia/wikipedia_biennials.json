@@ -1,7 +1,7 @@
 [
   {
     "name": "Adelaide Biennial of Australian Art",
-    "country": "South Australia",
+    "country": "Australia",
     "city": "",
     "start_date": null,
     "end_date": null,
@@ -11,11 +11,12 @@
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": "Adelaide_Biennial_of_Australian_Art",
-    "wikidata_qid": null
+    "wikidata_qid": null,
+    "state": "South Australia"
   },
   {
     "name": "Asian Art Biennale",
-    "country": "Taiwan (National Taiwan Museum of Fine Arts)",
+    "country": "Taiwan",
     "city": "Taichung",
     "start_date": null,
     "end_date": null,
@@ -25,7 +26,8 @@
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": "Taichung",
-    "wikidata_qid": null
+    "wikidata_qid": null,
+    "venue_note": "Taiwan (National Taiwan Museum of Fine Arts)"
   },
   {
     "name": "Athens Biennale",
@@ -154,14 +156,14 @@
     "wikidata_qid": null
   },
   {
-    "name": "Beta \u2013 Timi\u0219oara Architecture Biennial",
+    "name": "Beta – Timișoara Architecture Biennial",
     "country": "Romania",
     "city": "",
     "start_date": null,
     "end_date": null,
     "website": "",
     "status": "",
-    "notes": "Beta \u2013 Timi\u0219oara Architecture Biennial, Romania",
+    "notes": "Beta – Timișoara Architecture Biennial, Romania",
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": "Beta_%E2%80%93_Timi%C8%99oara_Architecture_Biennial",
@@ -196,14 +198,14 @@
     "wikidata_qid": null
   },
   {
-    "name": "Bi\u00ebnnale van Belgi\u00eb",
+    "name": "Biënnale van België",
     "country": "Biennial of Belgium",
     "city": "",
     "start_date": null,
     "end_date": null,
     "website": "",
     "status": "",
-    "notes": "Bi\u00ebnnale van Belgi\u00eb, Biennial of Belgium, Belgium",
+    "notes": "Biënnale van België, Biennial of Belgium, Belgium",
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": null,
@@ -448,14 +450,14 @@
     "wikidata_qid": null
   },
   {
-    "name": "G\u00f6teborg International Biennial for Contemporary Art",
+    "name": "Göteborg International Biennial for Contemporary Art",
     "country": "Sweden",
     "city": "Gothenburg",
     "start_date": null,
     "end_date": null,
     "website": "",
     "status": "",
-    "notes": "G\u00f6teborg International Biennial for Contemporary Art, in Gothenburg, Sweden",
+    "notes": "Göteborg International Biennial for Contemporary Art, in Gothenburg, Sweden",
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": null,
@@ -786,12 +788,12 @@
   {
     "name": "Mediations Biennale",
     "country": "Poland",
-    "city": "Pozna\u0144",
+    "city": "Poznań",
     "start_date": null,
     "end_date": null,
     "website": "",
     "status": "",
-    "notes": "Mediations Biennale, in Pozna\u0144, Poland",
+    "notes": "Mediations Biennale, in Poznań, Poland",
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": "Pozna%C5%84",
@@ -833,7 +835,7 @@
     "end_date": null,
     "website": "",
     "status": "",
-    "notes": "MOMENTA Biennale de l'image [fr] (formerly known as Le Mois de la Photo \u00e0 Montr\u00e9al), in Montreal, Canada",
+    "notes": "MOMENTA Biennale de l'image [fr] (formerly known as Le Mois de la Photo à Montréal), in Montreal, Canada",
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": null,
@@ -924,14 +926,14 @@
     "wikidata_qid": null
   },
   {
-    "name": "October Salon \u2013 Belgrade Biennale",
+    "name": "October Salon – Belgrade Biennale",
     "country": "organised by the Cultural Center of Belgrade [sr]",
     "city": "Belgrade",
     "start_date": null,
     "end_date": null,
     "website": "",
     "status": "",
-    "notes": "October Salon \u2013 Belgrade Biennale [sr], organised by the Cultural Center of Belgrade [sr], in Belgrade, Serbia",
+    "notes": "October Salon – Belgrade Biennale [sr], organised by the Cultural Center of Belgrade [sr], in Belgrade, Serbia",
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": null,
@@ -980,14 +982,14 @@
     "wikidata_qid": null
   },
   {
-    "name": "S\u00e3o Paulo Art Biennial",
+    "name": "São Paulo Art Biennial",
     "country": "Brazil",
-    "city": "S\u00e3o Paulo",
+    "city": "São Paulo",
     "start_date": null,
     "end_date": null,
     "website": "",
     "status": "",
-    "notes": "S\u00e3o Paulo Art Biennial, in S\u00e3o Paulo, Brazil",
+    "notes": "São Paulo Art Biennial, in São Paulo, Brazil",
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": "S%C3%A3o_Paulo_Art_Biennial",
@@ -1038,12 +1040,12 @@
   {
     "name": "Sequences",
     "country": "Iceland",
-    "city": "Reykjav\u00edk",
+    "city": "Reykjavík",
     "start_date": null,
     "end_date": null,
     "website": "",
     "status": "",
-    "notes": "Sequences, in Reykjav\u00edk, Iceland",
+    "notes": "Sequences, in Reykjavík, Iceland",
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": "Sequences_Art_Festival",
@@ -1149,7 +1151,7 @@
   },
   {
     "name": "Taiwan Arts Biennale",
-    "country": "Taiwan (National Taiwan Museum of Fine Arts)",
+    "country": "Taiwan",
     "city": "Taichung",
     "start_date": null,
     "end_date": null,
@@ -1159,7 +1161,8 @@
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": "Taichung",
-    "wikidata_qid": null
+    "wikidata_qid": null,
+    "venue_note": "Taiwan (National Taiwan Museum of Fine Arts)"
   },
   {
     "name": "Taiwan Film Biennale",
@@ -1330,14 +1333,14 @@
     "wikidata_qid": null
   },
   {
-    "name": "Wroc\u0142aw",
+    "name": "Wrocław",
     "country": "Poland",
-    "city": "Wroc\u0142aw",
+    "city": "Wrocław",
     "start_date": null,
     "end_date": null,
     "website": "",
     "status": "",
-    "notes": "WRO Biennale, in Wroc\u0142aw, Poland",
+    "notes": "WRO Biennale, in Wrocław, Poland",
     "category": "biennale",
     "source_url": "https://en.wikipedia.org/wiki/Biennale",
     "wikipedia_article": "Wroc%C5%82aw",
