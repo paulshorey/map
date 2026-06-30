@@ -12,6 +12,10 @@ export interface PoiDetail {
   website?: string;
   hours?: string;
   photo_url?: string;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  date_precision?: string | null;
+  status?: string | null;
   lat?: number;
   lng?: number;
   geometry: GeoJSON.Point;
