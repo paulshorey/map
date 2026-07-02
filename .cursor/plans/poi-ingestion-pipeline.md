@@ -1093,11 +1093,19 @@ store no `active` boolean.
 
 ### 15.5 Time-bound / event POIs (festivals) are a new POI shape
 
+> **Refined by `.cursor/plans/poi-event-dates.md`** (and implemented in the canonical schema):
+> event dates are now **first-class nullable columns** on `canonical_pois`
+> (`starts_at`/`ends_at`/`date_precision` + generated `event_range tstzrange` with a GiST index),
+> with recurring editions in `canonical_poi_occurrences` — not jsonb `attributes` — so the
+> user-facing date filter can be indexed. `attributes` still holds extra temporal metadata
+> (recurrence text, edition history). Everything else in this section still holds.
+
 Gardens and campgrounds are permanent places; festivals are **events**. The model already handles
 them, with these specifics:
 
 - **Dates in `attributes`** (`start_date`, `end_date`, recurrence) — typed core columns stay
   place-generic; event specifics live in the per-category `attributes` jsonb.
+  _(Superseded: see the note above — dates were promoted to typed columns.)_
 - **One canonical per festival, not per edition** — sources list 2024/2025/2026 editions of the
   same festival; they merge into one canonical (§6 "Recurring events collapse"). Keep the
   next/most-recent edition's dates; optionally keep an edition history in `attributes`.

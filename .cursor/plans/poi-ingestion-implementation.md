@@ -580,9 +580,10 @@ Point all reads at `canonical_pois` and the category join. Keep function names/s
   `research_sources.attribution`/`slug` via `research_pois` join on `canonical_poi_id`). Keep
   `geometry`, `lng`, `lat`.
 - **Event status is derived here, never stored (overview §15.4).** For event POIs (festivals),
-  compute `upcoming`/`active`/`past` at read time from `attributes.start_date`/`end_date` vs.
-  `now()` — there is no stored `active` flag to go stale. (A future map filter like "upcoming this
-  season" is a `WHERE` on those dates, evaluated per request.)
+  compute `upcoming`/`active`/`past` at read time from the typed `starts_at`/`ends_at` columns vs.
+  `now()` (per `.cursor/plans/poi-event-dates.md` these are first-class columns, no longer
+  `attributes.start_date`/`end_date`) — there is no stored `active` flag to go stale. (A future
+  map filter like "upcoming this season" is a `WHERE` on those dates, evaluated per request.)
 - **`listPoiCategories`** — `SELECT display_name FROM canonical_categories WHERE is_active ORDER BY
   sort_order, display_name`. Returns `string[]` (unchanged shape).
 - **`insertPois` / `NewPoi`** — remove the direct-to-canonical insert (the `ON CONFLICT (lng,lat)`
@@ -836,9 +837,10 @@ method, and LLM reason go to `research_match_decisions` (not onto the row).
 7. **Transitivity**: union-find across pairwise matches.
 8. **Recurring events collapse to one canonical (overview §6, §15.5).** For festivals, different
    *editions* (2024/2025/2026) of the same festival share name + venue, so they block and merge
-   into one canonical — **not** one POI per year. On merge, fold edition dates into
-   `attributes` (keep the next/most-recent `start_date`/`end_date`, optionally an edition history);
-   never store an `active` flag (status is derived at read time from those dates — see M3).
+   into one canonical — **not** one POI per year. On merge, write edition rows to
+   `canonical_poi_occurrences` and set the representative `starts_at`/`ends_at` on the canonical
+   (per `.cursor/plans/poi-event-dates.md`, which promoted dates from `attributes` to typed
+   columns); never store an `active` flag (status is derived at read time from those dates — see M3).
 
 ### M8.2 Supporting pieces
 
