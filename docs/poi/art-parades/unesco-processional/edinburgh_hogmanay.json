@@ -1,0 +1,34 @@
+[
+  {
+    "name": "Edinburgh Hogmanay Torchlight Procession",
+    "city": "Edinburgh",
+    "country": "Scotland, United Kingdom",
+    "start_date": null,
+    "end_date": null,
+    "annual_date": "December 30 (Torchlight Procession); December 31 (Street Party)",
+    "venue_name": "Edinburgh Old Town (Royal Mile to Holyrood Park)",
+    "street_address": "Parliament Square, Edinburgh, Scotland EH1 1RF",
+    "lat": 55.95,
+    "lng": -3.1883,
+    "website_url": "https://www.edinburghshogmanay.com/",
+    "description": "Edinburgh's Hogmanay Torchlight Procession is held on December 30, where thousands of torch-bearers parade through Edinburgh's Old Town from Parliament Square along the Royal Mile to Holyrood Park. It is one of the world's largest New Year's Eve celebrations, kicking off the four-day Hogmanay festival.",
+    "unesco_id": null,
+    "source": "https://www.edinburghshogmanay.com/"
+  },
+  {
+    "name": "Edinburgh Hogmanay Street Party & Concert in the Gardens",
+    "city": "Edinburgh",
+    "country": "Scotland, United Kingdom",
+    "start_date": null,
+    "end_date": null,
+    "annual_date": "December 31 (New Year's Eve)",
+    "venue_name": "Princes Street and Princes Street Gardens",
+    "street_address": "Princes Street, Edinburgh, Scotland EH2",
+    "lat": 55.9533,
+    "lng": -3.1893,
+    "website_url": "https://www.edinburghshogmanay.com/",
+    "description": "The Hogmanay Street Party on Princes Street and Concert in the Gardens is a major ticketed event drawing tens of thousands of revellers to welcome the New Year with live music and midnight fireworks over Edinburgh Castle.",
+    "unesco_id": null,
+    "source": "https://www.edinburghshogmanay.com/"
+  }
+]

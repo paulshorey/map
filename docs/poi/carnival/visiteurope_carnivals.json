@@ -1,0 +1,57 @@
+[
+  {
+    "name": "Užgavėnės",
+    "city": "Rumsiskes (and nationwide)",
+    "country": "Lithuania",
+    "start_date": "February (before Ash Wednesday)",
+    "end_date": "February (before Ash Wednesday)",
+    "date_raw": "February, before Lent",
+    "description": "A festival symbolizing the banishment of winter. Participants wear colorful garments and frightening masks, take to the streets, and eat up to 12 times. Key foods include pancakes symbolizing spring, honoring Morė, the deity of fruitfulness.",
+    "url": "https://www.visiteurope.com/experiences/carnivals-europe",
+    "source": "https://www.visiteurope.com/experiences/carnivals-europe"
+  },
+  {
+    "name": "Fašiangy",
+    "city": "Nationwide (towns and cities)",
+    "country": "Slovakia",
+    "start_date": "Epiphany to Ash Wednesday",
+    "end_date": "Day before Ash Wednesday",
+    "date_raw": "Between Epiphany and Ash Wednesday",
+    "description": "A joyful carnival tradition across Slovakia with music, dancing, masks, and folklore attire. Highlights include freshly made bacon and sausages, ritual burial of a bass, and drinking slivovitz. Celebrated with great community spirit.",
+    "url": "https://www.visiteurope.com/experiences/carnivals-europe",
+    "source": "https://www.visiteurope.com/experiences/carnivals-europe"
+  },
+  {
+    "name": "Mărțișor (Martisor)",
+    "city": "Nationwide",
+    "country": "Romania",
+    "start_date": "March 1",
+    "end_date": "March 1",
+    "date_raw": "March 1",
+    "description": "Celebrated on the first of March, marking the official end of winter in Romania. Colorful markets spring up, people exchange gifts and snowdrops, and attend big communal dinners. A nationwide celebration in hamlets and cities alike.",
+    "url": "https://www.visiteurope.com/experiences/carnivals-europe",
+    "source": "https://www.visiteurope.com/experiences/carnivals-europe"
+  },
+  {
+    "name": "Ostatki (Carnival / Masquerade Ball)",
+    "city": "Nationwide",
+    "country": "Poland",
+    "start_date": "Final days of Carnival before Lent",
+    "end_date": "Shrove Tuesday",
+    "date_raw": "Final days of Carnival before Lent",
+    "description": "Poland's carnival culminates in Ostatki, featuring horse-drawn sleigh rides, masquerade balls, folkloric garments, and traditional doughnuts (pączki). A centuries-old tradition tracing back to the Middle Ages.",
+    "url": "https://www.visiteurope.com/experiences/carnivals-europe",
+    "source": "https://www.visiteurope.com/experiences/carnivals-europe"
+  },
+  {
+    "name": "Kurentovanje",
+    "city": "Ptuj",
+    "country": "Slovenia",
+    "start_date": "February (before Lent)",
+    "end_date": "February (before Lent)",
+    "date_raw": "February, before Lent; Ptuj is the oldest city in Slovenia",
+    "description": "A ritual mask parade centered around Kurent, a mythical being thought to chase away winter. Costumes include sheepskin hat and tunic, cowbells, and a leather mask. Features concerts, parades, and special food. Attracts ~150,000 attendees.",
+    "url": "https://www.visiteurope.com/experiences/carnivals-europe",
+    "source": "https://www.visiteurope.com/experiences/carnivals-europe"
+  }
+]

@@ -1,0 +1,376 @@
+{
+  "source": "https://en.wikipedia.org/wiki/Federation_of_European_Carnival_Cities",
+  "api_url": "https://en.wikipedia.org/w/api.php?action=parse&page=Federation_of_European_Carnival_Cities&prop=text&format=json",
+  "description": "The Federation of European Carnival Cities (FECC) was founded in 1980 and has been registered in the Court of Luxembourg. Member cities, organization, and individual members are engaged in producing popular celebrations or carnivals which represent an authentic masquerade or parade of a people's cultural identity. The General membership meets twice each year generally at the end of May and in October. On the occasion of the 700th anniversary of Amsterdam (The Nederlands), Carnival Princes from all over the world met each other in the Amsterdam RAI congress centre in November 1975. The Amsterdam Carnival Association, governed by Mr.Henk van der Kroon was called \"Amstelpieren & Brokkerijders\". The big event brought an unprecedented number of Carnival Associations from different countries together. The guests of honour included Her Royal Highness Princess Margriet of the Netherlands as well as diplomats and dignitaries from afar including Brazil, Greece, Germany and Belgium. This unique event is widely recognized as the starting point for the lasting contacts and exchanges between associations and cities that has become the FECC. In 1980, international carnival associations met in Patras (Greece), again under the initiative of the Amsterdam Carnival Association Ämstelpieren & Bfrokkerijders. It is generally accepted that the FECC (Foundation of European Carnival) came into existence during this meeting. At the 5th reunion in Kos-Patmos (Greece), which took place in 1985, a membership was introduced and it was decided to drawn up rules and bylaws. The first countries that became a member of the Foundation were Belgium, Netherlands, Luxembourg, England and Malta. Articles of association were formulated and the creation of FECC was registered in the Grand Duchy of Luxembourg. Directly following the 1987 7th reunion in Malta, the Belgian members founded their own section FECC-Belgium with its own governing board. In 1988, FECC-Germany founded their own section as did FECC-Netherlands and FECC –Luxembourg. The first elected International President was Mr. Henk van der Kroon.",
+  "total_conventions": 43,
+  "conventions": [
+    {
+      "year": "1981",
+      "edition": "1st",
+      "city": "Patras Carnival",
+      "country": "Greece",
+      "participants": "17",
+      "raw": "Patras Carnival (Greece)"
+    },
+    {
+      "year": "1982",
+      "edition": "2nd",
+      "city": "Syros",
+      "country": "Greece",
+      "participants": "31",
+      "raw": "Syros (Greece)"
+    },
+    {
+      "year": "1983",
+      "edition": "3rd",
+      "city": "Cephalonia / Zakyntos",
+      "country": "Greece",
+      "participants": "66",
+      "raw": "Cephalonia / Zakyntos (Greece)"
+    },
+    {
+      "year": "1984",
+      "edition": "4th",
+      "city": "Samos",
+      "country": "Greece",
+      "participants": "35",
+      "raw": "Samos (Greece)"
+    },
+    {
+      "year": "1985",
+      "edition": "5th",
+      "city": "Kos / Patmos",
+      "country": "Greece",
+      "participants": "34",
+      "raw": "Kos / Patmos (Greece)"
+    },
+    {
+      "year": "1986",
+      "edition": "6th",
+      "city": "Kalymnos / Leros",
+      "country": "Greece",
+      "participants": "31",
+      "raw": "Kalymnos / Leros (Greece)"
+    },
+    {
+      "year": "1987",
+      "edition": "7th",
+      "city": "Maltese Carnival",
+      "country": "Malta",
+      "participants": "48",
+      "raw": "Maltese Carnival (Malta)"
+    },
+    {
+      "year": "1988",
+      "edition": "8th",
+      "city": "Rep. Trinidad & Tobago and Barbados",
+      "country": "",
+      "participants": "92",
+      "raw": "Rep. Trinidad & Tobago and Barbados"
+    },
+    {
+      "year": "1989",
+      "edition": "9th",
+      "city": "Sta.Cruz de Tenerife",
+      "country": "Spain",
+      "participants": "102",
+      "raw": "Sta.Cruz de Tenerife (Spain)"
+    },
+    {
+      "year": "1990",
+      "edition": "10th",
+      "city": "Patras Carnival",
+      "country": "Greece",
+      "participants": "130",
+      "raw": "Patras Carnival (Greece)"
+    },
+    {
+      "year": "1991",
+      "edition": "11th",
+      "city": "Rosas",
+      "country": "Spain",
+      "participants": "132",
+      "raw": "Rosas (Spain)"
+    },
+    {
+      "year": "1992",
+      "edition": "12th",
+      "city": "Aalborg",
+      "country": "Denmark",
+      "participants": "131",
+      "raw": "Aalborg (Denmark)"
+    },
+    {
+      "year": "1993",
+      "edition": "13th",
+      "city": "Curaçao",
+      "country": "Netherlands Antilles",
+      "participants": "156",
+      "raw": "Curaçao (Netherlands Antilles)"
+    },
+    {
+      "year": "1994",
+      "edition": "14th",
+      "city": "Norrköping",
+      "country": "Sweden",
+      "participants": "102",
+      "raw": "Norrköping (Sweden)"
+    },
+    {
+      "year": "1995",
+      "edition": "15th",
+      "city": "Maltese Carnival",
+      "country": "Malta",
+      "participants": "102",
+      "raw": "Maltese Carnival (Malta)"
+    },
+    {
+      "year": "1996",
+      "edition": "16th",
+      "city": "Maribor / Ptuj",
+      "country": "Slovenia",
+      "participants": "81",
+      "raw": "Maribor / Ptuj (Slovenia)"
+    },
+    {
+      "year": "1997",
+      "edition": "17th",
+      "city": "Aruba",
+      "country": "West Indies",
+      "participants": "116",
+      "raw": "Aruba (West Indies)"
+    },
+    {
+      "year": "1998",
+      "edition": "18th",
+      "city": "Strumica",
+      "country": "Macedonia",
+      "participants": "78",
+      "raw": "Strumica (Macedonia)"
+    },
+    {
+      "year": "1999",
+      "edition": "19th",
+      "city": "Dubrovnik",
+      "country": "Croatia",
+      "participants": "108",
+      "raw": "Dubrovnik (Croatia)"
+    },
+    {
+      "year": "2000",
+      "edition": "20th",
+      "city": "Carnival of Santa Cruz de Tenerife",
+      "country": "Spain",
+      "participants": "229",
+      "raw": "Carnival of Santa Cruz de Tenerife (Spain)"
+    },
+    {
+      "year": "2001",
+      "edition": "21st",
+      "city": "Saint Petersburg / Pskov",
+      "country": "Russia",
+      "participants": "244",
+      "raw": "Saint Petersburg / Pskov (Russia)"
+    },
+    {
+      "year": "2002",
+      "edition": "22nd",
+      "city": "Kraków",
+      "country": "Poland",
+      "participants": "184",
+      "raw": "Kraków (Poland)"
+    },
+    {
+      "year": "2003",
+      "edition": "23rd",
+      "city": "Ovar",
+      "country": "Portugal",
+      "participants": "252",
+      "raw": "Ovar (Portugal)"
+    },
+    {
+      "year": "2004",
+      "edition": "24th",
+      "city": "Pernik",
+      "country": "Bulgaria",
+      "participants": "132",
+      "raw": "Pernik (Bulgaria)"
+    },
+    {
+      "year": "2005",
+      "edition": "25th",
+      "city": "Nadur Carnival (Gozo (Malta))",
+      "country": "",
+      "participants": "450",
+      "raw": "Nadur Carnival (Gozo (Malta))"
+    },
+    {
+      "year": "2006",
+      "edition": "26th",
+      "city": "Novi Vinodolski / Rijeka Carnival",
+      "country": "Croatia",
+      "participants": "320",
+      "raw": "Novi Vinodolski / Rijeka Carnival (Croatia)"
+    },
+    {
+      "year": "2007",
+      "edition": "27th",
+      "city": "Sousse",
+      "country": "Tunisia",
+      "participants": "395",
+      "raw": "Sousse (Tunisia)"
+    },
+    {
+      "year": "2008",
+      "edition": "28th",
+      "city": "Ploermel",
+      "country": "France",
+      "participants": "285",
+      "raw": "Ploermel (France)"
+    },
+    {
+      "year": "2009",
+      "edition": "29th",
+      "city": "[[Kotor - Budva - Tuzi]]",
+      "country": "Montenegro",
+      "participants": "198",
+      "raw": "[[Kotor - Budva - Tuzi]] (Montenegro)"
+    },
+    {
+      "year": "2010",
+      "edition": "30th",
+      "city": "Patras",
+      "country": "Greece",
+      "participants": "92",
+      "raw": "Patras (Greece)"
+    },
+    {
+      "year": "2011",
+      "edition": "31st",
+      "city": "Vrnjačka Banja",
+      "country": "Serbia",
+      "participants": "156",
+      "raw": "Vrnjačka Banja (Serbia)"
+    },
+    {
+      "year": "2012",
+      "edition": "32nd",
+      "city": "Prileb",
+      "country": "Macedonia",
+      "participants": "115",
+      "raw": "Prileb (Macedonia)"
+    },
+    {
+      "year": "2013",
+      "edition": "33rd",
+      "city": "Yambol",
+      "country": "Bulgaria",
+      "participants": "118",
+      "raw": "Yambol (Bulgaria)"
+    },
+    {
+      "year": "2014",
+      "edition": "34th",
+      "city": "Limassol",
+      "country": "Cypres",
+      "participants": "125",
+      "raw": "Limassol (Cypres)"
+    },
+    {
+      "year": "2015",
+      "edition": "35th",
+      "city": "Bol",
+      "country": "Croatia",
+      "participants": "140",
+      "raw": "Bol (Croatia)"
+    },
+    {
+      "year": "2016",
+      "edition": "36th",
+      "city": "Cottbus",
+      "country": "Germany",
+      "participants": "132",
+      "raw": "Cottbus (Germany)"
+    },
+    {
+      "year": "2017",
+      "edition": "37th",
+      "city": "Valletta",
+      "country": "Malta",
+      "participants": "142",
+      "raw": "Valletta (Malta)"
+    },
+    {
+      "year": "2018",
+      "edition": "38th",
+      "city": "Šabac",
+      "country": "Serbia",
+      "participants": "167",
+      "raw": "Šabac (Serbia)"
+    },
+    {
+      "year": "2019",
+      "edition": "39th",
+      "city": "Yalova",
+      "country": "Turkey",
+      "participants": "116",
+      "raw": "Yalova (Turkey)"
+    },
+    {
+      "year": "2020",
+      "edition": "40th",
+      "city": "Ptuj",
+      "country": "Slovenia",
+      "participants": "Unfortunately cancelled (COVID-19)",
+      "raw": "Ptuj (Slovenia)"
+    },
+    {
+      "year": "2021",
+      "edition": "41st",
+      "city": "Ptuj",
+      "country": "Slovenia",
+      "participants": "Unfortunately cancelled (COVID-19)",
+      "raw": "Ptuj (Slovenia)"
+    },
+    {
+      "year": "2022",
+      "edition": "42nd",
+      "city": "Pétange",
+      "country": "Luxembourg",
+      "participants": "150",
+      "raw": "Pétange (Luxembourg)"
+    },
+    {
+      "year": "2023",
+      "edition": "43rd",
+      "city": "Leskovac",
+      "country": "Serbia",
+      "participants": "1",
+      "raw": "Leskovac (Serbia)"
+    }
+  ],
+  "member_cities_raw": [
+    "Public bodies (municipalities, national art commissions etc.)",
+    "Professional NGOs",
+    "Amateur organizations",
+    "International General Assembly",
+    "Presidium/ Board of Directors ( formed by national chairmen or representatives)",
+    "International Executive Board (term of administration is 3 years)",
+    "Audit Committee",
+    "Senators (advisers) formed by former board members and prominent persons",
+    "exchange of knowledge concerning financing, fundraising and structures",
+    "consulting organizations",
+    "teaching and consulting construction of allegories floats",
+    "motivation techniques for volunteers",
+    "promoting carnival towards European institutions as cultural heritage",
+    "organizing an annual convention",
+    "collecting information concerning various carnival traditions",
+    "exchange-programs for clubs/bands, especially youth",
+    "FECC main website",
+    "FECC Belgium (English, français & Deutsch)",
+    "FECC Germany (all languages)",
+    "FECC Croatia (hrvatski only)",
+    "FECC Netherlands (Nederlands only)",
+    "FECC history"
+  ]
+}

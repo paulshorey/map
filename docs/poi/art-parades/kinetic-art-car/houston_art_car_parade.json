@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Houston Art Car Parade",
+    "city": "Houston",
+    "state": "TX",
+    "country": "USA",
+    "start_date": "April 10, 2027 (40th Annual)",
+    "end_date": "April 10, 2027",
+    "venue_name": "Allen Parkway & Downtown Houston",
+    "street_address": "Allen Parkway, Houston, TX 77019",
+    "lat": 29.7604,
+    "lng": -95.3955,
+    "website_url": "https://www.thehoustonartcarparade.com/",
+    "description": "The Houston Art Car Parade is one of the world's largest art car parades with over 250 decorated vehicles, art bikes, and rolling sculptures. Presented annually by the Orange Show Center for Visionary Art. Held on Allen Parkway in downtown Houston each April. The 40th Annual parade is April 10, 2027.",
+    "source": "https://www.thehoustonartcarparade.com/"
+  }
+]

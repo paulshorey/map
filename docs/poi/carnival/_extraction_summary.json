@@ -1,0 +1,44 @@
+{
+  "total_carnivals": 103,
+  "files": {
+    "rough_guides_carnivals.json": {
+      "count": 10
+    },
+    "rick_steves_festivals.json": {
+      "count": 1
+    },
+    "flixbus_france_carnivals.json": {
+      "count": 3
+    },
+    "flixbus_germany_carnivals.json": {
+      "count": 4
+    },
+    "catavino_spain_carnivals.json": {
+      "count": 9
+    },
+    "recordgo_spain_carnivals.json": {
+      "count": 14
+    },
+    "ecotuktuk_portugal_carnivals.json": {
+      "count": 8
+    },
+    "europcar_belgium_carnivals.json": {
+      "count": 9
+    },
+    "iamexpat_netherlands_carnivals.json": {
+      "count": 8
+    },
+    "iamexpat_germany_carnivals.json": {
+      "count": 8
+    },
+    "pegasus_europe_carnivals.json": {
+      "count": 5
+    },
+    "merimerieu_europe_carnivals.json": {
+      "count": 10
+    },
+    "cityvoyager_balkans_carnivals.json": {
+      "count": 14
+    }
+  }
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Binche carnival",
+    "city": "Binche",
+    "country": "Belgium",
+    "dates": "Traditionally taking place before Easter",
+    "description": "A family-friendly festivity featuring parades of harlequins, Pierrots, and peasants, dominated by Gille characters who dance to welcome spring.",
+    "source_url": "https://www.europcar.com/editorial/things-to-do/the-top-9-best-belgian-carnivals-and-celebrations"
+  },
+  {
+    "name": "Aalst carnival",
+    "city": "Aalst",
+    "country": "Belgium",
+    "dates": "annual",
+    "description": "A unique annual celebration where the town prince is awarded the keys to the city, featuring broom dancers and the burning of giant effigies.",
+    "source_url": "https://www.europcar.com/editorial/things-to-do/the-top-9-best-belgian-carnivals-and-celebrations"
+  },
+  {
+    "name": "Blancs-Moussis carnival",
+    "city": "unknown",
+    "country": "Belgium",
+    "dates": "unknown",
+    "description": "A historical celebration where participants dress as monks in white, throw confetti, and swing dried herrings to commemorate defiance against a 1502 ban on monks celebrating.",
+    "source_url": "https://www.europcar.com/editorial/things-to-do/the-top-9-best-belgian-carnivals-and-celebrations"
+  },
+  {
+    "name": "Knokke-Heist carnival",
+    "city": "Knokke-Heist",
+    "country": "Belgium",
+    "dates": "unknown",
+    "description": "A festive carnival procession filled with music, dance, colourful outfits, and open-air concerts.",
+    "source_url": "https://www.europcar.com/editorial/things-to-do/the-top-9-best-belgian-carnivals-and-celebrations"
+  },
+  {
+    "name": "Ghent light festival",
+    "city": "Ghent",
+    "country": "Belgium",
+    "dates": "every three years",
+    "description": "A triennial festival where international artists display artistic light structures and Ghent's monuments are illuminated.",
+    "source_url": "https://www.europcar.com/editorial/things-to-do/the-top-9-best-belgian-carnivals-and-celebrations"
+  },
+  {
+    "name": "Dour festival",
+    "city": "Dour",
+    "country": "Belgium",
+    "dates": "summer festival",
+    "description": "A summer music festival featuring a wide range of genres including alternative, dance, pop, rock, electronic, punk, hip-hop, and techno.",
+    "source_url": "https://www.europcar.com/editorial/things-to-do/the-top-9-best-belgian-carnivals-and-celebrations"
+  },
+  {
+    "name": "Brussels Grand Place flower carpet",
+    "city": "Brussels",
+    "country": "Belgium",
+    "dates": "Every other August",
+    "description": "A biennial event where over 600,000 flowers form a massive, intricate carpet in the Grand Place, accompanied by a sound and light show.",
+    "source_url": "https://www.europcar.com/editorial/things-to-do/the-top-9-best-belgian-carnivals-and-celebrations"
+  },
+  {
+    "name": "Mons chocolate festival",
+    "city": "Mons",
+    "country": "Belgium",
+    "dates": "unknown",
+    "description": "A festival where local chocolatiers showcase and compete to offer the best Belgian chocolate treats.",
+    "source_url": "https://www.europcar.com/editorial/things-to-do/the-top-9-best-belgian-carnivals-and-celebrations"
+  },
+  {
+    "name": "Bruges beer festival",
+    "city": "Bruges",
+    "country": "Belgium",
+    "dates": "unknown",
+    "description": "A celebration of Belgium's brewing reputation where visitors can sample hundreds of Trappist, craft, and speciality beers.",
+    "source_url": "https://www.europcar.com/editorial/things-to-do/the-top-9-best-belgian-carnivals-and-celebrations"
+  }
+]

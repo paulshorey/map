@@ -1,0 +1,204 @@
+[
+  {
+    "name": "Chicago International Puppet Theater Festival",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "start_date": "January 20, 2027",
+    "end_date": "January 31, 2027",
+    "website_url": "https://www.chicagopuppetfest.org/",
+    "description": "Annual international puppet theater festival in Chicago. Next festival: January 20-31, 2027. Also offers year-round workshops, Chicago Puppet Lab, and community programs.",
+    "source": "https://www.chicagopuppetfest.org/"
+  },
+  {
+    "name": "Chicago Puppet Lab – Works-in-Progress Showings",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "start_date": "August 20, 2026",
+    "end_date": "August 23, 2026",
+    "website_url": "https://www.chicagopuppetfest.org/programs/chicago-puppet-lab",
+    "description": "Works-in-Progress Showings, tickets $15-$50",
+    "source": "https://www.chicagopuppetfest.org/"
+  },
+  {
+    "name": "Chicago International Puppet Theater Festival – Summer Workshops 2026",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "start_date": "Summer 2026",
+    "website_url": "https://www.chicagopuppetfest.org/workshops",
+    "description": "Live Online and In-Person puppetry workshops, $50-$365",
+    "source": "https://www.chicagopuppetfest.org/"
+  },
+  {
+    "name": "Each Year:",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": null,
+    "description": null,
+    "start_date": null,
+    "source": "https://www.chicagopuppetfest.org/"
+  },
+  {
+    "name": "Fest History (2015-2026)",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": null,
+    "description": null,
+    "start_date": null,
+    "source": "https://www.chicagopuppetfest.org/"
+  },
+  {
+    "name": "Happening Now:Puppet Lab ShowcaseandSummer Workshops",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/2026-chicago-puppet-lab/",
+    "description": null,
+    "start_date": null,
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Events",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/events/list/",
+    "description": "Changing any of the form inputs will cause the list of events to refresh with the filtered results.",
+    "start_date": "UpcomingUpcomingSelect date.",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Events Search and Views Navigation",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/events/list/",
+    "description": null,
+    "start_date": null,
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Event Views Navigation",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/events/list/",
+    "description": null,
+    "start_date": null,
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "List of events in Photo View",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/hand-puppetry-2-level-2-with-chad-williams-summer2026/",
+    "description": null,
+    "start_date": "Jun30",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Hand Puppetry 2: Advanced Techniques (Level 2) with Chad Williams",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/hand-puppetry-2-level-2-with-chad-williams-summer2026/",
+    "description": null,
+    "start_date": "Jun30",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Cutting Machines for Shadow Puppets and More (Level 2) with Myra Su",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/cutting-machines-for-shadow-puppets-and-more-with-myra-su-summer2026/",
+    "description": null,
+    "start_date": "Jul11",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Red Lantern Puppets (Level 1) with Grace Needlman",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/red-lantern-puppets-level-1-with-grace-needlman/",
+    "description": null,
+    "start_date": "Jul11",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Bringing Emotional Truth to Hand Puppets (Level 1) with Joshua Holden",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/bringing-emotional-truth-to-hand-puppets-level-1-with-joshua-holden-summer2026/",
+    "description": null,
+    "start_date": "Jul15",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Printmaking and Toy Theater (Level 1) with Roberto Rossi",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/prntmaking-toy-theater-level-1-with-roberto-rossi-summer2026/",
+    "description": null,
+    "start_date": "Jul18",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Worbla Techniques for the Puppet Maker (Level 1) with Chicago Puppet Studio",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/worbla-techniques-for-the-puppet-maker-level-1-with-chicago-puppet-studio/",
+    "description": null,
+    "start_date": "Jul19",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Toy Theater 1 (Level 1) with Roberto Rossi",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/toy-theater-1-level-1-with-roberto-rossi-summer2026/",
+    "description": null,
+    "start_date": "Jul20",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Shadow Puppetry 1 (Level 1) with Chinese Theatre Works",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/shadow-puppetry-1-level-1-with-chinese-theatre-works-summer2026/",
+    "description": null,
+    "start_date": "Jul27",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "2026 Chicago Puppet Lab Showcase",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": "https://chicagopuppetfest.org/event/2026-chicago-puppet-lab/",
+    "description": null,
+    "start_date": "Aug20",
+    "source": "https://www.chicagopuppetfest.org/events"
+  },
+  {
+    "name": "Chicago Puppet Lab",
+    "city": "Chicago",
+    "state": "Illinois",
+    "country": "USA",
+    "website_url": null,
+    "description": null,
+    "start_date": null,
+    "source": "https://www.chicagopuppetfest.org/programs/chicago-puppet-lab"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "New Orleans Giant Puppet Festival",
+    "city": "New Orleans",
+    "country": "USA",
+    "website_url": "http://neworleansgiantpuppetfest.com/",
+    "description": "The New Orleans Giant Puppet Festival is grateful for the support from our sponsors that make the festivities possible.",
+    "source": "http://neworleansgiantpuppetfest.com/"
+  },
+  {
+    "name": "Submit your show today.",
+    "website_url": "https://docs.google.com/forms/d/e/1FAIpQLSddDGVgEAGJSE280RInXSbdXrF4E7WM7IJFmXTiFJ1oFhvPkw/viewform?usp=header",
+    "city": "New Orleans",
+    "country": "USA",
+    "source": "http://neworleansgiantpuppetfest.com/"
+  },
+  {
+    "name": "DONATE TODAY",
+    "website_url": "http://neworleansgiantpuppetfest.com/donate",
+    "city": "New Orleans",
+    "country": "USA",
+    "source": "http://neworleansgiantpuppetfest.com/"
+  },
+  {
+    "name": "Join Our Patreon",
+    "website_url": "https://www.patreon.com/cw/NewOrleansGiantPuppetFestival",
+    "city": "New Orleans",
+    "country": "USA",
+    "source": "http://neworleansgiantpuppetfest.com/"
+  },
+  {
+    "name": "Year Round Events",
+    "website_url": "http://neworleansgiantpuppetfest.com/upcoming-events",
+    "city": "New Orleans",
+    "country": "USA",
+    "source": "http://neworleansgiantpuppetfest.com/"
+  }
+]

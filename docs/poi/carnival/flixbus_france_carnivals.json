@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Paris Carnival",
+    "city": "Paris",
+    "country": "France",
+    "dates": "unknown",
+    "description": "A major event where the streets are filled with colour, music, and costumes, featuring a large colorful parade that continues into the night.",
+    "source_url": "https://global.flixbus.com/discover/carnival/france"
+  },
+  {
+    "name": "Carnival of Nice",
+    "city": "Nice",
+    "country": "France",
+    "dates": "winter",
+    "description": "One of the largest carnivals in the world, featuring 18 floats, a Parade of Lights at Place Masséna, and the Burning of the King ceremony.",
+    "source_url": "https://global.flixbus.com/discover/carnival/france"
+  },
+  {
+    "name": "Carnival of Dunkirk",
+    "city": "Dunkirk",
+    "country": "France",
+    "dates": "February and March",
+    "description": "A historic tradition dating to the 17th Century, known for outrageous costumes, colorful umbrellas, and giant puppets called reuzes, culminating in the Trois Joyeuses.",
+    "source_url": "https://global.flixbus.com/discover/carnival/france"
+  }
+]
