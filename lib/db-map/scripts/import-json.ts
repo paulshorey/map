@@ -37,6 +37,30 @@ interface ValidationError {
   errors: string[];
 }
 
+const DATE_PRECISIONS = new Set(["datetime", "day", "month", "year"]);
+
+/**
+ * Validate an optional event-date field. Returns an ISO string (normalized to UTC) when valid,
+ * null when absent, and pushes an error when present-but-unparseable.
+ */
+function parseEventDate(
+  value: unknown,
+  field: string,
+  errors: string[],
+): string | null {
+  if (value == null || value === "") return null;
+  if (typeof value !== "string") {
+    errors.push(`Invalid '${field}' (must be an ISO date string)`);
+    return null;
+  }
+  const ms = Date.parse(value);
+  if (isNaN(ms)) {
+    errors.push(`Invalid '${field}': "${value}" is not a parseable date`);
+    return null;
+  }
+  return new Date(ms).toISOString();
+}
+
 function parseArgs() {
   const args = process.argv.slice(2);
   let filePath = "";
@@ -100,6 +124,24 @@ function validatePoi(obj: unknown, index: number, defaultCategory?: string): { p
     errors.push(`'lat' out of range: ${record.lat} (must be -90 to 90)`);
   }
 
+  // Optional event dates. Accept `starts_at`/`ends_at` or `start_date`/`end_date` aliases.
+  const startsAt = parseEventDate(record.starts_at ?? record.start_date, "starts_at", errors);
+  const endsAt = parseEventDate(record.ends_at ?? record.end_date, "ends_at", errors);
+
+  let datePrecision: string | null = null;
+  if (record.date_precision != null) {
+    if (
+      typeof record.date_precision === "string" &&
+      DATE_PRECISIONS.has(record.date_precision)
+    ) {
+      datePrecision = record.date_precision;
+    } else {
+      errors.push(
+        `Invalid 'date_precision' (must be one of: ${[...DATE_PRECISIONS].join(", ")})`,
+      );
+    }
+  }
+
   if (errors.length > 0) {
     return { error: { index, name: record.name as string | undefined, errors } };
   }
@@ -114,6 +156,9 @@ function validatePoi(obj: unknown, index: number, defaultCategory?: string): { p
     website: typeof record.website === "string" ? record.website.trim() || null : null,
     hours: typeof record.hours === "string" ? record.hours.trim() || null : null,
     photo_url: typeof record.photo_url === "string" ? record.photo_url.trim() || null : null,
+    starts_at: startsAt,
+    ends_at: endsAt,
+    date_precision: datePrecision,
   };
 
   return { poi };

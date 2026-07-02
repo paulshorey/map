@@ -12,14 +12,60 @@ interface Props {
     website?: string;
     hours?: string;
     photo_url?: string;
+    starts_at?: string | null;
+    ends_at?: string | null;
+    date_precision?: string | null;
+    status?: string | null;
     lat?: number;
     lng?: number;
   };
   onClose: () => void;
 }
 
+const STATUS_STYLES: Record<string, string> = {
+  upcoming: 'bg-emerald-100 text-emerald-700',
+  ongoing: 'bg-amber-100 text-amber-700',
+  past: 'bg-gray-200 text-gray-600',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  upcoming: 'Upcoming',
+  ongoing: 'Happening now',
+  past: 'Ended',
+};
+
+/** Format a POI's event window respecting how precisely the date is known. */
+function formatEventDates(
+  startsAt?: string | null,
+  endsAt?: string | null,
+  precision?: string | null,
+): string | null {
+  if (!startsAt) return null;
+  const start = new Date(startsAt);
+  if (isNaN(start.getTime())) return null;
+
+  const opts: Intl.DateTimeFormatOptions =
+    precision === 'year'
+      ? { year: 'numeric', timeZone: 'UTC' }
+      : precision === 'month'
+        ? { year: 'numeric', month: 'long', timeZone: 'UTC' }
+        : precision === 'datetime'
+          ? { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }
+          : { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' };
+
+  const fmt = (d: Date) => new Intl.DateTimeFormat('en-US', opts).format(d);
+  const startStr = fmt(start);
+
+  if (!endsAt) return startStr;
+  const end = new Date(endsAt);
+  if (isNaN(end.getTime()) || fmt(end) === startStr) return startStr;
+  return `${startStr} – ${fmt(end)}`;
+}
+
 export function PoiDrawer({ poi, onClose }: Props) {
   const drawerRef = useRef<HTMLDivElement>(null);
+  const eventDates = formatEventDates(poi.starts_at, poi.ends_at, poi.date_precision);
+  const status = poi.status ?? undefined;
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -49,9 +95,18 @@ export function PoiDrawer({ poi, onClose }: Props) {
           <h2 className="text-lg font-semibold text-gray-900 leading-tight">
             {poi.name}
           </h2>
-          <span className="inline-block mt-1.5 rounded-full bg-blue-100 text-blue-700 px-2.5 py-0.5 text-xs font-medium">
-            {poi.category}
-          </span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            <span className="inline-block rounded-full bg-blue-100 text-blue-700 px-2.5 py-0.5 text-xs font-medium">
+              {poi.category}
+            </span>
+            {status && (
+              <span
+                className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[status] ?? 'bg-gray-100 text-gray-600'}`}
+              >
+                {STATUS_LABELS[status] ?? status}
+              </span>
+            )}
+          </div>
         </div>
         <button
           onClick={onClose}
@@ -78,6 +133,12 @@ export function PoiDrawer({ poi, onClose }: Props) {
 
           {/* Detail rows */}
           <div className="space-y-3">
+            {eventDates && (
+              <DetailRow icon={<CalendarIcon />} label="Dates">
+                {eventDates}
+              </DetailRow>
+            )}
+
             {poi.address && (
               <DetailRow icon={<MapPinIcon />} label="Address">
                 {poi.address}
@@ -126,6 +187,14 @@ function DetailRow({ icon, label, children }: { icon: React.ReactNode; label: st
         <div className="text-sm text-gray-700">{children}</div>
       </div>
     </div>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" />
+    </svg>
   );
 }
 

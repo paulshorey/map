@@ -21,10 +21,38 @@
           "optional": false,
           "kind": "scalar",
           "type": "string",
-          "nullable": false
+          "nullable": true
         },
         {
           "name": "photo_url",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "popularity",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "starts_at",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "ends_at",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "date_precision",
           "optional": false,
           "kind": "scalar",
           "type": "string",
@@ -53,6 +81,16 @@
           "optional": false,
           "kind": "scalar",
           "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "categories",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
           "nullable": false
         },
         {
@@ -84,7 +122,66 @@
           "nullable": true
         },
         {
+          "name": "phone",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
           "name": "photo_url",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "attributes",
+          "optional": false,
+          "kind": "model",
+          "type": "unknown",
+          "nullable": false
+        },
+        {
+          "name": "popularity",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "sources",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        },
+        {
+          "name": "starts_at",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "ends_at",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "date_precision",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "status",
           "optional": false,
           "kind": "scalar",
           "type": "string",

@@ -25,6 +25,7 @@
     "db:migration:new": "node scripts/new-migration.mjs",
     "db:sync": "pnpm db:migrate && pnpm db:schema:snapshot && pnpm db:types:generate && pnpm app:contract:generate",
     "db:seed": "tsx scripts/seed.ts",
+    "ingest:taxonomy:seed": "tsx scripts/ingest/seed-taxonomy.ts",
     "db:import:kml": "tsx scripts/import-kml.ts",
     "db:import:json": "tsx scripts/import-json.ts"
   },

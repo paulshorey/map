@@ -9,6 +9,8 @@ export async function GET(request: NextRequest) {
   const bbox = searchParams.get('bbox');
   const zoom = searchParams.get('zoom');
   const category = searchParams.get('category');
+  const from = searchParams.get('from');
+  const to = searchParams.get('to');
 
   if (!bbox) {
     return NextResponse.json(
@@ -38,6 +40,8 @@ export async function GET(request: NextRequest) {
     category: category ?? null,
     limit,
     isWorldView,
+    from: from ?? null,
+    to: to ?? null,
   });
 
   return NextResponse.json(geojson, {

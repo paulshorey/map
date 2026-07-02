@@ -15,7 +15,13 @@ export {
 } from "./sql/users";
 
 export type {
-  PoisRow,
+  CanonicalPoisRow,
+  CanonicalCategoriesRow,
+  CanonicalPoiCategoriesRow,
+  CanonicalPoiOccurrencesRow,
+  ResearchPoisRow,
+  ResearchSourcesRow,
+  ResearchCategoryAliasesRow,
   UsersRow,
   UserPreferencesRow,
   PostgresDbSchema,

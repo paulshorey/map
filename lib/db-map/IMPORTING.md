@@ -17,6 +17,10 @@ interface NewPoi {
   website?: string;        // optional - URL
   hours?: string;          // optional - opening hours as free text
   photo_url?: string;      // optional - URL to a photo
+  // Event POIs only (festivals, etc.) — permanent POIs leave these unset:
+  starts_at?: string;      // optional - event start, ISO 8601 (also accepts `start_date`)
+  ends_at?: string;        // optional - event end,   ISO 8601 (also accepts `end_date`)
+  date_precision?: string; // optional - 'datetime' | 'day' | 'month' | 'year'
 }
 ```
 
