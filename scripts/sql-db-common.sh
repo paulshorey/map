@@ -69,6 +69,52 @@ DROP SCHEMA IF EXISTS public CASCADE;
 EOF
 }
 
+pg_sql_drop_user_schemas_and_extensions_sql() {
+  cat <<'EOF'
+DO $wipe$
+DECLARE
+  rec RECORD;
+BEGIN
+  FOR rec IN
+    SELECT nspname AS name
+    FROM pg_namespace
+    WHERE nspname NOT LIKE 'pg\_%' ESCAPE '\'
+      AND nspname <> 'information_schema'
+  LOOP
+    EXECUTE format('DROP SCHEMA IF EXISTS %I CASCADE', rec.name);
+  END LOOP;
+
+  FOR rec IN
+    SELECT extname AS name
+    FROM pg_extension
+    WHERE extname <> 'plpgsql'
+  LOOP
+    EXECUTE format('DROP EXTENSION IF EXISTS %I CASCADE', rec.name);
+  END LOOP;
+END
+$wipe$;
+EOF
+}
+
+pg_sql_recreate_public_schema_sql() {
+  cat <<'EOF'
+CREATE SCHEMA public;
+COMMENT ON SCHEMA public IS 'standard public schema';
+GRANT ALL ON SCHEMA public TO PUBLIC;
+GRANT USAGE, CREATE ON SCHEMA public TO CURRENT_USER;
+ALTER SCHEMA public OWNER TO CURRENT_USER;
+CREATE EXTENSION IF NOT EXISTS plpgsql;
+EOF
+}
+
+pg_sql_wipe_database_sql() {
+  cat <<'EOF'
+SET client_min_messages = WARNING;
+EOF
+  pg_sql_drop_user_schemas_and_extensions_sql
+  pg_sql_recreate_public_schema_sql
+}
+
 pg_sql_truncate_public_tables_sql() {
   local tables table_list comma table
   tables="$(pg_sql_public_table_names)"

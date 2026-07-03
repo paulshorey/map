@@ -10,13 +10,13 @@ and non-default extensions are removed so the restore starts from a clean
 state.
 
 Usage:
-  SOURCE_DATABASE_URL=<from-url> TARGET_DATABASE_URL=<to-url> ./backup-database.sh
+  SOURCE_DATABASE_URL=<from-url> TARGET_DATABASE_URL=<to-url> ./sql-simple-backup-restore.sh
 
-  ./backup-database.sh <SOURCE_ENV_VAR> <TARGET_ENV_VAR>
+  ./sql-simple-backup-restore.sh <SOURCE_ENV_VAR> <TARGET_ENV_VAR>
 
 Examples:
-  SOURCE_DATABASE_URL="$DB_MAP_URL" TARGET_DATABASE_URL="$DB_MAP_URL_BACKUP" ./backup-database.sh
-  ./backup-database.sh DB_MAP_URL DB_MAP_URL_BACKUP
+  SOURCE_DATABASE_URL="$DB_MAP_URL" TARGET_DATABASE_URL="$DB_MAP_URL_BACKUP" ./sql-simple-backup-restore.sh
+  ./sql-simple-backup-restore.sh DB_MAP_URL DB_MAP_URL_BACKUP
 
 Environment:
   SOURCE_DATABASE_URL   Connection string for the source database
@@ -29,7 +29,7 @@ EOF
 }
 
 log() {
-  printf '[backup-database] %s\n' "$*" >&2
+  printf '[sql-simple-backup-restore] %s\n' "$*" >&2
 }
 
 die() {

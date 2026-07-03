@@ -36,3 +36,6 @@ android/app/src/main/assets/public
 *.njsproj
 *.sln
 *.sw?
+
+# Backups
+scripts/backups/*
