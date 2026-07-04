@@ -29,3 +29,10 @@ export const getDb = () => {
 
   return pool;
 };
+
+export async function closeDb() {
+  if (!pool) return;
+  const current = pool;
+  pool = undefined;
+  await current.end().catch(() => undefined);
+}

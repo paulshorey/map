@@ -10,7 +10,7 @@
  */
 import { resolve } from "node:path";
 import type { Pool } from "pg";
-import { getDb } from "../../lib/db/postgres.js";
+import { closeDb, getDb } from "../../lib/db/postgres.js";
 import { contentHash } from "./hash.js";
 import { TAXONOMY } from "./taxonomy.js";
 import {
@@ -36,6 +36,20 @@ interface ExtractStats {
   updated: number;
   unchanged: number;
   skipped: number;
+}
+
+function isTransientDbError(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  const code = typeof err === "object" && err ? (err as { code?: unknown }).code : undefined;
+  return (
+    message.includes("Connection terminated") ||
+    message.includes("Connection ended unexpectedly") ||
+    message.includes("ECONNRESET") ||
+    code === "ECONNRESET" ||
+    code === "57P01" ||
+    code === "57P02" ||
+    code === "08006"
+  );
 }
 
 function usageError(message: string): never {
@@ -118,15 +132,15 @@ INSERT INTO research_pois (
 const UPDATE_CHANGED_SQL = `
 UPDATE research_pois SET
   last_seen_at = now(),
-  ingest_category = $3,
-  name = $4, description = $5, website = $6, source_url = $7,
-  phone = $8, email = $9, address = $10, city = $11, region = $12,
-  country_code = $13, lng = $14, lat = $15, raw_category = $16,
-  is_poi = $17, raw = $18::jsonb, attributes = $19::jsonb, content_hash = $20,
+  ingest_category = $1,
+  name = $2, description = $3, website = $4, source_url = $5,
+  phone = $6, email = $7, address = $8, city = $9, region = $10,
+  country_code = $11, lng = $12, lat = $13, raw_category = $14,
+  is_poi = $15, raw = $16::jsonb, attributes = $17::jsonb, content_hash = $18,
   name_normalized = NULL, category_slugs = NULL, content_embedding = NULL,
   coordinate_source = NULL, coordinate_precision = NULL, geocode_query_norm = NULL,
   canonical_poi_id = NULL
-WHERE id = $21`;
+WHERE id = $19::uuid`;
 
 async function upsertRecord(
   db: Pool,
@@ -176,11 +190,11 @@ async function upsertRecord(
 
   const row = existing.rows[0]!;
   if (row.content_hash === hash && row.ingest_category === ingestCategory) {
-    await db.query(`UPDATE research_pois SET last_seen_at = now() WHERE id = $1`, [row.id]);
+    await db.query(`UPDATE research_pois SET last_seen_at = now() WHERE id = $1::uuid`, [row.id]);
     return "unchanged";
   }
 
-  await db.query(UPDATE_CHANGED_SQL, [...params, row.id]);
+  await db.query(UPDATE_CHANGED_SQL, [...params.slice(2), row.id]);
   return "updated";
 }
 
@@ -225,8 +239,8 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
     skipped: 0,
   };
 
-  const db = opts.dryRun ? null : getDb();
-  const sourceId = db ? await ensureSourceId(db, opts.sourceSlug) : null;
+  let db = opts.dryRun ? null : getDb();
+  let sourceId = db ? await ensureSourceId(db, opts.sourceSlug) : null;
 
   for await (const record of extractor.parse(opts.file)) {
     if (opts.limit !== undefined && stats.seen >= opts.limit) break;
@@ -246,7 +260,23 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
       continue;
     }
 
-    const result = await upsertRecord(db!, sourceId!, ingestCategory, record, isPoi);
+    let result: "inserted" | "updated" | "unchanged" | undefined;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        result = await upsertRecord(db!, sourceId!, ingestCategory, record, isPoi);
+        break;
+      } catch (err) {
+        if (!isTransientDbError(err) || attempt === 3) throw err;
+        console.warn(
+          `Transient database error during extract; reconnecting and retrying ` +
+            `${record.name ?? record.source_record_id} (attempt ${attempt + 1}/3)`,
+        );
+        await closeDb();
+        db = getDb();
+        sourceId = await ensureSourceId(db, opts.sourceSlug);
+      }
+    }
+    if (!result) throw new Error("Extract retry loop exited without a result");
     stats[result]++;
     console.log(`✓ ${record.name ?? record.source_record_id} (${result}${isPoi ? "" : ", not a POI"})`);
   }
@@ -256,7 +286,7 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
       `UPDATE research_sources SET last_ingested_at = now() WHERE id = $1`,
       [sourceId],
     );
-    await db.end();
+    await closeDb();
   }
 
   return stats;

@@ -639,6 +639,9 @@ record which source won each field (§4.4):
   booleans across sources; keep max `area_ha`).
 - **categories:** union of all matched research rows' canonical `category_slugs`.
 - **popularity:** `COUNT(DISTINCT source_id)`.
+- **event occurrences:** dated festival/event rows rebuild `canonical_poi_occurrences`; the
+  canonical `starts_at`/`ends_at` points at the next upcoming edition, or the latest past edition
+  when none are upcoming.
 
 ### Stage 7 — Report (`ingest:report`)
 
@@ -762,6 +765,9 @@ matching against it to measure **precision/recall** whenever we change weights, 
 the LLM prompt. This turns "is the matcher good?" into a number — essential because the LLM is
 the last line of defense. When it gets something wrong in production, fix it with a
 `research_match_overrides` rule (developer, in code/SQL) and, ideally, add the pair to the golden set.
+Because some OSM relation/way records export without point coordinates, golden pairs should allow
+coordinate-bearing equivalents from another trusted source (especially BGCI) instead of silently
+skipping core garden duplicates.
 
 **Cluster transitivity.** Matches are pairwise; collapse them with union-find so A≡B and
 B≡C ⇒ one cluster {A,B,C} → one canonical POI.
@@ -881,10 +887,10 @@ if it grows). Proposed `package.json` scripts (mirroring existing `db:import:*` 
 | `ingest:normalize [--source S]` | Clean names/coords/address, verify strict category slugs |
 | `ingest:geocode [--limit N]` | Fill missing coords via LocationIQ + cache; stamp coordinate precision |
 | `ingest:embed` | Compute embeddings for changed rows |
-| `ingest:match [--dry-run] [--auto-threshold] [--limit N] [--resume] [--no-llm]` | Per-record conflation **and** canonical rebuild (Stage 5+6); LLM auto-decides the gray zone |
+| `ingest:match [--source S] [--dry-run] [--auto-threshold] [--low-threshold] [--limit N] [--no-llm] [--gc-orphans] [--recluster]` | Per-record conflation **and** canonical rebuild (Stage 5+6); LLM auto-decides the gray zone |
 | `ingest:report` | Reconciliation + QA stats |
 | `ingest:run <source> <file>` | Orchestrate all of the above for one category × source chunk |
-| `ingest:override <a> <b> same\|different` | Developer-only: write a `research_match_overrides` rule (not a review queue) |
+| `ingest:override <a> <b\|new> same\|different` | Developer-only: write a `research_match_overrides` rule using a research UUID or `source_slug:source_record_id` ref |
 | `ingest:taxonomy:seed` | Seed/refresh `canonical_categories` from the committed taxonomy source file |
 
 Shared building blocks to maintain:
@@ -1176,12 +1182,14 @@ store no `active` boolean.
 Gardens and campgrounds are permanent places; festivals are **events**. The model already handles
 them, with these specifics:
 
-- **Dates in `attributes`** (`start_date`, `end_date`, recurrence) — typed core columns stay
-  place-generic; event specifics live in the per-category `attributes` jsonb.
-  _(Superseded: see the note above — dates were promoted to typed columns.)_
+- **Dates in typed columns** — normalize parses source `start_date`/`end_date`/date prose into
+  `research_pois.starts_at`/`ends_at`/`date_precision`; merge writes representative dates to
+  `canonical_pois` and edition rows to `canonical_poi_occurrences`. `attributes` keeps only extra
+  temporal metadata such as recurrence text or edition history.
 - **One canonical per festival, not per edition** — sources list 2024/2025/2026 editions of the
   same festival; they merge into one canonical (§6 "Recurring events collapse"). Keep the
-  next/most-recent edition's dates; optionally keep an edition history in `attributes`.
+  next upcoming edition's dates, falling back to the latest past edition; keep every dated edition
+  in `canonical_poi_occurrences`.
 - **Status derived at read time** (15.4). The map/search can then filter "upcoming this season"
   without any stored, staleness-prone flag.
 - **Geocoding by text location is fine** — festivals rarely ship coordinates, but they have

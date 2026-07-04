@@ -143,6 +143,9 @@ CREATE TABLE public.research_pois (
 
   first_seen_at    timestamptz NOT NULL DEFAULT now(),
   last_seen_at     timestamptz NOT NULL DEFAULT now(),
+  coordinate_source text CHECK (coordinate_source IN ('source','url','geocode')),
+  coordinate_precision text CHECK (coordinate_precision IN ('point','city','region')),
+  geocode_query_norm text,
 
   UNIQUE (source_id, source_record_id)
 );
@@ -167,18 +170,6 @@ CREATE TABLE public.canonical_poi_categories (
 -- composite (category_id, poi_id) enables index-only reverse lookups for the
 -- category filter (e.g. "all POIs in category X or its descendants").
 CREATE INDEX canonical_poi_categories_cat_idx ON public.canonical_poi_categories (category_id, poi_id);
-
--- ── research_category_aliases (raw string → canonical category) ─
-CREATE TABLE public.research_category_aliases (
-  alias       text NOT NULL,
-  category_id uuid NOT NULL REFERENCES public.canonical_categories(id) ON DELETE CASCADE,
-  source_id   uuid REFERENCES public.research_sources(id)  -- NULL ⇒ applies to all sources
-);
--- Uniqueness without forcing source_id NOT NULL (PK would): split partial unique indexes.
-CREATE UNIQUE INDEX research_category_aliases_global_uq
-  ON public.research_category_aliases (alias, category_id) WHERE source_id IS NULL;
-CREATE UNIQUE INDEX research_category_aliases_source_uq
-  ON public.research_category_aliases (alias, category_id, source_id) WHERE source_id IS NOT NULL;
 
 -- ── canonical_poi_occurrences (recurring event editions) ──────
 CREATE TABLE public.canonical_poi_occurrences (
@@ -228,3 +219,9 @@ CREATE TABLE public.research_geocode_cache (
   provider   text,
   fetched_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE public.research_pois
+  ADD CONSTRAINT research_pois_geocode_query_norm_fkey
+  FOREIGN KEY (geocode_query_norm)
+  REFERENCES public.research_geocode_cache(query_norm)
+  ON DELETE SET NULL;

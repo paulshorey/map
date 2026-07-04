@@ -1162,6 +1162,12 @@ Summary stats stay at the end of each run. Applies to every stage script and to 
 
 ## M8 — Match + merge (the de-duplication core)
 
+**Status: M8 implemented.** `ingest:match` now covers the core loop and M8b ops surface:
+single-writer lock, row-at-a-time transactions, overrides/strong IDs, spatial blocking, scoring,
+date-compatibility guardrails, LLM gray-zone adjudication, decision audit, attach/create,
+per-canonical rebuild with `canonical_poi_occurrences`, `ingest:override`, orphan GC,
+`--recluster`, and the expanded `ingest:match:golden` evaluator.
+
 `ingest/match/` + `"ingest:match"`. This is the heart; build it as the **resumable, one-record-
 at-a-time** loop from overview §5 (Stage 5+6) and §6. Process `research_pois` where
 `canonical_poi_id IS NULL` **and** `lat IS NOT NULL` (a row needs matching when it has no
@@ -1235,9 +1241,10 @@ the longest single-source verbatim text. Name conflicts resolve by trust precede
 (Wikidata/official > directory > scrape) — LLM name synthesis only when trust ties and strings
 differ materially; prefer the version without edition years/venue suffixes.
 
-**Prerequisite (event dates):** normalize (M5) must populate `research_pois.starts_at`/`ends_at`/
-`date_precision` via the shared date parser *before* festival sources are matched — the columns
-exist but are not yet written. Gardens/campgrounds do not need this and can be matched first.
+**Prerequisite (event dates):** normalize (M5) populates `research_pois.starts_at`/`ends_at`/
+`date_precision` via the shared date parser *before* festival sources are matched. Re-run
+normalize for any festival source ingested before date parsing landed. Gardens/campgrounds do not
+need dates and can be matched first.
 
 ### M8.2 Supporting pieces
 
@@ -1245,22 +1252,26 @@ exist but are not yet written. Gardens/campgrounds do not need this and can be m
   `nps.gov`, `facebook.com`, …).
 - `ingest/match/llm.ts` — the binary adjudicator via DeepInfra OpenAI-compatible API (see M0.4).
 - `ingest/merge.ts` — field-precedence resolver + conditional description fuser.
-- `ingest:override <a> <b> same|different` CLI → writes `research_match_overrides`.
+- `ingest:override <a> <b|new> same|different` CLI → writes `research_match_overrides`; refs
+  are research UUIDs or `source_slug:source_record_id`.
 - **Golden-set harness** (`ingest/match/golden.ts` + a small labeled fixture of known
   same/different pairs, e.g. Kew across BGCI/OSM/Wikidata) reporting precision/recall — the
-  primary quality gate since there's no human review (overview §6, §14.6).
-- **Orphan GC + periodic full re-cluster** hooks (overview §14.1, §14.5): a `--recluster` mode
-  and a sweep that hides `canonical_pois` with zero linked research rows.
+  primary quality gate since there's no human review (overview §6, §14.6). Some OSM relations
+  do not carry point coordinates in the export, so the garden fixtures may fall back to BGCI
+  rows for the same entity when a coordinate-bearing OSM row is unavailable.
+- **Orphan GC + periodic full re-cluster** hooks (overview §14.1, §14.5): `ingest:match
+  --recluster` clears and rebuilds all canonicals from linked research rows, while
+  `--gc-orphans` hides `canonical_pois` with zero linked research rows.
 - **Single-writer**: run matching as one process (advisory lock) to avoid duplicate-canonical
   races (overview §14.8).
 
 ### M8.3 Build order (two phases)
 
-- **M8a — core loop, gardens first**: block → score → precision gate → decide (incl. LLM) →
+- **M8a — implemented core loop, gardens first**: block → score → precision gate → decide (incl. LLM) →
   attach/create → per-canonical rebuild → decisions audit; denylist; DeepInfra provider;
   a starting golden set (~10–20 labeled pairs from the BGCI/OSM/Wikidata garden overlap, incl.
   known non-dupes). Acceptance = the garden checks below.
-- **M8b — events + ops**: event-date parsing in normalize + occurrence building + representative
+- **M8b — implemented events + ops**: event-date parsing in normalize + occurrence building + representative
   dates; date-compatibility signal; override CLI; orphan GC; `--recluster`; expanded golden set
   with festival edition pairs and same-city-centroid non-dupes.
 
