@@ -45,7 +45,7 @@ name similarity, `tstzrange` for event dates.
 Per-source, resumable, idempotent stages (one **category × source** at a time):
 
 ```bash
-pnpm --filter @lib/db-map ingest:extract <source> <file> [--limit N] [--dry-run]
+pnpm --filter @lib/db-map ingest:extract <source> <file> --category <slug> [--limit N] [--dry-run]
 pnpm --filter @lib/db-map ingest:normalize [--source <slug>] [--no-llm] [--report-unmapped] [--report-coverage]
 pnpm --filter @lib/db-map ingest:geocode [--source <slug>] [--geocode-limit N]
 pnpm --filter @lib/db-map ingest:embed [--source <slug>] [--batch-size N]

@@ -112,11 +112,11 @@ this is **implicit** — there are no status columns to maintain (see the next s
 # capped at the default daily budget (~4,500). Re-run any time: unchanged records are skipped via
 # their content hash; the geocode tail resumes because un-reached rows still have lat IS NULL.
 pnpm --filter @lib/db-map ingest:run bgci \
-  docs/poi/botanical_gardens_data/bgci_gardens_full.json
+  docs/poi/botanical_gardens_data/bgci_gardens_full.json --category botanical_garden
 #   → BGCI rows have coords, so this spends 0 geocode calls. Review the map, adjust, repeat.
 
 pnpm --filter @lib/db-map ingest:run arbnet \
-  docs/poi/botanical_gardens_data/arbnet_morton_register.json
+  docs/poi/botanical_gardens_data/arbnet_morton_register.json --category arboretum
 #   → ArbNet lacks coords. If it has >~4,500 records, the first run resolves ~4,500 and stops;
 #     run the SAME command tomorrow to resolve the next ~4,500. Done rows have coordinates and are
 #     skipped; nothing restarts. Override the cap with --geocode-limit N.
@@ -788,7 +788,13 @@ Now fill the research layer. New code area: `lib/db-map/scripts/ingest/`.
 Create `ingest/extract.ts` + script `"ingest:extract": "tsx scripts/ingest/extract.ts"`.
 Behavior:
 
-- Args: `<source-slug> <file> [--limit N] [--dry-run]`.
+- Args: `<source-slug> <file> --category <slug> [--limit N] [--dry-run]`.
+- **`--category` is required (product decision, Jul 2026)**: the developer states which
+  taxonomy category the file belongs to on every invocation — there is no per-source default
+  to fall back on (`SourceMeta.defaultIngestCategory` was removed). Missing the flag, or
+  passing a slug not present in `taxonomy.ts`, is a **hard error**; the script prints the
+  known category list and exits without writing anything. Extend `taxonomy.ts` + re-seed
+  (`ingest:taxonomy:seed`) before ingesting a source that needs a new category.
 - Resolve `source_id` from `research_sources` (create from registry meta if missing).
 - Stream records; for each, compute a **stable `source_record_id`** — use the source's own id
   when present (osm_id, wikidata_id, bgci_id, dyrt id); **synthesize deterministically** when the
@@ -830,7 +836,8 @@ Map raw fields → `RawRecord`; stash source-specific extras (hookups, area_ha, 
 start/end dates) in `attributes` and keep everything in `raw`.
 
 > **Acceptance (M4):**
-> - `pnpm --filter @lib/db-map ingest:extract bgci /workspace/docs/poi/botanical_gardens_data/bgci_gardens_full.json --limit 50 --dry-run` prints a sane preview.
+> - `pnpm --filter @lib/db-map ingest:extract bgci /workspace/docs/poi/botanical_gardens_data/bgci_gardens_full.json --category botanical_garden --limit 50 --dry-run` prints a sane preview.
+> - Omitting `--category`, or passing one not in `taxonomy.ts`, exits non-zero and writes nothing.
 > - A real run populates `research_pois` (`SELECT source_id, count(*) FROM research_pois GROUP BY 1`).
 > - Re-running the **same** file inserts 0 new rows (idempotent; `last_seen_at` bumped).
 > - Unit tests: feed each extractor a small fixture, assert the produced `RawRecord`s.
@@ -1268,8 +1275,10 @@ exist but are not yet written. Gardens/campgrounds do not need this and can be m
 
 ## M9 — Orchestrate, report & migrate old tooling
 
-- `ingest/run.ts` + `"ingest:run <source> <file>"` — chains extract → normalize → geocode →
-  embed → match. **Geocoding is automatic/conditional** (only rows with `lat IS NULL` call the API)
+- `ingest/run.ts` + `"ingest:run <source> <file> --category <slug>"` — chains extract →
+  normalize → geocode → embed → match; `--category` is required and passed straight through to
+  `ingest:extract` (same validation, same hard error on an unknown slug).
+  **Geocoding is automatic/conditional** (only rows with `lat IS NULL` call the API)
   and **`--geocode-limit` defaults to ~4,500**, so the *same command works for every source* with
   no flags. Optional flags: `--dry-run`, `--limit`, `--geocode-limit N`, `--no-llm`. One invocation
   = one **category × source** chunk (overview Decision 2). See "Ingestion is incremental and
@@ -1283,9 +1292,10 @@ exist but are not yet written. Gardens/campgrounds do not need this and can be m
   staging-first flow. Delete the obsolete `scripts/seed.ts` (or convert it to seed `research_pois`
   under a `manual` source).
 
-> **Acceptance (M9):** `pnpm --filter @lib/db-map ingest:run bgci <file> --limit 200` runs the
-> whole chain and prints a reconciliation report; legacy import commands no longer touch
-> `canonical_pois` directly.
+> **Acceptance (M9):** `pnpm --filter @lib/db-map ingest:run bgci <file> --category
+> botanical_garden --limit 200` runs the whole chain and prints a reconciliation report; the
+> same command **without** `--category` exits non-zero before writing anything; legacy import
+> commands no longer touch `canonical_pois` directly.
 
 ---
 
@@ -1294,14 +1304,14 @@ exist but are not yet written. Gardens/campgrounds do not need this and can be m
 1. Ingest a coherent chunk per category × source, e.g.:
    ```bash
    # Gardens
-   pnpm --filter @lib/db-map ingest:run bgci      docs/poi/botanical_gardens_data/bgci_gardens_full.json
-   pnpm --filter @lib/db-map ingest:run wikidata  docs/poi/botanical_gardens_data/wikidata_botanical_gardens.json
-   pnpm --filter @lib/db-map ingest:run osm       docs/poi/botanical_gardens_data/osm_botanical_gardens.csv
+   pnpm --filter @lib/db-map ingest:run bgci      docs/poi/botanical_gardens_data/bgci_gardens_full.json --category botanical_garden
+   pnpm --filter @lib/db-map ingest:run wikidata  docs/poi/botanical_gardens_data/wikidata_botanical_gardens.json --category botanical_garden
+   pnpm --filter @lib/db-map ingest:run osm       docs/poi/botanical_gardens_data/osm_botanical_gardens.csv --category botanical_garden
    # Campgrounds (chunked; large)
-   pnpm --filter @lib/db-map ingest:run ridb      docs/poi/rv_campgrounds_data/ridb/facilities.csv --limit 2000
+   pnpm --filter @lib/db-map ingest:run ridb      docs/poi/rv_campgrounds_data/ridb/facilities.csv --category campground --limit 2000
    # Festivals (events — exercises §15: isPoi filter, source_url vs website, read-time status)
-   pnpm --filter @lib/db-map ingest:run resident_advisor docs/poi/music-festivals/apis/resident_advisor_festivals.json
-   pnpm --filter @lib/db-map ingest:run edm_dance_directory docs/poi/music-festivals/...   # only 55/9,901 promote
+   pnpm --filter @lib/db-map ingest:run resident_advisor docs/poi/music-festivals/apis/resident_advisor_festivals.json --category music_festival
+   pnpm --filter @lib/db-map ingest:run edm_dance_directory docs/poi/music-festivals/... --category music_festival   # only 55/9,901 promote
    ```
 2. Verify in SQL: duplicate gardens collapsed; popularity reflects source count; campgrounds
    carry hookup `attributes`; `field_provenance` populated. **For festivals also confirm:**

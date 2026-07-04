@@ -42,8 +42,6 @@ export interface SourceMeta {
   license?: string;
   attribution?: string;
   trust: number;
-  /** Default ingest_category written to research_pois.ingest_category. */
-  defaultIngestCategory?: string;
 }
 
 export interface SourceDefinition {

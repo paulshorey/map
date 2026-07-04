@@ -41,7 +41,17 @@ export const TAXONOMY: CategorySeed[] = [
     display_name: "Carnival",
     sort_order: 101,
     is_temporal: true,
-    aliases: ["carnival", "carnaval", "fasnacht", "mardi gras", "karneval"],
+    aliases: [
+      "carnival",
+      "carnaval",
+      "fasnacht",
+      "mardi gras",
+      "karneval",
+      "renaissance fair",
+      "renaissance faire",
+      "ren faire",
+      "renfaire",
+    ],
   },
   {
     slug: "art_fair",

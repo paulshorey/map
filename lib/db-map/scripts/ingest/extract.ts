@@ -2,12 +2,17 @@
  * Extract raw source data into research_pois (M4.2).
  *
  * Usage:
- *   pnpm --filter @lib/db-map ingest:extract <source-slug> <file> [--limit N] [--dry-run]
+ *   pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <slug> [--limit N] [--dry-run]
+ *
+ * --category is required (product decision): the developer must state which taxonomy
+ * category a file belongs to on every run. There is no per-source default to fall back
+ * on, and an unknown slug is a hard error — extend taxonomy.ts + re-seed first.
  */
 import { resolve } from "node:path";
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { contentHash } from "./hash.js";
+import { TAXONOMY } from "./taxonomy.js";
 import {
   getExtractor,
   getSourceDefinition,
@@ -15,12 +20,14 @@ import {
 } from "./sources.js";
 import type { RawRecord } from "./types.js";
 
+const VALID_CATEGORY_SLUGS = new Set(TAXONOMY.map((c) => c.slug));
+
 interface CliOptions {
   sourceSlug: string;
   file: string;
   limit?: number;
   dryRun: boolean;
-  ingestCategory?: string;
+  category: string;
 }
 
 interface ExtractStats {
@@ -31,33 +38,46 @@ interface ExtractStats {
   skipped: number;
 }
 
+function usageError(message: string): never {
+  console.error(message);
+  console.error(
+    "Usage: ingest:extract <source-slug> <file> --category <slug> [--limit N] [--dry-run]",
+  );
+  console.error(`Known categories: ${[...VALID_CATEGORY_SLUGS].sort().join(", ")}`);
+  process.exit(1);
+}
+
 function parseArgs(argv: string[]): CliOptions {
   const positional = argv.filter((a) => !a.startsWith("--"));
   const sourceSlug = positional[0];
   const file = positional[1];
   if (!sourceSlug || !file) {
-    console.error(
-      "Usage: ingest:extract <source-slug> <file> [--limit N] [--dry-run] [--ingest-category slug]",
-    );
-    process.exit(1);
+    usageError("Missing <source-slug> and/or <file>.");
   }
 
   let limit: number | undefined;
   let dryRun = false;
-  let ingestCategory: string | undefined;
+  let category: string | undefined;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dry-run") dryRun = true;
     if (a === "--limit" && argv[i + 1]) limit = Number(argv[++i]);
-    if (a === "--ingest-category" && argv[i + 1]) ingestCategory = argv[++i];
+    if (a === "--category" && argv[i + 1]) category = argv[++i];
   }
 
   if (limit !== undefined && (!Number.isFinite(limit) || limit < 1)) {
     throw new Error(`Invalid --limit: ${limit}`);
   }
 
-  return { sourceSlug, file: resolve(file), limit, dryRun, ingestCategory };
+  if (!category) {
+    usageError("Missing required --category <slug>.");
+  }
+  if (!VALID_CATEGORY_SLUGS.has(category)) {
+    usageError(`Unknown category "${category}" — not in taxonomy.ts.`);
+  }
+
+  return { sourceSlug, file: resolve(file), limit, dryRun, category };
 }
 
 async function ensureSourceId(db: Pool, slug: string): Promise<string> {
@@ -190,8 +210,7 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
     );
   }
 
-  const ingestCategory =
-    opts.ingestCategory ?? def.meta.defaultIngestCategory ?? null;
+  const ingestCategory = opts.category;
   const stats: ExtractStats = {
     seen: 0,
     inserted: 0,
