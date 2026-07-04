@@ -81,6 +81,10 @@ CREATE TABLE public.canonical_pois (
   field_provenance jsonb NOT NULL DEFAULT '{}',
   popularity    integer NOT NULL DEFAULT 1,
   status        text NOT NULL DEFAULT 'published' CHECK (status IN ('published','draft','hidden')),
+  -- denormalized shortcut to the primary category (marker color/label on the map).
+  -- Source of truth for ALL categories is canonical_poi_categories; this is a hot-path
+  -- read optimization kept consistent by the merge step (M8) and insertPois.
+  primary_category_id uuid REFERENCES public.canonical_categories(id) ON DELETE SET NULL,
   -- event/temporal fields (NULL for permanent POIs):
   starts_at      timestamptz,
   ends_at        timestamptz,
@@ -98,6 +102,7 @@ CREATE INDEX canonical_pois_name_trgm   ON public.canonical_pois USING gin ((low
 CREATE INDEX canonical_pois_status_idx  ON public.canonical_pois (status);
 CREATE INDEX canonical_pois_event_gix   ON public.canonical_pois USING gist (event_range);
 CREATE INDEX canonical_pois_starts_idx  ON public.canonical_pois (starts_at);
+CREATE INDEX canonical_pois_primary_cat_idx ON public.canonical_pois (primary_category_id);
 
 -- ── research_pois (raw, one row per (source, record)) ─────────
 CREATE TABLE public.research_pois (
@@ -125,7 +130,9 @@ CREATE TABLE public.research_pois (
   ends_at          timestamptz,
   date_precision   text CHECK (date_precision IN ('datetime','day','month','year')),
 
-  raw_category     text,
+  raw_category     text,               -- the source's verbatim category string (pre-mapping)
+  category_slugs   text[],             -- resolved canonical slugs (normalize stage); NULL ⇒ not yet resolved
+  is_poi           boolean NOT NULL DEFAULT true,  -- validity gate: false ⇒ never promoted to canonical
   raw              jsonb NOT NULL,
   attributes       jsonb,
 
@@ -143,6 +150,7 @@ CREATE INDEX research_pois_lat_idx    ON public.research_pois (lat);
 CREATE INDEX research_pois_lng_idx    ON public.research_pois (lng);
 CREATE INDEX research_pois_name_trgm  ON public.research_pois USING gin (name_normalized gin_trgm_ops);
 CREATE INDEX research_pois_canon_idx  ON public.research_pois (canonical_poi_id);
+CREATE INDEX research_pois_category_slugs_gix ON public.research_pois USING gin (category_slugs);
 -- "needs work" = a derived column IS NULL; partial indexes keep resumable scans cheap:
 CREATE INDEX research_pois_todo_normalize ON public.research_pois (id) WHERE name_normalized   IS NULL;
 CREATE INDEX research_pois_todo_geocode   ON public.research_pois (id) WHERE lat               IS NULL;
@@ -156,7 +164,9 @@ CREATE TABLE public.canonical_poi_categories (
   is_primary  boolean NOT NULL DEFAULT false,
   PRIMARY KEY (poi_id, category_id)
 );
-CREATE INDEX canonical_poi_categories_cat_idx ON public.canonical_poi_categories (category_id);
+-- composite (category_id, poi_id) enables index-only reverse lookups for the
+-- category filter (e.g. "all POIs in category X or its descendants").
+CREATE INDEX canonical_poi_categories_cat_idx ON public.canonical_poi_categories (category_id, poi_id);
 
 -- ── research_category_aliases (raw string → canonical category) ─
 CREATE TABLE public.research_category_aliases (

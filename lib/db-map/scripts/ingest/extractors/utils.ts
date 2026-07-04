@@ -1,5 +1,3 @@
-import type { RawRecord } from "../types.js";
-
 export function str(v: unknown): string | undefined {
   if (v === null || v === undefined) return undefined;
   const s = String(v).trim();
@@ -38,15 +36,4 @@ export function countryNameToCode(country: string | undefined): string | undefin
     brazil: "BR",
   };
   return map[country.toLowerCase().trim()];
-}
-
-export function withPoiFlag(
-  record: RawRecord,
-  isPoi: boolean,
-): RawRecord {
-  if (isPoi) return record;
-  return {
-    ...record,
-    attributes: { ...record.attributes, _is_poi: false },
-  };
 }

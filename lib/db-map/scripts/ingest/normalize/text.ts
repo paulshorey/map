@@ -17,17 +17,26 @@ const LEGAL_SUFFIXES = [
 ];
 
 export function stripDiacritics(s: string): string {
-  return s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+  // Decompose, remove ONLY Latin/general combining marks (U+0300–U+036F), then
+  // recompose (NFC) so non-Latin scripts stay intact — e.g. Japanese dakuten
+  // (ず = す + U+3099) must not be split into す, and CJK/Hangul are untouched.
+  return s
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFC");
 }
 
 /**
  * Normalize a display name for matching: lowercase, strip diacritics, drop
  * punctuation and legal suffixes, collapse whitespace. Kept conservative so
  * trigram similarity still has enough signal.
+ *
+ * Unicode-aware: keeps letters/numbers of ANY script (CJK, Cyrillic, Arabic, …)
+ * since the app is global from day one — only punctuation/symbols are stripped.
  */
 export function normalizeName(name: string): string | null {
   let s = stripDiacritics(name).toLowerCase();
-  s = s.replace(/[^a-z0-9]+/g, " ").trim();
+  s = s.replace(/[^\p{L}\p{N}]+/gu, " ").trim();
   if (!s) return null;
 
   const tokens = s.split(" ").filter((t) => t.length > 0);

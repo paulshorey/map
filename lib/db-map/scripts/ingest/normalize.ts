@@ -48,7 +48,7 @@ interface ResearchRow {
   lng: number | null;
   raw_category: string | null;
   ingest_category: string | null;
-  attributes: Record<string, unknown> | null;
+  country_name: string | null;
 }
 
 function parseArgs(argv: string[]): CliOptions {
@@ -80,8 +80,8 @@ async function resolveSourceId(db: Pool, slug: string): Promise<string> {
   return rows[0]!.id;
 }
 
-/** attributes._is_poi === false → validity gate rejects the row. */
-const NON_POI_FILTER = `(attributes->>'_is_poi' IS DISTINCT FROM 'false')`;
+/** Validity gate (overview §15.1): only real POIs are normalized (and thus matchable). */
+const POI_FILTER = `is_poi`;
 
 async function runNormalize(
   db: Pool,
@@ -98,7 +98,7 @@ async function runNormalize(
   };
 
   const params: unknown[] = [];
-  let where = `name_normalized IS NULL AND ${NON_POI_FILTER}`;
+  let where = `name_normalized IS NULL AND ${POI_FILTER}`;
   if (opts.source) {
     params.push(await resolveSourceId(db, opts.source));
     where += ` AND source_id = $${params.length}`;
@@ -111,7 +111,7 @@ async function runNormalize(
 
   const { rows } = await db.query<ResearchRow>(
     `SELECT id, name, website, phone, country_code, region, lat, lng,
-            raw_category, ingest_category, attributes
+            raw_category, ingest_category, attributes->>'country_name' AS country_name
      FROM research_pois
      WHERE ${where}
      ORDER BY first_seen_at${limitClause}`,
@@ -133,9 +133,7 @@ async function runNormalize(
     const countryCode =
       row.country_code ??
       countryToCode(row.region) ??
-      countryToCode(
-        (row.attributes?.country_name as string | undefined) ?? undefined,
-      ) ??
+      countryToCode(row.country_name ?? undefined) ??
       null;
 
     const { slugs, unmapped } = resolveCategorySlugs(
@@ -147,12 +145,6 @@ async function runNormalize(
     if (slugs.length > 0) stats.categorized++;
     if (unmapped) stats.unmapped++;
 
-    const attributes = {
-      ...(row.attributes ?? {}),
-      _category_slugs: slugs,
-      ...(unmapped ? { _unmapped_category: unmapped } : {}),
-    };
-
     await db.query(
       `UPDATE research_pois SET
          name_normalized = $2,
@@ -161,7 +153,7 @@ async function runNormalize(
          country_code = $5,
          lat = $6,
          lng = $7,
-         attributes = $8::jsonb
+         category_slugs = $8
        WHERE id = $1`,
       [
         row.id,
@@ -171,7 +163,7 @@ async function runNormalize(
         countryCode,
         coords.lat,
         coords.lng,
-        JSON.stringify(attributes),
+        slugs,
       ],
     );
     stats.processed++;
@@ -182,7 +174,7 @@ async function runNormalize(
 
 async function reportUnmapped(db: Pool, opts: CliOptions): Promise<void> {
   const params: unknown[] = [];
-  let where = `raw_category IS NOT NULL AND ${NON_POI_FILTER}`;
+  let where = `raw_category IS NOT NULL AND ${POI_FILTER}`;
   if (opts.source) {
     params.push(await resolveSourceId(db, opts.source));
     where += ` AND source_id = $${params.length}`;

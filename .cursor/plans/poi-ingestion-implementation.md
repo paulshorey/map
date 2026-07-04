@@ -837,10 +837,27 @@ start/end dates) in `attributes` and keep everything in `raw`.
 
 ---
 
-## M5 — Normalize + categorize
+## M5 — Normalize + categorize ✅
 
-`ingest/normalize.ts` + `"ingest:normalize"`. Resumable loop over `research_pois` where
-`name_normalized IS NULL` (set NULL on first insert and whenever the `content_hash` changes).
+**Status: complete.** `ingest/normalize.ts` + `"ingest:normalize"`. Resumable loop over
+`research_pois` where `name_normalized IS NULL` (set NULL on first insert and whenever the
+`content_hash` changes).
+
+> **Category storage decision (implemented).** Categories are first-class columns, not JSON:
+> - **`research_pois.category_slugs text[]`** (GIN-indexed) holds the resolved canonical slugs
+>   (multi-valued — a record can map to several categories). It is re-derived on each normalize
+>   run and reset on content change. `raw_category` (verbatim) and `ingest_category` (dump-level)
+>   are kept alongside for the unmapped report and provenance.
+> - **`research_pois.is_poi boolean`** is the validity gate (replaces `attributes._is_poi`), so
+>   normalize simply filters `WHERE is_poi`.
+> - **`canonical_pois`** keeps the **M:N junction `canonical_poi_categories`** as the source of
+>   truth (FK integrity + `is_primary`), plus a denormalized **`primary_category_id`** FK column
+>   for the hot map read path (marker color/label via a single join). The category filter expands
+>   a selected category to its descendants via a recursive CTE and probes the composite index
+>   `canonical_poi_categories(category_id, poi_id)`.
+> - Rationale: `research_pois` is a high-volume, re-derivable scratch layer (arrays of code-owned
+>   slugs, no FK needed); `canonical_pois` is the durable, user-facing, integrity-critical layer
+>   (normalized junction with FKs). See the "Handling categories" discussion in the overview.
 
 - **Validity gate (overview §15.1)** → apply the source's `isPoi` predicate. Rows that fail stay
   in `research_pois` (provenance) but are flagged non-promotable (e.g. set `canonical_poi_id` to a
@@ -863,8 +880,13 @@ start/end dates) in `attributes` and keep everything in `raw`.
 - **phone** (E.164) normalized for matching signals.
 - **Address** → city/region/country_code where parseable.
 - **Category mapping** → look up `raw_category` (and source-specific tag) in
-  `research_category_aliases`; on no match, do **not** guess — emit to the **unmapped-category
-  report** so the developer extends `taxonomy.ts` (M2) and re-seeds.
+  `research_category_aliases`; write resolved slugs to **`category_slugs text[]`** (falling back to
+  the code-owned `ingest_category` slug). On no alias match, do **not** guess — the unmapped
+  `raw_category` surfaces in `--report-unmapped` so the developer extends `taxonomy.ts` (M2) and
+  re-seeds.
+- **Names are Unicode-aware** → normalization keeps letters/numbers of any script (CJK, Cyrillic,
+  Arabic, …); only Latin diacritics are stripped (NFKD→strip→NFC so kana like ず stay intact).
+  Essential for global coverage.
 - **Attribute normalization** → map source attribute keys to a **canonical per-category attribute
   vocabulary** defined in `taxonomy.ts`/code (e.g. `electric_hookups|Electricity Hookup|E` →
   `has_electric`; festival `start_date`/`end_date`), so `attributes` merges are consistent later

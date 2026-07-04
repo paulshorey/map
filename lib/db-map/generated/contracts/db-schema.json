@@ -177,6 +177,11 @@
       "type": "string"
     },
     {
+      "column": "primary_category_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "starts_at",
       "nullable": true,
       "type": "Date"
@@ -220,7 +225,7 @@
     },
     {
       "column": "source_id",
-      "nullable": false,
+      "nullable": true,
       "type": "string"
     }
   ],
@@ -445,6 +450,16 @@
       "column": "raw_category",
       "nullable": true,
       "type": "string"
+    },
+    {
+      "column": "category_slugs",
+      "nullable": true,
+      "type": "Array<string>"
+    },
+    {
+      "column": "is_poi",
+      "nullable": false,
+      "type": "boolean"
     },
     {
       "column": "raw",

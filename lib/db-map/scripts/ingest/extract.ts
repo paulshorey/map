@@ -14,7 +14,6 @@ import {
   listSourceSlugs,
 } from "./sources.js";
 import type { RawRecord } from "./types.js";
-import { withPoiFlag } from "./extractors/utils.js";
 
 interface CliOptions {
   sourceSlug: string;
@@ -87,14 +86,15 @@ INSERT INTO research_pois (
   source_id, source_record_id, ingest_category,
   name, description, website, source_url, phone, email,
   address, city, region, country_code, lng, lat,
-  raw_category, raw, attributes, content_hash
+  raw_category, is_poi, raw, attributes, content_hash
 ) VALUES (
   $1, $2, $3,
   $4, $5, $6, $7, $8, $9,
   $10, $11, $12, $13, $14, $15,
-  $16, $17::jsonb, $18::jsonb, $19
+  $16, $17, $18::jsonb, $19::jsonb, $20
 )`;
 
+// A changed hash resets derived columns (incl. category_slugs) so the record re-flows the stages.
 const UPDATE_CHANGED_SQL = `
 UPDATE research_pois SET
   last_seen_at = now(),
@@ -102,15 +102,16 @@ UPDATE research_pois SET
   name = $4, description = $5, website = $6, source_url = $7,
   phone = $8, email = $9, address = $10, city = $11, region = $12,
   country_code = $13, lng = $14, lat = $15, raw_category = $16,
-  raw = $17::jsonb, attributes = $18::jsonb, content_hash = $19,
-  name_normalized = NULL, content_embedding = NULL, canonical_poi_id = NULL
-WHERE id = $20`;
+  is_poi = $17, raw = $18::jsonb, attributes = $19::jsonb, content_hash = $20,
+  name_normalized = NULL, category_slugs = NULL, content_embedding = NULL, canonical_poi_id = NULL
+WHERE id = $21`;
 
 async function upsertRecord(
   db: Pool,
   sourceId: string,
   ingestCategory: string | null,
   record: RawRecord,
+  isPoi: boolean,
 ): Promise<"inserted" | "updated" | "unchanged"> {
   const hash = contentHash(record);
   const params = [
@@ -130,6 +131,7 @@ async function upsertRecord(
     record.lng ?? null,
     record.lat ?? null,
     record.raw_category ?? null,
+    isPoi,
     JSON.stringify(record.raw),
     JSON.stringify(record.attributes ?? {}),
     hash,
@@ -205,10 +207,8 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
     if (opts.limit !== undefined && stats.seen >= opts.limit) break;
 
     const isPoi = extractor.isPoi ? extractor.isPoi(record.raw) : true;
-    const finalRecord = withPoiFlag(record, isPoi);
-    const hash = contentHash(finalRecord);
 
-    if (!finalRecord.source_record_id) {
+    if (!record.source_record_id) {
       stats.skipped++;
       continue;
     }
@@ -216,11 +216,11 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
     stats.seen++;
 
     if (opts.dryRun) {
-      previewRecord(finalRecord, hash);
+      previewRecord(record, contentHash(record));
       continue;
     }
 
-    const result = await upsertRecord(db!, sourceId!, ingestCategory, finalRecord);
+    const result = await upsertRecord(db!, sourceId!, ingestCategory, record, isPoi);
     stats[result]++;
   }
 
