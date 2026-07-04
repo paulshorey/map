@@ -71,7 +71,13 @@ rest of the plan reflects them; this section is the single place to read them qu
 
 ## 1. The problem with what we have today
 
-Current state (verified in the repo):
+> **Update (July 2026):** M1–M3 are implemented on `main`. The two-layer
+> `research_*`/`canonical_*` schema is live, the app reads from `canonical_pois`, and event dates
+> are supported. The ingestion pipeline (M4+) that fills `research_pois` and builds canonicals
+> via matching is **not yet built** — this section describes the original gap that motivated the
+> design.
+
+Historical state (pre-M1):
 
 - **One flat table** `pois` (`lib/db-map/migrations/202605241200__baseline.sql`): `name`,
   `category` (a free-text string), `lng`, `lat`, plus a few optional text columns. (This table
@@ -247,15 +253,16 @@ Sections 4.1–4.6 below define each table in detail.
 ### 4.0 Extensions
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS postgis;     -- KNN distance search for blocking
 CREATE EXTENSION IF NOT EXISTS pg_trgm;     -- trigram name similarity
-CREATE EXTENSION IF NOT EXISTS vector;      -- pgvector, embedding similarity
 ```
 
-> **Decision — adopt PostGIS now.** The baseline deliberately avoided PostGIS, but
-> distance-blocking 200k+ points needs a real spatial index (`GiST` + `ST_DWithin` /
-> `<->` KNN). Railway Postgres supports the PostGIS image. The app's read path can keep using
-> plain `lng`/`lat` columns (kept alongside `geom`), so `listPoisGeoJson` barely changes.
+> **Decision — portable baseline (no PostGIS / pgvector).** The shipped migration
+> (`202606300400__baseline.sql`) deliberately avoids PostGIS and pgvector because neither
+> extension is available on the target Railway Postgres. Coordinates are plain `lng`/`lat`
+> doubles with btree indexes; spatial blocking uses a bbox SQL prefilter + Haversine distance in
+> app code. Embeddings are stored as `real[]` and cosine similarity is computed in app code on
+> the small blocked candidate set (matching blocks by geography first, so no ANN index is needed).
+> Event date filtering uses `tstzrange` GiST (core PostgreSQL, no extension).
 
 ### 4.1 `research_sources` — source registry, provenance & licensing
 
@@ -308,14 +315,16 @@ CREATE TABLE research_pois (
   country_code    text,                       -- ISO-2
   lat             double precision,           -- NULL ⇒ needs geocoding
   lng             double precision,
-  geom            geography(Point,4326)
-                  GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography) STORED,
+
+  starts_at       timestamptz,                -- event start (NULL for permanent POIs)
+  ends_at         timestamptz,
+  date_precision  text,                        -- 'datetime' | 'day' | 'month' | 'year'
 
   raw_category    text,                       -- the source's category string, pre-mapping
   raw             jsonb NOT NULL,             -- the full original record, verbatim
   attributes      jsonb,                      -- extracted structured attrs (hookups, area_ha, ...)
 
-  content_embedding vector(384),              -- NULL ⇒ needs embed
+  content_embedding real[],                   -- NULL ⇒ needs embed; cosine in app on blocked set
   content_hash    text,                       -- version of the input; if it changes, derived cols are reset to NULL
 
   canonical_poi_id uuid REFERENCES canonical_pois(id) ON DELETE SET NULL, -- NULL ⇒ needs match; else the match/attribution link
@@ -326,7 +335,8 @@ CREATE TABLE research_pois (
   UNIQUE (source_id, source_record_id)        -- ← idempotency anchor
 );
 
-CREATE INDEX research_pois_geom_gix  ON research_pois USING gist (geom);
+CREATE INDEX research_pois_lat_idx    ON research_pois (lat);
+CREATE INDEX research_pois_lng_idx    ON research_pois (lng);
 CREATE INDEX research_pois_name_trgm ON research_pois USING gin (name_normalized gin_trgm_ops);
 CREATE INDEX research_pois_canon_idx ON research_pois (canonical_poi_id); -- "all sources for this POI"
 -- "needs work" = a derived column IS NULL; partial indexes keep those resumable scans cheap:
@@ -659,14 +669,27 @@ park — into one POI. They instead feed Step D as weighted signals, and only wh
 domain/phone is **not** on a maintained denylist of known multi-location operators.
 
 **Step C — Spatial blocking.** Otherwise, fetch candidate canonical POIs within a
-category-tuned radius using PostGIS:
+category-tuned radius. Because we use a portable schema (no PostGIS), blocking is two-step:
 
-```sql
-SELECT id, name, geom, ... 
-FROM canonical_pois
-WHERE ST_DWithin(geom, $rec_geom, $radius_m)
-ORDER BY geom <-> $rec_geom
-LIMIT 25;
+1. **SQL bbox prefilter** — cheap rectangle around the record's coordinates:
+   `lat BETWEEN $lat - δ AND $lat + δ AND lng BETWEEN $lng - δ AND $lng + δ`
+   where δ ≈ radius in degrees (conservative upper bound).
+2. **Haversine in app code** — compute true distance for bbox survivors, keep those within
+   the category-tuned radius, order by distance, take top 25.
+
+```ts
+// Pseudocode — ingest/match/block.ts
+const candidates = await db.query(`
+  SELECT id, name, lng, lat, ...
+  FROM canonical_pois
+  WHERE status = 'published'
+    AND lat BETWEEN $1 AND $2 AND lng BETWEEN $3 AND $4
+`, [lat - δ, lat + δ, lng - δ, lng + δ]);
+const nearby = candidates
+  .map(c => ({ ...c, distM: haversineM(lat, lng, c.lat, c.lng) }))
+  .filter(c => c.distM <= radiusM)
+  .sort((a, b) => a.distM - b.distM)
+  .slice(0, 25);
 ```
 
 Radius is per-category (campsites cluster tightly → ~150 m; large gardens/parks → ~400–600 m).
@@ -678,7 +701,7 @@ candidates are ever scored.
 | Signal | Source | Weight (starting point) |
 |---|---|---|
 | Name similarity | `pg_trgm` similarity + token-set / Jaro-Winkler on `name_normalized` | high |
-| Embedding cosine | `content_embedding <=> candidate` | medium |
+| Embedding cosine | cosine similarity on `content_embedding` real[] (app code) | medium |
 | Distance decay | `1 - dist/radius` | medium |
 | City/region match | exact city or region equality | small boost |
 | Website / phone | matching `website_domain` or `phone`, **excluding** denylisted chains/portals | medium boost |
@@ -985,6 +1008,29 @@ are restated here (and drive §0) so the document is self-contained.
 | 4 | AI-written descriptions? | **Verbatim first.** One source → publish its text as-is. Multiple sources with differing content → LLM aggregates. Never rewrite good single-source prose. |
 | 5 | Category taxonomy ownership? | **Code-owned.** Slugs/parents/aliases live in a committed seed file edited only by the developer (coupled to the AI prompts/matching code). No in-app/admin editing. |
 
+### 13.1 External service providers (resolved, July 2026)
+
+These drive `ingest/config.ts` defaults. API keys live in shell env / Cursor Cloud secrets.
+
+| Service | Provider | Model / endpoint | Env var |
+|---|---|---|---|
+| Embeddings | Jina AI | `jina-embeddings-v3`, 384 dims, `task: text-matching` | `JINA_API_KEY` |
+| LLM | DeepInfra | `deepseek-ai/DeepSeek-V4-Flash` via OpenAI-compatible API | `DEEPINFRA_API_KEY` |
+| Geocoder | LocationIQ | `https://us1.locationiq.com/v1/search` | `LOCATIONIQ_API_KEY` |
+
+**DeepInfra LLM** (match gray-zone + description fusion only):
+
+- Base URL: `https://api.deepinfra.com/v1/openai`
+- Use the `openai` npm package with custom `baseURL` — no DeepInfra SDK needed
+- `response_format: { type: "json_object" }`, `temperature: 0`
+- Match prompt returns `{ "same_place": boolean, "reason": string }` — forced binary
+- Full prompt contracts, TypeScript client example, and fallback behavior: see
+  `poi-ingestion-implementation.md` M0.4
+
+**Jina embeddings** (M7): `POST https://api.jina.ai/v1/embeddings` with
+`{ model, task: "text-matching", dimensions: 384, input: [...] }` → store 384-float array in
+`content_embedding`.
+
 ---
 
 ## 14. Implementation risks & refinements to watch
@@ -1032,16 +1078,12 @@ now so they're not rediscovered the hard way.
    parallelized — two workers could create two canonical POIs for one place. Keep matching
    single-writer (per region) or use advisory locks / a unique guard before scaling out.
 
-9. **Embedding model is pinned by the column type.** `vector(384)` hard-codes the model's
-   dimension; switching models means a migration + full re-embed. Record the model name/version
-   in config and treat a model change as a deliberate, planned re-embed.
+9. **Embedding dimension is pinned by array length.** `content_embedding real[]` is stored at
+   **384 dimensions** (Jina `jina-embeddings-v3` with MRL). Switching models means a full
+   re-embed. Record the model name/version in `ingest/config.ts`.
 
-10. **Keep `geom` in lockstep with `lat`/`lng`.** Simplest is a generated column
-    (`GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(lng,lat),4326)::geography) STORED`) so the
-    spatial column can never drift from the raw coordinates.
-
-11. **Confirm pgvector on the host.** Same caveat as PostGIS — verify the Railway Postgres
-    image ships the `vector` extension (or switch images) before Phase 4.
+10. **Coordinates are plain doubles.** No generated `geom` column — blocking and distance decay
+    use Haversine on `lng`/`lat` in app code. Keep lat/lng in valid ranges during normalize.
 
 ---
 

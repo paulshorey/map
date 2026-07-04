@@ -26,13 +26,13 @@
 
 ### Milestone map
 
-| # | Milestone | Outcome | Priority |
-|---|---|---|---|
-| M0 | Prerequisites & decisions | Extensions + env + model choices confirmed | **first** |
-| M1 | Fresh DB schema (baseline + tooling) | New `research_*` / `canonical_*` schema live | **first** |
-| M2 | Code-owned taxonomy seed | Categories + aliases in the DB | **first** |
-| M3 | Data-access layer + app read path | App runs on new schema (empty map) | **first** |
-| M4 | Ingestion framework + extractors | Raw dumps land in `research_pois` | next |
+| # | Milestone | Outcome | Priority | Status |
+|---|---|---|---|---|
+| M0 | Prerequisites & decisions | Extensions + env + model choices confirmed | **first** | **done** |
+| M1 | Fresh DB schema (baseline + tooling) | New `research_*` / `canonical_*` schema live | **first** | **done** |
+| M2 | Code-owned taxonomy seed | Categories + aliases in the DB | **first** | **done** |
+| M3 | Data-access layer + app read path | App runs on new schema (empty map) | **first** | **done** |
+| M4 | Ingestion framework + extractors | Raw dumps land in `research_pois` | **next** | pending |
 | M5 | Normalize + categorize | Clean, categorized research rows | next |
 | M6 | Geocode | Missing coordinates filled | next |
 | M7 | Embed | `content_embedding` populated | next |
@@ -127,81 +127,202 @@ If you prefer, run the stages separately — `ingest:extract` everything now, th
 
 ---
 
-## M0 — Prerequisites & decisions
+## M0 — Prerequisites & decisions ✅
 
-Do these before touching the schema; they determine column types and dependencies.
+**Status: complete.** Provider choices are locked; API keys are set in the Cursor Cloud agent
+environment and verified working (July 2026).
 
-### M0.1 Confirm PostGIS + pgvector are available
+### M0.1 Portable schema (no PostGIS / pgvector)
 
-The schema depends on three extensions. Verify the dev database (and later Railway) can create
-them.
+The deployed baseline (`lib/db-map/migrations/202606300400__baseline.sql`) deliberately avoids
+PostGIS and pgvector — neither extension is available on the target Railway Postgres. Instead:
+
+- **Coordinates:** plain `lng`/`lat` doubles + btree indexes; spatial blocking uses a bbox
+  prefilter in SQL, then Haversine distance in app code (M8).
+- **Embeddings:** `real[]` column; cosine similarity computed in app code on the small blocked
+  candidate set (matching blocks by geography first, so no ANN index is needed).
+- **Name similarity:** `pg_trgm` (available).
+- **Event date filtering:** `tstzrange` GiST (core PostgreSQL, no extension).
 
 ```bash
-psql "$DB_MAP_URL" -c "CREATE EXTENSION IF NOT EXISTS postgis;  SELECT postgis_full_version();"
-psql "$DB_MAP_URL" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;  SELECT 1;"
-psql "$DB_MAP_URL" -c "CREATE EXTENSION IF NOT EXISTS vector;   SELECT 1;"
+psql "$DB_MAP_URL" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm; SELECT 1;"
 ```
 
-- **If `vector` is missing:** the dev Postgres image lacks pgvector. Switch the local DB to an
-  image that bundles it (e.g. `pgvector/pgvector:pg16` or Supabase's image) **before M1**, and
-  flag that the Railway Postgres plugin must also provide it. Embeddings (M7) and the
-  `content_embedding` column block on this.
-- **If `postgis` is missing:** same — use a PostGIS-enabled image. Blocking/distance search
-  (M8) depends on it.
+> Acceptance: `pg_trgm` creates successfully. Baseline migration applies without PostGIS/pgvector.
 
-> Acceptance: all three `CREATE EXTENSION` statements succeed on `$DB_MAP_URL`.
+### M0.2 Embedding provider — Jina AI `jina-embeddings-v3` @ 384 dims
 
-### M0.2 Choose the embedding model + dimension (locks a column type)
+`research_pois.content_embedding` is `real[]`; **array length is fixed at 384** (chosen via Jina's
+Matryoshka Representation Learning — good quality/cost trade-off for name+locality similarity).
 
-`research_pois.content_embedding` is typed `vector(N)`; **N is fixed at migration time**.
-Changing models later = migration + full re-embed (overview §14.9).
+| Setting | Value |
+|---|---|
+| Provider | Jina AI |
+| Model | `jina-embeddings-v3` |
+| Dimension | `384` (via `dimensions` param; default is 1024) |
+| Task | `text-matching` (for pairwise POI similarity) |
+| Env var | `JINA_API_KEY` |
 
-- Recommended default: a 384-dim small model (`bge-small-en-v1.5` / `all-MiniLM-L6-v2`) — cheap,
-  good enough for name+locality similarity. If using a hosted API (e.g. OpenAI
-  `text-embedding-3-small` = 1536), set N accordingly.
-- Record the choice in env (below) and in `lib/db-map/scripts/ingest/config.ts` (created in M4).
-
-### M0.3 Choose geocoder + LLM provider
-
-- **Geocoder:** LocationIQ (per `docs/search/location-api.md`; 5k/day free, commercial-OK). Key
-  in env. Provider is abstracted so we can swap to self-hosted Nominatim later.
-- **LLM (gray-zone adjudication + description fusion):** pick a provider/model; key in env. Used
-  only in M8 (matching) and M8 (merge prose) — not required to stand up the schema.
-
-### M0.4 Add environment variables
-
-Append to `.env.example` (the repo uses shell env, not `.env` — these document required vars):
+**API call** (`POST https://api.jina.ai/v1/embeddings`):
 
 ```bash
-# ── Ingestion pipeline ───────────────────────────────────────
-# Geocoding (forward geocode for records missing coordinates)
+curl https://api.jina.ai/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $JINA_API_KEY" \
+  -d '{
+    "model": "jina-embeddings-v3",
+    "task": "text-matching",
+    "dimensions": 384,
+    "input": ["Kew Gardens, London, UK"]
+  }'
+```
+
+Response: `{ "data": [{ "embedding": [0.09, -0.15, ...] }] }` — 384 floats.
+
+Implement in M7 as `ingest/embed.ts` → `ingest/providers/jina.ts`. Batch multiple texts per
+request (Jina accepts an array in `input`). Store the returned vector directly in `content_embedding`.
+
+### M0.3 Geocoder — LocationIQ
+
+| Setting | Value |
+|---|---|
+| Provider | LocationIQ |
+| Free tier | 5,000 forward-geocode requests/day |
+| Env var | `LOCATIONIQ_API_KEY` |
+
+**API call** (forward search):
+
+```bash
+curl "https://us1.locationiq.com/v1/search?key=$LOCATIONIQ_API_KEY&q=Kew+Gardens+London&format=json&limit=1"
+```
+
+Response: `[{ "lat": "51.4787", "lon": "-0.2956", "display_name": "...", ... }]`.
+
+Implement in M6 as `ingest/geocode.ts` → `ingest/providers/locationiq.ts`. Throttle to respect
+rate limits; cache every query (hit or miss) in `research_geocode_cache`.
+
+### M0.4 LLM provider — DeepInfra `deepseek-ai/DeepSeek-V4-Flash`
+
+Used only in M8: (a) gray-zone **binary** match adjudication, (b) multi-source description
+fusion when verbatim sources disagree. Not needed for M4–M7.
+
+| Setting | Value |
+|---|---|
+| Provider | DeepInfra |
+| Model | `deepseek-ai/DeepSeek-V4-Flash` |
+| API style | **OpenAI-compatible** chat completions |
+| Base URL | `https://api.deepinfra.com/v1/openai` |
+| Env var | `DEEPINFRA_API_KEY` |
+| Context | 1M tokens (more than enough for match prompts) |
+| Cost | ~$0.09/M input, ~$0.18/M output tokens |
+
+**API call** (`POST /v1/openai/chat/completions`):
+
+```bash
+curl "https://api.deepinfra.com/v1/openai/chat/completions" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $DEEPINFRA_API_KEY" \
+  -d '{
+    "model": "deepseek-ai/DeepSeek-V4-Flash",
+    "messages": [
+      {"role": "system", "content": "You are a POI deduplication judge. Reply ONLY with valid JSON."},
+      {"role": "user", "content": "Are these the same place? ..."}
+    ],
+    "temperature": 0,
+    "max_tokens": 256,
+    "response_format": {"type": "json_object"}
+  }'
+```
+
+**TypeScript client** (use the `openai` npm package with a custom base URL — no DeepInfra SDK
+needed):
+
+```ts
+import OpenAI from "openai";
+
+const llm = new OpenAI({
+  apiKey: process.env.DEEPINFRA_API_KEY,
+  baseURL: "https://api.deepinfra.com/v1/openai",
+});
+
+const res = await llm.chat.completions.create({
+  model: "deepseek-ai/DeepSeek-V4-Flash",
+  temperature: 0,
+  max_tokens: 256,
+  response_format: { type: "json_object" },
+  messages: [
+    { role: "system", content: MATCH_SYSTEM_PROMPT },
+    { role: "user", content: JSON.stringify({ recordA, recordB, distanceM, signals }) },
+  ],
+});
+const parsed = JSON.parse(res.choices[0]?.message?.content ?? "{}");
+// Expected shape: { "same_place": true|false, "reason": "one sentence" }
+```
+
+Implement in M8 as `ingest/match/llm.ts` → `ingest/providers/deepinfra.ts`.
+
+**Match adjudication prompt contract** (forced binary, no human review):
+
+- System: "You judge whether two POI records refer to the same real-world place. Reply with JSON:
+  `{ \"same_place\": boolean, \"reason\": string }`. You must choose yes or no."
+- User: both records' `name`, `address`, `city`, `region`, `country_code`, `website`, `distance_m`,
+  `name_similarity`, `embedding_cosine`.
+- `temperature: 0`, `response_format: { type: "json_object" }` for reliable parsing.
+- On parse failure or API error: fall back to `new` (create separate canonical — conservative).
+
+**Description fusion prompt** (only when multiple sources disagree):
+
+- System: "Combine these source descriptions into one factual paragraph. Preserve specific facts;
+  do not invent details. Reply with JSON: `{ \"description\": string }`."
+- User: array of `{ source, text }` objects.
+- Pick the result only if it's shorter than the concatenation and contains no hallucinated facts;
+  otherwise keep the longest single-source verbatim text (Decision 4).
+
+**Rate limits:** DeepInfra default is 200 concurrent requests per model (plenty for our
+one-record-at-a-time matcher). Retry on HTTP 429 with exponential backoff.
+
+### M0.5 Environment variables
+
+Documented in `.env.example` (repo uses shell env, not `.env` files):
+
+```bash
 GEOCODER_PROVIDER=locationiq
 LOCATIONIQ_API_KEY=
-
-# Embeddings (dimension MUST match research_pois.content_embedding vector(N))
-EMBEDDINGS_PROVIDER=local        # local | openai | ...
-EMBEDDINGS_MODEL=bge-small-en-v1.5
+EMBEDDINGS_PROVIDER=jina
+EMBEDDINGS_MODEL=jina-embeddings-v3
 EMBEDDINGS_DIM=384
-
-# LLM for gray-zone match adjudication and multi-source description fusion
-LLM_PROVIDER=openai              # openai | anthropic | ...
-LLM_MODEL=
-LLM_API_KEY=
-
-# Optional matcher tuning overrides (defaults live in code)
+JINA_API_KEY=
+LLM_PROVIDER=deepinfra
+LLM_MODEL=deepseek-ai/DeepSeek-V4-Flash
+DEEPINFRA_API_KEY=
 INGEST_MATCH_T_HIGH=0.85
 INGEST_MATCH_T_LOW=0.55
 ```
 
-> Acceptance: `.env.example` updated and committed; the actual secrets are set in the shell /
-> Cursor Cloud secrets (not committed).
+`lib/db-map/scripts/ingest/config.ts` (created in M4) reads these env vars with the defaults
+above.
+
+> Acceptance: `.env.example` committed; all three API keys verified in the shell (Jina, DeepInfra,
+> LocationIQ all return HTTP 200 on a smoke-test call).
 
 ---
 
-## M1 — Fresh database schema (baseline migration + tooling)
+## M1 — Fresh database schema (baseline migration + tooling) ✅
 
-This is the foundation. We **replace** the two existing migrations with one new baseline that
-defines the full target schema, wipe the DB, and regenerate all artifacts.
+**Status: complete.** Implemented in `lib/db-map/migrations/202606300400__baseline.sql` (portable
+baseline — no PostGIS/pgvector; see M0.1). Old migrations removed; `pnpm db:sync` regenerates
+`schema/`, `generated/typescript/db-types.ts`, and contracts.
+
+The DDL below is the **original design sketch** (PostGIS/pgvector). The **shipped baseline**
+differs — see the migration file for the authoritative schema. Key differences from this sketch:
+
+- No `geom` geography columns — plain `lng`/`lat` + btree indexes instead.
+- `content_embedding real[]` instead of `vector(384)`.
+- Event date columns on `canonical_pois` (`starts_at`, `ends_at`, `date_precision`, `event_range`).
+- `source_url` on `research_pois` (listing page ≠ `website`).
+- `is_temporal` on `canonical_categories`.
+- `canonical_poi_occurrences` table for recurring event editions.
+- `research_category_aliases` uses partial unique indexes (not PK with nullable `source_id`).
 
 ### M1.1 Remove the old migrations
 
@@ -499,9 +620,10 @@ Then re-run `pnpm --filter @lib/db-map app:contract:generate` and commit
 
 ---
 
-## M2 — Code-owned taxonomy seed
+## M2 — Code-owned taxonomy seed ✅
 
-Categories/aliases live in source (overview Decision 5) and are seeded into the DB.
+**Status: complete.** `lib/db-map/scripts/ingest/taxonomy.ts` + `seed-taxonomy.ts`; run via
+`pnpm --filter @lib/db-map ingest:taxonomy:seed`.
 
 ### M2.1 Author the taxonomy seed
 
@@ -543,12 +665,10 @@ export const TAXONOMY: CategorySeed[] = [
 
 ---
 
-## M3 — Data-access layer + app read path (app runs on the new schema)
+## M3 — Data-access layer + app read path (app runs on the new schema) ✅
 
-Goal: the app boots, the map renders (empty), the category switcher lists the seeded categories,
-and a POI detail would render if one existed. **No frontend file changes needed** because we keep
-`/api/pois/categories` returning `string[]` of display names and the `category` filter as a
-display-name string.
+**Status: complete.** `lib/db-map/sql/pois.ts` reads `canonical_pois`; app API routes and
+`PoiDrawer` display event dates; `pnpm verify` passes.
 
 ### M3.1 Rewrite `lib/db-map/sql/pois.ts` read functions
 
@@ -798,8 +918,8 @@ coordinates are trusted as correct.
 last embed (or `content_embedding IS NULL`).
 
 - Compose the embed text: `name_normalized + ' ' + city + ' ' + region + ' ' + <canonical
-  category>`; call the configured embedder; write `content_embedding` (dimension must equal the
-  column's `vector(N)`).
+  category>`; call Jina (`jina-embeddings-v3`, `task: text-matching`, `dimensions: 384`); write
+  the returned float array to `content_embedding` (must be length 384).
 - Batch requests; skip unchanged rows (cost control, overview §5 Stage 4).
 
 > **Acceptance (M7):** `SELECT count(*) FROM research_pois WHERE content_embedding IS NOT NULL`
@@ -822,9 +942,9 @@ method, and LLM reason go to `research_match_decisions` (not onto the row).
 2. **Definitive-ID** match (Wikidata QID / OSM `(type,id)` from `attributes`/`raw`) → merge,
    `method='strong_id'`. **Do not** use website/phone as definitive (chain/portal denylist —
    overview §6 Step B).
-3. **Spatial block**: `ST_DWithin(canonical_pois.geom, $geom, $radius)` ordered by `<->`, radius
-   per-category (campsites ~150 m, gardens ~400–600 m). Requires a non-null geom (geocoded rows
-   only).
+3. **Spatial block**: bbox prefilter on `lat`/`lng` (cheap SQL), then Haversine distance in app
+   code to find candidates within a category-tuned radius (campsites ~150 m, gardens ~400–600 m).
+   Order by distance, take top 25. Requires non-null coordinates (geocoded rows only).
 4. **Score** candidates: `pg_trgm`/Jaro-Winkler name sim + embedding cosine + distance decay +
    city/region + website/phone signal (denylist-guarded).
 5. **Decide**: `≥ T_high` auto-merge; `≤ T_low` new; gray zone → **LLM binary** (merge/new,
@@ -846,7 +966,7 @@ method, and LLM reason go to `research_match_decisions` (not onto the row).
 
 - `ingest/match/denylist.ts` — known multi-location domains/phones (`koa.com`, `recreation.gov`,
   `nps.gov`, `facebook.com`, …).
-- `ingest/match/llm.ts` — the binary adjudicator (structured yes/no + reason).
+- `ingest/match/llm.ts` — the binary adjudicator via DeepInfra OpenAI-compatible API (see M0.4).
 - `ingest/merge.ts` — field-precedence resolver + conditional description fuser.
 - `ingest:override <a> <b> same|different` CLI → writes `research_match_overrides`.
 - **Golden-set harness** (`ingest/match/golden.ts` + a small labeled fixture of known
@@ -921,14 +1041,12 @@ method, and LLM reason go to `research_match_decisions` (not onto the row).
 
 ## Cross-cutting execution gotchas (read before starting)
 
-- **Extensions first or everything fails** — `postgis`/`vector` must exist before the baseline
-  applies (M0.1). On Railway, confirm the Postgres plugin/image provides both.
-- **Embedding dimension is load-bearing** — `vector(N)` in the baseline must equal
-  `EMBEDDINGS_DIM`. Decide in M0.2; changing later is a migration + full re-embed.
-- **Generated `geom`** — if PostGIS rejects the generated column, use the trigger fallback in
-  M1.2; do not leave `geom` unpopulated (blocking depends on it).
-- **Typegen noise** — apply the M1.3 filter or `db:sync` will emit junk PostGIS row types and the
-  contract check may churn.
+- **Portable schema is intentional** — no PostGIS/pgvector on the target DB. Spatial blocking
+  and embedding cosine similarity happen in app code on small candidate sets (M0.1, M8).
+- **Embedding dimension is load-bearing** — `content_embedding real[]` must always be length 384
+  (Jina MRL). Changing models/dims means updating stored arrays + full re-embed.
+- **Typegen noise** — if PostGIS is ever added later, apply the M1.3 filter in
+  `generate-types.mjs` or `db:sync` will emit junk row types.
 - **Streaming, always** — the campground CSV/JSON files are tens to hundreds of MB; never
   `JSON.parse`/`readFileSync` them whole (M4.1).
 - **Idempotency is the contract, and state is implicit** — `(source_id, source_record_id)`
