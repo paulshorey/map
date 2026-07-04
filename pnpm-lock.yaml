@@ -113,16 +113,28 @@ importers:
 
   lib/db-map:
     dependencies:
+      csv-parse:
+        specifier: ^7.0.1
+        version: 7.0.1
       fast-xml-parser:
         specifier: ^5.8.0
         version: 5.8.0
       pg:
         specifier: ^8.16.3
         version: 8.21.0
+      stream-chain:
+        specifier: ^4.2.5
+        version: 4.2.5
+      stream-json:
+        specifier: ^3.4.0
+        version: 3.4.0
     devDependencies:
       '@lib/config':
         specifier: workspace:*
         version: link:../config
+      '@types/node':
+        specifier: ^24.12.4
+        version: 24.12.4
       '@types/pg':
         specifier: ^8.11.10
         version: 8.20.0
@@ -1101,6 +1113,9 @@ packages:
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
+  csv-parse@7.0.1:
+    resolution: {integrity: sha512-+2z7Ar0APQ7Uu6fX4cn+pitRmxjZ1WPBcGmZFKmA74FCyi7Et/XZx8cjNQ5CjbZ4HCOxXCOpRBYvYH08Qa003A==}
+
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
     engines: {node: '>=6.0'}
@@ -1806,6 +1821,14 @@ packages:
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
+
+  stream-chain@4.2.5:
+    resolution: {integrity: sha512-Wtyq3bNE3ggLR0v2vftqvuhltym3WbZAkZpfIrkr5F/6vpeUmWmwTgXa16zD87gpahwJ/Qulq3zVfUlgIc0J2A==}
+    engines: {node: '>=22'}
+
+  stream-json@3.4.0:
+    resolution: {integrity: sha512-7NEiOhtS0W7ZrwnqJc/fugsGQMdpNJng+v1s2xLTrmfBN2vcYDyBglCK2+eITif0VkHLXnTdALgQI9TnZMBhYA==}
+    engines: {node: '>=22'}
 
   string-width@4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
@@ -2879,6 +2902,8 @@ snapshots:
 
   csstype@3.2.3: {}
 
+  csv-parse@7.0.1: {}
+
   debug@4.4.3:
     dependencies:
       ms: 2.1.3
@@ -3583,6 +3608,12 @@ snapshots:
       extend-shallow: 3.0.2
 
   split2@4.2.0: {}
+
+  stream-chain@4.2.5: {}
+
+  stream-json@3.4.0:
+    dependencies:
+      stream-chain: 4.2.5
 
   string-width@4.2.3:
     dependencies:

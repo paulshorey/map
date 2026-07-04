@@ -5,7 +5,9 @@ description: Import points of interest into the map database from a JSON file. U
 
 # Import POIs
 
-Import a JSON array of POI objects into the PostgreSQL `pois` table.
+Import a JSON array of POI objects directly into the `canonical_pois` table (a curated/dev-fixture
+path via `insertPois`). For bulk, de-duplicated ingestion from real sources, use the ingestion
+pipeline instead (`scripts/ingest/`, see `.cursor/plans/poi-ingestion-*.md`).
 
 ## Workflow
 

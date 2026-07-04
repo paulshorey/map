@@ -90,6 +90,7 @@ CREATE TABLE public.canonical_pois (
     field_provenance jsonb DEFAULT '{}'::jsonb NOT NULL,
     popularity integer DEFAULT 1 NOT NULL,
     status text DEFAULT 'published'::text NOT NULL,
+    primary_category_id uuid,
     starts_at timestamp with time zone,
     ends_at timestamp with time zone,
     date_precision text,
@@ -191,6 +192,8 @@ CREATE TABLE public.research_pois (
     ends_at timestamp with time zone,
     date_precision text,
     raw_category text,
+    category_slugs text[],
+    is_poi boolean DEFAULT true NOT NULL,
     raw jsonb NOT NULL,
     attributes jsonb,
     content_embedding real[],
@@ -378,7 +381,7 @@ CREATE INDEX canonical_categories_parent_idx ON public.canonical_categories USIN
 -- Name: canonical_poi_categories_cat_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX canonical_poi_categories_cat_idx ON public.canonical_poi_categories USING btree (category_id);
+CREATE INDEX canonical_poi_categories_cat_idx ON public.canonical_poi_categories USING btree (category_id, poi_id);
 
 
 --
@@ -424,6 +427,13 @@ CREATE INDEX canonical_pois_name_trgm ON public.canonical_pois USING gin (lower(
 
 
 --
+-- Name: canonical_pois_primary_cat_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX canonical_pois_primary_cat_idx ON public.canonical_pois USING btree (primary_category_id);
+
+
+--
 -- Name: canonical_pois_starts_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -463,6 +473,13 @@ CREATE INDEX research_match_decisions_research_idx ON public.research_match_deci
 --
 
 CREATE INDEX research_pois_canon_idx ON public.research_pois USING btree (canonical_poi_id);
+
+
+--
+-- Name: research_pois_category_slugs_gix; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_pois_category_slugs_gix ON public.research_pois USING gin (category_slugs);
 
 
 --
@@ -544,6 +561,14 @@ ALTER TABLE ONLY public.canonical_poi_categories
 
 ALTER TABLE ONLY public.canonical_poi_occurrences
     ADD CONSTRAINT canonical_poi_occurrences_poi_id_fkey FOREIGN KEY (poi_id) REFERENCES public.canonical_pois(id) ON DELETE CASCADE;
+
+
+--
+-- Name: canonical_pois canonical_pois_primary_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.canonical_pois
+    ADD CONSTRAINT canonical_pois_primary_category_id_fkey FOREIGN KEY (primary_category_id) REFERENCES public.canonical_categories(id) ON DELETE SET NULL;
 
 
 --

@@ -461,6 +461,30 @@ the correct credits.
 `canonical_categories`, `research_category_aliases`, `canonical_poi_categories` (the last links
 `canonical_pois` ↔ `canonical_categories`).
 
+> **How categories are stored, decided (implemented M5).** The two layers store categories
+> differently because they have different jobs:
+>
+> - **`research_pois` (raw/staging): a `category_slugs text[]` array** (GIN-indexed). A record can
+>   belong to several categories, the value is *derived* by the normalize stage from
+>   `research_category_aliases` (with `ingest_category` as the code-owned fallback), and it is
+>   re-derived on every re-normalize. Slugs are code-owned constants (from `taxonomy.ts`), so no
+>   foreign key is needed. Arrays are the cheapest fit for a high-volume, re-derivable scratch
+>   layer. The verbatim `raw_category` and dump-level `ingest_category` are kept for the unmapped
+>   report and provenance. A separate `is_poi boolean` column is the validity gate (§15.1).
+> - **`canonical_pois` (published): the M:N junction `canonical_poi_categories` as source of
+>   truth** — FK integrity on both sides, a natural `is_primary` flag, and clean hierarchy /
+>   aggregation queries. Plus a denormalized **`primary_category_id`** FK column on
+>   `canonical_pois` so the hot map read path (marker color/label for every point in view) is a
+>   single join instead of a per-row lateral. The category filter expands a selected category to
+>   its descendants (recursive CTE over `canonical_categories`) and probes the composite index
+>   `canonical_poi_categories(category_id, poi_id)`.
+>
+> Why not an array on `canonical_pois` too? The user-facing layer is durable and
+> integrity-critical; a normalized junction with real FKs is more robust there, and at our scale
+> the indexed semi-join is efficient. Why not a junction on `research_pois`? It is a write-heavy,
+> re-derivable staging layer where an overwrite-in-place array is simpler and cheaper. This
+> asymmetry is deliberate.
+
 ### 4.6 Audit & override tables (reproducibility + correcting AI mistakes)
 
 ```sql

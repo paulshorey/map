@@ -26,15 +26,24 @@
     "db:sync": "pnpm db:migrate && pnpm db:schema:snapshot && pnpm db:types:generate && pnpm app:contract:generate",
     "db:seed": "tsx scripts/seed.ts",
     "ingest:taxonomy:seed": "tsx scripts/ingest/seed-taxonomy.ts",
+    "ingest:extract": "tsx scripts/ingest/extract.ts",
+    "ingest:normalize": "tsx scripts/ingest/normalize.ts",
+    "ingest:geocode": "tsx scripts/ingest/geocode.ts",
+    "ingest:embed": "tsx scripts/ingest/embed.ts",
+    "ingest:test-extractors": "tsx scripts/ingest/test-extractors.ts",
     "db:import:kml": "tsx scripts/import-kml.ts",
     "db:import:json": "tsx scripts/import-json.ts"
   },
   "dependencies": {
+    "csv-parse": "^7.0.1",
     "fast-xml-parser": "^5.8.0",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "stream-chain": "^4.2.5",
+    "stream-json": "^3.4.0"
   },
   "devDependencies": {
     "@lib/config": "workspace:*",
+    "@types/node": "^24.12.4",
     "@types/pg": "^8.11.10",
     "tsx": "^4.19.0",
     "typescript": "5.8.3"

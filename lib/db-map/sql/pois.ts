@@ -111,6 +111,11 @@ export async function insertPois(
          ON CONFLICT (poi_id, category_id) DO NOTHING`,
         [poiId, categoryId],
       );
+      // Keep the denormalized primary-category shortcut in sync.
+      await db.query(
+        `UPDATE canonical_pois SET primary_category_id = $2 WHERE id = $1`,
+        [poiId, categoryId],
+      );
       inserted++;
     } catch (err) {
       failed.push({ index: i, name: poi.name, error: (err as Error).message });
@@ -136,14 +141,16 @@ export interface ListPoisInBboxParams {
 }
 
 // Feature properties: id, name, primary category display name, photo, popularity, event dates.
+// Primary category resolves via the denormalized primary_category_id join (hot path);
+// falls back to the junction lateral if it is not set.
 const FEATURE_PROPERTIES = `jsonb_build_object(
   'id', p.id,
   'name', p.name,
-  'category', (
+  'category', COALESCE(pcat.display_name, (
     SELECT c.display_name FROM canonical_poi_categories pc
     JOIN canonical_categories c ON c.id = pc.category_id
     WHERE pc.poi_id = p.id ORDER BY pc.is_primary DESC, c.sort_order LIMIT 1
-  ),
+  )),
   'photo_url', p.photo_url,
   'popularity', p.popularity,
   'starts_at', p.starts_at,
@@ -195,6 +202,7 @@ export async function listPoisGeoJson(
           'properties', ${FEATURE_PROPERTIES}
         ) AS feature
         FROM canonical_pois p
+        LEFT JOIN canonical_categories pcat ON pcat.id = p.primary_category_id
         WHERE p.status = 'published'
           AND ${CATEGORY_FILTER("$1")}
           AND ${DATE_FILTER("$3", "$4")}
@@ -219,6 +227,7 @@ export async function listPoisGeoJson(
         'properties', ${FEATURE_PROPERTIES}
       ) AS feature
       FROM canonical_pois p
+      LEFT JOIN canonical_categories pcat ON pcat.id = p.primary_category_id
       WHERE p.status = 'published'
         AND p.lng >= $1 AND p.lat >= $2 AND p.lng <= $3 AND p.lat <= $4
         AND ${CATEGORY_FILTER("$5")}
@@ -260,11 +269,11 @@ export async function getPoiById(db: Pool, id: string) {
           JOIN canonical_categories c ON c.id = pc.category_id
           WHERE pc.poi_id = p.id
         ), ARRAY[]::text[]) AS categories,
-        (
+        COALESCE(pcat.display_name, (
           SELECT c.display_name FROM canonical_poi_categories pc
           JOIN canonical_categories c ON c.id = pc.category_id
           WHERE pc.poi_id = p.id ORDER BY pc.is_primary DESC, c.sort_order LIMIT 1
-        ) AS category,
+        )) AS category,
         COALESCE((
           SELECT array_agg(DISTINCT s.name)
           FROM research_pois r JOIN research_sources s ON s.id = r.source_id
@@ -272,6 +281,7 @@ export async function getPoiById(db: Pool, id: string) {
         ), ARRAY[]::text[]) AS sources,
         jsonb_build_object('type','Point','coordinates', jsonb_build_array(p.lng, p.lat)) AS geometry
      FROM canonical_pois p
+     LEFT JOIN canonical_categories pcat ON pcat.id = p.primary_category_id
      WHERE p.id = $1`,
     [id],
   );

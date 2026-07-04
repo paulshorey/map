@@ -45,6 +45,7 @@ export interface CanonicalPoisRow {
   "field_provenance": unknown;
   "popularity": number;
   "status": string;
+  "primary_category_id": string | null;
   "starts_at": Date | null;
   "ends_at": Date | null;
   "date_precision": string | null;
@@ -56,7 +57,7 @@ export interface CanonicalPoisRow {
 export interface ResearchCategoryAliasesRow {
   "alias": string;
   "category_id": string;
-  "source_id": string;
+  "source_id": string | null;
 }
 
 export interface ResearchGeocodeCacheRow {
@@ -112,6 +113,8 @@ export interface ResearchPoisRow {
   "ends_at": Date | null;
   "date_precision": string | null;
   "raw_category": string | null;
+  "category_slugs": Array<string> | null;
+  "is_poi": boolean;
   "raw": unknown;
   "attributes": unknown | null;
   "content_embedding": Array<number> | null;
