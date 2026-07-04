@@ -46,4 +46,7 @@ export const ingestConfig = {
   extract: {
     batchSize: 500,
   },
+  embed: {
+    batchSize: envNumber("EMBED_BATCH_SIZE", 32),
+  },
 } as const;
