@@ -57,7 +57,7 @@ const DEFAULT_PAIRS: GoldenPair[] = [
   {
     label: "same",
     note: "Kew should merge across open datasets",
-    a: { source: "wikidata", name: "Royal Botanic Gardens, Kew" },
+    a: { source: "wikidata", name: "Kew Gardens" },
     b: [
       { source: "osm", name: "Royal Botanic Gardens, Kew" },
       { source: "bgci", name: "Royal Botanic Gardens, Kew" },
