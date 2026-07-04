@@ -839,9 +839,17 @@ start/end dates) in `attributes` and keep everything in `raw`.
 
 ## M5 — Normalize + categorize ✅
 
-**Status: complete.** `ingest/normalize.ts` + `"ingest:normalize"`. Resumable loop over
-`research_pois` where `name_normalized IS NULL` (set NULL on first insert and whenever the
-`content_hash` changes).
+**Status: complete** (as originally scoped). `ingest/normalize.ts` + `"ingest:normalize"`.
+Resumable loop over `research_pois` where `name_normalized IS NULL` (set NULL on first insert and
+whenever the `content_hash` changes).
+
+> **Addendum (raw-data survey, Jul 2026):** the "Data-quality contract" section (before M8)
+> extends normalize with work not yet implemented: the shared **event-date parser**
+> (`normalize/dates.ts` → `starts_at`/`ends_at`/`date_precision`, incl. swap repair),
+> **HTML → Markdown** description conversion (`normalize/html.ts`), **field-leak/column-shift
+> validation** (prose in date fields, years in country fields, venue-in-city mapping), and the
+> **coords-vs-country cross-check**. Implement these alongside the first festival extractors
+> (they are no-ops for the garden sources already ingested).
 
 > **Category storage decision (implemented).** Categories are first-class columns, not JSON:
 > - **`research_pois.category_slugs text[]`** (GIN-indexed) holds the resolved canonical slugs
@@ -952,6 +960,139 @@ last embed (or `content_embedding IS NULL`).
 
 ---
 
+## Data-quality contract — field repair & validity rules (raw-data survey, Jul 2026)
+
+> Grounded in a full survey of `docs/poi/` (7 category folders, ~250 files, ~700 MB: gardens,
+> campgrounds, flying sites, music festivals, carnival, art-fairs, art-parades). These rules are
+> cross-cutting: extractors (M4) parse and gate; normalize (M5) repairs and validates; merge (M8)
+> trusts only repaired values. **Principle (overview §15.3): a non-empty field is never assumed
+> correct. Every field is validated against its own type; unfixable values become NULL — never
+> garbage.** NULL is safe (the record just skips that signal); garbage poisons geocoding,
+> embeddings, and matching.
+
+### Dates (event POIs)
+
+Observed in the wild: ISO (`2026-06-19`), compact `YYYYMMDD` (MusicFestivalWizard), `DD/MM/YYYY`
+(Concerts-Metal), US prose (`"Nov 6, 2026"`), day-ranges without year (`"June 3-6"`), month-only
+(`"July"`), year-only (`"1982"`, MusicBrainz), `"Cancelled"`/`"TBD"`/null, **whole sentences
+leaked into date fields** (eFestivals: 322 of 342 rows — `start_date: "Sarum Point is a music
+festival held from 29"`), **swapped ranges** (global_carnivalist St. Maarten: start
+`"April 30, 2026"`, end `"April 1, 2026"`), placeholder `9999-12-31`, publish timestamps
+masquerading as event dates (Festivalando), liturgical prose (`"Three days preceding Lent"`,
+UNESCO), and multi-weekend `weeks[]` arrays (Viberate/Coachella).
+
+Rules (implemented in a shared `normalize/dates.ts`; extractors pass raw strings through):
+
+1. **One parser owns all formats** — `parseEventDate(raw, sourceHint)` with per-source format
+   hints (`YYYYMMDD`, `DD/MM/YYYY`, etc.). Extractors never parse dates themselves.
+2. **Reject, don't guess.** Unparseable → NULL. Value longer than ~40 chars or containing
+   sentence text → NULL (catches the eFestivals leak). `"Cancelled"`/`"TBD"` → NULL.
+3. **Plausibility window**: parsed year must be in `[1900, currentYear + 5]`; otherwise NULL.
+   Epoch (`1970-01-01`) and far-future placeholders (`9999-*`) → NULL.
+4. **Swap repair (product decision)**: if both ends parse and `start > end`, store
+   `min` as `starts_at` and `max` as `ends_at`; keep the raw strings in `attributes.date_raw`;
+   count swaps in the run stats. *Exception:* cross-year ranges where one side lacks a year
+   ("Dec 31 – Jan 1") get year inference **before** the swap check so NYE events aren't mangled.
+5. **Precision**: full date → `'day'`; month-only → `'month'` (first of month); year-only →
+   `'year'`. Stored in `date_precision` so the UI and matcher know how much to trust it.
+6. **Missing end** → `ends_at` NULL (single-day or unknown; Ticketmaster is 90% end-less).
+7. **Edition year in the name** ("Coachella 2025") may serve as a *fallback year hint* when the
+   record carries no other date — never overrides a parsed date.
+8. **Multi-weekend `weeks[]`** → each week becomes a `canonical_poi_occurrences` row at merge;
+   the representative `starts_at`/`ends_at` spans per the event-dates plan.
+
+### Location
+
+Observed: city+country concatenated in one field (`"Boom, Belgium"`, `"Detroit Lakes,
+Minnesota"`), **venue in the city field** (Festival Alarm: `city: "Eichenring Scheeßel"`;
+Bandwagon: `city: "Victoria Theatre"`), **columns shifted a whole field** (Concerts-Metal:
+`country: "2025"`, `city: "Blind Guardian &amp; Beast In Black"`), placeholder city `"All"`
+(Resident Advisor, 16%), **crawl-default wrong country** (festivalfinder_eu: `country: "Albania"`
+on every record while `location_raw` = `"Iisaku, Estonia"` holds the truth), empty country
+(Festival Alarm, 17%), coords `0,0` (RIDB: ~435 facilities, ~17% of campsites), coords as strings
+(Ticketmaster), coords contradicting the claimed region (The Dyrt: an "Everglades" campground at
+Maryland coordinates).
+
+Rules:
+
+1. **Field-type validation** — a `city` that parses as a pure number/year → NULL; a `city` equal
+   to a known country name → moved to country; comma-split `"City, Country|Region"` when the tail
+   resolves via `countryToCode`; placeholders (`"All"`, `""`, `"unknown"`) → NULL. When one field
+   in a row fails type validation, treat *adjacent* fields in that row as suspect (column-shift
+   corruption) — validate them all before use.
+2. **Venue-vs-city** — sources known to put venues in `city` map it to `attributes.venue` in the
+   extractor and leave `city` NULL; geocode composes `"name, venue, country"` instead.
+3. **Per-source overrides** — when a scraped field is systematically wrong (festivalfinder_eu
+   `country`), the extractor derives from the trustworthy field (`location_raw`) and ignores the
+   broken one. This is extractor-level knowledge, not a generic heuristic.
+4. **Coordinates** — parse strings → numbers; drop `(0,0)` and out-of-range; keep the existing
+   swap heuristic; **country cross-check**: when both `country_code` and coords are present and
+   the point falls far outside the country's bounding box (generous tolerance), NULL the coords
+   (the row re-flows through geocode) and keep the originals in `attributes.coords_raw` for audit.
+5. **Geocode precision gates matching** — `research_geocode_cache.precision` (`city`/`region`
+   centroids vs `point`) is read by M8; see the M8 gate below.
+
+### Text (names, descriptions)
+
+Observed: raw HTML (`<h2>Overview</h2>` in RIDB, `<br>` in USHPA KML), HTML entities (`&amp;`,
+`&#8211;`, `&#160;`), Wikipedia citation noise (`[1]`, `&#91;1&#93;`), WordPress boilerplate
+(`"Powered by WordPress"`, `"Partager :"`), giant link farms (BHGC flying sites), ticket-product
+names (`"Summerfest 2026 $33 One Day Pass"`), edition years baked into names
+(`"Leverkusener Jazztage 2010"` / `"…2014"` as separate records), ALL-CAPS names/countries,
+a **table header row ingested as a record** (`name: "EventSort descending"`, SmoothJazz),
+truncated mid-word descriptions, and contact blobs/emoji in descriptions (FECC).
+
+Rules:
+
+1. **HTML → Markdown at normalize** (`normalize/html.ts`, e.g. `node-html-markdown`): keep links
+   and basic formatting (bold, lists; headings demoted to bold); decode all entities; strip
+   script/style/nav boilerplate and wiki citation markers. `research_pois.description` stores
+   **Markdown only**; the M8 LLM fusion prompt receives and returns Markdown, preserving links.
+2. **Description validity** — NULL it when it is boilerplate duplicated across records, shorter
+   than the name, or merely a location string (per-source cleaners where systematic).
+3. **Name hygiene for matching** — `name_normalized` additionally strips a *standalone*
+   leading/trailing edition year (`19xx`/`20xx`) and price/product suffixes; the display `name`
+   keeps the original. This is what lets per-year rows ("Hurricane Festival" ×6 in Festival
+   Alarm; MusicBrainz per-edition MBIDs) block into one canonical.
+4. **Field-leak detection** — prose in a date field → NULL (Dates rule 2); sentence-length text
+   in a location field → NULL (raw is preserved in `raw` anyway).
+
+### Validity gates (`is_poi`) — contamination by source
+
+| Contamination | Where seen | Extractor gate |
+|---|---|---|
+| Club nights / single-DJ shows | edm_dance_directory (**99.4%** non-festival), Resident Advisor NYE/club, Festifeed Ibiza residencies | `is_festival === true` + heuristics; RA name blocklist (`NYE`, `NYD`, `Club Night`) |
+| Ticket products / hotel packages | Ticketmaster (637 `segment: "Miscellaneous"`) | `segment === "Music"` AND name not matching `Hotel|Package|Pass|VIP|Camping` |
+| Member/org directories | outdoorartsuk (380), ietm (428), FECC members, UNIMA national centers | `member_type` present / URL pattern → `is_poi = false` |
+| Wiki link/category scrape junk | wikipedia_parades ("Circus", "magpie"), wikipedia_carnivals_category, wikidata art fairs (hymns/anthems!), wikidata parades (tugboats, ships) | QID-type validation; name blocklists; require event-like fields |
+| Header rows / stubs | SmoothJazz row 1; Skiddle 316/323 name-only stubs | shape check; name-only records may ingest at low trust but never auto-merge |
+| Reddit comment threads | reddit_raw_comments.json | no extractor (Tier D — skip file) |
+| Org meeting history | fecc_wikipedia.json (convention list) | skip file |
+| Tour legs of one production | the_herds_tour.json (53 legs, same name) | one canonical + occurrences, or skip |
+| Permanently closed | The Dyrt `"- PERMANENTLY CLOSED"` (96), RIDB closed-in-description | `is_poi = false` (default; revisit if product wants them shown as closed) |
+| Wrong category in folder | rick_steves (~392 general festivals in `carnival/`), hostels (84) in `flying_site_data/` | `ingest_category` comes from the **source registry**, never the folder; gate rows or skip source |
+| Empty files | artnet_events, artfairslist, streetartlist, wikidata_art_fairs (`[]`) | skip |
+
+**Source tiers** (drives extractor build order): **A** structured/light filter (UNESCO ICH,
+JamBase, Viberate, RIDB facilities, The Dyrt, OSM, thecraftmap, artfairsourcebook, Artsy);
+**B** needs normalization (MusicBrainz, MFW, Festival Alarm, wikidata_* with type filters,
+Ticketmaster, travel blogs); **C** needs transform (research stubs, reddit_carnivals synthesized,
+tour legs); **D** excluded (comment threads, category trees, member directories as POIs,
+link-scrape files, empty files, fecc_wikipedia). Build A → B; C case-by-case; D never.
+
+### Multi-file sources & re-flow
+
+- `ingest:extract` must accept **multiple files/globs** for one source (MusicBrainz ships as 16
+  parts) — same source slug, one run.
+- When normalize/repair logic changes materially after rows are already processed, the affected
+  sources' derived columns must be bulk-reset (`name_normalized = NULL`, `content_embedding =
+  NULL`, `category_slugs = NULL` — never blanket-NULL `lat`, which may hold source-provided
+  coords) so rows re-flow. A re-extract does this automatically only for rows whose
+  `content_hash` changed, which repair-rule changes do not; a small `ingest:reflow --source
+  <slug>` helper (or documented SQL) covers it.
+
+---
+
 ## M8 — Match + merge (the de-duplication core)
 
 `ingest/match/` + `"ingest:match"`. This is the heart; build it as the **resumable, one-record-
@@ -961,6 +1102,19 @@ canonical yet; it must have coordinates to be blockable/mappable), one row per t
 row is matched/created, set its `canonical_poi_id` — which removes it from the queue. The score,
 method, and LLM reason go to `research_match_decisions` (not onto the row).
 
+> **Merge rule (product decision, Jul 2026): proximity AND similarity are both required.**
+> Two records become one canonical only when their coordinates are very close **and** their
+> name/description similarity (embedding cosine + name sim) is high. Either signal alone is
+> **never** sufficient: same-name places in different cities stay separate (blocking enforces
+> this — far candidates are never even scored), and different places at near-identical
+> coordinates stay separate (two festivals geocoded to the same city centroid, adjacent
+> campgrounds, a garden inside a park). Structurally: **spatial blocking is the necessary
+> proximity condition; the similarity score must then independently clear the threshold.**
+> Distance decay may add confidence to a merge but must never rescue a low-similarity pair —
+> cap the combined distance+city/region contribution below `T_high` so coordinates alone can
+> never auto-merge. The one exception is `strong_id` (shared Wikidata QID / OSM id), where
+> identity is proven outright.
+
 ### M8.1 Per-record algorithm (overview §6)
 
 1. **Overrides** (`research_match_overrides`) win absolutely.
@@ -968,24 +1122,55 @@ method, and LLM reason go to `research_match_decisions` (not onto the row).
    `method='strong_id'`. **Do not** use website/phone as definitive (chain/portal denylist —
    overview §6 Step B).
 3. **Spatial block**: bbox prefilter on `lat`/`lng` (cheap SQL), then Haversine distance in app
-   code to find candidates within a category-tuned radius (campsites ~150 m, gardens ~400–600 m).
-   Order by distance, take top 25. Requires non-null coordinates (geocoded rows only).
+   code to find candidates within a category-tuned radius (campsites ~150 m, gardens ~400–600 m;
+   define the slug→radius map in code with a default). Order by distance, take top 25. Requires
+   non-null coordinates (geocoded rows only).
 4. **Score** candidates: `pg_trgm`/Jaro-Winkler name sim + embedding cosine + distance decay +
-   city/region + website/phone signal (denylist-guarded).
-5. **Decide**: `≥ T_high` auto-merge; `≤ T_low` new; gray zone → **LLM binary** (merge/new,
+   city/region + website/phone signal (denylist-guarded). Per the merge rule above, the
+   similarity signals (name + embedding) must independently clear their own floor for any
+   auto-merge; distance/locality only adds confidence. For the embedding side of a candidate
+   canonical, compare against its **highest-trust linked research row's** `content_embedding`
+   (embeddings live on `research_pois`, not `canonical_pois`).
+5. **Geocode-precision gate (overview §14.6)**: when either side's coordinates came from a
+   `city`/`region`-precision geocode (see `research_geocode_cache.precision`), distance is
+   untrustworthy — **drop the distance signal entirely** (do not let a shared centroid look like
+   0 m), require a higher effective similarity bar, and prefer routing the pair to the LLM
+   instead of auto-merging. This is what keeps two same-city festivals geocoded to the same
+   centroid from collapsing.
+6. **Event-date compatibility (festivals)**: same name + same venue + different years = editions
+   → merge (step 8). But near-identical dates with dissimilar names at one venue are different
+   events sharing a venue → the venue/coords signal must not force a merge (covered by the AND
+   rule). Undated event records match on the remaining signals; a date conflict (both dated,
+   non-overlapping, name sim mediocre) pushes the pair to the LLM with dates included in the
+   prompt.
+7. **Decide**: `≥ T_high` auto-merge; `≤ T_low` new; gray zone → **LLM binary** (merge/new,
    `llm_reason` stored). Record everything in `research_match_decisions`.
-6. **Attach/create** the `canonical_pois` row, set `research_pois.canonical_poi_id`, then
+8. **Attach/create** the `canonical_pois` row, set `research_pois.canonical_poi_id`, then
    **rebuild that one canonical** from all its `research_pois` (field precedence by source
-   `trust`; verbatim description for single-source, LLM fusion when multiple disagree;
-   union `attributes`; union categories into `canonical_poi_categories`; recompute
-   `popularity = COUNT(DISTINCT source_id)`; write `field_provenance`).
-7. **Transitivity**: union-find across pairwise matches.
-8. **Recurring events collapse to one canonical (overview §6, §15.5).** For festivals, different
-   *editions* (2024/2025/2026) of the same festival share name + venue, so they block and merge
-   into one canonical — **not** one POI per year. On merge, write edition rows to
-   `canonical_poi_occurrences` and set the representative `starts_at`/`ends_at` on the canonical
-   (per `.cursor/plans/poi-event-dates.md`, which promoted dates from `attributes` to typed
-   columns); never store an `active` flag (status is derived at read time from those dates — see M3).
+   `trust`; description rules below; union `attributes`; union categories into
+   `canonical_poi_categories`; recompute `popularity = COUNT(DISTINCT source_id)`; write
+   `field_provenance`).
+9. **Transitivity**: union-find across pairwise matches.
+10. **Recurring events collapse to one canonical (overview §6, §15.5).** For festivals, different
+    *editions* (2024/2025/2026) of the same festival share name + venue, so they block and merge
+    into one canonical — **not** one POI per year. On merge, write edition rows to
+    `canonical_poi_occurrences` and set the representative `starts_at`/`ends_at` on the canonical
+    (per `.cursor/plans/poi-event-dates.md`, which promoted dates from `attributes` to typed
+    columns); never store an `active` flag (status is derived at read time from those dates — see M3).
+
+**Description & name synthesis (Decision 4, refined):** all descriptions are already Markdown by
+M8 (HTML converted at normalize — see the data-quality contract). Single source with content →
+publish verbatim. Multiple sources with *differing substantive* content → **LLM fusion via
+DeepInfra `DeepSeek-V4-Flash`** with an explicit Markdown contract: "combine into one factual
+Markdown paragraph(s); **preserve links and basic formatting**; do not invent details." Accept
+the fused text only if it introduces no URLs/facts absent from the inputs; otherwise fall back to
+the longest single-source verbatim text. Name conflicts resolve by trust precedence
+(Wikidata/official > directory > scrape) — LLM name synthesis only when trust ties and strings
+differ materially; prefer the version without edition years/venue suffixes.
+
+**Prerequisite (event dates):** normalize (M5) must populate `research_pois.starts_at`/`ends_at`/
+`date_precision` via the shared date parser *before* festival sources are matched — the columns
+exist but are not yet written. Gardens/campgrounds do not need this and can be matched first.
 
 ### M8.2 Supporting pieces
 
@@ -1001,6 +1186,16 @@ method, and LLM reason go to `research_match_decisions` (not onto the row).
   and a sweep that hides `canonical_pois` with zero linked research rows.
 - **Single-writer**: run matching as one process (advisory lock) to avoid duplicate-canonical
   races (overview §14.8).
+
+### M8.3 Build order (two phases)
+
+- **M8a — core loop, gardens first**: block → score → precision gate → decide (incl. LLM) →
+  attach/create → per-canonical rebuild → decisions audit; denylist; DeepInfra provider;
+  a starting golden set (~10–20 labeled pairs from the BGCI/OSM/Wikidata garden overlap, incl.
+  known non-dupes). Acceptance = the garden checks below.
+- **M8b — events + ops**: event-date parsing in normalize + occurrence building + representative
+  dates; date-compatibility signal; override CLI; orphan GC; `--recluster`; expanded golden set
+  with festival edition pairs and same-city-centroid non-dupes.
 
 > **Acceptance (M8):**
 > - Running match on the extracted+normalized+geocoded+embedded gardens produces
