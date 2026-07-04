@@ -212,23 +212,6 @@
       "type": "Date"
     }
   ],
-  "research_category_aliases": [
-    {
-      "column": "alias",
-      "nullable": false,
-      "type": "string"
-    },
-    {
-      "column": "category_id",
-      "nullable": false,
-      "type": "string"
-    },
-    {
-      "column": "source_id",
-      "nullable": true,
-      "type": "string"
-    }
-  ],
   "research_geocode_cache": [
     {
       "column": "query_norm",
@@ -495,6 +478,21 @@
       "column": "last_seen_at",
       "nullable": false,
       "type": "Date"
+    },
+    {
+      "column": "coordinate_source",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "coordinate_precision",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "geocode_query_norm",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "research_sources": [

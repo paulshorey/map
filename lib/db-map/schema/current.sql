@@ -107,17 +107,6 @@ END) STORED,
 
 
 --
--- Name: research_category_aliases; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.research_category_aliases (
-    alias text NOT NULL,
-    category_id uuid NOT NULL,
-    source_id uuid
-);
-
-
---
 -- Name: research_geocode_cache; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -201,6 +190,11 @@ CREATE TABLE public.research_pois (
     canonical_poi_id uuid,
     first_seen_at timestamp with time zone DEFAULT now() NOT NULL,
     last_seen_at timestamp with time zone DEFAULT now() NOT NULL,
+    coordinate_source text,
+    coordinate_precision text,
+    geocode_query_norm text,
+    CONSTRAINT research_pois_coordinate_precision_check CHECK ((coordinate_precision = ANY (ARRAY['point'::text, 'city'::text, 'region'::text]))),
+    CONSTRAINT research_pois_coordinate_source_check CHECK ((coordinate_source = ANY (ARRAY['source'::text, 'url'::text, 'geocode'::text]))),
     CONSTRAINT research_pois_date_precision_check CHECK ((date_precision = ANY (ARRAY['datetime'::text, 'day'::text, 'month'::text, 'year'::text])))
 );
 
@@ -448,20 +442,6 @@ CREATE INDEX canonical_pois_status_idx ON public.canonical_pois USING btree (sta
 
 
 --
--- Name: research_category_aliases_global_uq; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX research_category_aliases_global_uq ON public.research_category_aliases USING btree (alias, category_id) WHERE (source_id IS NULL);
-
-
---
--- Name: research_category_aliases_source_uq; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX research_category_aliases_source_uq ON public.research_category_aliases USING btree (alias, category_id, source_id) WHERE (source_id IS NOT NULL);
-
-
---
 -- Name: research_match_decisions_research_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -572,22 +552,6 @@ ALTER TABLE ONLY public.canonical_pois
 
 
 --
--- Name: research_category_aliases research_category_aliases_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.research_category_aliases
-    ADD CONSTRAINT research_category_aliases_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.canonical_categories(id) ON DELETE CASCADE;
-
-
---
--- Name: research_category_aliases research_category_aliases_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.research_category_aliases
-    ADD CONSTRAINT research_category_aliases_source_id_fkey FOREIGN KEY (source_id) REFERENCES public.research_sources(id);
-
-
---
 -- Name: research_match_decisions research_match_decisions_candidate_poi_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -625,6 +589,14 @@ ALTER TABLE ONLY public.research_match_overrides
 
 ALTER TABLE ONLY public.research_pois
     ADD CONSTRAINT research_pois_canonical_poi_id_fkey FOREIGN KEY (canonical_poi_id) REFERENCES public.canonical_pois(id) ON DELETE SET NULL;
+
+
+--
+-- Name: research_pois research_pois_geocode_query_norm_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_pois
+    ADD CONSTRAINT research_pois_geocode_query_norm_fkey FOREIGN KEY (geocode_query_norm) REFERENCES public.research_geocode_cache(query_norm) ON DELETE SET NULL;
 
 
 --

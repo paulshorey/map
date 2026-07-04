@@ -7,7 +7,7 @@
  *
  * Usage:
  *   pnpm --filter @lib/db-map ingest:normalize [--source <slug>] [--limit N] [--no-llm]
- *   pnpm --filter @lib/db-map ingest:normalize --report-unmapped [--source <slug>]
+ *   pnpm --filter @lib/db-map ingest:normalize --report-raw-categories [--source <slug>]
  *   pnpm --filter @lib/db-map ingest:normalize --report-coverage [--source <slug>]
  */
 import type { Pool } from "pg";
@@ -18,16 +18,14 @@ import { coordsFromRecordUrls } from "./normalize/urlcoords.js";
 import { parseEventDates } from "./normalize/dates.js";
 import { countryToCode } from "./normalize/country.js";
 import {
-  loadAliasMap,
   loadValidSlugs,
   resolveCategorySlugs,
-  type AliasMap,
 } from "./normalize/category.js";
 
 interface CliOptions {
   source?: string;
   limit?: number;
-  reportUnmapped: boolean;
+  reportRawCategories: boolean;
   reportCoverage: boolean;
   noLlm: boolean;
 }
@@ -41,7 +39,6 @@ interface NormalizeStats {
   llmDated: number;
   swappedDates: number;
   categorized: number;
-  unmapped: number;
   skipped: number;
 }
 
@@ -64,13 +61,13 @@ interface ResearchRow {
 function parseArgs(argv: string[]): CliOptions {
   let source: string | undefined;
   let limit: number | undefined;
-  let reportUnmapped = false;
+  let reportRawCategories = false;
   let reportCoverage = false;
   let noLlm = false;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--report-unmapped") reportUnmapped = true;
+    if (a === "--report-raw-categories") reportRawCategories = true;
     else if (a === "--report-coverage") reportCoverage = true;
     else if (a === "--no-llm") noLlm = true;
     else if (a === "--source" && argv[i + 1]) source = argv[++i];
@@ -80,7 +77,7 @@ function parseArgs(argv: string[]): CliOptions {
   if (limit !== undefined && (!Number.isFinite(limit) || limit < 1)) {
     throw new Error(`Invalid --limit: ${limit}`);
   }
-  return { source, limit, reportUnmapped, reportCoverage, noLlm };
+  return { source, limit, reportRawCategories, reportCoverage, noLlm };
 }
 
 async function resolveSourceId(db: Pool, slug: string): Promise<string> {
@@ -98,7 +95,6 @@ const POI_FILTER = `is_poi`;
 async function runNormalize(
   db: Pool,
   opts: CliOptions,
-  aliasMap: AliasMap,
   validSlugs: Set<string>,
 ): Promise<NormalizeStats> {
   const stats: NormalizeStats = {
@@ -110,7 +106,6 @@ async function runNormalize(
     llmDated: 0,
     swappedDates: 0,
     categorized: 0,
-    unmapped: 0,
     skipped: 0,
   };
 
@@ -145,9 +140,14 @@ async function runNormalize(
       continue;
     }
 
+    const sourceHadCoords = row.lat !== null && row.lng !== null;
     const coords = fixCoordinates(row.lat, row.lng);
     if (coords.swapped) stats.swappedCoords++;
     if (coords.dropped) stats.droppedCoords++;
+
+    let coordinateSource: string | null =
+      sourceHadCoords && coords.lat !== null && coords.lng !== null ? "source" : null;
+    let coordinatePrecision: string | null = coordinateSource ? "point" : null;
 
     // URL-embedded coordinates (Google Maps links etc.) — zero geocoder spend.
     if (coords.lat === null) {
@@ -155,6 +155,8 @@ async function runNormalize(
       if (fromUrl) {
         coords.lat = fromUrl.lat;
         coords.lng = fromUrl.lng;
+        coordinateSource = "url";
+        coordinatePrecision = "point";
         stats.urlCoords++;
       }
     }
@@ -181,14 +183,8 @@ async function runNormalize(
     if (dates.date_source === "llm") stats.llmDated++;
     if (dates.swapped) stats.swappedDates++;
 
-    const { slugs, unmapped } = resolveCategorySlugs(
-      aliasMap,
-      validSlugs,
-      row.raw_category,
-      row.ingest_category,
-    );
+    const slugs = resolveCategorySlugs(validSlugs, row.ingest_category);
     if (slugs.length > 0) stats.categorized++;
-    if (unmapped) stats.unmapped++;
 
     await db.query(
       `UPDATE research_pois SET
@@ -202,7 +198,10 @@ async function runNormalize(
          starts_at = $9,
          ends_at = $10,
          date_precision = $11,
-         attributes = attributes || $12::jsonb
+         coordinate_source = $12,
+         coordinate_precision = $13,
+         geocode_query_norm = NULL,
+         attributes = attributes || $14::jsonb
        WHERE id = $1`,
       [
         row.id,
@@ -216,6 +215,8 @@ async function runNormalize(
         dates.starts_at,
         dates.ends_at,
         dates.date_precision,
+        coordinateSource,
+        coordinatePrecision,
         JSON.stringify(dates.date_source ? { date_source: dates.date_source } : {}),
       ],
     );
@@ -229,7 +230,7 @@ async function runNormalize(
   return stats;
 }
 
-async function reportUnmapped(db: Pool, opts: CliOptions): Promise<void> {
+async function reportRawCategories(db: Pool, opts: CliOptions): Promise<void> {
   const params: unknown[] = [];
   let where = `raw_category IS NOT NULL AND ${POI_FILTER}`;
   if (opts.source) {
@@ -241,19 +242,16 @@ async function reportUnmapped(db: Pool, opts: CliOptions): Promise<void> {
     `SELECT rp.raw_category, count(*)::int n
      FROM research_pois rp
      WHERE ${where}
-       AND lower(rp.raw_category) NOT IN (
-         SELECT alias FROM research_category_aliases WHERE source_id IS NULL
-       )
      GROUP BY rp.raw_category
      ORDER BY n DESC`,
     params,
   );
 
   if (rows.length === 0) {
-    console.log("No unmapped raw categories. Every raw_category resolves to an alias.");
+    console.log("No raw categories recorded.");
     return;
   }
-  console.log("Unmapped raw categories (add aliases to taxonomy.ts, then re-seed):");
+  console.log("Raw categories (provenance only; category assignment comes from --category):");
   for (const r of rows) {
     console.log(`  ${r.n.toString().padStart(6)}  ${r.raw_category}`);
   }
@@ -317,8 +315,8 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
 
-  if (opts.reportUnmapped) {
-    await reportUnmapped(db, opts);
+  if (opts.reportRawCategories) {
+    await reportRawCategories(db, opts);
     await db.end();
     return;
   }
@@ -328,14 +326,13 @@ async function main() {
     return;
   }
 
-  const aliasMap = await loadAliasMap(db);
   const validSlugs = await loadValidSlugs(db);
-  const stats = await runNormalize(db, opts, aliasMap, validSlugs);
+  const stats = await runNormalize(db, opts, validSlugs);
   await db.end();
 
   console.log(
     `Normalize${opts.source ? ` ${opts.source}` : ""}: processed=${stats.processed} ` +
-      `skipped=${stats.skipped} categorized=${stats.categorized} unmapped=${stats.unmapped} ` +
+      `skipped=${stats.skipped} categorized=${stats.categorized} ` +
       `swapped_coords=${stats.swappedCoords} dropped_coords=${stats.droppedCoords} ` +
       `url_coords=${stats.urlCoords} dated=${stats.dated} llm_dated=${stats.llmDated} ` +
       `swapped_dates=${stats.swappedDates}`,

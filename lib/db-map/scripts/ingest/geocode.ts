@@ -135,9 +135,13 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function readCache(
   db: Pool,
   norm: string,
-): Promise<{ lat: number | null; lng: number | null } | undefined> {
-  const { rows } = await db.query<{ lat: number | null; lng: number | null }>(
-    `SELECT lat, lng FROM research_geocode_cache WHERE query_norm = $1`,
+): Promise<{ lat: number | null; lng: number | null; precision: GeocodeHit["precision"] | null } | undefined> {
+  const { rows } = await db.query<{
+    lat: number | null;
+    lng: number | null;
+    precision: GeocodeHit["precision"] | null;
+  }>(
+    `SELECT lat, lng, precision FROM research_geocode_cache WHERE query_norm = $1`,
     [norm],
   );
   return rows[0];
@@ -155,8 +159,24 @@ async function writeCache(db: Pool, norm: string, hit: GeocodeHit | null): Promi
   );
 }
 
-async function writeRowCoords(db: Pool, id: string, lat: number, lng: number): Promise<void> {
-  await db.query(`UPDATE research_pois SET lat = $2, lng = $3 WHERE id = $1`, [id, lat, lng]);
+async function writeRowCoords(
+  db: Pool,
+  id: string,
+  lat: number,
+  lng: number,
+  precision: GeocodeHit["precision"],
+  queryNorm: string,
+): Promise<void> {
+  await db.query(
+    `UPDATE research_pois SET
+       lat = $2,
+       lng = $3,
+       coordinate_source = 'geocode',
+       coordinate_precision = $4,
+       geocode_query_norm = $5
+     WHERE id = $1`,
+    [id, lat, lng, precision, queryNorm],
+  );
 }
 
 async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
@@ -209,7 +229,9 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
     const cached = await readCache(db, q.norm);
     if (cached) {
       if (cached.lat !== null && cached.lng !== null) {
-        if (!opts.dryRun) await writeRowCoords(db, row.id, cached.lat, cached.lng);
+        if (!opts.dryRun) {
+          await writeRowCoords(db, row.id, cached.lat, cached.lng, cached.precision ?? "point", q.norm);
+        }
         stats.cacheHits++;
         stats.resolved++;
         console.log(`✓ ${row.name} (cache: ${cached.lat}, ${cached.lng})`);
@@ -247,7 +269,7 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
 
     await writeCache(db, q.norm, hit);
     if (hit) {
-      await writeRowCoords(db, row.id, hit.lat, hit.lng);
+      await writeRowCoords(db, row.id, hit.lat, hit.lng, hit.precision, q.norm);
       stats.resolved++;
       console.log(`✓ ${row.name} (${hit.lat}, ${hit.lng}, ${hit.precision})`);
     } else {

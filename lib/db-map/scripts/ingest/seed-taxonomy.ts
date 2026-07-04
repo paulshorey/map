@@ -1,6 +1,6 @@
 /**
- * Seed/refresh canonical_categories + research_category_aliases from the code-owned
- * taxonomy (taxonomy.ts). Idempotent: upserts by slug / alias, never duplicates.
+ * Seed/refresh canonical_categories from the code-owned taxonomy (taxonomy.ts).
+ * Idempotent: upserts by slug, never duplicates.
  *
  * Usage: pnpm --filter @lib/db-map ingest:taxonomy:seed
  */
@@ -37,22 +37,8 @@ async function main() {
     ]);
   }
 
-  // Pass 3: aliases (global, source_id NULL).
-  let aliasCount = 0;
-  for (const c of TAXONOMY) {
-    for (const alias of c.aliases ?? []) {
-      await db.query(
-        `INSERT INTO research_category_aliases (alias, category_id, source_id)
-         VALUES ($1, $2, NULL)
-         ON CONFLICT (alias, category_id) WHERE source_id IS NULL DO NOTHING`,
-        [alias.toLowerCase(), idBySlug.get(c.slug)],
-      );
-      aliasCount++;
-    }
-  }
-
   const cats = await db.query(`SELECT count(*)::int n FROM canonical_categories`);
-  console.log(`Seeded ${cats.rows[0].n} categories and ${aliasCount} aliases.`);
+  console.log(`Seeded ${cats.rows[0].n} categories.`);
   await db.end();
 }
 

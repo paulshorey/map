@@ -30,7 +30,7 @@
 |---|---|---|---|---|
 | M0 | Prerequisites & decisions | Extensions + env + model choices confirmed | **first** | **done** |
 | M1 | Fresh DB schema (baseline + tooling) | New `research_*` / `canonical_*` schema live | **first** | **done** |
-| M2 | Code-owned taxonomy seed | Categories + aliases in the DB | **first** | **done** |
+| M2 | Code-owned taxonomy seed | Canonical categories in the DB | **first** | **done** |
 | M3 | Data-access layer + app read path | App runs on new schema (empty map) | **first** | **done** |
 | M4 | Ingestion framework + extractors | Raw dumps land in `research_pois` | **next** | pending |
 | M5 | Normalize + categorize | Clean, categorized research rows | next |
@@ -75,12 +75,14 @@ What this means concretely:
 Re-running the *same* data must not redo anything or spend budget twice. The state that drives
 this is **implicit** — there are no status columns to maintain (see the next subsection):
 
-1. **Per-record content hash (primary skip).** At extract, each record gets a `content_hash` over
-   its normalizable fields, stored on its `research_pois` row (keyed by
-   `(source_id, source_record_id)`). On any later run, a record whose hash is unchanged is
+1. **Per-record content hash + category (primary skip).** At extract, each record gets a
+   `content_hash` over its normalizable fields, stored on its `research_pois` row (keyed by
+   `(source_id, source_record_id)`). On any later run, a record whose hash **and
+   developer-provided `ingest_category`** are unchanged is
    **skipped at every stage** — no re-normalize, no re-embed, no re-geocode, no re-match. Only
-   **new or changed** records do work. (A changed hash resets the row's derived columns to NULL so
-   it re-flows the stages.) This is exactly your "hash the input and ignore unchanged objects" idea.
+   **new or changed** records do work. (A changed hash or changed category resets the row's
+   derived columns to NULL so it re-flows the stages.) This is exactly your "hash the input and
+   ignore unchanged objects" idea, with category changes treated as meaningful input changes.
 2. **Resume the over-budget tail via plain NULL-ness.** "Still needs geocoding" is just
    `lat IS NULL`. The cap stops the step; un-reached rows stay `lat IS NULL`; the next run
    continues with them. A huge coordinate-less source is geocoded across as many days as it takes
@@ -322,7 +324,8 @@ differs — see the migration file for the authoritative schema. Key differences
 - `source_url` on `research_pois` (listing page ≠ `website`).
 - `is_temporal` on `canonical_categories`.
 - `canonical_poi_occurrences` table for recurring event editions.
-- `research_category_aliases` uses partial unique indexes (not PK with nullable `source_id`).
+- Strict category assignment: no category aliases; `category_slugs` derives from `ingest_category`.
+- Row-level coordinate provenance: `coordinate_source`, `coordinate_precision`, `geocode_query_norm`.
 
 ### M1.1 Remove the old migrations
 
@@ -445,10 +448,14 @@ CREATE TABLE public.research_pois (
   country_code     text,
   lng              double precision,  -- NULL ⇒ needs geocode
   lat              double precision,
+  coordinate_source text CHECK (coordinate_source IN ('source','url','geocode')),
+  coordinate_precision text CHECK (coordinate_precision IN ('point','city','region')),
+  geocode_query_norm text,
   geom             geography(Point,4326)
                    GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography) STORED,
 
-  raw_category     text,
+  raw_category     text,              -- provenance only; does not assign category
+  category_slugs   text[],            -- derived strictly from ingest_category
   raw              jsonb NOT NULL,
   attributes       jsonb,
 
@@ -481,14 +488,6 @@ CREATE TABLE public.canonical_poi_categories (
   PRIMARY KEY (poi_id, category_id)
 );
 CREATE INDEX canonical_poi_categories_cat_idx ON public.canonical_poi_categories (category_id);
-
--- ── research_category_aliases (raw string → canonical category) ─
-CREATE TABLE public.research_category_aliases (
-  alias       text NOT NULL,
-  category_id uuid NOT NULL REFERENCES public.canonical_categories(id) ON DELETE CASCADE,
-  source_id   uuid REFERENCES public.research_sources(id),
-  PRIMARY KEY (alias, category_id, source_id)
-);
 
 -- ── research_match_decisions (audit) ──────────────────────────
 CREATE TABLE public.research_match_decisions (
@@ -631,37 +630,30 @@ Create `lib/db-map/scripts/ingest/taxonomy.ts` exporting a typed structure:
 
 ```ts
 export interface CategorySeed { slug: string; display_name: string; parent?: string;
-  sort_order?: number; aliases?: string[]; }
+  sort_order?: number; is_temporal?: boolean; }
 export const TAXONOMY: CategorySeed[] = [
   // gardens
   { slug: 'gardens', display_name: 'Gardens', sort_order: 10 },
-  { slug: 'botanical_garden', display_name: 'Botanical Garden', parent: 'gardens',
-    aliases: ['botanical garden','garden:type=botanical','jardin botanique'] },
-  { slug: 'arboretum', display_name: 'Arboretum', parent: 'gardens',
-    aliases: ['arboretum','arboreta'] },
+  { slug: 'botanical_garden', display_name: 'Botanical Garden', parent: 'gardens' },
+  { slug: 'arboretum', display_name: 'Arboretum', parent: 'gardens' },
   // campgrounds
   { slug: 'campground', display_name: 'Campground', sort_order: 20 },
-  { slug: 'rv', display_name: 'RV Park', parent: 'campground',
-    aliases: ['rv','caravan','caravan_site','tourism=caravan_site','motorhome','rv_hookup'] },
-  { slug: 'tent', display_name: 'Tent Camping', parent: 'campground',
-    aliases: ['tent','tent_only'] },
+  { slug: 'rv', display_name: 'RV Park', parent: 'campground' },
+  { slug: 'tent', display_name: 'Tent Camping', parent: 'campground' },
   // flying (already in the app)
-  { slug: 'free_flight', display_name: 'Free Flight', sort_order: 30,
-    aliases: ['flying site','paragliding','hang gliding','gliderport'] },
+  { slug: 'free_flight', display_name: 'Free Flight', sort_order: 30 },
 ];
 ```
 
 ### M2.2 Seed script + npm script
 
 - Create `lib/db-map/scripts/ingest/seed-taxonomy.ts` — upserts `canonical_categories`
-  (by `slug`, resolving `parent` to `parent_id` in a second pass) and `research_category_aliases`
-  (alias → category, `source_id = NULL`). Idempotent.
+  (by `slug`, resolving `parent` to `parent_id` in a second pass). Idempotent.
 - Add to `lib/db-map/package.json` scripts: `"ingest:taxonomy:seed": "tsx scripts/ingest/seed-taxonomy.ts"`.
 - Run: `pnpm --filter @lib/db-map ingest:taxonomy:seed`.
 
 > **Acceptance (M2):** `SELECT slug, display_name, parent_id FROM canonical_categories` shows the
-> tree; `SELECT count(*) FROM research_category_aliases` > 0; re-running the seed makes no
-> duplicates.
+> tree; re-running the seed makes no duplicates.
 
 ---
 
@@ -803,10 +795,12 @@ Behavior:
 - Compute `content_hash` over the normalizable fields; **upsert** on
   `(source_id, source_record_id)`:
   - **New row** → insert (all derived columns start NULL, so it flows through every stage).
-  - **Existing row, unchanged hash** → touch `last_seen_at` only; **do nothing else** (it's already done).
-  - **Existing row, changed hash** → update the source fields and **reset the derived columns to
-    NULL** (`name_normalized`, `lng`/`lat`, `content_embedding`, `canonical_poi_id`) so the record
-    re-flows the stages with its new content.
+  - **Existing row, unchanged hash and same `ingest_category`** → touch `last_seen_at` only; **do
+    nothing else** (it's already done).
+  - **Existing row, changed hash or changed `ingest_category`** → update the source/category fields
+    and **reset the derived columns to NULL** (`name_normalized`, coordinate provenance, `category_slugs`,
+    `content_embedding`, `canonical_poi_id`) so the record re-flows the stages with its new content
+    or category.
 - Batch inserts (~500) for throughput; keep `raw` (full original record) verbatim.
 - *(No deletion detection: we do not mark rows missing from a re-pull. Add/update only — see the
   "What we deliberately do NOT track" note above.)*
@@ -860,9 +854,9 @@ whenever the `content_hash` changes).
 
 > **Category storage decision (implemented).** Categories are first-class columns, not JSON:
 > - **`research_pois.category_slugs text[]`** (GIN-indexed) holds the resolved canonical slugs
->   (multi-valued — a record can map to several categories). It is re-derived on each normalize
->   run and reset on content change. `raw_category` (verbatim) and `ingest_category` (dump-level)
->   are kept alongside for the unmapped report and provenance.
+>   (usually one slug per research row: the developer-provided `ingest_category`). It is re-derived
+>   on each normalize run and reset on content change. `raw_category` (verbatim) is kept only for
+>   source audit/provenance; it never assigns categories.
 > - **`research_pois.is_poi boolean`** is the validity gate (replaces `attributes._is_poi`), so
 >   normalize simply filters `WHERE is_poi`.
 > - **`canonical_pois`** keeps the **M:N junction `canonical_poi_categories`** as the source of
@@ -882,9 +876,10 @@ whenever the `content_hash` changes).
   abbreviations, strip legal suffixes).
 - **Coordinates** → parse the source's lat/lng strings to numbers, detect/fix swapped lat/lng
   (reuse the heuristic in `.cursor/skills/import-pois/SKILL.md`), range-check, and write
-  `lng`/`lat`. (`geom` updates automatically via the generated column.) If the source had no
-  coordinates, leave `lat`/`lng` NULL — that NULL is exactly what tells the geocode step (M6) to
-  resolve it; no status flag needed.
+  `lng`/`lat`, `coordinate_source='source'`, `coordinate_precision='point'`. URL-embedded
+  coordinates write `coordinate_source='url'`, `coordinate_precision='point'`. If the source had
+  no coordinates, leave `lat`/`lng`/coordinate provenance NULL — that NULL is exactly what tells
+  the geocode step (M6) to resolve it; no status flag needed.
 - **Value validation, not presence (overview §15.3)** → sanitize mapped values: normalize
   `country` (sub-national regions like "Bavaria" → "Germany"); confirm a date is an *event* date,
   not a publish/scrape timestamp, before writing `attributes.start_date`/`end_date`; drop
@@ -894,11 +889,10 @@ whenever the `content_hash` changes).
   listing URL to `website`.
 - **phone** (E.164) normalized for matching signals.
 - **Address** → city/region/country_code where parseable.
-- **Category mapping** → look up `raw_category` (and source-specific tag) in
-  `research_category_aliases`; write resolved slugs to **`category_slugs text[]`** (falling back to
-  the code-owned `ingest_category` slug). On no alias match, do **not** guess — the unmapped
-  `raw_category` surfaces in `--report-unmapped` so the developer extends `taxonomy.ts` (M2) and
-  re-seeds.
+- **Category assignment** → verify `ingest_category` exists in `canonical_categories`; write exactly
+  that slug to **`category_slugs text[]`**. On missing/unknown `ingest_category`, fail loudly and
+  re-extract with the correct `--category`. `raw_category` can be reported with
+  `--report-raw-categories`, but it is provenance only and never maps categories.
 - **Names are Unicode-aware** → normalization keeps letters/numbers of any script (CJK, Cyrillic,
   Arabic, …); only Latin diacritics are stripped (NFKD→strip→NFC so kana like ず stay intact).
   Essential for global coverage.
@@ -910,9 +904,9 @@ whenever the `content_hash` changes).
   per-field fill rate per source, so enrichment is planned off real numbers, not guesses.
 
 > **Acceptance (M5):** after running, `research_pois` rows have `name_normalized`, parsed
-> `lng`/`lat` where the source provided coordinates (NULL otherwise), and a resolved category
-> alias where one exists; `ingest:normalize --report-unmapped` lists any raw categories still
-> needing an alias.
+> `lng`/`lat` where the source provided coordinates (NULL otherwise), row-level coordinate
+> provenance for source/URL coordinates, and `category_slugs = ARRAY[ingest_category]`;
+> `ingest:normalize --report-raw-categories` prints raw source category strings for audit only.
 
 ---
 
@@ -928,14 +922,17 @@ coordinates are trusted as correct.
 
 - For each selected row, build `query_norm` = normalized `"name, city, region, country"` and check
   `research_geocode_cache` first:
-  - **Cache hit with coords** → write `lng`/`lat` to the row (no API call). The row now has
+  - **Cache hit with coords** → write `lng`/`lat`, `coordinate_source='geocode'`,
+    `coordinate_precision`, and `geocode_query_norm` to the row (no API call). The row now has
     coordinates, so it won't be selected again.
   - **Cache hit that is a miss** (NULL coords) → skip; the address is known-unresolvable, so the
     row stays coordinate-less (and is simply never mapped). No API call, no per-row flag.
   - **Cache miss** → call LocationIQ (counts against the budget); store the result **including a
-    miss** (NULL coords) in the cache; on success also write `lng`/`lat` to the row.
-- Respect rate limits (throttle). Low-`precision` (city/region centroid) results are flagged in the
-  cache so M8 can down-weight them (overview §14.6).
+    miss** (NULL coords) in the cache; on success also write `lng`/`lat` and the row-level
+    coordinate provenance/precision fields.
+- Respect rate limits (throttle). Low-`precision` (city/region centroid) results are stored both in
+  the cache and on `research_pois.coordinate_precision` so M8 can down-weight them without trying to
+  infer which cache row produced a coordinate (overview §14.6).
 - **Daily budget (LocationIQ free = 5,000/day), default-capped.** `--geocode-limit N` **defaults to
   ~4,500** (override to raise/lower); only **API calls** (cache misses) count. When the cap is
   reached the step **just stops** — it writes nothing partial. Rows it didn't reach still have
@@ -948,7 +945,8 @@ coordinates are trusted as correct.
 > address can't be resolved; rows that already had coordinates are never sent to the API (no flag
 > needed); the default `--geocode-limit` stops at the cap and a same-command re-run continues from
 > where it left off; a second pass over already-resolved rows, unchanged rows, or known-miss
-> addresses makes **zero** new API calls.
+> addresses makes **zero** new API calls; geocoded rows have `coordinate_source='geocode'`,
+> `coordinate_precision`, and `geocode_query_norm`.
 
 ---
 
@@ -982,10 +980,10 @@ last embed (or `content_embedding IS NULL`).
 1. **Permanently closed places are skipped at extract — not recorded at all** (not even as
    `is_poi = false` provenance rows). The Dyrt `"- PERMANENTLY CLOSED"` names, RIDB
    closed-in-description, etc. never enter `research_pois`.
-2. **Every `docs/poi/` folder is a top-level category**: `music_festival`, `gardens`,
+2. **Every `docs/poi/` folder suggests a top-level category**: `music_festival`, `gardens`,
    `campground`, `free_flight` (existing) + **`carnival`**, **`art_fair`**, **`art_parade`**
-   (new, all temporal). Sub-categories may hang under them later; the folder→category mapping is
-   the default `ingest_category` for its sources.
+   (new, all temporal). The folder name is not an automatic default: the developer still passes
+   the exact canonical `--category <slug>` for each source run.
 3. **Undated events are allowed** into both `research_pois` and `canonical_pois`. Dates are
    always optional in the database (most POIs have none). A front-end filter to
    include/exclude/only-show null-date POIs comes later — no pipeline gate on missing dates.
@@ -1081,8 +1079,11 @@ Rules:
 7. **Coordinates are required for canonical** — a row that still has `lat IS NULL` after
    URL-extraction and geocoding stays in `research_pois` (provenance, re-tried on future runs if
    the cache allows) and is never matched/promoted. The skip is logged per record.
-8. **Geocode precision gates matching** — `research_geocode_cache.precision` (`city`/`region`
-   centroids vs `point`) is read by M8; see the M8 gate below.
+8. **Geocode precision gates matching** — M6 writes `coordinate_source`, `coordinate_precision`,
+   and `geocode_query_norm` to `research_pois`; M8 reads those row-local fields to identify
+   `city`/`region` centroids vs `point`. Rows created before these columns were added may have
+   `lat`/`lng` but NULL provenance; M8 must treat NULL precision as unknown/coarse for auto-merge
+   purposes unless the row has been re-extracted/re-normalized/re-geocoded.
 
 ### Text (names, descriptions)
 
@@ -1122,7 +1123,7 @@ Rules:
 | Org meeting history | fecc_wikipedia.json (convention list) | skip file |
 | Tour legs of one production | the_herds_tour.json (53 legs, same name) | one canonical + occurrences, or skip |
 | Permanently closed | The Dyrt `"- PERMANENTLY CLOSED"` (96), RIDB closed-in-description | **skip at extract — do not record** (product decision 1) |
-| Wrong category in folder | rick_steves (~392 general festivals in `carnival/`), hostels (84) in `flying_site_data/` | `ingest_category` comes from the **source registry**, never the folder; gate rows or skip source |
+| Wrong category in folder | rick_steves (~392 general festivals in `carnival/`), hostels (84) in `flying_site_data/` | `ingest_category` comes from the explicit **`--category` CLI argument**, never the folder; gate rows, split files, or skip source |
 | Empty files | artnet_events, artfairslist, streetartlist, wikidata_art_fairs (`[]`) | skip |
 
 **Source tiers** (drives extractor build order): **A** structured/light filter (UNESCO ICH,
@@ -1198,11 +1199,11 @@ method, and LLM reason go to `research_match_decisions` (not onto the row).
    canonical, compare against its **highest-trust linked research row's** `content_embedding`
    (embeddings live on `research_pois`, not `canonical_pois`).
 5. **Geocode-precision gate (overview §14.6)**: when either side's coordinates came from a
-   `city`/`region`-precision geocode (see `research_geocode_cache.precision`), distance is
-   untrustworthy — **drop the distance signal entirely** (do not let a shared centroid look like
-   0 m), require a higher effective similarity bar, and prefer routing the pair to the LLM
-   instead of auto-merging. This is what keeps two same-city festivals geocoded to the same
-   centroid from collapsing.
+   `city`/`region`-precision geocode (`research_pois.coordinate_precision`), or precision is NULL
+   on an older/pre-provenance row, distance is untrustworthy — **drop the distance signal entirely**
+   (do not let a shared centroid look like 0 m), require a higher effective similarity bar, and
+   prefer routing the pair to the LLM instead of auto-merging. This is what keeps two same-city
+   festivals geocoded to the same centroid from collapsing.
 6. **Event-date compatibility (festivals)**: same name + same venue + different years = editions
    → merge (step 8). But near-identical dates with dissimilar names at one venue are different
    events sharing a venue → the venue/coords signal must not force a merge (covered by the AND
@@ -1284,7 +1285,7 @@ exist but are not yet written. Gardens/campgrounds do not need this and can be m
   = one **category × source** chunk (overview Decision 2). See "Ingestion is incremental and
   budgeted" above for the re-run/skip mechanics.
 - `ingest:report` — reconciliation stats (in, new vs updated, matched, new canonicals, LLM count,
-  geocode failures, unmapped categories, popularity distribution).
+  geocode failures, raw-category surprises, popularity distribution).
 - `ingest_runs` metrics table (optional, overview §14/§11.10) — one row per run for observability.
 - **Migrate legacy importers**: repoint `db:import:json` / `db:import:kml` to write into
   `research_pois` (require a `--source <slug>` flag) instead of the old `pois` table; update

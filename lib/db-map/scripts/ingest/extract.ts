@@ -114,7 +114,7 @@ INSERT INTO research_pois (
   $16, $17, $18::jsonb, $19::jsonb, $20
 )`;
 
-// A changed hash resets derived columns (incl. category_slugs) so the record re-flows the stages.
+// A changed hash resets derived columns so the record re-flows the stages.
 const UPDATE_CHANGED_SQL = `
 UPDATE research_pois SET
   last_seen_at = now(),
@@ -123,7 +123,9 @@ UPDATE research_pois SET
   phone = $8, email = $9, address = $10, city = $11, region = $12,
   country_code = $13, lng = $14, lat = $15, raw_category = $16,
   is_poi = $17, raw = $18::jsonb, attributes = $19::jsonb, content_hash = $20,
-  name_normalized = NULL, category_slugs = NULL, content_embedding = NULL, canonical_poi_id = NULL
+  name_normalized = NULL, category_slugs = NULL, content_embedding = NULL,
+  coordinate_source = NULL, coordinate_precision = NULL, geocode_query_norm = NULL,
+  canonical_poi_id = NULL
 WHERE id = $21`;
 
 async function upsertRecord(
@@ -157,8 +159,12 @@ async function upsertRecord(
     hash,
   ];
 
-  const existing = await db.query<{ id: string; content_hash: string | null }>(
-    `SELECT id, content_hash FROM research_pois
+  const existing = await db.query<{
+    id: string;
+    content_hash: string | null;
+    ingest_category: string | null;
+  }>(
+    `SELECT id, content_hash, ingest_category FROM research_pois
      WHERE source_id = $1 AND source_record_id = $2`,
     [sourceId, record.source_record_id],
   );
@@ -169,7 +175,7 @@ async function upsertRecord(
   }
 
   const row = existing.rows[0]!;
-  if (row.content_hash === hash) {
+  if (row.content_hash === hash && row.ingest_category === ingestCategory) {
     await db.query(`UPDATE research_pois SET last_seen_at = now() WHERE id = $1`, [row.id]);
     return "unchanged";
   }

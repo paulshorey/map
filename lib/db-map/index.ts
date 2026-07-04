@@ -21,7 +21,6 @@ export type {
   CanonicalPoiOccurrencesRow,
   ResearchPoisRow,
   ResearchSourcesRow,
-  ResearchCategoryAliasesRow,
   UsersRow,
   UserPreferencesRow,
   PostgresDbSchema,

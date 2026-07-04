@@ -2,7 +2,7 @@ import type { Pool } from "pg";
 
 export interface NewPoi {
   name: string;
-  /** Primary category — matched to a canonical category by display name or slug (created if missing). */
+  /** Primary category — matched to an existing canonical category by display name or slug. */
   category: string;
   description?: string | null;
   address?: string | null;
@@ -43,7 +43,7 @@ function slugify(value: string): string {
     .replace(/^_+|_+$/g, "");
 }
 
-/** Resolve a category by display name or slug; create it if missing. Returns its id. */
+/** Resolve a category by display name or slug. Categories are code-owned; unknown values fail. */
 async function resolveCategoryId(db: Pool, category: string): Promise<string> {
   const found = await db.query(
     `SELECT id FROM canonical_categories WHERE lower(display_name) = lower($1) OR slug = $2 LIMIT 1`,
@@ -51,14 +51,7 @@ async function resolveCategoryId(db: Pool, category: string): Promise<string> {
   );
   if (found.rows[0]) return found.rows[0].id as string;
 
-  const created = await db.query(
-    `INSERT INTO canonical_categories (slug, display_name)
-     VALUES ($1, $2)
-     ON CONFLICT (slug) DO UPDATE SET display_name = EXCLUDED.display_name
-     RETURNING id`,
-    [slugify(category), category],
-  );
-  return created.rows[0].id as string;
+  throw new Error(`Unknown POI category "${category}". Add it to taxonomy.ts and run ingest:taxonomy:seed first.`);
 }
 
 /**

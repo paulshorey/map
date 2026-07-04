@@ -54,12 +54,6 @@ export interface CanonicalPoisRow {
   "updated_at": Date;
 }
 
-export interface ResearchCategoryAliasesRow {
-  "alias": string;
-  "category_id": string;
-  "source_id": string | null;
-}
-
 export interface ResearchGeocodeCacheRow {
   "query_norm": string;
   "lat": number | null;
@@ -122,6 +116,9 @@ export interface ResearchPoisRow {
   "canonical_poi_id": string | null;
   "first_seen_at": Date;
   "last_seen_at": Date;
+  "coordinate_source": string | null;
+  "coordinate_precision": string | null;
+  "geocode_query_norm": string | null;
 }
 
 export interface ResearchSourcesRow {
@@ -158,7 +155,6 @@ export interface PostgresDbSchema {
   "canonical_poi_categories": CanonicalPoiCategoriesRow;
   "canonical_poi_occurrences": CanonicalPoiOccurrencesRow;
   "canonical_pois": CanonicalPoisRow;
-  "research_category_aliases": ResearchCategoryAliasesRow;
   "research_geocode_cache": ResearchGeocodeCacheRow;
   "research_match_decisions": ResearchMatchDecisionsRow;
   "research_match_overrides": ResearchMatchOverridesRow;

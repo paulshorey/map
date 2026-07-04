@@ -21,7 +21,7 @@ throughout as the worked examples.
 4. [Target database schema](#4-target-database-schema)
 5. [The ingestion pipeline (stage by stage)](#5-the-ingestion-pipeline-stage-by-stage)
 6. [De-duplication algorithm in detail](#6-de-duplication-algorithm-in-detail)
-7. [Categories, taxonomy & aliases](#7-categories-taxonomy--aliases)
+7. [Categories & taxonomy](#7-categories--taxonomy)
 8. [Continuous / repeated ingestion & popularity](#8-continuous--repeated-ingestion--popularity)
 9. [Scripts & utilities to build and maintain](#9-scripts--utilities-to-build-and-maintain)
 10. [Worked examples (gardens + RV campgrounds)](#10-worked-examples-gardens--rv-campgrounds)
@@ -63,9 +63,13 @@ rest of the plan reflects them; this section is the single place to read them qu
    **multiple sources** carry **different** substantive content, use generative AI to fuse
    them into one output. Never rewrite good single-source prose just to "AI-ify" it.
 
-5. **Category taxonomy is code-owned.** Slugs, parents, and aliases live in a committed seed
-   file edited **only by the developer in source**, because they are tightly coupled to the
-   generative-AI prompts and matching code. **No in-app/admin editing of categories.**
+5. **Category taxonomy is code-owned and strict.** Canonical slugs, parents, display names,
+   and temporal flags live in a committed seed file edited **only by the developer in source**,
+   because they are tightly coupled to the generative-AI prompts and matching code. Ingestion
+   happens one source × one canonical category at a time: the developer must pass `--category
+   <slug>`, and an unknown/missing slug is a hard error before any rows are written. There are
+   **no category aliases**; raw source category strings are provenance only. **No in-app/admin
+   editing of categories.**
 
 ---
 
@@ -217,8 +221,7 @@ pair for sources, categories, etc.
 | Table | Stage | One row per… | Purpose | Key relationships |
 |---|---|---|---|---|
 | `research_sources` | research | data source | Registry of every source (slug, license, attribution, `trust` weight). Where raw data comes from; also the target of canonical attribution. | referenced by `research_pois.source_id`; surfaced for `canonical_pois` credits |
-| `research_pois` | research | **(source, record)** | Raw, normalized, geocoded, embedded staging rows. The de-dup workspace; kept forever. | `source_id → research_sources`; `canonical_poi_id → canonical_pois` (its match result) |
-| `research_category_aliases` | research | raw string → category | Maps messy source category strings (`caravan`, `garden:type=botanical`) to a canonical category during normalization. | `category_id → canonical_categories` |
+| `research_pois` | research | **(source, record)** | Raw, normalized, categorized-by-run, geocoded, embedded staging rows. The de-dup workspace; kept forever. | `source_id → research_sources`; `canonical_poi_id → canonical_pois` (its match result) |
 | `research_geocode_cache` | research | geocoded query | Cached forward-geocoding results (incl. remembered misses) so identical queries dedupe, re-runs are free, and unresolvable addresses aren't retried. | standalone cache |
 | `research_match_decisions` | research | match decision | Audit log of every merge/new decision (score, signals, LLM reason) for tuning & explainability. | `research_id → research_pois`; `candidate_poi_id → canonical_pois` |
 | `research_match_overrides` | research | corrected pair | Developer force-same / force-different rules the matcher must always obey. | references two `research_pois` rows |
@@ -238,10 +241,7 @@ pair for sources, categories, etc.
   │ (raw, per source)  │   (the match link)         │ (merged real places)      │
   └───────────────────┘                            └──────────────────────────┘
      ▲          ▲                                     via canonical_poi_categories (M:N)
-     │          │ category_id
-     │   ┌──────────────────────────┐
-     │   │ research_category_aliases │── category_id ─▶ canonical_categories
-     │   └──────────────────────────┘
+     │          │ category_slugs are derived strictly from ingest_category
      │ research_id / record_a,b
   ┌───────────────────────────┐   ┌───────────────────────────┐   ┌────────────────────────┐
   │ research_match_decisions   │   │ research_match_overrides   │   │ research_geocode_cache │
@@ -315,12 +315,16 @@ CREATE TABLE research_pois (
   country_code    text,                       -- ISO-2
   lat             double precision,           -- NULL ⇒ needs geocoding
   lng             double precision,
+  coordinate_source text,                     -- 'source' | 'url' | 'geocode'
+  coordinate_precision text,                  -- 'point' | 'city' | 'region'; gates M8 distance confidence
+  geocode_query_norm text REFERENCES research_geocode_cache(query_norm), -- set when coordinate_source='geocode'
 
   starts_at       timestamptz,                -- event start (NULL for permanent POIs)
   ends_at         timestamptz,
   date_precision  text,                        -- 'datetime' | 'day' | 'month' | 'year'
 
-  raw_category    text,                       -- the source's category string, pre-mapping
+  raw_category    text,                       -- source category string, provenance only (does not assign category)
+  category_slugs  text[],                     -- canonical slug(s) derived strictly from ingest_category
   raw             jsonb NOT NULL,             -- the full original record, verbatim
   attributes      jsonb,                      -- extracted structured attrs (hookups, area_ha, ...)
 
@@ -458,19 +462,18 @@ the correct credits.
 
 ### 4.5 Categories (see §7 for the model)
 
-`canonical_categories`, `research_category_aliases`, `canonical_poi_categories` (the last links
-`canonical_pois` ↔ `canonical_categories`).
+`canonical_categories` and `canonical_poi_categories` (the last links `canonical_pois` ↔
+`canonical_categories`).
 
 > **How categories are stored, decided (implemented M5).** The two layers store categories
 > differently because they have different jobs:
 >
-> - **`research_pois` (raw/staging): a `category_slugs text[]` array** (GIN-indexed). A record can
->   belong to several categories, the value is *derived* by the normalize stage from
->   `research_category_aliases` (with `ingest_category` as the code-owned fallback), and it is
+> - **`research_pois` (raw/staging): a `category_slugs text[]` array** (GIN-indexed). The value is
+>   *derived* by the normalize stage from the developer-provided `ingest_category` slug and is
 >   re-derived on every re-normalize. Slugs are code-owned constants (from `taxonomy.ts`), so no
->   foreign key is needed. Arrays are the cheapest fit for a high-volume, re-derivable scratch
->   layer. The verbatim `raw_category` and dump-level `ingest_category` are kept for the unmapped
->   report and provenance. A separate `is_poi boolean` column is the validity gate (§15.1).
+>   foreign key is needed in the high-volume scratch layer. The verbatim `raw_category` is kept
+>   for source audit/provenance only and never assigns categories. A separate `is_poi boolean`
+>   column is the validity gate (§15.1).
 > - **`canonical_pois` (published): the M:N junction `canonical_poi_categories` as source of
 >   truth** — FK integrity on both sides, a natural `is_primary` flag, and clean hierarchy /
 >   aggregation queries. Plus a denormalized **`primary_category_id`** FK column on
@@ -545,8 +548,9 @@ of them; a re-pull of an existing source flows through the same steps and self-h
   `raw` (jsonb) for later re-derivation.
 - **Upsert by `(source_id, source_record_id)`**: insert new rows; on existing rows update the
   source fields and bump `last_seen_at`.
-- Compute `content_hash`. If it is **unchanged**, skip the row entirely (no downstream work). If it
-  **changed**, reset the derived columns (`name_normalized`, `lat`/`lng`, `content_embedding`,
+- Compute `content_hash`. If it and the stored `ingest_category` are **unchanged**, skip the row
+  entirely (no downstream work). If the source content or category changed, reset the derived
+  columns (`name_normalized`, coordinate provenance, `category_slugs`, `content_embedding`,
   `canonical_poi_id`) to NULL so the record re-flows through the stages.
 - *(Deletion detection — marking rows that vanished from a re-pull — is deferred; for the
   "haphazard, add-more-data" POC we only ever add/update, never prune.)*
@@ -574,9 +578,10 @@ of them; a re-pull of an existing source flows through the same steps and self-h
   fact that an official site is still missing.
 - **Address:** split into city/region/country_code where possible.
 - **website_domain / phone:** normalize to comparable forms (strong-ID signals).
-- **Category mapping:** map `raw_category` → canonical category via `research_category_aliases`
-  (§7). Unmapped raw categories are reported, not guessed, so the **developer** can extend the
-  code-owned alias seed (Decision 5).
+- **Category assignment:** write `category_slugs = ARRAY[ingest_category]` after verifying the
+  slug still exists in `canonical_categories`. `raw_category` is kept for source audit/provenance
+  only and never assigns categories. If a source file contains multiple meaningful categories, the
+  developer splits or filters it and runs ingestion once per canonical category.
 - **Coverage report, measured not assumed:** `ingest:normalize --report-coverage` prints the
   *actual* per-field fill rate per source (don't plan enrichment off guessed yields — §15).
 
@@ -588,7 +593,9 @@ of them; a re-pull of an existing source flows through the same steps and self-h
   coordinates are correct.
 - Forward-geocode `"name, city, region, country"` via **LocationIQ** (`docs/search/location-api.md`:
   5,000 req/day free, Nominatim-compatible, commercial-OK with attribution; pluggable provider).
-  A success sets `lat`/`lng` (so the row is no longer selected next time).
+  A success sets `lat`/`lng`, `coordinate_source='geocode'`, `coordinate_precision` (`point` /
+  `city` / `region`), and `geocode_query_norm` (so the row is no longer selected next time and M8
+  can down-weight city/region centroids).
 - **Cache every lookup** in `research_geocode_cache` keyed by the normalized query — including
   **misses** (a cached row with NULL coords means "we tried this query and it didn't resolve").
   This dedupes identical queries across records and, crucially, stops us from re-spending budget
@@ -630,7 +637,7 @@ record which source won each field (§4.4):
   matching, and never to rewrite good single-source text).
 - **attributes:** union/merge category-specific fields (e.g. OR the campground hookup
   booleans across sources; keep max `area_ha`).
-- **categories:** union of all sources' mapped categories.
+- **categories:** union of all matched research rows' canonical `category_slugs`.
 - **popularity:** `COUNT(DISTINCT source_id)`.
 
 ### Stage 7 — Report (`ingest:report`)
@@ -639,7 +646,7 @@ record which source won each field (§4.4):
   is no licensing gate (Decision 1) and no human-review gate (Decision 3).
 - Emit a **reconciliation report** (like the current import script does, but richer):
   records in, new vs. updated, matched-to-existing, new canonical created, LLM-adjudicated
-  count, geocode failures, unmapped categories, popularity distribution.
+  count, geocode failures, raw-category surprises, popularity distribution.
 
 ### Orchestration
 
@@ -769,16 +776,18 @@ together geographically — flag for the golden set.
 
 ---
 
-## 7. Categories, taxonomy & aliases
+## 7. Categories & taxonomy
 
 The user gave three concrete requirements; this model satisfies all of them.
 
-> **Taxonomy is code-owned (Decision 5).** Categories, slugs, parents, and aliases are defined
-> in a **committed seed file** in the repo (e.g. `lib/db-map/scripts/ingest/taxonomy.ts` →
-> seeded into the tables below) and edited **only by the developer in source**, because they
-> are tightly coupled to the generative-AI prompts and matching code. There is **no in-app or
-> admin-UI editing**. The tables below are the runtime projection of that seed; changing the
-> taxonomy means editing the seed file and re-running the seed migration in a PR.
+> **Taxonomy is code-owned and strict (Decision 5).** Canonical categories, slugs, parents,
+> display names, and temporal flags are defined in a **committed seed file** in the repo
+> (`lib/db-map/scripts/ingest/taxonomy.ts` → seeded into the tables below) and edited **only by
+> the developer in source**, because they are tightly coupled to prompts and matching code.
+> There are **no category aliases**: the developer must pass one exact canonical slug with
+> `--category <slug>` for each source run, and an unknown/missing slug exits before writing.
+> Raw source category strings are stored only as provenance/audit data. There is **no in-app or
+> admin-UI editing**.
 
 ### Schema
 
@@ -796,14 +805,6 @@ CREATE TABLE canonical_categories (
   created_at    timestamptz NOT NULL DEFAULT now()
 );
 
--- raw source strings → canonical category (drives Stage-2 categorization)
-CREATE TABLE research_category_aliases (
-  alias         text NOT NULL,            -- 'garden:type=botanical', 'caravan', 'paragliding'
-  category_id   uuid NOT NULL REFERENCES canonical_categories(id) ON DELETE CASCADE,
-  source_id     uuid REFERENCES research_sources(id), -- NULL = applies to all sources
-  PRIMARY KEY (alias, category_id, source_id)
-);
-
 -- a place can be in many categories
 CREATE TABLE canonical_poi_categories (
   poi_id        uuid NOT NULL REFERENCES canonical_pois(id) ON DELETE CASCADE,
@@ -816,11 +817,11 @@ CREATE TABLE canonical_poi_categories (
 ### How it satisfies each requirement
 
 - **Multiple categories per place** → `canonical_poi_categories` many-to-many. A flying site row can be
-  linked to `free_flight`, `hang_gliding`, `paragliding`, and `gliderport` simultaneously.
+  linked to several canonical categories when separate source/category runs merge into the same
+  real place. Within a single ingest run, the category is exactly the developer-provided
+  `--category` slug.
 - **Rename a category** ("flying site" → "free flight") → update `categories.display_name`.
-  The **slug stays `free_flight`**, so every link and alias keeps working; nothing else
-  changes. (If we want the old name to keep mapping incoming data, add it to
-  `research_category_aliases`.)
+  The **slug stays `free_flight`**, so every link keeps working; nothing else changes.
 - **Similar-but-distinct + overlap** (garden / arboretum / sculpture park; indoor/outdoor;
   public/private) → model each as its own category, use `parent_id` for grouping (e.g.
   `arboretum` and `botanical_garden` under a `gardens` parent), and let a place hold multiple
@@ -828,9 +829,9 @@ CREATE TABLE canonical_poi_categories (
 - **Overlapping function** (campground → backpacker / tent / rv / airstream; all still
   "campground") → `campground` is the parent; the specific types are children; a site that is
   both RV and tent gets both child links **and** inherits the parent at query time.
-- **Locale naming** ("RV" vs "caravan") → store one canonical slug (`rv`); the front-end maps
-  slug → localized label. Source strings like `caravan_site`/`tourism=caravan_site` are just
-  aliases pointing at `rv`.
+- **Locale naming** ("RV" vs "caravan") → pick one canonical slug (`rv`) and one display label for
+  the POC. Future UI localization can translate that label, but ingestion does not accept spelling
+  variants as categories.
 
 ### Query-time category expansion
 
@@ -838,10 +839,11 @@ The map filter takes a category slug; the API expands it to itself + descendants
 "campground" returns RV + tent + backpacker sites. Store the closure or compute it with a
 recursive CTE.
 
-### Unmapped-category report
+### Raw-category report
 
-Stage 2 emits any `raw_category` that has no alias, so the team continuously extends
-`research_category_aliases` instead of silently dropping or misfiling data.
+Stage 2 can report raw source category strings for audit (`--report-raw-categories`), but these
+strings do not drive assignment. A surprising raw category means the developer should inspect the
+source, split/filter the file if needed, and re-run with the correct canonical `--category`.
 
 ---
 
@@ -851,7 +853,8 @@ Data changes; we will re-run the same sources forever and add new ones. The desi
 this safe by construction.
 
 - **Same source, re-pulled:** Stage 1 upserts by `(source_id, source_record_id)`. Existing rows
-  update (and bump `last_seen_at`); unchanged rows (same `content_hash`) are skipped entirely.
+  update (and bump `last_seen_at`); unchanged rows (same `content_hash` and same
+  `ingest_category`) are skipped entirely.
   **Popularity does not move** because it counts *distinct sources*, and this is the same source.
   (Detecting places *removed* from a source is deferred — we only add/update for now.)
 - **New source, same place:** a new `source_record` matches an existing canonical POI during
@@ -875,14 +878,14 @@ if it grows). Proposed `package.json` scripts (mirroring existing `db:import:*` 
 | Command | Purpose |
 |---|---|
 | `ingest:extract <source> <file>` | Adapter → upsert `research_pois` (streamed, idempotent) |
-| `ingest:normalize [--source S]` | Clean names/coords/address, map categories |
-| `ingest:geocode [--limit N]` | Fill missing coords via LocationIQ + cache |
+| `ingest:normalize [--source S]` | Clean names/coords/address, verify strict category slugs |
+| `ingest:geocode [--limit N]` | Fill missing coords via LocationIQ + cache; stamp coordinate precision |
 | `ingest:embed` | Compute embeddings for changed rows |
 | `ingest:match [--dry-run] [--auto-threshold] [--limit N] [--resume] [--no-llm]` | Per-record conflation **and** canonical rebuild (Stage 5+6); LLM auto-decides the gray zone |
 | `ingest:report` | Reconciliation + QA stats |
 | `ingest:run <source> <file>` | Orchestrate all of the above for one category × source chunk |
 | `ingest:override <a> <b> same\|different` | Developer-only: write a `research_match_overrides` rule (not a review queue) |
-| `ingest:taxonomy:seed` | Seed/refresh `canonical_categories` + `research_category_aliases` from the committed taxonomy source file |
+| `ingest:taxonomy:seed` | Seed/refresh `canonical_categories` from the committed taxonomy source file |
 
 Shared building blocks to maintain:
 
@@ -894,7 +897,7 @@ Shared building blocks to maintain:
 - **`merge/`** — field-precedence resolver + **conditional** description aggregator (verbatim
   for single-source; LLM fusion only when multiple sources disagree — Decision 4).
 - **`geocode/`** — pluggable provider client + cache.
-- **`taxonomy.ts`** — the committed, code-owned category/alias seed (Decision 5).
+- **`taxonomy.ts`** — the committed, code-owned canonical category seed (Decision 5).
 - **Migrate the existing skill/scripts:** `db:import:json` / `db:import:kml` become thin
   adapters that write into **`research_pois`** (source `slug` from a flag) instead of
   straight into `canonical_pois`. Update `.cursor/skills/import-pois/SKILL.md` and
@@ -921,9 +924,9 @@ Testing utilities (so we can trust the pipeline):
   via shared QID/website.
 - **Geocode the coordinate-less:** ArbNet captured only name+URL; Wikipedia/Gardenology give
   city not lat/lng → Stage 3 geocodes "name, city, state, country".
-- **Categories:** alias `garden:type=botanical` (OSM), "botanical garden"/"arboretum"
-  (Wikipedia/ArbNet) → canonical `botanical_garden` / `arboretum`, both under a `gardens`
-  parent. A place in both lists ends with both leaf links.
+- **Categories:** each garden source is ingested with an explicit canonical `--category`
+  (`botanical_garden`, `arboretum`, etc.). A place that appears in separate category runs can end
+  with multiple leaf links after M8 merges those research rows into one canonical POI.
 - **Field precedence:** BGCI ("MOST COMPLETE", official network) wins area/accreditation
   attributes; Wikidata wins canonical name; OSM wins coordinates when present.
 - **Popularity:** Kew links ~5–6 sources → high popularity; an obscure ArbNet-only arboretum
@@ -942,8 +945,9 @@ Testing utilities (so we can trust the pipeline):
   scrape, are **display-eligible** in the POC and their content can be published verbatim. We
   record each source's `license`/`attribution` as metadata to revisit per source later, but
   nothing is gated now.
-- **Categories:** `tourism=caravan_site` / `caravans=yes` / `rv_hookup` → `rv`; tent-only →
-  `tent`; all under `campground` parent. "Caravan" is just an alias for the `rv` slug.
+- **Categories:** run each campground source with the canonical category being collected
+  (`campground`, `rv`, or `tent`). Mixed files must be split/filtered or handled by a source-specific
+  inclusion predicate; raw strings like `tourism=caravan_site` are provenance, not category aliases.
 - **Staleness:** uscampgrounds.info is 2014 data — ingest as seed, let newer sources override
   fields; if a 2014-only site never reappears, it stays (popularity 1) but is flagged old via
   `last_seen_at`.
@@ -995,7 +999,7 @@ Each phase is independently shippable and leaves the app working.
   `research_pois`, the renamed + revised `canonical_pois` (`ALTER TABLE pois RENAME TO
   canonical_pois`, then +`geom`, `attributes`, `field_provenance`, `popularity`, drop
   `UNIQUE(lng,lat)`), the category tables (`canonical_categories`,
-  `canonical_poi_categories`, `research_category_aliases`), and the
+  `canonical_poi_categories`), row-level coordinate provenance/precision, and the
   `research_match_decisions` / `research_match_overrides` / `research_geocode_cache` tooling
   tables. Run `pnpm db:sync`, commit generated artifacts. Seed the existing canonical rows into
   `research_pois` under a `manual`/`legacy` source (with `canonical_poi_id` pointing back at
@@ -1003,9 +1007,10 @@ Each phase is independently shippable and leaves the app working.
 - **Phase 1 — Extractors + staging.** Common `Extractor` interface, `research_sources` registry,
   `ingest:extract`, streaming parsers. Adapters for the 12 example sources. Land both example
   dumps into `research_pois` (no publishing yet).
-- **Phase 2 — Normalize + categorize.** Normalizers, `research_category_aliases` seed for gardens &
-  campgrounds, unmapped-category report.
-- **Phase 3 — Geocode.** LocationIQ client + `research_geocode_cache`; fill coordinate gaps.
+- **Phase 2 — Normalize + categorize.** Normalizers, strict `ingest_category` →
+  `category_slugs`, raw-category audit report.
+- **Phase 3 — Geocode.** LocationIQ client + `research_geocode_cache`; fill coordinate gaps and
+  stamp row-level coordinate precision.
 - **Phase 4 — Embed + match/merge.** pgvector embeddings; the **per-record, resumable**
   match+merge loop: blocking, scoring, thresholds, strong-ID shortcut, **binary LLM
   adjudicator**, union-find, per-record canonical rebuild, field precedence, conditional
@@ -1030,7 +1035,7 @@ are restated here (and drive §0) so the document is self-contained.
 | 2 | Global from day one? | **Yes, but chunked.** Worldwide coverage, ingested one **category × source** at a time. Scripts must be **long-running, resumable, one-record-at-a-time** processes. |
 | 3 | Human review appetite? | **None.** The LLM **always auto-decides** the gray zone (forced binary). No review queue/UI. Optional developer-only `research_match_overrides` for after-the-fact corrections in code. |
 | 4 | AI-written descriptions? | **Verbatim first.** One source → publish its text as-is. Multiple sources with differing content → LLM aggregates. Never rewrite good single-source prose. |
-| 5 | Category taxonomy ownership? | **Code-owned.** Slugs/parents/aliases live in a committed seed file edited only by the developer (coupled to the AI prompts/matching code). No in-app/admin editing. |
+| 5 | Category taxonomy ownership? | **Code-owned and strict.** Slugs/parents/display names/temporal flags live in a committed seed file edited only by the developer (coupled to the AI prompts/matching code). No aliases, no in-app/admin editing; ingestion requires one exact `--category` slug per source run. |
 
 ### 13.1 External service providers (resolved, July 2026)
 
@@ -1078,20 +1083,22 @@ now so they're not rediscovered the hard way.
 3. **Website/phone are not safe merge keys** (already corrected in §6). Only Wikidata/OSM ids
    are definitive; domain/phone need a chain/portal denylist and act only as scoring signals.
 
-4. **Attribute vocabulary needs aliasing too.** Sources name the same attribute differently
+4. **Attribute vocabulary needs canonicalization.** Sources name the same attribute differently
    (`electric_hookups` vs `Electricity Hookup` vs `E`). Define a **canonical attribute key set
    per category** in the code-owned taxonomy and map source attrs → canonical keys during
-   normalize — exactly like category aliases — or the `attributes` jsonb merge becomes an
-   inconsistent grab-bag.
+   normalize, or the `attributes` jsonb merge becomes an inconsistent grab-bag. This is separate
+   from categories: source category strings remain provenance-only.
 
 5. **Garbage-collect orphaned canonicals.** Re-clustering or an override can leave a
    `canonical_pois` row with zero linked `research_pois`. Sweep these to `status='hidden'` (or
    delete) so the map never shows an empty merge.
 
 6. **Geocode precision should gate match confidence.** A city/region-centroid geocode is not a
-   real location. When a candidate's coordinates came from a low-`precision` geocode, the
-   matcher should widen the radius / lower confidence / refuse auto-merge, so we never merge two
-   places onto the same fuzzy centroid.
+   real location. M6 writes `coordinate_source`, `coordinate_precision`, and `geocode_query_norm`
+   onto each resolved `research_pois` row; M8 must read those row-local fields and lower
+   confidence / refuse auto-merge for city/region precision. If precision is NULL on older rows,
+   treat it as unknown/coarse for auto-merge purposes unless the row has been reflowed. This keeps
+   us from merging two places onto the same fuzzy centroid.
 
 7. **Deletion detection is deferred (no `is_stale`).** For the POC we only add/update; a place
    removed from a source is *not* pruned. If/when this matters, add deletion detection via
