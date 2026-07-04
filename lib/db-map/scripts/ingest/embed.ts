@@ -32,6 +32,7 @@ interface EmbedStats {
 
 interface EmbedRow {
   id: string;
+  name: string | null;
   name_normalized: string | null;
   city: string | null;
   region: string | null;
@@ -106,7 +107,7 @@ async function fetchRows(db: Pool, opts: CliOptions): Promise<EmbedRow[]> {
   }
 
   const { rows } = await db.query<EmbedRow>(
-    `SELECT id, name_normalized, city, region, category_slugs
+    `SELECT id, name, name_normalized, city, region, category_slugs
      FROM research_pois
      WHERE ${where}
      ORDER BY first_seen_at${limitClause}`,
@@ -134,6 +135,7 @@ async function runEmbed(db: Pool, opts: CliOptions): Promise<EmbedStats> {
       const text = buildEmbedText(row);
       if (!text) {
         stats.skippedEmpty++;
+        console.warn(`Skipped - ${row.name ?? `(id ${row.id})`} - nothing to embed`);
         continue;
       }
       work.push({ row, text });
@@ -164,6 +166,7 @@ async function runEmbed(db: Pool, opts: CliOptions): Promise<EmbedStats> {
     for (let j = 0; j < work.length; j++) {
       await writeEmbedding(db, work[j]!.row.id, vectors[j]!);
       stats.embedded++;
+      console.log(`✓ ${work[j]!.row.name ?? work[j]!.row.name_normalized}`);
     }
   }
 

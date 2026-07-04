@@ -6,7 +6,7 @@
  * skipped so they never become matchable — the validity gate (overview §15.1).
  *
  * Usage:
- *   pnpm --filter @lib/db-map ingest:normalize [--source <slug>] [--limit N]
+ *   pnpm --filter @lib/db-map ingest:normalize [--source <slug>] [--limit N] [--no-llm]
  *   pnpm --filter @lib/db-map ingest:normalize --report-unmapped [--source <slug>]
  *   pnpm --filter @lib/db-map ingest:normalize --report-coverage [--source <slug>]
  */
@@ -14,6 +14,8 @@ import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { normalizeName, websiteDomain, normalizePhone } from "./normalize/text.js";
 import { fixCoordinates } from "./normalize/geo.js";
+import { coordsFromRecordUrls } from "./normalize/urlcoords.js";
+import { parseEventDates } from "./normalize/dates.js";
 import { countryToCode } from "./normalize/country.js";
 import {
   loadAliasMap,
@@ -27,20 +29,27 @@ interface CliOptions {
   limit?: number;
   reportUnmapped: boolean;
   reportCoverage: boolean;
+  noLlm: boolean;
 }
 
 interface NormalizeStats {
   processed: number;
   swappedCoords: number;
   droppedCoords: number;
+  urlCoords: number;
+  dated: number;
+  llmDated: number;
+  swappedDates: number;
   categorized: number;
   unmapped: number;
+  skipped: number;
 }
 
 interface ResearchRow {
   id: string;
   name: string | null;
   website: string | null;
+  source_url: string | null;
   phone: string | null;
   country_code: string | null;
   region: string | null;
@@ -49,6 +58,7 @@ interface ResearchRow {
   raw_category: string | null;
   ingest_category: string | null;
   country_name: string | null;
+  attributes: Record<string, unknown> | null;
 }
 
 function parseArgs(argv: string[]): CliOptions {
@@ -56,11 +66,13 @@ function parseArgs(argv: string[]): CliOptions {
   let limit: number | undefined;
   let reportUnmapped = false;
   let reportCoverage = false;
+  let noLlm = false;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--report-unmapped") reportUnmapped = true;
     else if (a === "--report-coverage") reportCoverage = true;
+    else if (a === "--no-llm") noLlm = true;
     else if (a === "--source" && argv[i + 1]) source = argv[++i];
     else if (a === "--limit" && argv[i + 1]) limit = Number(argv[++i]);
   }
@@ -68,7 +80,7 @@ function parseArgs(argv: string[]): CliOptions {
   if (limit !== undefined && (!Number.isFinite(limit) || limit < 1)) {
     throw new Error(`Invalid --limit: ${limit}`);
   }
-  return { source, limit, reportUnmapped, reportCoverage };
+  return { source, limit, reportUnmapped, reportCoverage, noLlm };
 }
 
 async function resolveSourceId(db: Pool, slug: string): Promise<string> {
@@ -93,8 +105,13 @@ async function runNormalize(
     processed: 0,
     swappedCoords: 0,
     droppedCoords: 0,
+    urlCoords: 0,
+    dated: 0,
+    llmDated: 0,
+    swappedDates: 0,
     categorized: 0,
     unmapped: 0,
+    skipped: 0,
   };
 
   const params: unknown[] = [];
@@ -110,8 +127,9 @@ async function runNormalize(
   }
 
   const { rows } = await db.query<ResearchRow>(
-    `SELECT id, name, website, phone, country_code, region, lat, lng,
-            raw_category, ingest_category, attributes->>'country_name' AS country_name
+    `SELECT id, name, website, source_url, phone, country_code, region, lat, lng,
+            raw_category, ingest_category, attributes->>'country_name' AS country_name,
+            attributes
      FROM research_pois
      WHERE ${where}
      ORDER BY first_seen_at${limitClause}`,
@@ -121,11 +139,25 @@ async function runNormalize(
   for (const row of rows) {
     const nameNormalized = row.name ? normalizeName(row.name) : null;
     // A row with no usable name cannot be matched; skip (stays NULL, filtered next run).
-    if (!nameNormalized) continue;
+    if (!nameNormalized) {
+      stats.skipped++;
+      console.warn(`Skipped - ${row.name ?? `(id ${row.id})`} - no usable name`);
+      continue;
+    }
 
     const coords = fixCoordinates(row.lat, row.lng);
     if (coords.swapped) stats.swappedCoords++;
     if (coords.dropped) stats.droppedCoords++;
+
+    // URL-embedded coordinates (Google Maps links etc.) — zero geocoder spend.
+    if (coords.lat === null) {
+      const fromUrl = coordsFromRecordUrls(row);
+      if (fromUrl) {
+        coords.lat = fromUrl.lat;
+        coords.lng = fromUrl.lng;
+        stats.urlCoords++;
+      }
+    }
 
     const domain = websiteDomain(row.website);
     const phone = normalizePhone(row.phone);
@@ -135,6 +167,19 @@ async function runNormalize(
       countryToCode(row.region) ??
       countryToCode(row.country_name ?? undefined) ??
       null;
+
+    // Event dates: deterministic parse of attribute date strings, with LLM prose
+    // fallback ("every February" → concrete upcoming dates).
+    const attrs = row.attributes ?? {};
+    const dates = await parseEventDates({
+      start: attrs.start_date as string | undefined,
+      end: attrs.end_date as string | undefined,
+      text: (attrs.date_text ?? attrs.dates ?? attrs.date_raw) as string | undefined,
+      allowLlm: !opts.noLlm,
+    });
+    if (dates.starts_at) stats.dated++;
+    if (dates.date_source === "llm") stats.llmDated++;
+    if (dates.swapped) stats.swappedDates++;
 
     const { slugs, unmapped } = resolveCategorySlugs(
       aliasMap,
@@ -153,7 +198,11 @@ async function runNormalize(
          country_code = $5,
          lat = $6,
          lng = $7,
-         category_slugs = $8
+         category_slugs = $8,
+         starts_at = $9,
+         ends_at = $10,
+         date_precision = $11,
+         attributes = attributes || $12::jsonb
        WHERE id = $1`,
       [
         row.id,
@@ -164,9 +213,17 @@ async function runNormalize(
         coords.lat,
         coords.lng,
         slugs,
+        dates.starts_at,
+        dates.ends_at,
+        dates.date_precision,
+        JSON.stringify(dates.date_source ? { date_source: dates.date_source } : {}),
       ],
     );
     stats.processed++;
+    const dateNote = dates.starts_at
+      ? ` (${dates.starts_at}${dates.ends_at ? ` → ${dates.ends_at}` : ""}${dates.date_source === "llm" ? ", llm" : ""}${dates.swapped ? ", swap-repaired" : ""})`
+      : "";
+    console.log(`✓ ${row.name}${dateNote}`);
   }
 
   return stats;
@@ -278,8 +335,10 @@ async function main() {
 
   console.log(
     `Normalize${opts.source ? ` ${opts.source}` : ""}: processed=${stats.processed} ` +
-      `categorized=${stats.categorized} unmapped=${stats.unmapped} ` +
-      `swapped_coords=${stats.swappedCoords} dropped_coords=${stats.droppedCoords}`,
+      `skipped=${stats.skipped} categorized=${stats.categorized} unmapped=${stats.unmapped} ` +
+      `swapped_coords=${stats.swappedCoords} dropped_coords=${stats.droppedCoords} ` +
+      `url_coords=${stats.urlCoords} dated=${stats.dated} llm_dated=${stats.llmDated} ` +
+      `swapped_dates=${stats.swappedDates}`,
   );
 }
 

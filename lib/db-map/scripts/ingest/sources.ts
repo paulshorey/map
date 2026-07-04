@@ -7,6 +7,8 @@ import { iabgExtractor } from "./extractors/iabg.js";
 import { wikipediaUsExtractor } from "./extractors/wikipedia-us.js";
 import { wikipediaIntlExtractor } from "./extractors/wikipedia-intl.js";
 import { gardenologyExtractor } from "./extractors/gardenology.js";
+import { globalCarnivalistExtractor } from "./extractors/global-carnivalist.js";
+import { roughGuidesExtractor } from "./extractors/rough-guides.js";
 import type { SourceDefinition } from "./types.js";
 
 const GARDEN_SOURCES: SourceDefinition[] = [
@@ -127,10 +129,37 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
   { meta: { slug: "festivalatlas", name: "Festival Atlas", trust: 60, defaultIngestCategory: "music_festival" } },
 ];
 
+/** Carnival sources (docs/poi/carnival/). */
+const CARNIVAL_SOURCES: SourceDefinition[] = [
+  {
+    meta: {
+      slug: "global_carnivalist",
+      name: "Global Carnivalist",
+      homepage: "https://globalcarnivalist.com",
+      attribution: "Global Carnivalist",
+      trust: 55,
+      defaultIngestCategory: "carnival",
+    },
+    extractor: globalCarnivalistExtractor,
+  },
+  {
+    meta: {
+      slug: "rough_guides",
+      name: "Rough Guides Carnivals",
+      homepage: "https://www.roughguides.com",
+      attribution: "Rough Guides",
+      trust: 60,
+      defaultIngestCategory: "carnival",
+    },
+    extractor: roughGuidesExtractor,
+  },
+];
+
 const ALL_SOURCES: SourceDefinition[] = [
   ...GARDEN_SOURCES,
   ...CAMPGROUND_SOURCES,
   ...FESTIVAL_SOURCES,
+  ...CARNIVAL_SOURCES,
 ];
 
 const bySlug = new Map(ALL_SOURCES.map((s) => [s.meta.slug, s]));

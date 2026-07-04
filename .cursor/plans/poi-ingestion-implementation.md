@@ -970,6 +970,24 @@ last embed (or `content_embedding IS NULL`).
 > garbage.** NULL is safe (the record just skips that signal); garbage poisons geocoding,
 > embeddings, and matching.
 
+### Product decisions (owner, Jul 2026)
+
+1. **Permanently closed places are skipped at extract — not recorded at all** (not even as
+   `is_poi = false` provenance rows). The Dyrt `"- PERMANENTLY CLOSED"` names, RIDB
+   closed-in-description, etc. never enter `research_pois`.
+2. **Every `docs/poi/` folder is a top-level category**: `music_festival`, `gardens`,
+   `campground`, `free_flight` (existing) + **`carnival`**, **`art_fair`**, **`art_parade`**
+   (new, all temporal). Sub-categories may hang under them later; the folder→category mapping is
+   the default `ingest_category` for its sources.
+3. **Undated events are allowed** into both `research_pois` and `canonical_pois`. Dates are
+   always optional in the database (most POIs have none). A front-end filter to
+   include/exclude/only-show null-date POIs comes later — no pipeline gate on missing dates.
+4. **Coordinates are required for canonical.** If a record's location cannot be resolved to
+   lat/lng (source coords, URL-embedded coords, or geocoding), the record stays in
+   `research_pois` but is **never promoted** to `canonical_pois` (the match queue already
+   requires `lat IS NOT NULL`). Log the skip (see the logging contract below).
+5. **Prose dates are converted via LLM** (see Dates rule 9) as part of cleaning.
+
 ### Dates (event POIs)
 
 Observed in the wild: ISO (`2026-06-19`), compact `YYYYMMDD` (MusicFestivalWizard), `DD/MM/YYYY`
@@ -1000,6 +1018,21 @@ Rules (implemented in a shared `normalize/dates.ts`; extractors pass raw strings
    record carries no other date — never overrides a parsed date.
 8. **Multi-weekend `weeks[]`** → each week becomes a `canonical_poi_occurrences` row at merge;
    the representative `starts_at`/`ends_at` spans per the event-dates plan.
+9. **Prose dates → LLM conversion (product decision).** When deterministic parsing fails but the
+   string looks like a recurring/prose date (`"every February"`, `"Three days preceding Lent"`,
+   `"February 11–13"` with no year), call DeepInfra `DeepSeek-V4-Flash`:
+   - Prompt includes the prose string **and the current year**; ask for start and end dates.
+   - Regex-extract all `YYYY-MM-DD`-shaped dates from the response; **use only the first two**.
+     One date → start only, end NULL. Zero → give up (dates stay NULL; undated is allowed).
+   - **Ignore the LLM's year.** Re-derive it with structured logic: if the parsed start month
+     has already passed in the current year → use next year; otherwise → current year. (The end
+     date follows the start; if end month < start month, the range crosses a year boundary and
+     the end gets start-year + 1.)
+   - Results are memoized per normalized prose string within a run (many records share
+     `"every February"`); LLM-derived dates get `date_precision = 'day'` at best but are
+     flagged `attributes.date_source = 'llm'` for audit. Deterministic parses always win;
+     the LLM is only a fallback.
+   - On API error/unparseable response: dates stay NULL (conservative; undated is allowed).
 
 ### Location
 
@@ -1029,7 +1062,19 @@ Rules:
    swap heuristic; **country cross-check**: when both `country_code` and coords are present and
    the point falls far outside the country's bounding box (generous tolerance), NULL the coords
    (the row re-flows through geocode) and keep the originals in `attributes.coords_raw` for audit.
-5. **Geocode precision gates matching** — `research_geocode_cache.precision` (`city`/`region`
+5. **URL-embedded coordinates (product decision)** — before any geocoding, scan the record's
+   `website`/`source_url`/raw URLs for parseable lat/lng (Google Maps `/maps/search/34.04,-118.26`,
+   `@lat,lng,zoom`, `q=lat,lng`, `!3d…!4d…`, OSM `mlat/mlon`, etc.). A valid pair (range-checked,
+   not 0,0) is used directly as the row's coordinates — zero LocationIQ spend. Runs in normalize
+   (`normalize/urlcoords.ts`).
+6. **Optimistic geocoding (product decision)** — the geocode query composes **everything
+   available**: name + venue + address + city + region + country. Any single present field is
+   enough to attempt the lookup; the geocoder decides if the prose resolves. (Precision gating —
+   rule 8 — protects matching from coarse results.)
+7. **Coordinates are required for canonical** — a row that still has `lat IS NULL` after
+   URL-extraction and geocoding stays in `research_pois` (provenance, re-tried on future runs if
+   the cache allows) and is never matched/promoted. The skip is logged per record.
+8. **Geocode precision gates matching** — `research_geocode_cache.precision` (`city`/`region`
    centroids vs `point`) is read by M8; see the M8 gate below.
 
 ### Text (names, descriptions)
@@ -1069,7 +1114,7 @@ Rules:
 | Reddit comment threads | reddit_raw_comments.json | no extractor (Tier D — skip file) |
 | Org meeting history | fecc_wikipedia.json (convention list) | skip file |
 | Tour legs of one production | the_herds_tour.json (53 legs, same name) | one canonical + occurrences, or skip |
-| Permanently closed | The Dyrt `"- PERMANENTLY CLOSED"` (96), RIDB closed-in-description | `is_poi = false` (default; revisit if product wants them shown as closed) |
+| Permanently closed | The Dyrt `"- PERMANENTLY CLOSED"` (96), RIDB closed-in-description | **skip at extract — do not record** (product decision 1) |
 | Wrong category in folder | rick_steves (~392 general festivals in `carnival/`), hostels (84) in `flying_site_data/` | `ingest_category` comes from the **source registry**, never the folder; gate rows or skip source |
 | Empty files | artnet_events, artfairslist, streetartlist, wikidata_art_fairs (`[]`) | skip |
 
@@ -1079,6 +1124,20 @@ JamBase, Viberate, RIDB facilities, The Dyrt, OSM, thecraftmap, artfairsourceboo
 Ticketmaster, travel blogs); **C** needs transform (research stubs, reddit_carnivals synthesized,
 tour legs); **D** excluded (comment threads, category trees, member directories as POIs,
 link-scrape files, empty files, fecc_wikipedia). Build A → B; C case-by-case; D never.
+
+### Per-item logging contract (product decision)
+
+Ingestion scripts log **one line per record** to stdout:
+
+- **Success** — minimal: `✓ <POI name>` (plus the stage's action where useful:
+  `inserted`/`updated`/`unchanged`, `geocoded`, `embedded`).
+- **Skip** — a warning explaining why:
+  `Skipped - <POI name> - unable to parse location`,
+  `Skipped - <POI name> - permanently closed`,
+  `Skipped - <POI name> - not a POI (club night)`, etc.
+
+Summary stats stay at the end of each run. Applies to every stage script and to `ingest:run`
+(M9), which streams the per-record lines of whichever stage is running.
 
 ### Multi-file sources & re-flow
 

@@ -28,13 +28,34 @@ export const TAXONOMY: CategorySeed[] = [
   { slug: "beach", display_name: "Beach", sort_order: 80, aliases: ["beach"] },
   { slug: "trail", display_name: "Trail", sort_order: 90, aliases: ["trail", "hike"] },
 
-  // ── Events (temporal) ──
+  // ── Events (temporal) — one top-level category per docs/poi folder ──
   {
     slug: "music_festival",
     display_name: "Music Festival",
     sort_order: 100,
     is_temporal: true,
     aliases: ["music festival", "festival"],
+  },
+  {
+    slug: "carnival",
+    display_name: "Carnival",
+    sort_order: 101,
+    is_temporal: true,
+    aliases: ["carnival", "carnaval", "fasnacht", "mardi gras", "karneval"],
+  },
+  {
+    slug: "art_fair",
+    display_name: "Art Fair",
+    sort_order: 102,
+    is_temporal: true,
+    aliases: ["art fair", "art festival", "craft show", "craft fair", "biennial", "biennale"],
+  },
+  {
+    slug: "art_parade",
+    display_name: "Art Parade",
+    sort_order: 103,
+    is_temporal: true,
+    aliases: ["art parade", "parade", "procession", "street arts"],
   },
 
   // ── Categories targeted by the ingestion pipeline ──

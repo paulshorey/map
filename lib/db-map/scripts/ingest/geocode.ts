@@ -44,10 +44,13 @@ interface GeocodeStats {
 interface GeoRow {
   id: string;
   name: string | null;
+  venue: string | null;
+  address: string | null;
   city: string | null;
   region: string | null;
   country_code: string | null;
   country_name: string | null;
+  category_slugs: string[] | null;
 }
 
 function parseArgs(argv: string[]): CliOptions {
@@ -88,11 +91,34 @@ async function resolveSourceId(db: Pool, slug: string): Promise<string> {
   return rows[0]!.id;
 }
 
-/** Build the geocode query text + a normalized cache key from a row's locality. */
-function buildQuery(row: GeoRow): { display: string; norm: string } | null {
-  const parts = [row.name, row.city, row.region, row.country_name ?? row.country_code]
+/**
+ * Build the geocode query text + a normalized cache key from a row's locality.
+ * Optimistic (product decision): any of venue/address/city/region/country is
+ * enough to attempt a lookup; everything available goes into the query.
+ *
+ * Event records (temporal categories) are geocoded by locality only — an event
+ * *name* ("Cayman Batabano 2026") is not a place name and steers the geocoder
+ * to wrong matches. Place records (gardens, campgrounds) keep the name: it IS
+ * the place name and is often the only usable signal (e.g. ArbNet).
+ */
+function buildQuery(row: GeoRow, temporalSlugs: Set<string>): { display: string; norm: string } | null {
+  const isEvent = (row.category_slugs ?? []).some((s) => temporalSlugs.has(s));
+  const locality = [
+    row.venue,
+    row.address,
+    row.city,
+    row.region,
+    row.country_name ?? row.country_code,
+  ]
     .map((p) => (p ? p.trim() : ""))
     .filter((p) => p.length > 0);
+
+  // Locality-only for events; name + locality for places. A record with no
+  // locality at all falls back to its name either way (optimistic).
+  const parts =
+    isEvent && locality.length > 0
+      ? locality
+      : [row.name?.trim() ?? "", ...locality].filter((p) => p.length > 0);
   if (parts.length === 0) return null;
   const display = parts.join(", ");
   const norm = display
@@ -158,8 +184,8 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
   }
 
   const { rows } = await db.query<GeoRow>(
-    `SELECT id, name, city, region, country_code,
-            attributes->>'country_name' AS country_name
+    `SELECT id, name, attributes->>'venue' AS venue, address, city, region, country_code,
+            attributes->>'country_name' AS country_name, category_slugs
      FROM research_pois
      WHERE ${where}
      ORDER BY first_seen_at${limitClause}`,
@@ -167,10 +193,16 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
   );
   stats.selected = rows.length;
 
+  const { rows: temporalRows } = await db.query<{ slug: string }>(
+    `SELECT slug FROM canonical_categories WHERE is_temporal`,
+  );
+  const temporalSlugs = new Set(temporalRows.map((r) => r.slug));
+
   for (const row of rows) {
-    const q = buildQuery(row);
+    const q = buildQuery(row, temporalSlugs);
     if (!q) {
       stats.noQuery++;
+      console.warn(`Skipped - ${row.name ?? `(id ${row.id})`} - unable to parse location (no locality fields)`);
       continue;
     }
 
@@ -180,8 +212,10 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
         if (!opts.dryRun) await writeRowCoords(db, row.id, cached.lat, cached.lng);
         stats.cacheHits++;
         stats.resolved++;
+        console.log(`✓ ${row.name} (cache: ${cached.lat}, ${cached.lng})`);
       } else {
         stats.knownMisses++;
+        console.warn(`Skipped - ${row.name} - unable to parse location (known geocode miss)`);
       }
       continue;
     }
@@ -215,8 +249,10 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
     if (hit) {
       await writeRowCoords(db, row.id, hit.lat, hit.lng);
       stats.resolved++;
+      console.log(`✓ ${row.name} (${hit.lat}, ${hit.lng}, ${hit.precision})`);
     } else {
       stats.unresolved++;
+      console.warn(`Skipped - ${row.name} - unable to parse location (geocoder found no match)`);
     }
   }
 

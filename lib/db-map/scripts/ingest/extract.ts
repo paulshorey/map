@@ -210,6 +210,7 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
 
     if (!record.source_record_id) {
       stats.skipped++;
+      console.warn(`Skipped - ${record.name ?? "(unnamed)"} - no stable record id`);
       continue;
     }
 
@@ -222,6 +223,7 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
 
     const result = await upsertRecord(db!, sourceId!, ingestCategory, record, isPoi);
     stats[result]++;
+    console.log(`✓ ${record.name ?? record.source_record_id} (${result}${isPoi ? "" : ", not a POI"})`);
   }
 
   if (db) {
