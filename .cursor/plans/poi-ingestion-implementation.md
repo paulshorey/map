@@ -901,7 +901,10 @@ start/end dates) in `attributes` and keep everything in `raw`.
 
 ---
 
-## M6 — Geocode the gaps
+## M6 — Geocode the gaps ✅
+
+**Status: complete.** `ingest/geocode.ts` + `"ingest:geocode"` with a LocationIQ provider client
+(`ingest/providers/locationiq.ts`) and the `research_geocode_cache` dedupe/miss cache.
 
 `ingest/geocode.ts` + `"ingest:geocode"`. **Automatic and conditional** — the loop selects only
 `research_pois` rows where **`lat IS NULL`** (i.e. the source had no coordinates). Records that
