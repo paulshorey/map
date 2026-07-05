@@ -1,12 +1,22 @@
 /**
  * Golden-set evaluator for M8 matching.
  *
- * Uses labeled source/name pairs and reports precision/recall for the deterministic
- * scoring path. Pairs whose rows are not loaded yet are skipped, which lets the
- * fixture land before every garden source is available in a local database.
+ * Labeled source/name pairs are run through the SAME decision routing as the real
+ * matcher (match.ts): strong-id → spatial block → score → auto-merge / gray-zone → LLM
+ * / auto-new. Reports precision/recall over the final decisions.
+ *
+ * A "same" pair is a single real place duplicated across sources (e.g. Kew appears in
+ * wikidata, bgci, and osm) — those should collapse into one canonical. A "different"
+ * pair is two distinct places; they must never merge. Far-apart places are rejected on
+ * distance BEFORE any scoring/embedding/LLM (proximity is a hard precondition).
+ *
+ * The gray zone (T_low < score < T_high, or a similarity/coordinate guard blocked
+ * auto-merge) is adjudicated by the LLM, mirroring the pipeline. Pass --no-llm to skip
+ * the LLM and report gray-zone pairs as "deferred" (excluded from precision/recall)
+ * instead of guessing.
  *
  * Usage:
- *   pnpm --filter @lib/db-map ingest:match:golden
+ *   pnpm --filter @lib/db-map ingest:match:golden [--no-llm]
  */
 import type { Pool } from "pg";
 import { getDb } from "../../../lib/db/postgres.js";
@@ -14,6 +24,7 @@ import { ingestConfig } from "../config.js";
 import { dateCompatibility } from "./dates.js";
 import { haversineMeters } from "./geo.js";
 import { extractStrongIds } from "./ids.js";
+import { adjudicateMatch } from "./llm.js";
 import { scoreCandidate } from "./score.js";
 
 interface GoldenRef {
@@ -57,7 +68,7 @@ const DEFAULT_PAIRS: GoldenPair[] = [
   {
     label: "same",
     note: "Kew should merge across open datasets",
-    a: { source: "wikidata", name: "Royal Botanic Gardens, Kew" },
+    a: { source: "wikidata", name: "Kew Gardens" },
     b: [
       { source: "osm", name: "Royal Botanic Gardens, Kew" },
       { source: "bgci", name: "Royal Botanic Gardens, Kew" },
@@ -178,18 +189,39 @@ function sharesStrongId(a: GoldenRow, b: GoldenRow): boolean {
   );
 }
 
-function predictSame(a: GoldenRow, b: GoldenRow): { same: boolean; score: number | null; reason: string } {
-  if (sharesStrongId(a, b)) return { same: true, score: 1, reason: "strong_id" };
+const T_HIGH = ingestConfig.match.tHigh;
+const T_LOW = ingestConfig.match.tLow;
+
+type DecisionMethod =
+  | "strong_id"
+  | "auto"
+  | "llm"
+  | "llm_error"
+  | "gray_zone_deferred";
+
+interface FinalDecision {
+  decision: "merge" | "new";
+  method: DecisionMethod;
+  score: number | null;
+  reason: string;
+}
+
+/**
+ * Resolve a pair using the same routing as the live matcher. Distance is a hard gate:
+ * pairs outside the category radius return `new` immediately, never scored/embedded/LLM'd.
+ */
+async function resolveDecision(a: GoldenRow, b: GoldenRow, useLlm: boolean): Promise<FinalDecision> {
+  if (sharesStrongId(a, b)) {
+    return { decision: "merge", method: "strong_id", score: 1, reason: "strong_id" };
+  }
+
   const radiusM = Math.max(radiusFor(a.category_slugs), radiusFor(b.category_slugs));
   const distanceM = haversineMeters({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng });
-  if (distanceM > radiusM) return { same: false, score: null, reason: "outside_radius" };
+  if (distanceM > radiusM) {
+    return { decision: "new", method: "auto", score: null, reason: "outside_radius" };
+  }
 
-  const scored = scoreCandidate({
-    current: a,
-    candidate: b,
-    distanceM,
-    radiusM,
-  });
+  const scored = scoreCandidate({ current: a, candidate: b, distanceM, radiusM });
   const dates = dateCompatibility({
     current: a,
     candidate: b,
@@ -198,21 +230,92 @@ function predictSame(a: GoldenRow, b: GoldenRow): { same: boolean; score: number
     localitySimilarity: scored.signals.locality,
     distanceM,
   });
-  const same =
+
+  const autoMerge =
     !dates.conflict &&
-    scored.score >= ingestConfig.match.tHigh &&
+    scored.score >= T_HIGH &&
     scored.signals.similarityFloorPassed &&
     !scored.signals.coarseCoordinate;
-  return { same, score: scored.score, reason: `score/${dates.reason}` };
+  if (autoMerge) {
+    return { decision: "merge", method: "auto", score: scored.score, reason: `auto_merge/${dates.reason}` };
+  }
+
+  if (scored.score <= T_LOW) {
+    return { decision: "new", method: "auto", score: scored.score, reason: `below_low/${dates.reason}` };
+  }
+
+  // Gray zone — match.ts routes this to the LLM adjudicator.
+  if (!useLlm) {
+    return {
+      decision: "new",
+      method: "gray_zone_deferred",
+      score: scored.score,
+      reason: `gray_zone_deferred/${dates.reason}`,
+    };
+  }
+
+  const llmRecord = (row: GoldenRow) => ({
+    name: row.name,
+    city: row.city,
+    region: row.region,
+    country_code: row.country_code,
+    website: row.website_domain,
+    phone: row.phone,
+    categories: row.category_slugs,
+    coordinate_precision: row.coordinate_precision,
+    starts_at: row.starts_at,
+    ends_at: row.ends_at,
+    date_precision: row.date_precision,
+  });
+
+  try {
+    const llm = await adjudicateMatch({
+      current: llmRecord(a),
+      candidate: llmRecord(b),
+      distance_m: Math.round(distanceM),
+      score: scored.score,
+      signals: scored.signals,
+    });
+    return {
+      decision: llm.samePlace ? "merge" : "new",
+      method: "llm",
+      score: scored.score,
+      reason: `llm_${llm.samePlace ? "merge" : "new"}`,
+    };
+  } catch (err) {
+    // Conservative fallback mirrors match.ts: an LLM/API failure never auto-merges.
+    return {
+      decision: "new",
+      method: "llm_error",
+      score: scored.score,
+      reason: `llm_error: ${(err as Error).message}`,
+    };
+  }
+}
+
+interface CliOptions {
+  useLlm: boolean;
+}
+
+function parseArgs(argv: string[]): CliOptions {
+  let useLlm = true;
+  for (const a of argv) {
+    if (a === "--no-llm") useLlm = false;
+    else throw new Error(`Unknown argument: ${a}`);
+  }
+  return { useLlm };
 }
 
 async function main() {
+  const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
   let tp = 0;
   let fp = 0;
   let tn = 0;
   let fn = 0;
+  let deferred = 0;
   let skipped = 0;
+  const methodCounts: Record<string, number> = {};
 
   for (const pair of DEFAULT_PAIRS) {
     const a = await findAnyRow(db, pair.a);
@@ -222,16 +325,33 @@ async function main() {
       console.warn(`Skipped - ${pair.note} (missing row)`);
       continue;
     }
-    const predicted = predictSame(a, b);
+
+    const result = await resolveDecision(a, b, opts.useLlm);
+    methodCounts[result.method] = (methodCounts[result.method] ?? 0) + 1;
     const expectedSame = pair.label === "same";
-    if (predicted.same && expectedSame) tp++;
-    else if (predicted.same && !expectedSame) fp++;
-    else if (!predicted.same && expectedSame) fn++;
-    else tn++;
+
+    let verdict: "OK" | "FAIL" | "DEFER";
+    if (result.method === "gray_zone_deferred") {
+      deferred++;
+      verdict = "DEFER";
+    } else if (result.decision === "merge" && expectedSame) {
+      tp++;
+      verdict = "OK";
+    } else if (result.decision === "merge" && !expectedSame) {
+      fp++;
+      verdict = "FAIL";
+    } else if (result.decision === "new" && expectedSame) {
+      fn++;
+      verdict = "FAIL";
+    } else {
+      tn++;
+      verdict = "OK";
+    }
+
     console.log(
-      `${predicted.same === expectedSame ? "OK" : "FAIL"} ${pair.note}: expected=${pair.label} ` +
-        `predicted=${predicted.same ? "same" : "different"} ` +
-        `score=${predicted.score === null ? "n/a" : predicted.score.toFixed(3)} reason=${predicted.reason}`,
+      `${verdict} ${pair.note}: expected=${pair.label} decision=${result.decision} ` +
+        `method=${result.method} score=${result.score === null ? "n/a" : result.score.toFixed(3)} ` +
+        `reason=${result.reason}`,
     );
   }
 
@@ -239,10 +359,22 @@ async function main() {
   const precision = tp + fp === 0 ? 0 : tp / (tp + fp);
   const recall = tp + fn === 0 ? 0 : tp / (tp + fn);
   console.log(
-    `Golden: evaluated=${tp + fp + tn + fn} skipped=${skipped} ` +
+    `Golden: evaluated=${tp + fp + tn + fn} deferred=${deferred} skipped=${skipped} ` +
       `tp=${tp} fp=${fp} tn=${tn} fn=${fn} ` +
       `precision=${precision.toFixed(3)} recall=${recall.toFixed(3)}`,
   );
+  console.log(
+    `Methods: ${Object.entries(methodCounts)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(" ") || "none"}`,
+  );
+
+  // A false positive means two genuinely different places were merged — the cardinal
+  // sin for de-duplication. Fail the gate so it can't slip through.
+  if (fp > 0) {
+    console.error(`Golden gate FAILED: ${fp} different-place pair(s) were merged (false positive).`);
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {
