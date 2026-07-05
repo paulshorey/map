@@ -29,6 +29,7 @@
     "ingest:extract": "tsx scripts/ingest/extract.ts",
     "ingest:normalize": "tsx scripts/ingest/normalize.ts",
     "ingest:geocode": "tsx scripts/ingest/geocode.ts",
+    "ingest:backfill:wikidata-coords": "tsx scripts/ingest/backfill-wikidata-coords.ts",
     "ingest:embed": "tsx scripts/ingest/embed.ts",
     "ingest:match": "tsx scripts/ingest/match.ts",
     "ingest:match:golden": "tsx scripts/ingest/match/golden.ts",
