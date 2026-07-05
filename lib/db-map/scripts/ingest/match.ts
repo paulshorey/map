@@ -19,6 +19,7 @@ import { bboxAround, haversineMeters } from "./match/geo.js";
 import { extractStrongIds } from "./match/ids.js";
 import { adjudicateMatch } from "./match/llm.js";
 import { scoreCandidate, type CandidateScore } from "./match/score.js";
+import { LlmError } from "./providers/deepinfra.js";
 
 const ADVISORY_LOCK_ID = 0x5018a;
 const DEFAULT_RADIUS_M = 300;
@@ -545,47 +546,61 @@ async function decideRow(
     };
   }
 
-  const llm = await adjudicateMatch({
-    current: {
-      name: row.name,
-      address: row.address,
-      city: row.city,
-      region: row.region,
-      country_code: row.country_code,
-      website: row.website,
-      phone: row.phone,
-      categories: row.category_slugs,
-      coordinate_precision: row.coordinate_precision,
-      starts_at: row.starts_at,
-      ends_at: row.ends_at,
-      date_precision: row.date_precision,
-    },
-    candidate: {
-      name: best.best_name ?? best.canonical_name,
-      canonical_name: best.canonical_name,
-      city: best.best_city,
-      region: best.best_region,
-      country_code: best.best_country_code,
-      website: best.best_website_domain ?? best.canonical_website,
-      phone: best.best_phone ?? best.canonical_phone,
-      coordinate_precision: best.best_coordinate_precision,
-      starts_at: best.best_starts_at ?? best.canonical_starts_at,
-      ends_at: best.best_ends_at ?? best.canonical_ends_at,
-      date_precision: best.best_date_precision ?? best.canonical_date_precision,
-    },
-    distance_m: Math.round(best.distance_m),
-    score: score.score,
-    signals: baseSignals,
-  });
+  try {
+    const llm = await adjudicateMatch({
+      current: {
+        name: row.name,
+        address: row.address,
+        city: row.city,
+        region: row.region,
+        country_code: row.country_code,
+        website: row.website,
+        phone: row.phone,
+        categories: row.category_slugs,
+        coordinate_precision: row.coordinate_precision,
+        starts_at: row.starts_at,
+        ends_at: row.ends_at,
+        date_precision: row.date_precision,
+      },
+      candidate: {
+        name: best.best_name ?? best.canonical_name,
+        canonical_name: best.canonical_name,
+        city: best.best_city,
+        region: best.best_region,
+        country_code: best.best_country_code,
+        website: best.best_website_domain ?? best.canonical_website,
+        phone: best.best_phone ?? best.canonical_phone,
+        coordinate_precision: best.best_coordinate_precision,
+        starts_at: best.best_starts_at ?? best.canonical_starts_at,
+        ends_at: best.best_ends_at ?? best.canonical_ends_at,
+        date_precision: best.best_date_precision ?? best.canonical_date_precision,
+      },
+      distance_m: Math.round(best.distance_m),
+      score: score.score,
+      signals: baseSignals,
+    });
 
-  return {
-    decision: llm.samePlace ? "merge" : "new",
-    method: "llm",
-    candidatePoiId: best.canonical_id,
-    score: score.score,
-    signals: baseSignals,
-    llmReason: llm.reason,
-  };
+    return {
+      decision: llm.samePlace ? "merge" : "new",
+      method: "llm",
+      candidatePoiId: best.canonical_id,
+      score: score.score,
+      signals: baseSignals,
+      llmReason: llm.reason,
+    };
+  } catch (err) {
+    // Conservative fallback (M0.4): an LLM/API failure must never auto-merge.
+    const message = err instanceof LlmError ? err.message : (err as Error).message;
+    console.warn(`Skipped LLM - ${row.name ?? row.id} - ${message}`);
+    return {
+      decision: "new",
+      method: "auto",
+      candidatePoiId: best.canonical_id,
+      score: score.score,
+      signals: { ...baseSignals, reason: "llm_error" },
+      llmReason: message,
+    };
+  }
 }
 
 async function createCanonical(client: PoolClient, row: ResearchMatchRow): Promise<string> {
