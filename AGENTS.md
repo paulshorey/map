@@ -23,25 +23,25 @@ This is a mono-repo. Apps go into ./apps and libraries go into ./lib folder.
 
 ### Folder guides (AGENTS.md)
 
-| Path | Topic |
-| --- | --- |
-| `apps/map/` | Next.js app, Capacitor, Railway deploy |
-| `apps/map/src/` | Source layout and key flows |
-| `apps/map/src/app/` | Pages and API routes |
-| `apps/map/src/auth/` | User session and entitlements |
-| `apps/map/src/basemap/` | Tile providers |
-| `apps/map/src/map/` | MapLibre map and POI UI |
-| `apps/map/src/lib/` | Shared helpers |
-| `lib/db-map/` | Migrations, SQL, contracts |
-| `lib/` | Monorepo libraries overview |
+| Path                    | Topic                                  |
+| ----------------------- | -------------------------------------- |
+| `apps/map/`             | Next.js app, Capacitor, Railway deploy |
+| `apps/map/src/`         | Source layout and key flows            |
+| `apps/map/src/app/`     | Pages and API routes                   |
+| `apps/map/src/auth/`    | User session and entitlements          |
+| `apps/map/src/basemap/` | Tile providers                         |
+| `apps/map/src/map/`     | MapLibre map and POI UI                |
+| `apps/map/src/lib/`     | Shared helpers                         |
+| `lib/db-map/`           | Migrations, SQL, contracts             |
+| `lib/`                  | Monorepo libraries overview            |
 
 ## Environment variables
 
 This project does not use .env files. Instead, all environment variables are preconfigured in the shell environment. The .env.example only serves to show the developer which env vars are used by the project, to make sure they are available in the shell.
 
-Database connection string in `DB_MAP_URL` env var.
-
 ## Database
+
+Database connection string in `DB_MAP_URL` env var. Feel free to read and write to the remote database. We're starting from scratch. Everything is backed up, so don't be afraid to run migrations and other destructive actions.
 
 After making a change requiring database migration, run the sync pipeline and commit the generated files in the same PR:
 
