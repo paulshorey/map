@@ -247,10 +247,12 @@ An identical name at 18 m must not be a gray-zone case. Two small changes:
 - **QID-named rows:** in normalize, a row whose name matches `^Q\d+$` (wikidata label
   missing) gets `is_poi = false` (never matched/published). 288 canonicals disappear on
   recluster. (Optionally a later enrichment could fetch labels; not now.)
-- **Don't publish region-precision geocodes:** `rebuildCanonicalPoi` sets
-  `status='hidden'` when the elected coordinates have `coordinate_precision='region'`
-  (city stays visible — gardens are findable at city zoom). Kills the 29-deep Argentina
-  centroid stack.
+- **Don't publish region-precision coordinates:** `rebuildCanonicalPoi` sets
+  `status='hidden'` when the elected coordinates have `coordinate_precision='region'`. Kills
+  the 29-deep Argentina centroid stack. (§3.6 extends this: `region` covers country-centroid
+  hits from the GeoNames list, and a `city`-only precision is also gated off the map — the
+  earlier "city stays visible" idea is superseded, because a city-precision coordinate is a
+  centroid, not the garden.)
 - **Never geocode garbage queries:** geocode stage skips rows whose query would be just a
   QID/empty name (`^q\d+,`).
 - **Chain/portal denylist:** add `ivn.nl` symptom-class awareness is unnecessary —
@@ -262,19 +264,132 @@ An identical name at 18 m must not be a gray-zone case. Two small changes:
 - No coordinate averaging — always a real member's coordinates (§2.3).
 - No description appending — full deterministic rebuild every time (§2.4).
 - No proximity merging for event categories or campgrounds by default (per-category table).
-- No schema migration — everything rides on existing tables; `method='proximity'` needs a
-  CHECK-constraint update on `research_match_decisions.method`… **exception**: that one
-  small migration (`ALTER TABLE … DROP CONSTRAINT/ADD CHECK` including `'proximity'`),
-  followed by `pnpm db:sync`.
+- No schema migration for the matcher itself — everything rides on existing tables;
+  `method='proximity'` needs a CHECK-constraint update on
+  `research_match_decisions.method`… **exception**: that one small migration
+  (`ALTER TABLE … DROP CONSTRAINT/ADD CHECK` including `'proximity'`) plus the new
+  `geo_centroids` reference table in §3.6, followed by `pnpm db:sync`.
+
+### 3.6 Centroid detection (city/country) — GeoNames reference data
+
+**The problem this closes.** Our geocoder already tags its *own* output (LocationIQ returns
+an OSM `class`/`type`, so a country/state/city result becomes `region`/`city` precision in
+`locationiq.ts`). But **source-provided coordinates lie**: a Wikidata or BGCI row can carry
+a precise-looking `(lat, lng)` that is actually the city or country centroid, and we store it
+as `coordinate_source='source', coordinate_precision='point'` — fully trusted. Provider
+centroids also differ (LocationIQ's country point for Argentina ≠ the geometric centroid in
+`countries360`), so we cannot detect these from our geocoder alone. We need an
+**independent reference list of centroids** to catch them.
+
+**The data (already downloaded, in `scripts/`).**
+
+- `cities500.txt` — GeoNames "cities with population ≥ 500", **234,645 rows**, tab-separated
+  (columns per `cities500-readme.txt`): `geonameid, name, asciiname, alternatenames, lat,
+  lng, feature_class, feature_code, country_code, …, population, …`. Feature class `P`
+  (populated place); feature codes `PPL*` (138k plain `PPL`, plus `PPLA*` admin seats,
+  `PPLC` national capitals, …). This is our **city-centroid + reverse-city** dictionary.
+- `countries360-2024.csv` — **217 country centroids**, `iso3,name,lat,lon`. Our
+  **country-centroid** dictionary.
+
+**Measured value against the live DB** (why the tight radius matters):
+
+| Centroid hit | canonical POIs | note |
+|---|---|---|
+| within 50 m of a city point | 36 | almost-certain centroid placements |
+| within 120 m | 95 | of these, **~40 wikidata + ~41 bgci rows are `source/point`** — silent centroids we trust today |
+| within 300 m | 353 | mixed: some real downtown POIs start appearing |
+| within 1 km | 1,914 | mostly legitimate (a garden genuinely near a small-town point) — **too loose to gate on** |
+| within 1 km of a *country* centroid | 4 | tiny (our geocoder already types its own country hits; the list is a backstop) |
+
+So a **tight radius is safe; a loose one is not.** The list's real job is the ~80
+`source/point` rows that are secretly city centroids, not the whole 1 km halo.
+
+**Storage — a committed reference table `geo_centroids`.** Consistent with the rest of the
+pipeline (bbox self-joins, cached lookups) and reusable by both normalize and matching:
+
+```sql
+CREATE TABLE public.geo_centroids (
+  id            bigint PRIMARY KEY,       -- geonameid; synthesize negatives for countries
+  kind          text NOT NULL CHECK (kind IN ('city','country')),
+  name          text NOT NULL,
+  admin1        text,                     -- GeoNames admin1 code (→ region)
+  country_code  text,                     -- ISO-2 (cities) / mapped from ISO-3 (countries)
+  population    bigint,
+  lat           double precision NOT NULL,
+  lng           double precision NOT NULL
+);
+CREATE INDEX geo_centroids_lat_idx ON public.geo_centroids (lat);
+CREATE INDEX geo_centroids_lng_idx ON public.geo_centroids (lng);
+CREATE INDEX geo_centroids_kind_idx ON public.geo_centroids (kind);
+```
+
+Seed once from the two files via a new `ingest:seed:centroids` script. Move the source files
+under `lib/db-map/data/geonames/` and **commit them** (30 MB total) for reproducible seeds;
+document their provenance/licensing (GeoNames is CC-BY 4.0 — record in the file header, same
+"metadata only for the POC" stance as `research_sources.license`).
+
+**Detection rule (normalize stage, per row that has coordinates).** Reuse the existing
+`bboxAround` + Haversine helpers (`match/geo.ts`) against `geo_centroids`:
+
+1. **Country centroid** — nearest `kind='country'` within **~2 km** ⇒ set
+   `coordinate_precision='region'`, `attributes.centroid_hit='country:<name>'`. Nothing real
+   sits on a country geometric centroid, so this is safe and wide.
+2. **City centroid** — nearest `kind='city'` within **~100 m** ⇒ set
+   `coordinate_precision='city'`, `attributes.centroid_hit='city:<geonameid>'`. Tight radius
+   keeps genuine downtown POIs safe.
+3. **Corroboration band (100–400 m from a city point)** — *not* auto-downgraded on distance
+   alone; only downgraded when a second signal from §2.3/§3.4 agrees: coordinates are
+   suspiciously round (≤ 3 decimals or clean `.0/.25/.5`) **or** the exact `(lat,lng)` is
+   shared by ≥ 3 distinct-named research rows (stacking). This is the third, strongest leg of
+   the "is this a real point?" test the aggressive-merge plan already relies on.
+
+Only source/URL coordinates are re-checked here; geocoder output is already typed. Detection
+is deterministic and idempotent (a pure function of `geo_centroids` + the row's coords), so it
+re-runs cleanly and is reset like any other derived column when `content_hash` changes.
+
+**Publish gating (in `rebuildCanonicalPoi`, extends §3.4).** After coordinate election
+(§2.3), gate on the elected precision:
+
+- `region` (incl. country-centroid hits) → **never on the map**: `status='hidden'`.
+- `city` as the *only* available precision → **not a map pin**: `status='hidden'` (kept in
+  the DB, retained for the "unmapped in this area" UX below). If any linked research row has
+  a true `point`, that always wins election and the POI publishes normally.
+
+**Bonus — reverse-city enrichment (high value for Case 2).** OSM rows almost never carry
+`city`/`region`, which is exactly why Case 2 locality scoring and the name-block are weak. In
+normalize, for a row with coordinates but **missing** `city`/`region`, fill them from the
+**nearest `kind='city'`** centroid within ~15 km (`attributes.city_source='nearest_centroid'`
+for audit). This does not touch coordinates — it only populates locality text — so it
+strengthens matching without any risk of moving a pin.
+
+**Product/UX answer (the "show a city summary?" question).** Recommended policy — a clean map
+plus a graceful off-map list, matching what tier-1 apps do (Overture/SafeGraph discard
+coarse-precision POIs from the map; Yelp/TripAdvisor list "located in <city>" without a pin):
+
+- **Region precision:** never shown, anywhere on the map.
+- **City precision (no better coordinate):** excluded from map pins; surfaced in the results
+  drawer under an **"Elsewhere in this area (exact location unmapped)"** section. Clicking one
+  pans to the city and shows a soft area highlight rather than a false precise pin. For the
+  POC this can start as simply "hidden + counted"; the drawer section is a small, later
+  frontend addition (no pipeline change needed — it reads the same `canonical_pois` with a
+  `precision`/`status` flag exposed in the read contract).
+- These `city`-precision rows are also the natural **enrichment queue**: a later stage can
+  try URL-embedded coords / detail-page scraping to promote them to real points.
 
 ---
 
 ## 4. Implementation steps (ordered)
 
-1. **Migration:** extend `research_match_decisions.method` CHECK with `'proximity'`;
-   `cd lib/db-map && pnpm db:sync`; commit generated artifacts.
+1. **Migration:** extend `research_match_decisions.method` CHECK with `'proximity'`; add the
+   `geo_centroids` reference table (§3.6); `cd lib/db-map && pnpm db:sync`; commit generated
+   artifacts.
+1b. **Centroid reference data (§3.6):** move `scripts/cities500.txt` +
+   `scripts/countries360-2024.csv` to `lib/db-map/data/geonames/` (with a provenance/license
+   header); add `ingest:seed:centroids` (streamed load into `geo_centroids`, ISO-3→ISO-2 map
+   for countries, synthesize negative ids for country rows); run it. Idempotent upsert by id.
 2. **`config.ts`:** add `proximityMergeDeg` (env `INGEST_PROXIMITY_MERGE_DEG`, default
-   0.0055) and `nameBlockKm` (env `INGEST_NAME_BLOCK_KM`, default 25).
+   0.0055), `nameBlockKm` (env `INGEST_NAME_BLOCK_KM`, default 25), and centroid radii
+   (`CENTROID_CITY_M`≈100, `CENTROID_COUNTRY_M`≈2000, `REVERSE_CITY_KM`≈15).
 3. **`match/anchors.ts` (new):** `isAnchor(canonicalRowMeta)`, `PROXIMITY_MERGE_DEG`
    per-category table, distinctive-name check (category stopword list in `taxonomy.ts` or
    alongside), medoid helper.
@@ -294,7 +409,10 @@ An identical name at 18 m must not be a gray-zone case. Two small changes:
    - `chooseDescription` → cluster-aware composer: anchor prose + sorted titled sections
      (§3.1); `attributes.contained_features`; hide `region`-precision canonicals.
 7. **`normalize.ts`:** `is_poi=false` for `^Q\d+$` names; **`geocode.ts`:** skip QID-name
-   queries.
+   queries. **`normalize/centroids.ts` (new):** centroid detection (downgrade precision on a
+   tight city/country hit + corroboration band, §3.6) and reverse-city enrichment for rows
+   missing `city`/`region`; wire into the normalize loop. Add `ingest:reflow` (or documented
+   SQL) so already-normalized garden rows re-run this new logic without a content change.
 8. **Weights** in `score.ts` per §3.3.
 9. **Golden set:** add labeled pairs — Houston (bgci vs wikidata/osm rows = same),
    Talbot (same), Queens sub-garden vs Queens Botanical Garden (same, proximity),
@@ -315,6 +433,13 @@ An identical name at 18 m must not be a gray-zone case. Two small changes:
    - canonicals with a distinct same-category neighbor within 0.0055°: 1,935 → expect only
      anchor-anchor LLM-confirmed splits to remain;
    - `^Q\d+$` canonicals: 288 → 0; region-precision published: 111 → 0.
+   - centroid detection: the ~40 wikidata + ~41 bgci `source/point` rows within 120 m of a
+     city point are re-flagged `city`; none of them publish as a pin unless a sibling row
+     supplies a true `point`. Spot-check that a genuine downtown garden (>120 m from the
+     city point) is **not** downgraded (false-positive guard).
+   - reverse-city enrichment: OSM rows that had NULL `city` now carry a nearest-city value
+     (`attributes.city_source='nearest_centroid'`); confirm Case 2 name-block/locality
+     improves on a sample.
    - spot-check the five worked examples (Queens, Dallas, Chicago, Paris, Erhu) return 1
      published canonical each; Houston returns 1 with popularity 3, coords ≈ (29.6875, −95.27),
      BGCI description/address retained via field precedence.
