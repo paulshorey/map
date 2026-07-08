@@ -54,6 +54,17 @@ export interface CanonicalPoisRow {
   "updated_at": Date;
 }
 
+export interface GeoCentroidsRow {
+  "id": number;
+  "kind": string;
+  "name": string;
+  "admin1": string | null;
+  "country_code": string | null;
+  "population": number | null;
+  "lat": number;
+  "lng": number;
+}
+
 export interface ResearchGeocodeCacheRow {
   "query_norm": string;
   "lat": number | null;
@@ -155,6 +166,7 @@ export interface PostgresDbSchema {
   "canonical_poi_categories": CanonicalPoiCategoriesRow;
   "canonical_poi_occurrences": CanonicalPoiOccurrencesRow;
   "canonical_pois": CanonicalPoisRow;
+  "geo_centroids": GeoCentroidsRow;
   "research_geocode_cache": ResearchGeocodeCacheRow;
   "research_match_decisions": ResearchMatchDecisionsRow;
   "research_match_overrides": ResearchMatchOverridesRow;

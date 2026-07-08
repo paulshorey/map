@@ -102,6 +102,7 @@ async function resolveSourceId(db: Pool, slug: string): Promise<string> {
  * the place name and is often the only usable signal (e.g. ArbNet).
  */
 function buildQuery(row: GeoRow, temporalSlugs: Set<string>): { display: string; norm: string } | null {
+  if (/^q\d+$/i.test(row.name?.trim() ?? "")) return null;
   const isEvent = (row.category_slugs ?? []).some((s) => temporalSlugs.has(s));
   const locality = [
     row.venue,
@@ -127,6 +128,7 @@ function buildQuery(row: GeoRow, temporalSlugs: Set<string>): { display: string;
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+  if (/^q\d+(,|$)/i.test(norm)) return null;
   return { display, norm };
 }
 

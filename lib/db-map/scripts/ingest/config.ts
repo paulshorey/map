@@ -42,6 +42,12 @@ export const ingestConfig = {
   match: {
     tHigh: envNumber("INGEST_MATCH_T_HIGH", 0.85),
     tLow: envNumber("INGEST_MATCH_T_LOW", 0.55),
+    proximityMergeDeg: envNumber("INGEST_PROXIMITY_MERGE_DEG", 0.0055),
+    nameBlockKm: envNumber("INGEST_NAME_BLOCK_KM", 25),
+    centroidCityM: envNumber("CENTROID_CITY_M", 100),
+    centroidCountryM: envNumber("CENTROID_COUNTRY_M", 2000),
+    centroidCityBandM: envNumber("CENTROID_CITY_BAND_M", 400),
+    reverseCityKm: envNumber("REVERSE_CITY_KM", 15),
   },
   extract: {
     batchSize: 500,

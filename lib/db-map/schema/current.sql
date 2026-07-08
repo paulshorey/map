@@ -107,6 +107,23 @@ END) STORED,
 
 
 --
+-- Name: geo_centroids; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.geo_centroids (
+    id bigint NOT NULL,
+    kind text NOT NULL,
+    name text NOT NULL,
+    admin1 text,
+    country_code text,
+    population bigint,
+    lat double precision NOT NULL,
+    lng double precision NOT NULL,
+    CONSTRAINT geo_centroids_kind_check CHECK ((kind = ANY (ARRAY['city'::text, 'country'::text])))
+);
+
+
+--
 -- Name: research_geocode_cache; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -135,7 +152,7 @@ CREATE TABLE public.research_match_decisions (
     llm_reason text,
     decided_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT research_match_decisions_decision_check CHECK ((decision = ANY (ARRAY['merge'::text, 'new'::text]))),
-    CONSTRAINT research_match_decisions_method_check CHECK ((method = ANY (ARRAY['strong_id'::text, 'auto'::text, 'llm'::text, 'override'::text])))
+    CONSTRAINT research_match_decisions_method_check CHECK ((method = ANY (ARRAY['strong_id'::text, 'auto'::text, 'llm'::text, 'override'::text, 'proximity'::text])))
 );
 
 
@@ -293,6 +310,14 @@ ALTER TABLE ONLY public.canonical_pois
 
 
 --
+-- Name: geo_centroids geo_centroids_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.geo_centroids
+    ADD CONSTRAINT geo_centroids_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: research_geocode_cache research_geocode_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -439,6 +464,27 @@ CREATE INDEX canonical_pois_starts_idx ON public.canonical_pois USING btree (sta
 --
 
 CREATE INDEX canonical_pois_status_idx ON public.canonical_pois USING btree (status);
+
+
+--
+-- Name: geo_centroids_kind_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX geo_centroids_kind_idx ON public.geo_centroids USING btree (kind);
+
+
+--
+-- Name: geo_centroids_lat_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX geo_centroids_lat_idx ON public.geo_centroids USING btree (lat);
+
+
+--
+-- Name: geo_centroids_lng_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX geo_centroids_lng_idx ON public.geo_centroids USING btree (lng);
 
 
 --

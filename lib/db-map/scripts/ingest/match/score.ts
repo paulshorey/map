@@ -90,11 +90,11 @@ export function scoreCandidate(input: ScoreInput): CandidateScore {
 
   // Proximity/locality/contact together cannot push a low-similarity pair over T_high.
   const score =
-    semantic * 0.78 +
-    (distance ?? 0) * 0.1 +
-    locality * 0.05 +
-    (contact.website ? 0.04 : 0) +
-    (contact.phone ? 0.03 : 0);
+    semantic * 0.8 +
+    (distance ?? 0) * 0.12 +
+    locality * 0.04 +
+    (contact.website ? 0.02 : 0) +
+    (contact.phone ? 0.02 : 0);
 
   const similarityFloorPassed =
     name >= 0.72 && (embedding === null || embedding >= 0.72);
@@ -114,4 +114,3 @@ export function scoreCandidate(input: ScoreInput): CandidateScore {
     },
   };
 }
-

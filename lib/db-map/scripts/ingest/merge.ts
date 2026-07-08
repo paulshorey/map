@@ -1,6 +1,8 @@
 import type { PoolClient } from "pg";
 import { chat } from "./providers/deepinfra.js";
-import { normalizeComparable } from "./match/text.js";
+import { getSourceDefinition } from "./sources.js";
+import { isWithinProximityBox, proximityDegFor } from "./match/anchors.js";
+import { nameSimilarity, normalizeComparable } from "./match/text.js";
 
 interface MergeRow {
   id: string;
@@ -85,13 +87,61 @@ function coordinateRank(value: string | null): number {
   return 0;
 }
 
+function coordTrust(row: MergeRow): number {
+  return getSourceDefinition(row.source_slug)?.meta.coord_trust ?? row.source_trust;
+}
+
+function coordinateSlugs(rows: MergeRow[]): string[] {
+  const slugs = [...new Set(rows.flatMap((row) => row.category_slugs ?? []))];
+  return slugs.length > 0 ? slugs : ["__default__"];
+}
+
+function chooseCorroboratedPoint(rows: MergeRow[]): MergeRow | null {
+  const pointRows = rows.filter((row) => row.coordinate_precision === "point" && row.lat !== null && row.lng !== null);
+  if (pointRows.length < 2) return null;
+
+  const slugs = coordinateSlugs(rows);
+  if (proximityDegFor(slugs) <= 0) return null;
+
+  const groups = pointRows.map((center) => {
+    const members = pointRows.filter((row) =>
+      isWithinProximityBox(
+        { lat: center.lat!, lng: center.lng! },
+        { lat: row.lat!, lng: row.lng! },
+        slugs,
+      ),
+    );
+    return {
+      center,
+      members,
+      sourceSupport: new Set(members.map((row) => row.source_id)).size,
+    };
+  });
+
+  groups.sort((a, b) => b.sourceSupport - a.sourceSupport || b.members.length - a.members.length);
+  const best = groups[0];
+  const second = groups[1];
+  if (!best || best.sourceSupport < 2) return null;
+  if (second && second.sourceSupport === best.sourceSupport) return null;
+
+  return [...best.members].sort((a, b) => coordTrust(b) - coordTrust(a) || b.source_trust - a.source_trust)[0] ?? null;
+}
+
 function chooseCoordinates(rows: MergeRow[]): FieldChoice<{ lat: number; lng: number }> {
+  const corroborated = chooseCorroboratedPoint(rows);
+  if (corroborated && corroborated.lat !== null && corroborated.lng !== null) {
+    return {
+      value: { lat: corroborated.lat, lng: corroborated.lng },
+      row: corroborated,
+    };
+  }
+
   const candidates = rows
     .filter((row) => row.lat !== null && row.lng !== null)
     .sort((a, b) => {
       const precision = coordinateRank(b.coordinate_precision) - coordinateRank(a.coordinate_precision);
       if (precision !== 0) return precision;
-      return b.source_trust - a.source_trust;
+      return coordTrust(b) - coordTrust(a) || b.source_trust - a.source_trust;
     });
   const row = candidates[0] ?? null;
   return {
@@ -108,10 +158,77 @@ function descriptionFallback(rows: MergeRow[]): FieldChoice<string> {
   return chooseText(rows, (row) => row.description, { preferLonger: true });
 }
 
+function featureRows(rows: MergeRow[], anchorName: string | null): MergeRow[] {
+  const anchorNorm = normalizeComparable(anchorName);
+  if (!anchorNorm) return [];
+  return rows.filter((row) => {
+    const hasContent = nonEmpty(row.name) !== null || nonEmpty(row.description) !== null;
+    if (!hasContent) return false;
+    if (normalizeComparable(row.name) === anchorNorm) return false;
+    return nameSimilarity(anchorName, row.name) < 0.9;
+  });
+}
+
+function containedFeatureNames(rows: MergeRow[], anchorName: string | null): string[] {
+  const names = featureRows(rows, anchorName)
+    .map((row) => nonEmpty(row.name))
+    .filter((name): name is string => name !== null)
+    .sort((a, b) => normalizeComparable(a).localeCompare(normalizeComparable(b)) || a.localeCompare(b));
+  return [...new Set(names)];
+}
+
+function proximityDescription(
+  rows: MergeRow[],
+  anchorName: string | null,
+): { value: string | null; provenance: Record<string, unknown> | null } | null {
+  const features = featureRows(rows, anchorName);
+  if (features.length === 0) return null;
+
+  const anchorNorm = normalizeComparable(anchorName);
+  const anchorRows = rows.filter((row) => normalizeComparable(row.name) === anchorNorm);
+  const anchorDescription = descriptionFallback(anchorRows.length > 0 ? anchorRows : rows);
+
+  const byName = new Map<string, MergeRow[]>();
+  for (const row of features) {
+    const key = normalizeComparable(row.name) || row.id;
+    byName.set(key, [...(byName.get(key) ?? []), row]);
+  }
+
+  const sections = [...byName.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, group]) => {
+      const title = chooseText(group, (row) => row.name, { preferShorter: true }).value;
+      const body = chooseText(group, (row) => row.description, { preferLonger: true }).value;
+      if (title && body) return `**${title}**\n${body}`;
+      if (title) return `**${title}**`;
+      return body ?? "";
+    })
+    .filter((section) => section.length > 0);
+
+  if (sections.length === 0) return null;
+
+  const parts = [anchorDescription.value, ...sections].filter((part): part is string => Boolean(part));
+  return {
+    value: parts.join("\n\n"),
+    provenance: {
+      source: "proximity_aggregate",
+      research_ids: [
+        ...(anchorDescription.row ? [anchorDescription.row.id] : []),
+        ...features.map((row) => row.id),
+      ],
+      sources: [...new Set(rows.map((row) => row.source_slug))],
+    },
+  };
+}
+
 async function chooseDescription(
   rows: MergeRow[],
   noLlm: boolean,
+  anchorName: string | null,
 ): Promise<{ value: string | null; provenance: Record<string, unknown> | null }> {
+  const aggregated = proximityDescription(rows, anchorName);
+  if (aggregated) return aggregated;
+
   const descriptions = rows
     .map((row) => ({ row, value: nonEmpty(row.description) }))
     .filter((d): d is { row: MergeRow; value: string } => d.value !== null);
@@ -327,7 +444,7 @@ export async function rebuildCanonicalPoi(
   }
 
   const name = chooseText(rows, (row) => row.name, { preferShorter: true });
-  const description = await chooseDescription(rows, opts.noLlm);
+  const description = await chooseDescription(rows, opts.noLlm, name.value);
   const website = chooseText(rows, (row) => row.website);
   const phone = chooseText(rows, (row) => row.phone);
   const address = chooseText(rows, (row) => row.address, { preferLonger: true });
@@ -339,6 +456,8 @@ export async function rebuildCanonicalPoi(
   const primaryCategoryId = await syncCategories(client, canonicalId, rows);
   const popularity = new Set(rows.map((row) => row.source_id)).size;
   const attributes = mergeAttributes(rows);
+  const features = containedFeatureNames(rows, name.value);
+  if (features.length > 0) attributes.contained_features = features;
 
   const fieldProvenance = {
     name: provenance(name.row),
@@ -349,6 +468,7 @@ export async function rebuildCanonicalPoi(
     hours: provenance(hours.row),
     photo_url: provenance(photo.row),
     coordinates: provenance(coords.row),
+    coordinate_precision: coords.row?.coordinate_precision ?? null,
     starts_at: provenance(dates?.row ?? null),
     occurrences: {
       count: occurrences.length,
@@ -409,7 +529,9 @@ export async function rebuildCanonicalPoi(
       JSON.stringify(attributes),
       JSON.stringify(fieldProvenance),
       popularity,
-      primaryCategoryId ? "published" : "hidden",
+      primaryCategoryId && coords.row?.coordinate_precision !== "region" && coords.row?.coordinate_precision !== "city"
+        ? "published"
+        : "hidden",
       primaryCategoryId,
       dates?.starts_at ?? null,
       dates?.ends_at ?? null,

@@ -21,11 +21,18 @@
 import type { Pool } from "pg";
 import { getDb } from "../../../lib/db/postgres.js";
 import { ingestConfig } from "../config.js";
+import {
+  distinctiveName,
+  isSatelliteLikeResearch,
+  isWithinProximityBox,
+  normalizedExactName,
+} from "./anchors.js";
 import { dateCompatibility } from "./dates.js";
 import { haversineMeters } from "./geo.js";
 import { extractStrongIds } from "./ids.js";
 import { adjudicateMatch } from "./llm.js";
 import { scoreCandidate } from "./score.js";
+import { nameSimilarity } from "./text.js";
 
 interface GoldenRef {
   source?: string;
@@ -45,8 +52,10 @@ interface GoldenRow {
   id: string;
   source_record_id: string;
   source_slug: string;
+  source_trust: number;
   name: string | null;
   name_normalized: string | null;
+  website: string | null;
   website_domain: string | null;
   phone: string | null;
   city: string | null;
@@ -91,6 +100,33 @@ const DEFAULT_PAIRS: GoldenPair[] = [
       { source: "osm", name: "New York Botanical Garden" },
       { source: "bgci", name: "The New York Botanical Garden" },
     ],
+  },
+  {
+    label: "same",
+    note: "Houston Botanic Garden same-name divergent coordinates",
+    a: { source: "bgci", name: "Houston Botanic Garden" },
+    b: [
+      { source: "wikidata", name: "Houston Botanic Garden" },
+      { source: "osm", name: "Houston Botanic Garden" },
+    ],
+  },
+  {
+    label: "same",
+    note: "Talbot same-name near duplicate",
+    a: { name: "Talbot Botanic Garden" },
+    b: { name: "Talbot Botanic Garden" },
+  },
+  {
+    label: "same",
+    note: "Queens sub-garden should merge into Queens Botanical Garden",
+    a: { name: "Queens Botanical Garden" },
+    b: { source: "osm", name: "Arboretum/Crabapple Grove" },
+  },
+  {
+    label: "same",
+    note: "Dallas sub-garden should merge into Dallas Arboretum",
+    a: { name: "Dallas Arboretum" },
+    b: { name: "A Woman's Garden" },
   },
   {
     label: "different",
@@ -152,8 +188,8 @@ async function findRow(db: Pool, ref: GoldenRef): Promise<GoldenRow | null> {
   }
   const { rows } = await db.query<GoldenRow>(
     `SELECT
-       rp.id, rp.source_record_id, rs.slug AS source_slug,
-       rp.name, rp.name_normalized, rp.website_domain, rp.phone,
+       rp.id, rp.source_record_id, rs.slug AS source_slug, rs.trust AS source_trust,
+       rp.name, rp.name_normalized, rp.website, rp.website_domain, rp.phone,
        rp.city, rp.region, rp.country_code, rp.lat, rp.lng,
        rp.starts_at, rp.ends_at, rp.date_precision,
        rp.category_slugs, rp.content_embedding, rp.coordinate_precision,
@@ -189,6 +225,15 @@ function sharesStrongId(a: GoldenRow, b: GoldenRow): boolean {
   );
 }
 
+function sameCategory(a: GoldenRow, b: GoldenRow): boolean {
+  const bb = new Set(b.category_slugs ?? []);
+  return (a.category_slugs ?? []).some((slug) => bb.has(slug));
+}
+
+function anchorLike(row: GoldenRow): boolean {
+  return row.source_trust >= 80 || Boolean(row.website);
+}
+
 const T_HIGH = ingestConfig.match.tHigh;
 const T_LOW = ingestConfig.match.tLow;
 
@@ -217,6 +262,40 @@ async function resolveDecision(a: GoldenRow, b: GoldenRow, useLlm: boolean): Pro
 
   const radiusM = Math.max(radiusFor(a.category_slugs), radiusFor(b.category_slugs));
   const distanceM = haversineMeters({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng });
+  const exactName = normalizedExactName(a.name_normalized ?? a.name, b.name_normalized ?? b.name);
+  const proximity = sameCategory(a, b) && isWithinProximityBox(a, b, a.category_slugs);
+  const fastPathDates = dateCompatibility({
+    current: a,
+    candidate: b,
+    nameSimilarity: exactName ? 1 : 0,
+    semanticSimilarity: exactName ? 1 : 0,
+    localitySimilarity: 0,
+    distanceM,
+  });
+
+  if (proximity && exactName && !fastPathDates.conflict) {
+    return { decision: "merge", method: "auto", score: 1, reason: "exact_name_proximity" };
+  }
+
+  if (proximity && !fastPathDates.conflict) {
+    const similarity = nameSimilarity(a.name_normalized ?? a.name, b.name_normalized ?? b.name);
+    const aSatellite = isSatelliteLikeResearch(a, similarity);
+    const bSatellite = isSatelliteLikeResearch(b, similarity);
+    if ((aSatellite && anchorLike(b)) || (bSatellite && anchorLike(a))) {
+      return { decision: "merge", method: "auto", score: null, reason: "satellite_anchor_proximity" };
+    }
+  }
+
+  if (
+    distanceM <= ingestConfig.match.nameBlockKm * 1000 &&
+    sameCategory(a, b) &&
+    exactName &&
+    distinctiveName(a.name_normalized ?? a.name) &&
+    !fastPathDates.conflict
+  ) {
+    return { decision: "merge", method: "auto", score: 1, reason: "distinctive_exact_name_name_block" };
+  }
+
   if (distanceM > radiusM) {
     return { decision: "new", method: "auto", score: null, reason: "outside_radius" };
   }

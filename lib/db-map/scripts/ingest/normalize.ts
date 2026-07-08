@@ -17,6 +17,7 @@ import { fixCoordinates } from "./normalize/geo.js";
 import { coordsFromRecordUrls } from "./normalize/urlcoords.js";
 import { parseEventDates } from "./normalize/dates.js";
 import { countryToCode } from "./normalize/country.js";
+import { applyCentroidRules } from "./normalize/centroids.js";
 import {
   loadValidSlugs,
   resolveCategorySlugs,
@@ -35,6 +36,9 @@ interface NormalizeStats {
   swappedCoords: number;
   droppedCoords: number;
   urlCoords: number;
+  centroidCity: number;
+  centroidCountry: number;
+  reverseCity: number;
   dated: number;
   llmDated: number;
   swappedDates: number;
@@ -49,6 +53,7 @@ interface ResearchRow {
   source_url: string | null;
   phone: string | null;
   country_code: string | null;
+  city: string | null;
   region: string | null;
   lat: number | null;
   lng: number | null;
@@ -102,6 +107,9 @@ async function runNormalize(
     swappedCoords: 0,
     droppedCoords: 0,
     urlCoords: 0,
+    centroidCity: 0,
+    centroidCountry: 0,
+    reverseCity: 0,
     dated: 0,
     llmDated: 0,
     swappedDates: 0,
@@ -122,7 +130,7 @@ async function runNormalize(
   }
 
   const { rows } = await db.query<ResearchRow>(
-    `SELECT id, name, website, source_url, phone, country_code, region, lat, lng,
+    `SELECT id, name, website, source_url, phone, country_code, city, region, lat, lng,
             raw_category, ingest_category, attributes->>'country_name' AS country_name,
             attributes
      FROM research_pois
@@ -137,6 +145,19 @@ async function runNormalize(
     if (!nameNormalized) {
       stats.skipped++;
       console.warn(`Skipped - ${row.name ?? `(id ${row.id})`} - no usable name`);
+      continue;
+    }
+    if (/^q\d+$/i.test(nameNormalized)) {
+      await db.query(
+        `UPDATE research_pois SET
+           name_normalized = $2,
+           is_poi = false,
+           attributes = attributes || $3::jsonb
+         WHERE id = $1`,
+        [row.id, nameNormalized, JSON.stringify({ invalid_reason: "wikidata_qid_name" })],
+      );
+      stats.skipped++;
+      console.warn(`Skipped - ${row.name ?? `(id ${row.id})`} - bare Wikidata QID name`);
       continue;
     }
 
@@ -164,11 +185,28 @@ async function runNormalize(
     const domain = websiteDomain(row.website);
     const phone = normalizePhone(row.phone);
 
-    const countryCode =
+    let countryCode =
       row.country_code ??
       countryToCode(row.region) ??
       countryToCode(row.country_name ?? undefined) ??
       null;
+
+    const centroid = await applyCentroidRules(db, {
+      id: row.id,
+      name: row.name,
+      city: row.city,
+      region: row.region,
+      country_code: countryCode,
+      lat: coords.lat,
+      lng: coords.lng,
+      coordinate_source: coordinateSource,
+      coordinate_precision: coordinatePrecision,
+    });
+    coordinatePrecision = centroid.coordinate_precision;
+    countryCode = centroid.country_code;
+    if (centroid.centroidKind === "city") stats.centroidCity++;
+    if (centroid.centroidKind === "country") stats.centroidCountry++;
+    if (centroid.reverseCity) stats.reverseCity++;
 
     // Event dates: deterministic parse of attribute date strings, with LLM prose
     // fallback ("every February" → concrete upcoming dates).
@@ -192,6 +230,8 @@ async function runNormalize(
          website_domain = $3,
          phone = $4,
          country_code = $5,
+         city = $15,
+         region = $16,
          lat = $6,
          lng = $7,
          category_slugs = $8,
@@ -217,7 +257,12 @@ async function runNormalize(
         dates.date_precision,
         coordinateSource,
         coordinatePrecision,
-        JSON.stringify(dates.date_source ? { date_source: dates.date_source } : {}),
+        JSON.stringify({
+          ...(dates.date_source ? { date_source: dates.date_source } : {}),
+          ...centroid.attributes,
+        }),
+        centroid.city,
+        centroid.region,
       ],
     );
     stats.processed++;
@@ -334,7 +379,9 @@ async function main() {
     `Normalize${opts.source ? ` ${opts.source}` : ""}: processed=${stats.processed} ` +
       `skipped=${stats.skipped} categorized=${stats.categorized} ` +
       `swapped_coords=${stats.swappedCoords} dropped_coords=${stats.droppedCoords} ` +
-      `url_coords=${stats.urlCoords} dated=${stats.dated} llm_dated=${stats.llmDated} ` +
+      `url_coords=${stats.urlCoords} centroid_city=${stats.centroidCity} ` +
+      `centroid_country=${stats.centroidCountry} reverse_city=${stats.reverseCity} ` +
+      `dated=${stats.dated} llm_dated=${stats.llmDated} ` +
       `swapped_dates=${stats.swappedDates}`,
   );
 }

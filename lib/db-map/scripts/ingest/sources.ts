@@ -20,6 +20,7 @@ const GARDEN_SOURCES: SourceDefinition[] = [
       license: "BGCI terms",
       attribution: "BGCI GardenSearch",
       trust: 85,
+      coord_trust: 55,
     },
     extractor: bgciExtractor,
   },

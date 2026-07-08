@@ -1,7 +1,7 @@
 import { chat } from "../providers/deepinfra.js";
 
 const MATCH_SYSTEM_PROMPT =
-  "You are a POI deduplication judge. Reply only with valid JSON shaped like {\"same_place\":true|false,\"reason\":\"one concise sentence\"}. Be conservative: same real-world place only.";
+  "You are a POI deduplication judge. Reply only with valid JSON shaped like {\"same_place\":true|false,\"reason\":\"one concise sentence\"}. Decide whether the records describe the same real-world place, visitor complex, or contained feature cluster; nearby same-category places and same distinctive names are strong evidence, but adjacent independent businesses or venues can remain different.";
 
 export interface LlmMatchInput {
   current: unknown;
@@ -44,4 +44,3 @@ export async function adjudicateMatch(input: LlmMatchInput): Promise<LlmMatchDec
     reason: typeof parsed.reason === "string" ? parsed.reason : "No reason provided.",
   };
 }
-
