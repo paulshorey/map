@@ -1,36 +1,50 @@
 # Plan: POI Ingestion Remaining Work
 
-> Status: new follow-up plan, created after completed implementation plans were moved into
-> living documentation. This file tracks only unfinished POI ingestion work that still matters.
+> Status: living follow-up plan. Tracks only unfinished POI ingestion work that still
+> matters. Updated 2026-07-09 after a code review of the implemented pipeline against the
+> real source data in `docs/poi/`.
 >
-> Deliberately excluded: deferred canonical rebuilds and deterministic batch passes. Those
-> were considered and dropped because the current row-at-a-time matcher is simpler, safer,
-> and maintainable enough for the current data sizes.
+> Deliberately excluded (reviewed and reaffirmed): deferred canonical rebuilds and
+> deterministic batch passes. The row-at-a-time matcher is simpler, safer, resumable, and
+> fast enough at current sizes (~10k research rows matched in one sitting). The one real
+> cost of rerunning — repeated anchor-vs-anchor LLM adjudication during consolidation — is
+> now fixed much more cheaply by the consolidation decision memo (see baseline). Revisit
+> batch passes only if a single category exceeds ~250k pending rows or matching throughput
+> becomes the bottleneck in practice.
 
 ---
 
 ## 1. Current Baseline
 
-Implemented:
+Implemented (in addition to the previously documented baseline):
 
-- Two-layer `research_*` -> `canonical_*` schema.
-- Code-owned taxonomy and `ingest:taxonomy:seed`.
-- Source extraction framework and real extractors for botanical garden and carnival sources.
-- Normalize, geocode, embed, match, override, reflow, centroid seed, and Wikidata coordinate
-  backfill scripts.
-- Aggressive POI conflation rules, canonical consolidation, `--consolidate-only`, startup
-  match progress banner, and graceful first `Ctrl-C`.
-- Event date storage and representative occurrence rebuilds.
-- API support for category filtering and `from`/`to` event-date query params.
-- Living docs in `README.md`, `AGENTS.md`, `lib/db-map/README.md`, and
-  `docs/poi-ingestion.md`.
+- Two-layer `research_*` → `canonical_*` schema; code-owned taxonomy; extract → normalize
+  → geocode → embed → match → consolidate pipeline; aggressive conflation; event dates and
+  occurrences; resumable match with startup banner and graceful Ctrl-C.
+- **`ingest:report`** — read-only reconciliation report (rows by source/stage, match
+  readiness, canonicals by category, decisions by method, geocode cache, popularity,
+  event-date coverage). Run standalone, `--source`, or `--category`.
+- **Consolidation decision memo** (`research_consolidation_decisions`) — anchor-vs-anchor
+  LLM verdicts are stored per canonical pair and reused on later `--consolidate` runs.
+  A verdict goes stale (re-adjudicated) only when either canonical is rebuilt with new
+  data. Reruns of `--consolidate-only` on an already-consolidated database now take
+  seconds and zero LLM calls (verified: first run 102 LLM calls / 6 min, rerun 0 calls /
+  4 s).
+- **Generic capture-spec extractor** — sources registered in `sources.ts` without a custom
+  extractor fall back to a generic extractor for files following
+  `docs/poi-research/capture-spec.md`. New conformant sources need only a metadata entry.
 
 Still unfinished:
 
-- No one-command ingestion orchestrator.
-- No first-class reconciliation report or run metrics.
+- No one-command ingestion orchestrator (`ingest:run`).
+- Normalize uses the LLM only for prose dates; no LLM triage of messy scraped rows
+  (validity, name canonicalization, locality extraction). See Workstream D.
+- Publish policy for city-precision event coordinates is undecided; as implemented,
+  festivals that geocode to a city centroid end up `hidden` (see Workstream E decision).
 - Legacy direct importers still write straight to canonical tables.
-- Several registered source families have no extractors.
+- Campground and festival sources have no validated ingestion runs yet (several now work
+  through the generic extractor; a few need small custom extractors — see the runbook plan
+  `.cursor/plans/poi-campgrounds-festivals-import.md`).
 - No full end-to-end validation artifact across gardens, campgrounds, and festivals.
 - No map UI for choosing an event date range.
 
@@ -38,284 +52,188 @@ Still unfinished:
 
 ## 2. Goals
 
-1. Make real ingestion easier to run repeatedly with a single orchestration command.
-2. Give operators a clear reconciliation report after each source/category run.
-3. Move legacy curated imports toward the same provenance-preserving staging path.
-4. Finish source extractor coverage for the next priority categories.
-5. Produce an end-to-end validation record proving idempotent, de-duplicated ingestion across
-   multiple categories.
-6. Add the small app UI needed to use already-supported event date filtering.
+1. Make real ingestion easy to run repeatedly: one orchestration command per source.
+2. Ingest the next two categories (campgrounds, music festivals) end to end, proving the
+   temporal-POI path with real data.
+3. Use the LLM where it is strong — interpreting messy text — via a bounded, cached triage
+   step in normalize, instead of writing per-source cleanup code.
+4. Move legacy curated imports to the provenance-preserving staging path.
+5. Produce an end-to-end validation record proving idempotent, de-duplicated ingestion
+   across multiple categories.
+6. Add the small app UI needed to use the already-supported event date filtering.
 
-Non-goals:
-
-- Do not add a human review queue.
-- Do not enforce licensing gates in the POC.
-- Do not revive deferred rebuilds or deterministic batch passes.
-- Do not introduce PostGIS, pgvector, queues, or new infrastructure.
+Non-goals (unchanged): no human review queue, no licensing gates in the POC, no deferred
+rebuilds/batch passes, no PostGIS/pgvector/queues/new infrastructure.
 
 ---
 
 ## 3. Workstream A — `ingest:run` Orchestrator
 
-Build `lib/db-map/scripts/ingest/run.ts` and package script:
-
-```json
-"ingest:run": "tsx scripts/ingest/run.ts"
-```
-
-Command shape:
+Build `lib/db-map/scripts/ingest/run.ts` + package script `ingest:run`.
 
 ```bash
-pnpm --filter @lib/db-map ingest:run <source-slug> <file> --category <category-slug>
-pnpm --filter @lib/db-map ingest:run <source-slug> <file> --category <category-slug> --limit 500
-pnpm --filter @lib/db-map ingest:run <source-slug> <file> --category <category-slug> --dry-run
-pnpm --filter @lib/db-map ingest:run <source-slug> <file> --category <category-slug> --no-llm
+pnpm --filter @lib/db-map ingest:run <source-slug> <file> --category <category-slug> \
+  [--limit N] [--dry-run] [--no-llm] [--geocode-limit N]
 ```
 
 Behavior:
 
 1. Validate source slug and category before writing anything.
-2. Run stages in order:
-   - `ingest:extract`
-   - `ingest:normalize --source`
-   - `ingest:geocode --source`
-   - `ingest:embed --source`
-   - `ingest:match --source`
-   - `ingest:match --consolidate-only`
-3. Pass relevant flags through:
-   - `--limit` applies to extract and match only, unless a better per-stage convention is
-     added.
-   - `--dry-run` prevents writes in every stage that supports it.
-   - `--no-llm` applies to normalize and match.
-   - `--geocode-limit N` applies to geocode.
-4. Stop on first failed stage.
-5. Print the exact command for resuming manually.
+2. Run stages in order: extract → normalize (`--source`) → geocode (`--source`) →
+   embed (`--source`) → match (`--source`) → `match --consolidate-only`.
+3. Pass flags through: `--limit` (extract + match), `--dry-run` (all stages that support
+   it), `--no-llm` (normalize + match), `--geocode-limit` (geocode).
+4. Stop on first failed stage and print the exact command to resume that stage manually.
+5. Print `ingest:report --source <slug>` output at the end.
+
+Implementation note: spawn the stage scripts as child processes (same commands the docs
+teach) rather than importing their `main()`s — keeps each stage's CLI contract the single
+interface and the orchestrator trivial.
 
 Acceptance:
 
-- Missing `--category` exits non-zero before writing.
-- Unknown source exits non-zero before writing.
-- Unknown category exits non-zero before writing.
+- Missing/unknown `--category` or unknown source exits non-zero before writing.
 - A small `--limit 10 --dry-run` run executes the chain without writes.
-- A real small source run completes and leaves linked canonicals.
+- A real small source run completes, leaves linked canonicals, and ends with a report.
 
----
+## 4. Workstream B — Reporting (mostly done)
 
-## 4. Workstream B — Reporting and Metrics
+`ingest:report` is implemented. Remaining, in priority order:
 
-Add a reconciliation report that can run standalone and at the end of `ingest:run`.
-
-Command shape:
-
-```bash
-pnpm --filter @lib/db-map ingest:report
-pnpm --filter @lib/db-map ingest:report --source <source-slug>
-pnpm --filter @lib/db-map ingest:report --category <category-slug>
-```
-
-Report should include:
-
-- research rows by source and category
-- match-ready pending rows
-- not-ready rows split by missing coords/name/category
-- linked rows
-- canonical count
-- published vs hidden canonical count
-- match decisions by method
-- LLM decisions count
-- geocode cache hits/misses if cheap to compute
-- popularity distribution
-- top sources contributing to published canonicals
-
-Optional database table:
-
-```sql
-ingest_runs (
-  id uuid primary key,
-  source_slug text,
-  category_slug text,
-  started_at timestamptz not null,
-  finished_at timestamptz,
-  status text not null,
-  stats jsonb not null default '{}'
-)
-```
-
-Keep `ingest_runs` optional unless it materially helps operations; a useful report command is
-the priority.
-
-Acceptance:
-
-- `ingest:report` runs without mutating data.
-- `ingest:run` prints a final report.
-- Report output is compact enough to paste into a PR or run log.
+1. Print the report automatically at the end of `ingest:run` (part of Workstream A).
+2. Optional `ingest_runs` history table — only if operating without it proves painful.
+   The startup banner + report + `research_match_decisions` already cover most needs.
 
 ---
 
 ## 5. Workstream C — Legacy Importer Migration
 
-Current legacy commands:
+Unchanged in direction: keep `db:import:kml` / `db:import:json` for small fixtures, add a
+staged path for curated data.
 
-```bash
-pnpm db:import:kml ...
-pnpm db:import:json ...
-```
+1. Register a `manual` research source (trust ~90, "curated by operator").
+2. `pnpm db:import:json <file> --source manual --category <slug> --staged` writes
+   `research_pois` rows (the JSON already nearly conforms to the capture spec, so the
+   generic extractor mapping can be reused).
+3. Direct canonical writes stay available but are documented as fixture-only.
 
-They still write directly to `canonical_pois`. Keep them available for small fixtures, but
-add a provenance-preserving staged path for curated/manual data.
-
-Preferred direction:
-
-1. Add a `manual` or `curated` research source definition.
-2. Add staged import mode:
-   ```bash
-   pnpm db:import:json <file> --source manual --category <slug> --staged
-   pnpm db:import:kml <file> --source manual --category <slug> --staged
-   ```
-3. Staged imports write `research_pois` rows and then use the normal normalize/match path.
-4. Keep direct canonical writes only behind explicit `--direct-canonical` or document them as
-   fixture-only.
-
-Acceptance:
-
-- Curated JSON/KML can flow through `research_pois`.
-- Staged curated rows have source provenance.
-- Existing fixture workflows still work or have a clear replacement.
-- `lib/db-map/IMPORTING.md` and `docs/AGENTS.md` describe the new primary path.
+Acceptance: curated JSON/KML flows through `research_pois` with provenance;
+`lib/db-map/IMPORTING.md` and `docs/AGENTS.md` describe the staged path as primary.
 
 ---
 
-## 6. Workstream D — Source Extractor Coverage
+## 6. Workstream D — LLM Triage in Normalize (new)
 
-The source registry currently has metadata-only entries for campgrounds and festivals.
+The model (DeepSeek on DeepInfra) is currently used only for prose-date parsing, gray-zone
+match adjudication, and description fusion. The messy scraped sources in `docs/poi/`
+(carnival blog scrapes, Reddit extracts, directory listings) need more interpretation than
+deterministic code should attempt. Add a bounded, cached LLM triage inside
+`ingest:normalize` for rows that need it:
 
-### Campgrounds
+- **Validity**: is this row a real place/event POI, or a region/article/organization/tour?
+  Sets `is_poi = false` + `attributes.invalid_reason` (extends the existing validity gate).
+- **Name canonicalization**: strip edition years and boilerplate
+  ("110 Above Festival 2026" → base name + `attributes.edition_year`), so editions of the
+  same festival block/merge cleanly.
+- **Locality extraction**: split free-text `location` strings ("Shoreline Waterfront,
+  Long Beach, CA") into city/region/country when the structured fields are empty —
+  directly improves geocode hit rate and locality match signals.
 
-Registered but missing extractors:
+Design constraints (keep it cheap and reproducible):
 
-- `ridb`
-- `thedyrt`
-- `osm_camp`
-- `uscampgrounds`
-
-Priority:
-
-1. `ridb` facilities, because trust is highest and source data is structured.
-2. `uscampgrounds`, because it is smaller and useful as a seed/cross-check.
-3. `thedyrt`, because it is large and lower-trust but broad.
-4. `osm_camp`, after deciding whether to reuse the generic OSM extractor or specialize.
-
-Acceptance:
-
-- Each extractor emits stable `source_record_id`.
-- RV/campground-specific fields land in attributes.
-- Records with source coordinates do not require geocoding.
-- Campsite-level data does not accidentally flood the map with individual campsite pads
-  unless the category being ingested explicitly calls for that.
-
-### Festivals
-
-Registered but missing extractors:
-
-- `musicbrainz`
-- `ticketmaster`
-- `resident_advisor`
-- `musicfestivalwizard`
-- `edm_dance_directory`
-- `jambase`
-- `viberate`
-- `songkick`
-- `festivism`
-- `festivalatlas`
-
-Priority:
-
-1. `resident_advisor`, because dates/country coverage are strong and it exercises temporal
-   POIs.
-2. `musicfestivalwizard`, because it is a focused festival directory.
-3. `musicbrainz`, because it is large and structured but may need careful event filtering.
-4. `edm_dance_directory`, after preserving the existing validity gate so clubs/venues do not
-   become festivals.
+- Deterministic rules first; LLM only when fields are missing/ambiguous.
+- Batch 20–50 rows per prompt; temperature 0; strict JSON out; reject on schema mismatch.
+- Cache per `content_hash` in an `attributes.triage` block (or a small cache table) so
+  reruns and `--reflow` never re-pay for unchanged rows.
+- `--no-llm` skips triage entirely (rows fall back to today's behavior).
+- LLM output never overwrites captured source fields — it fills separate normalized
+  columns/attributes, same pattern as `date_source: "llm"`.
 
 Acceptance:
 
-- Event dates populate `starts_at`, `ends_at`, and `date_precision` where available.
-- Directory/listing URLs are not promoted to official `website` when they are only source
-  provenance.
-- Non-POI rows are filtered before matching.
-- Recurring editions collapse into a single canonical when appropriate.
+- A directory-scraped festival source normalizes with ≥95% usable city/country.
+- Edition-year names collapse to one canonical with multiple occurrences.
+- Rerunning normalize on unchanged rows makes zero LLM calls.
 
 ---
 
-## 7. Workstream E — End-to-End Validation
+## 7. Workstream E — Campground + Festival Ingestion
 
-Create a repeatable validation record for at least:
+Detailed per-source commands, file paths, and gotchas live in the runbook:
+`.cursor/plans/poi-campgrounds-festivals-import.md`. Summary of order:
 
-- botanical gardens
-- campgrounds/RV parks
-- music festivals
+Campgrounds: 1) `ridb` facilities (custom extractor: HTML descriptions, keywords; use
+`facilities.csv`, never campsite-level files), 2) `uscampgrounds` (generic extractor
+works), 3) `thedyrt` (generic works; rich RV attributes), 4) `osm_camp` (small custom
+extractor to emit `node/123` ids so strong-ID matching works).
 
-Suggested process:
+Festivals: 1) `resident_advisor` (needs unwrap; strongest dates), 2) `musicfestivalwizard`
+(generic works today — verified by dry-run), 3) `viberate` / `ticketmaster` (have
+coordinates), 4) `musicbrainz` (largest; strict `isPoi` filtering needed).
 
-1. Run a small representative source set per category.
-2. Capture command transcript or summarized report output.
-3. Run SQL checks:
-   - duplicates collapsed
-   - popularity reflects distinct source count
-   - categories populated
-   - field provenance populated
-   - not-ready rows are understood
-   - event rows have dates where expected
-4. Re-run the same commands and confirm idempotency.
-5. Start the app and manually inspect dense map regions plus detail drawers.
-6. Save findings under `docs/poi/<category>/VALIDATION.md` or a consolidated
-   `docs/poi-ingestion-validation.md`.
+**Decision needed before festival ingestion — city-precision publish policy.**
+`rebuildCanonicalPoi` hides any canonical whose elected coordinates are `city`/`region`
+precision. Festivals are geocoded locality-only (event names mislead geocoders), so most
+festivals without venue coordinates will geocode to city precision and be hidden.
+Options:
 
-Acceptance:
+1. Allow `city` precision to publish for temporal categories only (a festival "in
+   Melbourne" at the city centroid is genuinely useful) — recommended.
+2. Keep the rule and accept that festivals require venue-level coordinates (Viberate/
+   Ticketmaster coords + RA venue geocoding may cover enough).
 
-- Validation document exists.
-- It includes exact commands, counts, known caveats, and screenshots if useful.
-- At least one multi-source category proves de-duplication and provenance end to end.
-
----
-
-## 8. Workstream F — Event Date Filter UI
-
-Backend support exists: `/api/pois` accepts `from` and `to`, and SQL filters event ranges
-while keeping permanent POIs visible.
-
-Remaining app work:
-
-- Add a compact date-range control to the map UI.
-- Send `from` and `to` params with POI bbox requests.
-- Make the control visible only when useful, or harmless for all categories.
-- Preserve current map ergonomics on mobile.
+Whichever is chosen, record it in `docs/poi-ingestion.md`.
 
 Acceptance:
 
-- Choosing a date range changes `/api/pois` requests.
-- Event POIs outside the range disappear.
-- Permanent POIs remain visible.
-- The detail drawer still renders event dates and status.
+- Each extractor emits stable `source_record_id`s; re-running extract is idempotent.
+- RV/campground attributes land in `attributes`; rows with source coordinates skip
+  geocoding; campsite-level records are never ingested as separate map POIs.
+- Event rows populate `starts_at`/`ends_at`/`date_precision`; listing URLs stay in
+  `source_url`, never promoted to `website`; recurring editions collapse into one
+  canonical with `canonical_poi_occurrences` rows per edition.
 
 ---
 
-## 9. Suggested Order
+## 8. Workstream F — End-to-End Validation
 
-1. `ingest:report`
-2. `ingest:run`
-3. RIDB campground extractor
-4. Resident Advisor festival extractor
-5. Validation docs for gardens + first campground/festival slices
-6. Staged legacy importer path
-7. Event date filter UI
-8. Additional extractors by priority
+Unchanged. Create a repeatable validation record for gardens + campgrounds + festivals:
+
+1. Run a small representative source set per category (via `ingest:run` once it exists).
+2. Capture `ingest:report` output before/after.
+3. SQL checks: duplicates collapsed, popularity = distinct source count, categories and
+   field provenance populated, not-ready rows understood, event rows dated.
+4. Re-run identical commands; confirm counts unchanged (idempotency).
+5. Inspect dense map regions and detail drawers in the app.
+6. Save findings in `docs/poi-ingestion-validation.md`.
+
+---
+
+## 9. Workstream G — Event Date Filter UI
+
+Unchanged. Backend accepts `from`/`to` on `/api/pois`; add a compact date-range control to
+the map UI, wire it into bbox requests, keep permanent POIs visible, verify the detail
+drawer still renders event status.
+
+---
+
+## 10. Suggested Order
+
+1. Workstream E decision (city-precision publish policy) — small, unblocks festivals.
+2. `ingest:run` orchestrator (A) — every later run benefits.
+3. RIDB campground extractor + first campground run (E).
+4. LLM triage in normalize (D) — implement before the messier festival directories.
+5. Resident Advisor + Music Festival Wizard runs (E).
+6. Validation doc for gardens + first campground/festival slices (F).
+7. Staged legacy importer path (C).
+8. Event date filter UI (G).
+9. Remaining extractors by priority (E), including carnival/art-fair backlog in
+   `docs/poi/carnival/` and `docs/poi/art-fairs/`.
 
 Reasoning:
 
-- Reporting helps every later task.
-- The orchestrator reduces operator error once report output exists.
-- One campground and one festival extractor prove the remaining category-specific paths.
-- Legacy importer migration is useful but not blocking real source ingestion.
-- Date filter UI is product-visible but not a blocker for ingestion correctness.
-
+- The publish-policy decision changes what "success" means for festival runs; decide first.
+- The orchestrator plus the existing report remove most operator error for everything after.
+- One campground and one festival source prove the two remaining category shapes
+  (permanent-with-amenities and temporal-with-editions); later sources are repetition.
+- Triage pays for itself starting with the first directory-scraped source.
