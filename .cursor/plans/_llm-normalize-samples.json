@@ -1,0 +1,402 @@
+[
+  {
+    "source": "global_carnivalist",
+    "raw": {
+      "name": "St. Kitts Carnival",
+      "city": "Cayon St, Bassaterre",
+      "country": "St.Kitts",
+      "start_date": "January 1, 2026",
+      "end_date": "January 2, 2026",
+      "date_raw": "January 1-2, 2026",
+      "official_website": "https://skncarnival.com/",
+      "url": "https://globalcarnivalist.com/upcoming-carnivals/",
+      "description": "(better known as Sugar Mas) | SKN Carnival"
+    }
+  },
+  {
+    "source": "global_carnivalist",
+    "raw": {
+      "name": "St. Croix Carnival",
+      "city": "Frederiksted",
+      "country": "St.Croix",
+      "start_date": "January 3, 2026",
+      "end_date": "January 3, 2026",
+      "date_raw": "January 3, 2026",
+      "official_website": "https://www.visitusvi.com/carnivals-festivals/",
+      "url": "https://globalcarnivalist.com/upcoming-carnivals/",
+      "description": "USVI Festivals"
+    }
+  },
+  {
+    "source": "global_carnivalist",
+    "raw": {
+      "name": "Trinidad Carnival 2026",
+      "city": "Port of Spain",
+      "country": "Trinidad",
+      "start_date": "February 16, 2026",
+      "end_date": "February 17, 2026",
+      "date_raw": "February 16-17",
+      "official_website": "https://www.ncctt.org/new/",
+      "url": "https://globalcarnivalist.com/upcoming-carnivals/",
+      "description": "National Carnival Commission"
+    }
+  },
+  {
+    "source": "global_carnivalist",
+    "raw": {
+      "name": "Dominica Carnival 2026",
+      "city": "Roseau",
+      "country": "Dominica",
+      "start_date": "February 16, 2026",
+      "end_date": "February 17, 2026",
+      "date_raw": "February 16-17, 2026",
+      "official_website": "https://dominicafestivals.com/the-real-mas/",
+      "url": "https://globalcarnivalist.com/upcoming-carnivals/",
+      "description": "(also known as Mas Dominik) | Dominica Festivals"
+    }
+  },
+  {
+    "source": "rough_guides",
+    "raw": {
+      "name": "Carnaval de Binche",
+      "city": "Binche",
+      "country": "Belgium",
+      "dates": "February 11–13",
+      "description": "Recognized by UNESCO as a Masterpiece of the Oral and Intangible Heritage of Humanity, featuring the 1000-strong march of the Gilles in elaborate outfits and wax masks.",
+      "source_url": "https://www.roughguides.com/articles/europes-best-alternative-carnivals/"
+    }
+  },
+  {
+    "source": "rough_guides",
+    "raw": {
+      "name": "Basler Fasnacht",
+      "city": "Basel",
+      "country": "Switzerland",
+      "dates": "February 19–21",
+      "description": "A 24-hour celebration where performing groups called Cliques march through the streets, featuring the Morgenstreich procession in total darkness.",
+      "source_url": "https://www.roughguides.com/articles/europes-best-alternative-carnivals/"
+    }
+  },
+  {
+    "source": "festivalando",
+    "raw": {
+      "title": "Vai se criando um clima terrível",
+      "date": "2026-06-13T00:22:44",
+      "url": "https://festivalando.com.br/vai-se-criando-um-clima-terrivel/",
+      "slug": "vai-se-criando-um-clima-terrivel",
+      "excerpt": "O texto abaixo foi enviado primeiro para a comunidade do Festivalando em 11 de junho de 2026 por email. Deixe aqui o seu nome na lista para passar a receber a newsletter semanal. Depois de uma pausa no feriado da semana passada, retomo os emails semanais com uma frase clássica que, espero, a gente n",
+      "source": "festivalando.com.br",
+      "venue": null
+    }
+  },
+  {
+    "source": "festivalando",
+    "raw": {
+      "title": "Amigos e rivais no mercado primário e secundário",
+      "date": "2026-06-10T00:39:33",
+      "url": "https://festivalando.com.br/amigos-e-rivais-no-mercado-primario-e-secundario/",
+      "slug": "amigos-e-rivais-no-mercado-primario-e-secundario",
+      "excerpt": "A revenda de ingressos é um elemento inseparável do ciclo de vida do mercado de ingressos. Porém, diante de preços exorbitantes que se apropriam dos lucros de promotores e artistas, e golpes que deixam fãs a ver navios, o processo continua sendo uma das principais batalhas do mercado de música ao vi",
+      "source": "festivalando.com.br",
+      "venue": null
+    }
+  },
+  {
+    "source": "festivalando",
+    "raw": {
+      "title": "99 dias para o Rock in Rio",
+      "date": "2026-05-30T00:55:01",
+      "url": "https://festivalando.com.br/99-dias-para-o-rock-in-rio/",
+      "slug": "99-dias-para-o-rock-in-rio",
+      "excerpt": "O texto abaixo foi enviado primeiro para a comunidade do Festivalando em 21 de maio de 2026 por email. Deixe aqui o seu nome na lista para passar a receber a newsletter semanal. O Rock in Rio iniciou nesta semana uma contagem regressiva para o festival. Dos 100 dias redondinhos contados na quarta (2",
+      "source": "festivalando.com.br",
+      "venue": null
+    }
+  },
+  {
+    "source": "festivalando",
+    "raw": {
+      "title": "Nova ordem nacional e outros insights do showbiz no Brasil e no mundo",
+      "date": "2026-05-27T00:32:57",
+      "url": "https://festivalando.com.br/nova-ordem-nacional-e-outros-insights-do-showbiz-no-brasil-e-no-mundo/",
+      "slug": "nova-ordem-nacional-e-outros-insights-do-showbiz-no-brasil-e-no-mundo",
+      "excerpt": "A consolidação é um traço marcante do mercado de entretenimento ao vivo em escala global e regional, mas também no nível doméstico dos grandes pólos. O Brasil não fica de fora, e é para essa direção que aponta o noticiário recente do setor no país. No segundo bimestre de 2026, players antigos e novo",
+      "source": "festivalando.com.br",
+      "venue": null
+    }
+  },
+  {
+    "source": "musicfestivalwizard",
+    "raw": {
+      "url": "https://www.musicfestivalwizard.com/festivals/10000-lakes-festival-2009/",
+      "name": "10000 Lakes Festival 2009",
+      "dates": "July 22-25, 2009",
+      "start_date": "20090722",
+      "end_date": "20090725",
+      "location": "Detroit Lakes, MN",
+      "city": "Detroit Lakes",
+      "state_region": "MN",
+      "country": "US",
+      "venue": "Soo Pass Ranch",
+      "genre": [
+        "Bluegrass",
+        "Jam"
+      ],
+      "type": [
+        "Camping"
+      ],
+      "age": null,
+      "organizer": null,
+      "website": null,
+      "ticket_url": null,
+      "description": "The 10,000 Lakes Festival (abbreviated as 10KLF) was an annual four-day music festival in Detroit Lakes, Minnesota, at the Soo Pass Ranch that was held from 2003 until 2009 before going on indefinite hiatus due to financial losses and has not been held since 2010.",
+      "lineup": [
+        "The Scene @ 10000 Lakes Festival 2009"
+      ],
+      "festival_guide_region": "Minnesota",
+      "source": "musicfestivalwizard.com"
+    }
+  },
+  {
+    "source": "musicfestivalwizard",
+    "raw": {
+      "url": "https://www.musicfestivalwizard.com/festivals/4-peaks-music-festival-2024/",
+      "name": "4 Peaks Music Festival 2024",
+      "dates": "June 20-23, 2024",
+      "start_date": "20240620",
+      "end_date": "20240623",
+      "location": "Bend, OR",
+      "city": "Bend",
+      "state_region": "OR",
+      "country": "US",
+      "venue": "Stevenson Ranch",
+      "genre": [
+        "Jam"
+      ],
+      "type": [
+        "Camping",
+        "Family-Friendly",
+        "RV"
+      ],
+      "age": "All Ages",
+      "organizer": null,
+      "website": null,
+      "ticket_url": null,
+      "description": "'The 4 Peaks Music Festival was born as a musical vision of 5 friends who had the desire to bring great music and a festival vibe to Oregon…and it worked!  This festival strives to bring great acts to Central Oregon and create a community of artists and attendees that will last throughout the years.'",
+      "lineup": [],
+      "festival_guide_region": "USA Festivals",
+      "source": "musicfestivalwizard.com"
+    }
+  },
+  {
+    "source": "musicfestivalwizard",
+    "raw": {
+      "url": "https://www.musicfestivalwizard.com/festivals/afro-jam-2025/",
+      "name": "Afro Jam 2025",
+      "dates": "July 17-27, 2025",
+      "start_date": "20250717",
+      "end_date": "20250727",
+      "location": "Okinawa, Osaka, Tokyo, Japan Tour",
+      "city": "Okinawa",
+      "state_region": "Osaka",
+      "country": "Japan",
+      "venue": "Suntory Arena",
+      "genre": [
+        "Afrobeat"
+      ],
+      "type": [
+        "Tour"
+      ],
+      "age": "All Ages",
+      "organizer": "Independent",
+      "website": null,
+      "ticket_url": null,
+      "description": "",
+      "lineup": [],
+      "festival_guide_region": "Japan",
+      "source": "musicfestivalwizard.com"
+    }
+  },
+  {
+    "source": "skiddle",
+    "raw": {
+      "name": "Tramlines",
+      "dates": "24th - 26th Jul 2026",
+      "location": "Sheffield",
+      "genre": "mainstream / pop music",
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    }
+  },
+  {
+    "source": "skiddle",
+    "raw": {
+      "name": "Rock The Mote Festival",
+      "dates": "24th - 26th Jul 2026",
+      "location": "Maidstone, Kent",
+      "genre": "mainstream / pop music",
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    }
+  },
+  {
+    "source": "skiddle",
+    "raw": {
+      "name": "Noughty 90s Festival Newcastle",
+      "dates": "29th Aug 2026",
+      "location": "Newcastle",
+      "genre": "mainstream / pop music",
+      "source": "skiddle.com",
+      "url": "https://www.skiddle.com/festivals/"
+    }
+  },
+  {
+    "source": "unima",
+    "raw": {
+      "name": "World Puppetry Day 2026 in Charleville-Mézières",
+      "city": "Charleville-Mézières",
+      "country": "France",
+      "website_url": "https://www.unima.org/en/world-puppetry-day-2026-in-charleville-mezieres/",
+      "description": "World Puppetry Day 2026 - UNIMA organized event",
+      "source": "https://www.unima.org/en/"
+    }
+  },
+  {
+    "source": "unima",
+    "raw": {
+      "name": "\"Creative Bridge\": A New Pilot Project for Puppeteers in South-East Europe",
+      "website_url": "https://www.unima.org/en/creative-bridge-a-new-pilot-project-for-puppeteers-in-south-east-europe/",
+      "source": "https://www.unima.org/en/"
+    }
+  },
+  {
+    "source": "unima",
+    "raw": {
+      "name": "UNIMA International Launches a Framework for the Recognition of Certified Puppetry Training Workshops",
+      "website_url": "https://www.unima.org/en/unima-international-launches-a-framework-for-the-recognition-of-certified-puppetry-training-workshops/",
+      "source": "https://www.unima.org/en/"
+    }
+  },
+  {
+    "source": "unima",
+    "raw": {
+      "name": "Pro-Vocation Roots and Wings Conference: Strengthening Foundations and Expanding Training in Puppetry in Africa",
+      "website_url": "https://www.unima.org/en/pro-vocation-roots-and-wings-conference-strengthening-foundations-and-expanding-training-in-puppetry-in-africa/",
+      "source": "https://www.unima.org/en/"
+    }
+  },
+  {
+    "source": "edm_true",
+    "raw": {
+      "name": "Nina del Rio, Miranda del Sol, Isa Reyes",
+      "date": "2026-06-18",
+      "end_date": "2026-06-19",
+      "city": "New York",
+      "country": "United States",
+      "venue": "Elsewhere",
+      "genres": [],
+      "website": "https://www.eventbrite.com/e/nina-del-rio-miranda-del-sol-isa-reyes-tickets-1990176539604",
+      "slug": "elsewhere-2026-06-18-nina-del-rio-miranda-del-sol-isa-reyes",
+      "is_festival": true,
+      "source": "edmdancedirectory.com/api"
+    }
+  },
+  {
+    "source": "edm_true",
+    "raw": {
+      "name": "Apocalypse: Zombieland 2026",
+      "date": "2026-06-19",
+      "end_date": "2026-06-20",
+      "city": "Long Beach",
+      "country": "United States",
+      "venue": "Queen Mary Events Park",
+      "genres": [],
+      "website": "https://apocalypsefest.frontgatetickets.com/",
+      "slug": "apocalypse-zombieland-2026-long-beach-2026-06-19",
+      "is_festival": true,
+      "source": "edmdancedirectory.com/api"
+    }
+  },
+  {
+    "source": "edm_false",
+    "raw": {
+      "name": "100% KATOEN",
+      "date": "2026-06-18",
+      "end_date": null,
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "venue": "Café Katoen",
+      "genres": [],
+      "website": "https://ra.co/events/2458501",
+      "slug": "100-katoen-amsterdam-2026-06-18",
+      "is_festival": false,
+      "source": "edmdancedirectory.com/api"
+    }
+  },
+  {
+    "source": "edm_false",
+    "raw": {
+      "name": "Source x Weekdays",
+      "date": "2026-06-18",
+      "end_date": null,
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "venue": "Supperclub",
+      "genres": [
+        "House"
+      ],
+      "website": "https://ra.co/events/2444141",
+      "slug": "source-x-weekdays-amsterdam-2026-06-18",
+      "is_festival": false,
+      "source": "edmdancedirectory.com/api"
+    }
+  },
+  {
+    "source": "headout",
+    "raw": {
+      "name": "Las Bolas de Fuego",
+      "city": "",
+      "country": "El Salvador",
+      "start_date": null,
+      "end_date": null,
+      "annual_date": null,
+      "lat": null,
+      "lng": null,
+      "website_url": "https://www.headout.com/blog/unusual-festivals-in-the-world/",
+      "description": "",
+      "source": "https://www.headout.com/blog/unusual-festivals-in-the-world/"
+    }
+  },
+  {
+    "source": "headout",
+    "raw": {
+      "name": "Cheung Chau Bun Festival",
+      "city": "",
+      "country": "Hong Kong",
+      "start_date": null,
+      "end_date": null,
+      "annual_date": null,
+      "lat": null,
+      "lng": null,
+      "website_url": "https://www.headout.com/blog/unusual-festivals-in-the-world/",
+      "description": "",
+      "source": "https://www.headout.com/blog/unusual-festivals-in-the-world/"
+    }
+  },
+  {
+    "source": "headout",
+    "raw": {
+      "name": "Underwater Music Festival",
+      "city": "",
+      "country": "Florida",
+      "start_date": null,
+      "end_date": null,
+      "annual_date": null,
+      "lat": null,
+      "lng": null,
+      "website_url": "https://www.headout.com/blog/unusual-festivals-in-the-world/",
+      "description": "",
+      "source": "https://www.headout.com/blog/unusual-festivals-in-the-world/"
+    }
+  }
+]
