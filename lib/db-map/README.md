@@ -131,18 +131,27 @@ pnpm --filter @lib/db-map ingest:match --consolidate
 ```
 
 If the command is interrupted, run the same command again. Completed rows stay linked; the
-interrupted in-flight row rolls back and remains pending.
+interrupted in-flight row rolls back and remains pending. The script prints a startup banner
+with linked/pending counts, previous decision counts, and a suggested resume command.
+
+On the first `Ctrl-C`, the script asks the current row or consolidation group to finish,
+then prints a stop summary and resume command. A second `Ctrl-C` exits immediately.
 
 To work in smaller chunks:
 
 ```bash
 pnpm --filter @lib/db-map ingest:match --limit 500
 pnpm --filter @lib/db-map ingest:match --limit 500
-pnpm --filter @lib/db-map ingest:match --consolidate --limit 0
+pnpm --filter @lib/db-map ingest:match --consolidate-only
 ```
 
-`--consolidate --limit 0` skips row matching and runs only the canonical consolidation
-sweep. It is the current consolidation-only command.
+Use `--consolidate-only` whenever you want to clean up already-created canonicals without
+processing more pending research rows:
+
+```bash
+pnpm --filter @lib/db-map ingest:match --consolidate-only
+pnpm --filter @lib/db-map ingest:match --consolidate-only --dry-run
+```
 
 ### Start Over From Scratch
 
@@ -170,7 +179,7 @@ pnpm --filter @lib/db-map ingest:match --source wikidata --limit 1000
 pnpm --filter @lib/db-map ingest:match --no-llm
 
 # Preview canonical-vs-canonical consolidation plans.
-pnpm --filter @lib/db-map ingest:match --consolidate --limit 0 --dry-run
+pnpm --filter @lib/db-map ingest:match --consolidate-only --dry-run
 
 # Hide visible canonicals that no research rows reference.
 pnpm --filter @lib/db-map ingest:match --gc-orphans
@@ -185,6 +194,7 @@ pnpm --filter @lib/db-map ingest:match --gc-orphans
 | `--dry-run` | Print decisions without writing row links or canonicals. |
 | `--no-llm` | Skip match-adjudication LLM calls and description fusion. Ambiguous matches become new POIs. |
 | `--consolidate` | After row matching, merge canonical POIs that should collapse together. |
+| `--consolidate-only` | Skip row matching and only run canonical-vs-canonical consolidation. Supports `--dry-run` and `--no-llm`. |
 | `--recluster` | Destructively reset all clusters and rebuild from scratch. Cannot combine with `--source`, `--limit`, or `--dry-run`. |
 | `--gc-orphans` | Hide non-hidden canonicals that have no linked research rows. |
 | `--auto-threshold N` | Override the high score threshold for automatic merges. |
@@ -202,14 +212,10 @@ During matching, provider calls can still happen in two places:
   descriptions disagree and `--no-llm` is not set.
 
 Most match work is deterministic: strong IDs, proximity rules, name similarity, stored
-embedding similarity, date compatibility, and category/location blocking. The current
-implementation is intentionally row-at-a-time and safe to resume, but it can be slow against
-a remote database because each linked row writes an audit decision and rebuilds the touched
-canonical.
+embedding similarity, date compatibility, and category/location blocking. The implementation
+is intentionally row-at-a-time and safe to resume.
 
-See `.cursor/plans/poi-match-resume-batch-performance.md` for the plan to add startup
-progress banners, graceful stop summaries, `--consolidate-only`, deterministic batch passes,
-and deferred canonical rebuilds.
+For deeper ingestion and conflation details, see [`docs/poi-ingestion.md`](../../docs/poi-ingestion.md).
 
 ## Source Data
 

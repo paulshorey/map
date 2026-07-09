@@ -17,9 +17,10 @@ This is a mono-repo. Apps go into ./apps and libraries go into ./lib folder.
 
 ## Documentation
 
-- `.cursor/plans/` — implementation plans (features, fixes, research)
+- `README.md` — concise human setup and ingestion commands
+- `docs/poi-ingestion.md` — deep-dive POI ingestion and conflation guide
 - `docs/` — POI source files, import staging, research notes — see `docs/AGENTS.md`
-- `docs/pois/{category}/` — KML sources and notes per POI category
+- `docs/poi/{category}/` — source files and notes per POI category
 
 ### Folder guides (AGENTS.md)
 
@@ -50,3 +51,30 @@ cd lib/db-map && pnpm db:sync
 ```
 
 This migrates the database, snapshots the schema, and regenerates TypeScript types and contracts. The updated files in `schema/` and `generated/` must be committed alongside the migration.
+
+## POI ingestion workflow for agents
+
+Use the staged pipeline for real source data:
+
+```bash
+pnpm --filter @lib/db-map ingest:taxonomy:seed
+pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <category-slug>
+pnpm --filter @lib/db-map ingest:normalize [--source <source-slug>]
+pnpm --filter @lib/db-map ingest:geocode [--source <source-slug>] [--geocode-limit 4500]
+pnpm --filter @lib/db-map ingest:embed [--source <source-slug>]
+pnpm --filter @lib/db-map ingest:match --consolidate
+```
+
+`ingest:match` is resumable. Progress is `research_pois.canonical_poi_id`; normal reruns skip linked rows and continue pending rows. First `Ctrl-C` stops gracefully after the current unit and prints a resume command.
+
+Common match operations:
+
+```bash
+pnpm --filter @lib/db-map ingest:match --limit 500
+pnpm --filter @lib/db-map ingest:match --consolidate-only --dry-run
+pnpm --filter @lib/db-map ingest:match --consolidate-only
+```
+
+Do not use `--recluster` unless the user explicitly asks to start over or approves destructive reclustering. `--recluster` deletes match decisions, unlinks all research rows, deletes canonicals, and rebuilds from raw research rows.
+
+Use `--dry-run`, `--limit`, and `--no-llm` for investigation when appropriate, but avoid leaving a production import half-described: report linked/pending counts and the exact resume command.

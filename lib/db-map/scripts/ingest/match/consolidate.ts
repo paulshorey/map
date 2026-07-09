@@ -14,6 +14,7 @@ import { adjudicateMatch } from "./llm.js";
 interface ConsolidateOptions {
   dryRun: boolean;
   noLlm: boolean;
+  shouldStop?: () => boolean;
 }
 
 interface CanonicalRow extends AnchorMeta {
@@ -146,9 +147,11 @@ async function planAnchorAnchorMerges(
 ): Promise<void> {
   const anchors = rows.filter((row) => isAnchor(meta(row))).sort(strongerFirst);
   for (let i = 0; i < anchors.length; i++) {
+    if (opts.shouldStop?.()) return;
     const a = anchors[i]!;
     if (plans.has(a.id)) continue;
     for (let j = i + 1; j < anchors.length; j++) {
+      if (opts.shouldStop?.()) return;
       const b = anchors[j]!;
       if (plans.has(b.id) || !withinProximity(a, b)) continue;
       const distanceM = pairDistanceM(a, b);
@@ -215,6 +218,7 @@ async function planMerges(
   }
 
   for (const groupRows of groups.values()) {
+    if (opts.shouldStop?.()) break;
     const key = categoryKey(groupRows[0]!);
     const deg = proximityDegFor(key ? [key] : groupRows[0]!.category_slugs);
     if (deg <= 0) continue;
@@ -224,6 +228,7 @@ async function planMerges(
     const anchorIndex = buildIndex(anchors, deg);
 
     for (const satellite of satellites) {
+      if (opts.shouldStop?.()) break;
       const anchor = nearbyRows(anchorIndex, satellite, deg)
         .filter((candidate) => withinProximity(satellite, candidate))
         .sort((a, b) => strongerFirst(a, b) || pairDistanceM(satellite, a) - pairDistanceM(satellite, b))[0];
@@ -239,6 +244,7 @@ async function planMerges(
     const satelliteIndex = buildIndex(satellites, deg);
     const remaining = new Set(satellites.filter((row) => !plans.has(row.id)).map((row) => row.id));
     for (const seed of satellites) {
+      if (opts.shouldStop?.()) break;
       if (!remaining.has(seed.id)) continue;
       const seedCluster = nearbyRows(satelliteIndex, seed, deg)
         .filter((row) => remaining.has(row.id) && withinProximity(seed, row));
@@ -275,11 +281,12 @@ async function planMerges(
   return [...plans.values()].sort((a, b) => a.targetId.localeCompare(b.targetId) || a.duplicateId.localeCompare(b.duplicateId));
 }
 
-async function applyPlans(client: PoolClient, plans: MergePlan[], noLlm: boolean): Promise<void> {
+async function applyPlans(client: PoolClient, plans: MergePlan[], opts: ConsolidateOptions): Promise<void> {
   const byTarget = new Map<string, MergePlan[]>();
   for (const plan of plans) byTarget.set(plan.targetId, [...(byTarget.get(plan.targetId) ?? []), plan]);
 
   for (const [targetId, targetPlans] of byTarget) {
+    if (opts.shouldStop?.()) break;
     await client.query("BEGIN");
     try {
       await collapseDuplicateCanonicals(
@@ -287,7 +294,7 @@ async function applyPlans(client: PoolClient, plans: MergePlan[], noLlm: boolean
         targetId,
         targetPlans.map((plan) => plan.duplicateId),
       );
-      await rebuildCanonicalPoi(client, targetId, { noLlm });
+      await rebuildCanonicalPoi(client, targetId, { noLlm: opts.noLlm });
       await client.query("COMMIT");
       for (const plan of targetPlans) {
         console.log(
@@ -307,6 +314,7 @@ export async function runConsolidation(
 ): Promise<number> {
   let total = 0;
   for (let iteration = 1; iteration <= 10; iteration++) {
+    if (opts.shouldStop?.()) break;
     const plans = await planMerges(client, opts);
     if (plans.length === 0) break;
 
@@ -319,7 +327,7 @@ export async function runConsolidation(
       return plans.length;
     }
 
-    await applyPlans(client, plans, opts.noLlm);
+    await applyPlans(client, plans, opts);
     total += plans.length;
   }
   return total;

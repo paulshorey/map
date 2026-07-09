@@ -57,7 +57,7 @@ async function resolveCategoryId(db: Pool, category: string): Promise<string> {
 /**
  * Direct insert of canonical POIs (used by seed + legacy JSON/KML imports).
  * Inserts the place row and links its primary category. The research → canonical
- * conflation pipeline (see .cursor/plans) is the path for de-duplicated bulk ingestion;
+ * conflation pipeline (see docs/poi-ingestion.md) is the path for de-duplicated bulk ingestion;
  * this helper is for seeding and small curated imports.
  */
 export async function insertPois(

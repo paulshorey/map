@@ -13,7 +13,7 @@ Database-first package: migrations, SQL queries, generated types, and app API co
 | `generated/typescript/` | Auto-generated row types from schema                                                                                         |
 | `generated/contracts/`  | JSON schemas derived from contracts                                                                                          |
 | `scripts/`              | Migrate, snapshot, typegen, import, seed tooling                                                                             |
-| `scripts/ingest/`       | POI ingestion pipeline (extract → normalize → geocode → embed → match). See the plans in `.cursor/plans/poi-ingestion-*.md`. |
+| `scripts/ingest/`       | POI ingestion pipeline (extract → normalize → geocode → embed → match). See `docs/poi-ingestion.md`.                         |
 | `lib/db/postgres.ts`    | `getDb()` — pg Pool from `DB_MAP_URL`                                                                                        |
 
 Public exports: `index.ts` re-exports db, sql, and types.
@@ -53,7 +53,12 @@ pnpm --filter @lib/db-map ingest:normalize [--source <slug>] [--no-llm] [--repor
 pnpm --filter @lib/db-map ingest:geocode [--source <slug>] [--geocode-limit N]
 pnpm --filter @lib/db-map ingest:embed [--source <slug>] [--batch-size N]
 pnpm --filter @lib/db-map ingest:taxonomy:seed
+pnpm --filter @lib/db-map ingest:match --consolidate
 ```
+
+`ingest:match` is resumable. Use `--consolidate-only` for canonical cleanup without
+matching more raw rows. Do not use `--recluster` unless explicitly starting over; it is
+destructive.
 
 ## Workflow: schema changes
 
@@ -73,7 +78,7 @@ This runs migrate → schema snapshot → typegen → contract JSON generation. 
 
 Two paths:
 
-- **Ingestion pipeline** (bulk, de-duplicated, with provenance) — the primary path for real data; see the ingestion commands above and `.cursor/plans/poi-ingestion-*.md`.
+- **Ingestion pipeline** (bulk, de-duplicated, with provenance) — the primary path for real data; see the ingestion commands above and `docs/poi-ingestion.md`.
 - **Direct curated insert** (`insertPois()` in `sql/pois.ts`) — used by `db:seed` and `IMPORTING.md`'s KML/JSON importers for dev fixtures and small curated sets. Writes straight to `canonical_pois` + `canonical_poi_categories` (+ `primary_category_id`); it does **not** upsert on lng/lat (no such constraint) and does not compute provenance/popularity. Per the M9 plan these importers will move to staging under a `manual` source.
 
 POI source files and research notes live in repo `docs/poi/`.

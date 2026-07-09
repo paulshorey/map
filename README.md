@@ -20,7 +20,7 @@ A multi-provider interactive map application built with React, MapLibre GL JS, a
 | App      | Next.js 15, React 19, TypeScript, Tailwind CSS v4 |
 | Map      | MapLibre GL JS 5.24, react-map-gl/maplibre 8.x    |
 | Data     | TanStack Query 5                                  |
-| Database | PostgreSQL 16+ (no extensions required)            |
+| Database | PostgreSQL 16+ with `pg_trgm`                       |
 
 ## Monorepo Layout
 
@@ -53,23 +53,16 @@ pnpm install
 ### 2. Set up the database
 
 ```bash
-# Create the database
-createdb poi_map
-
-# Copy env and set DB_MAP_URL
-cp .env.example .env
-
-# Run migrations (creates tables + indexes + guest user)
-pnpm db:migrate
-
-# Seed sample data
-pnpm db:seed
+pnpm --filter @lib/db-map db:migrate
 ```
 
-If the database already has the schema from an earlier version of this project, mark the baseline migration as applied instead:
+`DB_MAP_URL` must already be present in the shell environment. This repo does not use `.env`
+files; `.env.example` is only a reference list of expected variables.
+
+After a schema change, run the full sync and commit the generated files:
 
 ```bash
-pnpm db:migrate:baseline
+cd lib/db-map && pnpm db:sync
 ```
 
 ### 3. Start the dev server
@@ -96,6 +89,44 @@ Open [http://localhost:3000](http://localhost:3000).
 | `pnpm db:migrate:baseline` | Mark baseline migration applied (legacy DBs)   |
 | `pnpm db:verify`         | Migrate, regenerate types/contracts, assert schema |
 | `pnpm db:seed`           | Seed sample POI data                             |
+
+## POI Ingestion
+
+Use the staged ingestion pipeline for real POI data. It keeps raw source rows in
+`research_pois`, then conflates them into user-facing `canonical_pois`.
+
+Common source workflow:
+
+```bash
+pnpm --filter @lib/db-map ingest:taxonomy:seed
+pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <category-slug>
+pnpm --filter @lib/db-map ingest:normalize [--source <source-slug>]
+pnpm --filter @lib/db-map ingest:geocode [--source <source-slug>] [--geocode-limit 4500]
+pnpm --filter @lib/db-map ingest:embed [--source <source-slug>]
+pnpm --filter @lib/db-map ingest:match --consolidate
+```
+
+Useful match commands:
+
+```bash
+# Resume safely; skips rows already linked to canonicals.
+pnpm --filter @lib/db-map ingest:match --consolidate
+
+# Process in smaller chunks.
+pnpm --filter @lib/db-map ingest:match --limit 500
+
+# Clean up already-created canonicals without processing more raw rows.
+pnpm --filter @lib/db-map ingest:match --consolidate-only
+pnpm --filter @lib/db-map ingest:match --consolidate-only --dry-run
+
+# Start over from raw research rows. Destructive; use only when intentional.
+pnpm --filter @lib/db-map ingest:match --recluster --consolidate
+```
+
+`ingest:match` prints linked/pending counts at startup. First `Ctrl-C` stops after the
+current unit and prints a resume command; second `Ctrl-C` exits immediately.
+
+Deep-dive docs: [`docs/poi-ingestion.md`](docs/poi-ingestion.md).
 
 ## Mobile (Capacitor)
 

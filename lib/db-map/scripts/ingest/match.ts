@@ -7,6 +7,7 @@
  *
  * Usage:
  *   pnpm --filter @lib/db-map ingest:match [--source <slug>] [--limit N] [--dry-run] [--no-llm]
+ *   pnpm --filter @lib/db-map ingest:match --consolidate-only [--dry-run] [--no-llm]
  *   pnpm --filter @lib/db-map ingest:match --recluster [--consolidate]
  *   pnpm --filter @lib/db-map ingest:match --gc-orphans
  */
@@ -55,6 +56,7 @@ interface CliOptions {
   recluster: boolean;
   gcOrphans: boolean;
   consolidate: boolean;
+  consolidateOnly: boolean;
   tHigh: number;
   tLow: number;
 }
@@ -71,6 +73,22 @@ interface MatchStats {
   skipped: number;
   garbageCollected: number;
   consolidated: number;
+  stopped: boolean;
+}
+
+interface MatchSnapshot {
+  linked: number;
+  pending: number;
+  missingCoords: number;
+  missingName: number;
+  missingCategories: number;
+  canonicals: number;
+  decisionsByMethod: Record<string, number>;
+}
+
+interface ShutdownSignal {
+  requested: boolean;
+  count: number;
 }
 
 interface ResearchMatchRow {
@@ -154,6 +172,7 @@ function parseArgs(argv: string[]): CliOptions {
   let recluster = false;
   let gcOrphans = false;
   let consolidate = false;
+  let consolidateOnly = false;
   let tHigh = ingestConfig.match.tHigh;
   let tLow = ingestConfig.match.tLow;
 
@@ -171,6 +190,10 @@ function parseArgs(argv: string[]): CliOptions {
     else if (a === "--recluster") recluster = true;
     else if (a === "--gc-orphans") gcOrphans = true;
     else if (a === "--consolidate") consolidate = true;
+    else if (a === "--consolidate-only") {
+      consolidate = true;
+      consolidateOnly = true;
+    }
     else if (a === "--source") source = requireValue(a);
     else if (a === "--limit") limit = Number(requireValue(a));
     else if (a === "--auto-threshold") tHigh = Number(requireValue(a));
@@ -191,7 +214,19 @@ function parseArgs(argv: string[]): CliOptions {
   if (recluster && dryRun) throw new Error("--recluster cannot be combined with --dry-run");
   if (recluster && source) throw new Error("--recluster rebuilds all canonicals; run without --source");
   if (recluster && limit !== undefined) throw new Error("--recluster rebuilds all canonicals; run without --limit");
-  return { source, limit, dryRun, noLlm, recluster, gcOrphans, consolidate, tHigh, tLow };
+  if (consolidateOnly && recluster) {
+    throw new Error("--consolidate-only cannot be combined with --recluster");
+  }
+  if (consolidateOnly && source) {
+    throw new Error("--consolidate-only runs across canonicals; run without --source");
+  }
+  if (consolidateOnly && limit !== undefined) {
+    throw new Error("--consolidate-only skips row matching; run without --limit");
+  }
+  if (consolidateOnly && gcOrphans) {
+    throw new Error("--consolidate-only cannot be combined with --gc-orphans");
+  }
+  return { source, limit, dryRun, noLlm, recluster, gcOrphans, consolidate, consolidateOnly, tHigh, tLow };
 }
 
 async function resolveSourceId(client: PoolClient, slug: string): Promise<string> {
@@ -206,6 +241,134 @@ async function resolveSourceId(client: PoolClient, slug: string): Promise<string
 function radiusFor(slugs: string[] | null): number {
   if (!slugs || slugs.length === 0) return DEFAULT_RADIUS_M;
   return Math.max(...slugs.map((slug) => RADIUS_BY_SLUG[slug] ?? DEFAULT_RADIUS_M));
+}
+
+function formatInt(value: number): string {
+  return value.toLocaleString("en-US");
+}
+
+function decisionSummary(decisionsByMethod: Record<string, number>): string {
+  const entries = Object.entries(decisionsByMethod).sort(([a], [b]) => a.localeCompare(b));
+  return entries.length > 0
+    ? entries.map(([method, count]) => `${method}=${formatInt(count)}`).join(" ")
+    : "none";
+}
+
+function resumeCommand(opts: CliOptions): string {
+  const args = ["pnpm", "--filter", "@lib/db-map", "ingest:match"];
+  if (opts.source) args.push("--source", opts.source);
+  if (opts.noLlm) args.push("--no-llm");
+  if (opts.consolidateOnly) args.push("--consolidate-only");
+  else if (opts.consolidate) args.push("--consolidate");
+  if (opts.limit !== undefined && !opts.consolidateOnly) args.push("--limit", String(opts.limit));
+  return args.join(" ");
+}
+
+async function loadMatchSnapshot(client: Pool | PoolClient, sourceSlug?: string): Promise<MatchSnapshot> {
+  const { rows } = await client.query<{
+    linked: string;
+    pending: string;
+    missing_coords: string;
+    missing_name: string;
+    missing_categories: string;
+  }>(
+    `SELECT
+       count(*) FILTER (WHERE rp.canonical_poi_id IS NOT NULL)::text AS linked,
+       count(*) FILTER (
+         WHERE rp.canonical_poi_id IS NULL
+           AND rp.is_poi
+           AND rp.lat IS NOT NULL
+           AND rp.lng IS NOT NULL
+           AND rp.name_normalized IS NOT NULL
+           AND rp.category_slugs IS NOT NULL
+       )::text AS pending,
+       count(*) FILTER (
+         WHERE rp.canonical_poi_id IS NULL
+           AND rp.is_poi
+           AND (rp.lat IS NULL OR rp.lng IS NULL)
+       )::text AS missing_coords,
+       count(*) FILTER (
+         WHERE rp.canonical_poi_id IS NULL
+           AND rp.is_poi
+           AND rp.lat IS NOT NULL
+           AND rp.lng IS NOT NULL
+           AND rp.name_normalized IS NULL
+       )::text AS missing_name,
+       count(*) FILTER (
+         WHERE rp.canonical_poi_id IS NULL
+           AND rp.is_poi
+           AND rp.lat IS NOT NULL
+           AND rp.lng IS NOT NULL
+           AND rp.name_normalized IS NOT NULL
+           AND rp.category_slugs IS NULL
+       )::text AS missing_categories
+     FROM research_pois rp
+     JOIN research_sources rs ON rs.id = rp.source_id
+     WHERE ($1::text IS NULL OR rs.slug = $1)`,
+    [sourceSlug ?? null],
+  );
+  const counts = rows[0];
+
+  const canonicalCount = await client.query<{ count: string }>(
+    `SELECT count(*)::text AS count FROM canonical_pois`,
+  );
+  const decisionCounts = await client.query<{ method: string; count: string }>(
+    `SELECT rmd.method, count(*)::text AS count
+     FROM research_match_decisions rmd
+     JOIN research_pois rp ON rp.id = rmd.research_id
+     JOIN research_sources rs ON rs.id = rp.source_id
+     WHERE ($1::text IS NULL OR rs.slug = $1)
+     GROUP BY rmd.method
+     ORDER BY rmd.method`,
+    [sourceSlug ?? null],
+  );
+
+  return {
+    linked: Number(counts?.linked ?? 0),
+    pending: Number(counts?.pending ?? 0),
+    missingCoords: Number(counts?.missing_coords ?? 0),
+    missingName: Number(counts?.missing_name ?? 0),
+    missingCategories: Number(counts?.missing_categories ?? 0),
+    canonicals: Number(canonicalCount.rows[0]?.count ?? 0),
+    decisionsByMethod: Object.fromEntries(
+      decisionCounts.rows.map((row) => [row.method, Number(row.count)]),
+    ),
+  };
+}
+
+function printStartupBanner(opts: CliOptions, snapshot: MatchSnapshot): void {
+  const mode = opts.recluster
+    ? "recluster (destructive)"
+    : opts.consolidateOnly
+      ? "consolidate-only"
+      : opts.dryRun
+        ? "dry-run"
+        : "resume";
+
+  console.log(
+    [
+      "ingest:match",
+      `mode: ${mode}`,
+      `source: ${opts.source ?? "all"}`,
+      `llm: ${opts.noLlm ? "disabled" : "enabled"}`,
+      `linked: ${formatInt(snapshot.linked)}`,
+      `pending: ${formatInt(snapshot.pending)}`,
+      `not ready: coords=${formatInt(snapshot.missingCoords)} name=${formatInt(snapshot.missingName)} categories=${formatInt(snapshot.missingCategories)}`,
+      `canonicals: ${formatInt(snapshot.canonicals)}`,
+      `previous decisions: ${decisionSummary(snapshot.decisionsByMethod)}`,
+      `resume command: ${resumeCommand({ ...opts, recluster: false })}`,
+    ].join("\n"),
+  );
+
+  if (opts.recluster) {
+    console.warn(
+      [
+        "WARNING: --recluster starts over.",
+        `It will unlink ${formatInt(snapshot.linked)} research rows, delete match decisions, and delete ${formatInt(snapshot.canonicals)} canonicals.`,
+        `Use normal resume instead: ${resumeCommand({ ...opts, recluster: false, consolidate: opts.consolidate || opts.consolidateOnly, consolidateOnly: false })}`,
+      ].join("\n"),
+    );
+  }
 }
 
 async function fetchNextRow(
@@ -999,7 +1162,23 @@ async function tryLock(client: PoolClient): Promise<boolean> {
   return rows[0]?.locked === true;
 }
 
-async function runMatch(pool: Pool, opts: CliOptions): Promise<MatchStats> {
+function installShutdownHandler(signal: ShutdownSignal): () => void {
+  const onSigint = () => {
+    signal.count++;
+    if (signal.count === 1) {
+      signal.requested = true;
+      console.warn("\nSIGINT received; stopping after the current row or consolidation group. Press Ctrl-C again to exit immediately.");
+      return;
+    }
+    console.warn("\nSecond SIGINT received; exiting immediately.");
+    process.exit(130);
+  };
+
+  process.on("SIGINT", onSigint);
+  return () => process.off("SIGINT", onSigint);
+}
+
+async function runMatch(pool: Pool, opts: CliOptions, shutdown: ShutdownSignal): Promise<MatchStats> {
   const client = await pool.connect();
   const stats: MatchStats = {
     processed: 0,
@@ -1013,12 +1192,16 @@ async function runMatch(pool: Pool, opts: CliOptions): Promise<MatchStats> {
     skipped: 0,
     garbageCollected: 0,
     consolidated: 0,
+    stopped: false,
   };
 
   try {
     if (!(await tryLock(client))) {
       throw new Error("Another ingest:match process is already running.");
     }
+
+    const snapshot = await loadMatchSnapshot(client, opts.source);
+    printStartupBanner(opts, snapshot);
 
     if (opts.recluster) {
       await client.query("BEGIN");
@@ -1036,7 +1219,7 @@ async function runMatch(pool: Pool, opts: CliOptions): Promise<MatchStats> {
 
     const sourceId = opts.source ? await resolveSourceId(client, opts.source) : null;
     const dryRunSeen = new Set<string>();
-    while (opts.limit === undefined || stats.processed < opts.limit) {
+    while (!opts.consolidateOnly && !shutdown.requested && (opts.limit === undefined || stats.processed < opts.limit)) {
       await client.query("BEGIN");
       try {
         const row = await fetchNextRow(client, sourceId, opts.dryRun ? dryRunSeen : undefined);
@@ -1077,14 +1260,15 @@ async function runMatch(pool: Pool, opts: CliOptions): Promise<MatchStats> {
       }
     }
 
-    if (opts.consolidate) {
+    if (opts.consolidate && !shutdown.requested) {
       stats.consolidated = await runConsolidation(client, {
         dryRun: opts.dryRun,
         noLlm: opts.noLlm,
+        shouldStop: () => shutdown.requested,
       });
     }
 
-    if (opts.gcOrphans) {
+    if (opts.gcOrphans && !shutdown.requested) {
       await client.query("BEGIN");
       try {
         stats.garbageCollected = await gcOrphanCanonicals(client, opts.dryRun);
@@ -1109,18 +1293,42 @@ async function runMatch(pool: Pool, opts: CliOptions): Promise<MatchStats> {
     client.release();
   }
 
+  stats.stopped = shutdown.requested;
   return stats;
 }
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
-  const stats = await runMatch(db, opts);
-  await db.end();
+  const shutdown: ShutdownSignal = { requested: false, count: 0 };
+  const removeShutdownHandler = installShutdownHandler(shutdown);
+  let stats: MatchStats | undefined;
+
+  try {
+    stats = await runMatch(db, opts, shutdown);
+
+    if (stats.stopped) {
+      const snapshot = await loadMatchSnapshot(db, opts.source);
+      console.log(
+        [
+          "Stopped ingest:match.",
+          `This run processed ${formatInt(stats.processed)} rows: merged=${formatInt(stats.merged)} created=${formatInt(stats.created)} llm=${formatInt(stats.llm)}.`,
+          `Current database: linked=${formatInt(snapshot.linked)} pending=${formatInt(snapshot.pending)} canonicals=${formatInt(snapshot.canonicals)}.`,
+          "Resume with:",
+          `  ${resumeCommand(opts)}`,
+        ].join("\n"),
+      );
+    }
+  } finally {
+    removeShutdownHandler();
+    await db.end();
+  }
+
+  if (!stats) return;
 
   const mode = opts.dryRun ? " (dry-run)" : "";
   console.log(
-    `Match${mode}${opts.source ? ` ${opts.source}` : ""}: processed=${stats.processed} ` +
+    `Match${mode}${opts.consolidateOnly ? " consolidate-only" : ""}${opts.source ? ` ${opts.source}` : ""}: processed=${stats.processed} ` +
       `merged=${stats.merged} created=${stats.created} auto=${stats.auto} ` +
       `strong_id=${stats.strongId} proximity=${stats.proximity} llm=${stats.llm} override=${stats.override}` +
       `${opts.consolidate ? ` consolidated=${stats.consolidated}` : ""}` +

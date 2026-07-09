@@ -1,7 +1,7 @@
 -- 202606300400__baseline.sql
 -- Fresh baseline for the two-layer POI ingestion architecture.
 -- Layers: extensions · auth/app · research_* (raw) · canonical_* (published).
--- See .cursor/plans/poi-ingestion-pipeline.md and poi-ingestion-implementation.md.
+-- See docs/poi-ingestion.md for the implemented ingestion workflow.
 --
 -- PORTABILITY NOTE: this baseline deliberately does NOT use PostGIS or pgvector
 -- (neither is available on the target databases). Coordinates are plain lng/lat
