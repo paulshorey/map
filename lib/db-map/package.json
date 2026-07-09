@@ -35,6 +35,8 @@
     "ingest:embed": "tsx scripts/ingest/embed.ts",
     "ingest:match": "tsx scripts/ingest/match.ts",
     "ingest:report": "tsx scripts/ingest/report.ts",
+    "ingest:analyze-gaps": "tsx scripts/ingest/analyze-normalize-gaps.ts",
+    "ingest:analyze-raw": "tsx scripts/ingest/analyze-raw-file.ts",
     "ingest:match:golden": "tsx scripts/ingest/match/golden.ts",
     "ingest:override": "tsx scripts/ingest/override.ts",
     "ingest:test-extractors": "tsx scripts/ingest/test-extractors.ts",
