@@ -1,6 +1,6 @@
 # Runbook: Campground and Music Festival Ingestion
 
-> Companion to `.cursor/plans/poi-ingestion-unfinished-work.md` (Workstream E). Concrete
+> Companion to `.cursor/plans/poi-ingestion-unfinished-work.md` (Workstream D). Concrete
 > per-source files, commands, and gotchas for the next two categories. Everything here uses
 > the standard staged pipeline; see `docs/poi-ingestion.md` for stage semantics and
 > `docs/poi-research/capture-spec.md` for the raw-file shape the generic extractor reads.
@@ -60,7 +60,7 @@ each later source mostly enriches/merges into the earlier ones.
   cross-checking coordinates, not authoritative contact info (trust 55 already encodes
   this).
 - `amenities`/`hookup_type` codes (E/WE/WES/NH…) land in attributes as-is; decode later in
-  the app or triage stage if ever needed.
+  the app or normalization stage if needed.
 
 ### 3. `thedyrt` — The Dyrt (trust 50) — generic extractor works
 
@@ -91,7 +91,7 @@ each later source mostly enriches/merges into the earlier ones.
 Temporal POIs: expect one research row per edition; the matcher collapses editions
 (`recurringEventLikely`) into one canonical with `canonical_poi_occurrences`.
 
-**Blocker to decide first**: city-precision publish policy (see main plan, Workstream E).
+**Blocker to decide first**: city-precision publish policy (see main plan, Workstream D).
 Festivals are geocoded locality-only; without venue coordinates most will land on city
 centroids, which `rebuildCanonicalPoi` currently hides.
 
