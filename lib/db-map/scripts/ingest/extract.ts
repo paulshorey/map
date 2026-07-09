@@ -13,6 +13,7 @@ import type { Pool } from "pg";
 import { closeDb, getDb } from "../../lib/db/postgres.js";
 import { contentHash } from "./hash.js";
 import { TAXONOMY } from "./taxonomy.js";
+import { genericExtractor } from "./extractors/generic.js";
 import {
   getExtractor,
   getSourceDefinition,
@@ -223,11 +224,13 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
   if (!def) {
     throw new Error(`Unknown source "${opts.sourceSlug}"`);
   }
-  const extractor = getExtractor(opts.sourceSlug);
+  let extractor = getExtractor(opts.sourceSlug);
   if (!extractor) {
-    throw new Error(
-      `No extractor implemented for "${opts.sourceSlug}" yet (metadata is registered).`,
+    console.warn(
+      `No custom extractor for "${opts.sourceSlug}"; using the generic capture-spec ` +
+        `extractor (docs/poi-research/capture-spec.md). Records missing a stable id are skipped.`,
     );
+    extractor = genericExtractor;
   }
 
   const ingestCategory = opts.category;
