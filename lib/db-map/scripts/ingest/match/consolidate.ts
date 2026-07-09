@@ -28,6 +28,12 @@ interface CanonicalRow extends AnchorMeta {
   address: string | null;
   primary_slug: string | null;
   category_slugs: string[];
+  updated_at: Date;
+}
+
+interface MemoVerdict {
+  same_place: boolean;
+  reason: string | null;
 }
 
 interface MergePlan {
@@ -110,6 +116,7 @@ async function loadCanonicals(client: PoolClient): Promise<CanonicalRow[]> {
        cp.website,
        cp.phone,
        cp.address,
+       cp.updated_at,
        cp.popularity,
        primary_cat.slug AS primary_slug,
        COALESCE(array_remove(array_agg(DISTINCT cc.slug), NULL), ARRAY[]::text[]) AS category_slugs,
@@ -140,7 +147,57 @@ function addPlan(plans: Map<string, MergePlan>, plan: MergePlan): void {
   plans.set(plan.duplicateId, plan);
 }
 
+function orderedPair(a: CanonicalRow, b: CanonicalRow): [CanonicalRow, CanonicalRow] {
+  return a.id < b.id ? [a, b] : [b, a];
+}
+
+/**
+ * Read a memoized anchor-anchor verdict. Returns null when there is no verdict or
+ * when either canonical changed after the verdict (stale → re-adjudicate).
+ */
+async function readConsolidationMemo(
+  client: PoolClient,
+  a: CanonicalRow,
+  b: CanonicalRow,
+): Promise<MemoVerdict | null> {
+  const [lo, hi] = orderedPair(a, b);
+  const { rows } = await client.query<MemoVerdict & { decided_at: Date }>(
+    `SELECT same_place, reason, decided_at
+     FROM research_consolidation_decisions
+     WHERE canonical_a = $1 AND canonical_b = $2`,
+    [lo.id, hi.id],
+  );
+  const memo = rows[0];
+  if (!memo) return null;
+  const decidedAt = new Date(memo.decided_at).getTime();
+  if (
+    decidedAt < new Date(lo.updated_at).getTime() ||
+    decidedAt < new Date(hi.updated_at).getTime()
+  ) {
+    return null;
+  }
+  return { same_place: memo.same_place, reason: memo.reason };
+}
+
+async function writeConsolidationMemo(
+  client: PoolClient,
+  a: CanonicalRow,
+  b: CanonicalRow,
+  verdict: MemoVerdict,
+): Promise<void> {
+  const [lo, hi] = orderedPair(a, b);
+  await client.query(
+    `INSERT INTO research_consolidation_decisions (canonical_a, canonical_b, same_place, reason, method)
+     VALUES ($1, $2, $3, $4, 'llm')
+     ON CONFLICT (canonical_a, canonical_b)
+     DO UPDATE SET same_place = EXCLUDED.same_place, reason = EXCLUDED.reason,
+                   method = EXCLUDED.method, decided_at = now()`,
+    [lo.id, hi.id, verdict.same_place, verdict.reason],
+  );
+}
+
 async function planAnchorAnchorMerges(
+  client: PoolClient,
   rows: CanonicalRow[],
   plans: Map<string, MergePlan>,
   opts: ConsolidateOptions,
@@ -155,6 +212,21 @@ async function planAnchorAnchorMerges(
       const b = anchors[j]!;
       if (plans.has(b.id) || !withinProximity(a, b)) continue;
       const distanceM = pairDistanceM(a, b);
+
+      // Memoized verdicts survive reruns: "different place" pairs are skipped
+      // without an LLM call until either canonical is rebuilt with new data.
+      const memo = await readConsolidationMemo(client, a, b);
+      if (memo) {
+        if (!memo.same_place) continue;
+        const ordered = [a, b].sort(strongerFirst);
+        addPlan(plans, {
+          targetId: ordered[0]!.id,
+          duplicateId: ordered[1]!.id,
+          reason: `anchor_anchor_memo:${memo.reason ?? "previously adjudicated same place"}`,
+          distanceM,
+        });
+        continue;
+      }
 
       if (opts.noLlm || opts.dryRun) {
         continue;
@@ -189,6 +261,14 @@ async function planAnchorAnchorMerges(
           guidance: "Decide whether these are one real-world place or one visitor complex despite different names.",
         },
       });
+
+      await writeConsolidationMemo(client, a, b, {
+        same_place: llm.samePlace,
+        reason: llm.reason,
+      });
+      console.log(
+        `Anchor-anchor LLM verdict: ${a.name} / ${b.name} → ${llm.samePlace ? "same" : "different"} (${llm.reason})`,
+      );
 
       if (!llm.samePlace) continue;
       const ordered = [a, b].sort(strongerFirst);
@@ -273,9 +353,9 @@ async function planMerges(
       for (const member of cluster) remaining.delete(member.id);
     }
 
-    if (!opts.noLlm && !opts.dryRun) {
-      await planAnchorAnchorMerges(groupRows, plans, opts);
-    }
+    // Always runs so memoized verdicts apply even in --dry-run / --no-llm modes;
+    // fresh LLM adjudication only happens in real LLM-enabled runs.
+    await planAnchorAnchorMerges(client, groupRows, plans, opts);
   }
 
   return [...plans.values()].sort((a, b) => a.targetId.localeCompare(b.targetId) || a.duplicateId.localeCompare(b.duplicateId));

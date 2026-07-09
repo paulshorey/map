@@ -95,12 +95,21 @@ pnpm --filter @lib/db-map ingest:match [options]
 Supporting maintenance commands:
 
 ```bash
+pnpm --filter @lib/db-map ingest:report [--source <slug>] [--category <slug>]
 pnpm --filter @lib/db-map ingest:seed:centroids
 pnpm --filter @lib/db-map ingest:backfill:wikidata-coords
 pnpm --filter @lib/db-map ingest:reflow
 pnpm --filter @lib/db-map ingest:override
 pnpm --filter @lib/db-map ingest:match:golden --no-llm
 ```
+
+`ingest:report` is a read-only reconciliation summary (rows by source/stage, match
+readiness, canonical counts, decisions by method, geocode cache, popularity, event date
+coverage). Run it before and after imports.
+
+Sources registered without a custom extractor fall back to the generic extractor for
+files following `docs/poi-research/capture-spec.md`. Note that `ingest:extract` resolves
+relative file paths against this package directory — pass absolute paths.
 
 Each stage is intended to be resumable. Re-running a stage should pick up rows whose derived
 output is still missing or was reset by a source/content change.
@@ -152,6 +161,10 @@ processing more pending research rows:
 pnpm --filter @lib/db-map ingest:match --consolidate-only
 pnpm --filter @lib/db-map ingest:match --consolidate-only --dry-run
 ```
+
+Consolidation memoizes anchor-vs-anchor LLM verdicts in `research_consolidation_decisions`
+(keyed on the ordered canonical pair). Reruns skip previously adjudicated pairs; a verdict
+is re-asked only when either canonical was rebuilt with new data after the verdict.
 
 ### Start Over From Scratch
 

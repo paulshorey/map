@@ -126,7 +126,17 @@ pnpm --filter @lib/db-map ingest:match --recluster --consolidate
 `ingest:match` prints linked/pending counts at startup. First `Ctrl-C` stops after the
 current unit and prints a resume command; second `Ctrl-C` exits immediately.
 
-Deep-dive docs: [`docs/poi-ingestion.md`](docs/poi-ingestion.md).
+Check pipeline state at any time with the read-only report:
+
+```bash
+pnpm --filter @lib/db-map ingest:report [--source <slug>] [--category <slug>]
+```
+
+Re-importing a source file is idempotent: unchanged records keep their canonical links and
+are skipped; only new or changed records flow through the pipeline again.
+
+Deep-dive docs: [`docs/poi-ingestion.md`](docs/poi-ingestion.md). Raw data capture format
+for new sources: [`docs/poi-research/capture-spec.md`](docs/poi-research/capture-spec.md).
 
 ## Mobile (Capacitor)
 

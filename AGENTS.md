@@ -63,7 +63,20 @@ pnpm --filter @lib/db-map ingest:normalize [--source <source-slug>]
 pnpm --filter @lib/db-map ingest:geocode [--source <source-slug>] [--geocode-limit 4500]
 pnpm --filter @lib/db-map ingest:embed [--source <source-slug>]
 pnpm --filter @lib/db-map ingest:match --consolidate
+pnpm --filter @lib/db-map ingest:report [--source <source-slug>]
 ```
+
+Notes:
+
+- `ingest:extract` resolves relative file paths against `lib/db-map/`; pass absolute paths.
+- Sources registered in `sources.ts` without a custom extractor use the generic extractor
+  for files following `docs/poi-research/capture-spec.md` — new conformant sources need
+  only a metadata entry, no extractor code.
+- Re-importing a file is idempotent: unchanged records keep their `canonical_poi_id`; only
+  new/changed records re-flow. You never need to re-match or re-consolidate "everything".
+- Consolidation memoizes anchor-vs-anchor LLM verdicts in
+  `research_consolidation_decisions`; reruns of `--consolidate` are cheap.
+- `ingest:report` is read-only; run it before and after imports to verify state.
 
 `ingest:match` is resumable. Progress is `research_pois.canonical_poi_id`; normal reruns skip linked rows and continue pending rows. First `Ctrl-C` stops gracefully after the current unit and prints a resume command.
 

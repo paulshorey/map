@@ -34,6 +34,7 @@
     "ingest:backfill:wikidata-coords": "tsx scripts/ingest/backfill-wikidata-coords.ts",
     "ingest:embed": "tsx scripts/ingest/embed.ts",
     "ingest:match": "tsx scripts/ingest/match.ts",
+    "ingest:report": "tsx scripts/ingest/report.ts",
     "ingest:match:golden": "tsx scripts/ingest/match/golden.ts",
     "ingest:override": "tsx scripts/ingest/override.ts",
     "ingest:test-extractors": "tsx scripts/ingest/test-extractors.ts",

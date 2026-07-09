@@ -65,6 +65,16 @@ export interface GeoCentroidsRow {
   "lng": number;
 }
 
+export interface ResearchConsolidationDecisionsRow {
+  "id": string;
+  "canonical_a": string;
+  "canonical_b": string;
+  "same_place": boolean;
+  "reason": string | null;
+  "method": string;
+  "decided_at": Date;
+}
+
 export interface ResearchGeocodeCacheRow {
   "query_norm": string;
   "lat": number | null;
@@ -167,6 +177,7 @@ export interface PostgresDbSchema {
   "canonical_poi_occurrences": CanonicalPoiOccurrencesRow;
   "canonical_pois": CanonicalPoisRow;
   "geo_centroids": GeoCentroidsRow;
+  "research_consolidation_decisions": ResearchConsolidationDecisionsRow;
   "research_geocode_cache": ResearchGeocodeCacheRow;
   "research_match_decisions": ResearchMatchDecisionsRow;
   "research_match_overrides": ResearchMatchOverridesRow;

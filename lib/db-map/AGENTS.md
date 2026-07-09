@@ -37,6 +37,7 @@ name similarity, `tstzrange` for event dates.
 - **`research_sources`** — source registry (slug, license, attribution, trust).
 - **`research_pois`** — one row per (source, record). Derived state is column NULL-ness (`name_normalized`, `lat`, `content_embedding`, `canonical_poi_id`); `content_hash` versions input; `category_slugs text[]` + `is_poi` are set by normalize. `UNIQUE (source_id, source_record_id)` is the idempotency anchor.
 - **`research_match_decisions`**, **`research_match_overrides`**, **`research_geocode_cache`** — match audit, manual overrides, geocode dedupe/miss cache.
+- **`research_consolidation_decisions`** — memoized anchor-vs-anchor consolidation LLM verdicts, keyed on ordered canonical pair; stale (re-asked) when either canonical's `updated_at` passes the verdict's `decided_at`.
 
 **Auth:**
 
@@ -54,11 +55,14 @@ pnpm --filter @lib/db-map ingest:geocode [--source <slug>] [--geocode-limit N]
 pnpm --filter @lib/db-map ingest:embed [--source <slug>] [--batch-size N]
 pnpm --filter @lib/db-map ingest:taxonomy:seed
 pnpm --filter @lib/db-map ingest:match --consolidate
+pnpm --filter @lib/db-map ingest:report [--source <slug>] [--category <slug>]
 ```
 
 `ingest:match` is resumable. Use `--consolidate-only` for canonical cleanup without
 matching more raw rows. Do not use `--recluster` unless explicitly starting over; it is
-destructive.
+destructive. `ingest:report` is read-only reconciliation output. Sources without a custom
+extractor fall back to the generic capture-spec extractor
+(`docs/poi-research/capture-spec.md`).
 
 ## Workflow: schema changes
 
