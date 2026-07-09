@@ -37,8 +37,9 @@ Implemented (in addition to the previously documented baseline):
 Still unfinished:
 
 - No one-command ingestion orchestrator (`ingest:run`).
-- Normalize uses the LLM only for prose dates; no LLM triage of messy scraped rows
-  (validity, name canonicalization, locality extraction). See Workstream D.
+- Normalize uses the LLM only for prose dates; no structured LLM extraction of messy
+  scraped rows (validity, name canonicalization, locality/contact extraction). See
+  Workstream D and `.cursor/plans/llm-research-normalization.md`.
 - Publish policy for city-precision event coordinates is undecided; as implemented,
   festivals that geocode to a city centroid end up `hidden` (see Workstream E decision).
 - Legacy direct importers still write straight to canonical tables.
@@ -55,8 +56,8 @@ Still unfinished:
 1. Make real ingestion easy to run repeatedly: one orchestration command per source.
 2. Ingest the next two categories (campgrounds, music festivals) end to end, proving the
    temporal-POI path with real data.
-3. Use the LLM where it is strong — interpreting messy text — via a bounded, cached triage
-   step in normalize, instead of writing per-source cleanup code.
+3. Use the LLM where it is strong — interpreting messy text — via a bounded, cached
+   enrichment stage ahead of normalize, instead of writing per-source cleanup code.
 4. Move legacy curated imports to the provenance-preserving staging path.
 5. Produce an end-to-end validation record proving idempotent, de-duplicated ingestion
    across multiple categories.
@@ -122,38 +123,15 @@ Acceptance: curated JSON/KML flows through `research_pois` with provenance;
 
 ---
 
-## 6. Workstream D — LLM Triage in Normalize (new)
+## 6. Workstream D — LLM Research Normalization (superseded by its own plan)
 
-The model (DeepSeek on DeepInfra) is currently used only for prose-date parsing, gray-zone
-match adjudication, and description fusion. The messy scraped sources in `docs/poi/`
-(carnival blog scrapes, Reddit extracts, directory listings) need more interpretation than
-deterministic code should attempt. Add a bounded, cached LLM triage inside
-`ingest:normalize` for rows that need it:
-
-- **Validity**: is this row a real place/event POI, or a region/article/organization/tour?
-  Sets `is_poi = false` + `attributes.invalid_reason` (extends the existing validity gate).
-- **Name canonicalization**: strip edition years and boilerplate
-  ("110 Above Festival 2026" → base name + `attributes.edition_year`), so editions of the
-  same festival block/merge cleanly.
-- **Locality extraction**: split free-text `location` strings ("Shoreline Waterfront,
-  Long Beach, CA") into city/region/country when the structured fields are empty —
-  directly improves geocode hit rate and locality match signals.
-
-Design constraints (keep it cheap and reproducible):
-
-- Deterministic rules first; LLM only when fields are missing/ambiguous.
-- Batch 20–50 rows per prompt; temperature 0; strict JSON out; reject on schema mismatch.
-- Cache per `content_hash` in an `attributes.triage` block (or a small cache table) so
-  reruns and `--reflow` never re-pay for unchanged rows.
-- `--no-llm` skips triage entirely (rows fall back to today's behavior).
-- LLM output never overwrites captured source fields — it fills separate normalized
-  columns/attributes, same pattern as `date_source: "llm"`.
-
-Acceptance:
-
-- A directory-scraped festival source normalizes with ≥95% usable city/country.
-- Edition-year names collapse to one canonical with multiple occurrences.
-- Rerunning normalize on unchanged rows makes zero LLM calls.
+This workstream outgrew a single section: it's now a full plan of its own, covering a new
+`ingest:enrich` stage that turns messy scraped rows into structured, cached, LLM-filled
+`research_pois` before the existing deterministic normalize/geocode/match/merge pipeline
+runs — see `.cursor/plans/llm-research-normalization.md` for the design, real-data-validated
+prompt/schema, guardrails, cost/throughput numbers (measured, not estimated), and rollout
+order. That plan also covers name/edition-year canonicalization and locality extraction,
+which were the original scope of this section.
 
 ---
 
@@ -219,10 +197,14 @@ drawer still renders event status.
 
 ## 10. Suggested Order
 
-1. Workstream E decision (city-precision publish policy) — small, unblocks festivals.
-2. `ingest:run` orchestrator (A) — every later run benefits.
+1. `ingest:run` orchestrator (A) — every later run benefits.
+2. LLM research normalization (D) — `.cursor/plans/llm-research-normalization.md`; land the
+   `ingest:enrich` stage and pilot it on `global_carnivalist` before the messier festival
+   directories arrive. Its effect on venue/address extraction should inform, not follow,
+   the Workstream E publish-policy decision (see below).
 3. RIDB campground extractor + first campground run (E).
-4. LLM triage in normalize (D) — implement before the messier festival directories.
+4. Workstream E decision (city-precision publish policy) — revisit after step 2's pilot
+   shows how many festival rows reach point precision from LLM-extracted venue text alone.
 5. Resident Advisor + Music Festival Wizard runs (E).
 6. Validation doc for gardens + first campground/festival slices (F).
 7. Staged legacy importer path (C).
@@ -232,8 +214,9 @@ drawer still renders event status.
 
 Reasoning:
 
-- The publish-policy decision changes what "success" means for festival runs; decide first.
 - The orchestrator plus the existing report remove most operator error for everything after.
+- LLM research normalization pays for itself starting with the first directory-scraped
+  source, and its output may shrink the city-precision publish-policy question — decide
+  that policy after seeing real enrichment results, not before.
 - One campground and one festival source prove the two remaining category shapes
   (permanent-with-amenities and temporal-with-editions); later sources are repetition.
-- Triage pays for itself starting with the first directory-scraped source.
