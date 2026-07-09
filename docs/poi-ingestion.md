@@ -37,14 +37,48 @@ doubles, embeddings are stored as `real[]`, and fuzzy name matching uses `pg_trg
 - Use the category taxonomy from code, not source-provided category strings.
 - Prefer deterministic signals first: strong IDs, category, location, names, stored
   embeddings, dates, and source trust.
-- Use the LLM only for bounded ambiguous decisions and description fusion.
+- Use deterministic parsers for facts code can prove and DeepSeek for semantic
+  interpretation. LLM values are evidence-validated before activation.
 - Keep scripts resumable. Normal reruns should continue missing work instead of redoing
   completed rows.
 - Use `--recluster` only when intentionally starting over from raw research rows.
 
 ## Standard Pipeline
 
-Run from the repo root.
+Run from the repo root. The primary interface is file-first:
+
+```bash
+pnpm --filter @lib/db-map ingest:run \
+  docs/poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv \
+  --category campground
+```
+
+The source registry resolves known files to a source, extractor, and normalization profile.
+Category is **not** inferred — you must pass `--category <slug>` on every run (same rule as
+`ingest:extract`). A flat top-level JSON array/JSONL/CSV can fall back to an inferred source
+slug plus the generic extractor; wrappers/nested files must be registered.
+The orchestrator records the file hash and run in PostgreSQL, then performs:
+
+```text
+observe/extract → hybrid normalize → geocode → embed → match/consolidate → canonical build → report
+```
+
+Every artifact is keyed by its input and implementation versions. An unchanged file and
+pipeline is a zero-provider-call resume/no-op. A changed normalizer prompt/profile/model
+reprocesses normalization without re-extracting unchanged source observations.
+
+Useful controls:
+
+```bash
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --dry-run
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --limit 20
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --stop-after normalize
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --from normalize --shadow
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --reprocess normalize
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --retry-failed
+```
+
+The individual stage commands remain available for diagnostics:
 
 ```bash
 pnpm --filter @lib/db-map ingest:taxonomy:seed
@@ -76,16 +110,24 @@ are hard errors; add new categories in code first, then seed them.
 
 ### Extract
 
-`ingest:extract` reads a source file and upserts raw rows into `research_pois` by
-`(source_id, source_record_id)`.
+The orchestrated observation pass streams the source file and upserts stable identities by
+`(source_id, source_record_id)`. Each distinct redacted raw payload becomes an immutable
+`research_poi_observations` row. `research_pois` points to its active observation.
+
+Record-level writes are logged in `research_ingest_run_records` before the research write.
+If one record fails, successful records remain committed and a rerun retries only the
+missing/failed row. If PostgreSQL is unavailable, the run stops; the immutable source file
+remains the replayable queue.
+
+`ingest:extract` remains as a lower-level compatibility command.
 
 ```bash
 pnpm --filter @lib/db-map ingest:extract bgci docs/poi/botanical_gardens_data/bgci.csv --category gardens
 ```
 
-Extract stores a content hash. Re-importing unchanged records updates observation metadata
-without resetting downstream work. Changed records have derived columns reset so they can
-flow through normalize/geocode/embed/match again.
+Re-importing unchanged records updates observation metadata without resetting downstream
+work. Changed records create a new observation and mark normalization stale while the prior
+active normalization remains available until its replacement validates.
 
 Sources registered in `scripts/ingest/sources.ts` without a custom extractor fall back to
 the **generic capture-spec extractor**: files whose records follow
@@ -96,14 +138,27 @@ HTML-laden fields, KML, nested venue objects).
 
 ### Normalize
 
-`ingest:normalize` derives clean names, category slugs, source metadata, date fields, and
-embedded URL coordinates when available.
+`ingest:normalize` is a hybrid deterministic + DeepSeek stage:
+
+1. Deterministic code validates structured dates, coordinates, URLs, contacts, country
+   codes, source flags, and taxonomy constraints.
+2. DeepSeek receives exactly one real record plus two reviewed example conversations.
+3. The model classifies validity and interprets identity, edition, locality, URL roles,
+   description, and typed attributes.
+4. Deterministic resolvers reject invalid dates, unsupported facts, listing URLs promoted
+   as official, and any model-invented contacts/identifiers.
+5. DeepSeek never returns coordinates; coordinates come only from source data, URL parsing,
+   or geocoding.
+6. Accepted output is stored as an immutable `research_poi_normalizations` artifact and
+   activated transactionally.
 
 ```bash
 pnpm --filter @lib/db-map ingest:normalize --source bgci
 ```
 
-Use `--no-llm` when you want deterministic normalization only.
+Use `--no-llm` for a deterministic degraded projection. Default execution is sequential,
+one LLM request per record. Results are cached by observation, prompt, schema, examples,
+profile, model, and normalizer versions; unchanged reruns make zero calls.
 
 ### Geocode
 
@@ -226,19 +281,23 @@ are deterministic, and only genuinely new or changed anchor pairs spend LLM call
 
 ## Re-importing a Source (Idempotency)
 
-Re-running `ingest:extract` on a file you already imported is safe and cheap:
+Re-running `ingest:run <file> --category <slug>` is safe and cheap:
 
-- Rows are upserted by `(source_id, source_record_id)` with a content hash.
-- **Unchanged records** only get `last_seen_at` bumped. They keep `canonical_poi_id`, so
-  they are already linked and `ingest:match` skips them entirely.
-- **Changed records** have derived columns reset (including `canonical_poi_id`) and flow
-  through normalize/geocode/embed/match again. Only those rows are re-matched.
+- File bytes are tracked in `research_source_file_versions`.
+- Rows are keyed by `(source_id, source_record_id)` and raw observation hash.
+- **Unchanged files and records** reuse all successful versioned artifacts.
+- **Changed records** append observations and re-run only stale downstream artifacts.
+- A failed refresh never replaces the prior active normalization/geocode/build.
 - **New records** flow through the pipeline normally.
+- For registered `snapshot` files, removed records retire only after a complete successful
+  extraction pass; limited/interrupted runs never infer deletion.
 
-You do not need to re-run matching or consolidation "on all records" after a re-import.
-`ingest:match --consolidate` processes only pending rows, and the consolidation sweep
-reuses memoized anchor verdicts, so an idempotent re-import ends in seconds. The prerequisite
-is a stable `source_record_id` per record — see `docs/poi-research/capture-spec.md`.
+Pipeline version changes automatically make only affected artifacts stale. Use
+`--reprocess <stage>` to bypass one stage cache, `--from <stage>` for it and descendants,
+and `--shadow` to evaluate without activation. None of these implies a full recluster.
+
+The prerequisite remains a stable `source_record_id` per record — see
+`docs/poi-research/capture-spec.md`.
 
 ## Full Recluster
 
@@ -269,9 +328,12 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
 
 ## Reflow and Backfills
 
-Use `ingest:reflow` after changing normalization, embedding, geocoding, or matching rules
-that should apply to existing research rows. It resets derived columns so rows flow through
-the updated pipeline again.
+Prefer `ingest:run <file> --category <slug> --reprocess <stage>` or `--from <stage>` after
+changing pipeline logic. Versioned artifacts preserve prior active data until replacements
+succeed.
+
+`ingest:reflow` remains a legacy maintenance command for pre-orchestration rows; it resets
+derived columns and is not the normal reprocessing path.
 
 Use `ingest:backfill:wikidata-coords` to fill coordinates from Wikidata attributes where
 available without spending geocoder budget.
@@ -281,7 +343,8 @@ available without spending geocoder budget.
 `ingest:report` prints a read-only reconciliation summary: research rows by source and
 stage, match readiness (pending vs missing coords/name/categories), canonicals by primary
 category with published/hidden splits, match decisions by method, geocode cache
-effectiveness, popularity distribution, top contributing sources, and event date coverage.
+effectiveness, popularity distribution, top contributing sources, event date coverage,
+hybrid normalization/request totals, cost/tokens, and recent file ingest runs.
 
 ```bash
 pnpm --filter @lib/db-map ingest:report

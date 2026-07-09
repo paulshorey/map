@@ -99,12 +99,21 @@ Common source workflow:
 
 ```bash
 pnpm --filter @lib/db-map ingest:taxonomy:seed
+pnpm --filter @lib/db-map ingest:run <file> --category <category-slug>
+```
+
+Or run stages individually:
+
+```bash
 pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <category-slug>
 pnpm --filter @lib/db-map ingest:normalize [--source <source-slug>]
 pnpm --filter @lib/db-map ingest:geocode [--source <source-slug>] [--geocode-limit 4500]
 pnpm --filter @lib/db-map ingest:embed [--source <source-slug>]
 pnpm --filter @lib/db-map ingest:match --consolidate
 ```
+
+`ingest:run` and `ingest:extract` both require `--category`; category is never inferred from
+the file path or raw data.
 
 Useful match commands:
 

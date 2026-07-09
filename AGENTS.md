@@ -58,6 +58,8 @@ Use the staged pipeline for real source data:
 
 ```bash
 pnpm --filter @lib/db-map ingest:taxonomy:seed
+pnpm --filter @lib/db-map ingest:run <file> --category <category-slug>
+# or stage-by-stage:
 pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <category-slug>
 pnpm --filter @lib/db-map ingest:normalize [--source <source-slug>]
 pnpm --filter @lib/db-map ingest:geocode [--source <source-slug>] [--geocode-limit 4500]
@@ -68,7 +70,7 @@ pnpm --filter @lib/db-map ingest:report [--source <source-slug>]
 
 Notes:
 
-- `ingest:extract` resolves relative file paths against `lib/db-map/`; pass absolute paths.
+- `ingest:run` and `ingest:extract` both require `--category <slug>`; category is never inferred.
 - Sources registered in `sources.ts` without a custom extractor use the generic extractor
   for files following `docs/poi-research/capture-spec.md` — new conformant sources need
   only a metadata entry, no extractor code.

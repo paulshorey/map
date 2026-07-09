@@ -81,7 +81,29 @@ pnpm --filter @lib/db-map db:migration:new -- short_description
 
 ## POI Ingestion Pipeline
 
-The normal pipeline is:
+The primary pipeline is file-first:
+
+```bash
+pnpm --filter @lib/db-map ingest:run <docs/poi/...json|jsonl|csv> --category <slug>
+```
+
+The source registry resolves source/extractor metadata. Category is always supplied by the
+developer via `--category` — it is never inferred from the file path or raw data. The command
+records file/run/record state in PostgreSQL and resumes extract → normalize → geocode → embed
+→ match/consolidate → canonical build → report without repeating successful versioned
+artifacts.
+
+Useful controls:
+
+```bash
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --dry-run
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --limit 20
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --reprocess normalize
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --from normalize --shadow
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --retry-failed
+```
+
+Individual stage commands remain available for diagnostics:
 
 ```bash
 pnpm --filter @lib/db-map ingest:taxonomy:seed
@@ -111,8 +133,10 @@ Sources registered without a custom extractor fall back to the generic extractor
 files following `docs/poi-research/capture-spec.md`. Note that `ingest:extract` resolves
 relative file paths against this package directory — pass absolute paths.
 
-Each stage is intended to be resumable. Re-running a stage should pick up rows whose derived
-output is still missing or was reset by a source/content change.
+Normalization combines deterministic parsing with one-record DeepSeek requests and two
+reviewed examples. Dates/coordinates/contacts are deterministically validated; DeepSeek
+never supplies coordinates. Artifacts are versioned and cached, so unchanged reruns make
+zero provider calls.
 
 ## `ingest:match`
 

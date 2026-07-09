@@ -75,3 +75,19 @@ export const TAXONOMY: CategorySeed[] = [
     sort_order: 130,
   },
 ];
+
+export const VALID_CATEGORY_SLUGS = new Set(TAXONOMY.map((category) => category.slug));
+
+export function listCategorySlugs(): string[] {
+  return [...VALID_CATEGORY_SLUGS].sort();
+}
+
+export function formatCategoryUsageError(prefix: string): string {
+  return `${prefix}\nKnown categories: ${listCategorySlugs().join(", ")}`;
+}
+
+export function assertValidCategory(slug: string): void {
+  if (!VALID_CATEGORY_SLUGS.has(slug)) {
+    throw new Error(formatCategoryUsageError(`Unknown category "${slug}" — not in taxonomy.ts.`));
+  }
+}

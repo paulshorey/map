@@ -49,4 +49,21 @@ export interface SourceMeta {
 export interface SourceDefinition {
   meta: SourceMeta;
   extractor?: Extractor;
+  files?: SourceFileDefinition[];
+  normalizationProfile?: string;
+}
+
+export interface SourceFileDefinition {
+  /** Repo-relative exact path or `*` wildcard pattern under docs/poi/. */
+  pattern: string;
+  /**
+   * Expected category for this file in the source registry. Runtime ingestion always uses
+   * the developer-supplied `--category` flag; this field is documentation only.
+   */
+  category: string;
+  mode?: "snapshot" | "incremental";
+  format?: "json" | "jsonl" | "csv";
+  /** Optional wrapper key containing the record array. Requires a structural extractor. */
+  wrapperPath?: string;
+  extractorVersion?: string;
 }

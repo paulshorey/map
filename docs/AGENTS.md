@@ -20,12 +20,23 @@ running ingestion workflows.
 Common flow:
 
 ```bash
+pnpm --filter @lib/db-map ingest:run <file> --category <category-slug>
+```
+
+Or stage-by-stage:
+
+```bash
 pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <category-slug>
 pnpm --filter @lib/db-map ingest:normalize [--source <source-slug>]
 pnpm --filter @lib/db-map ingest:geocode [--source <source-slug>]
 pnpm --filter @lib/db-map ingest:embed [--source <source-slug>]
 pnpm --filter @lib/db-map ingest:match --consolidate
 ```
+
+Notes:
+
+- `ingest:run` and `ingest:extract` both require `--category <slug>`; category is never inferred from the file path or raw data.
+- `ingest:extract` resolves relative file paths against `lib/db-map/`; pass absolute paths.
 
 `ingest:match` is resumable. Do not use `--recluster` unless the user explicitly wants a
 destructive rebuild.

@@ -56,6 +56,63 @@
       "type": "Date"
     }
   ],
+  "canonical_poi_builds": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "canonical_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "input_hash",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "builder_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "fields",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "field_provenance",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "warnings",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "request_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "activated_at",
+      "nullable": true,
+      "type": "Date"
+    }
+  ],
   "canonical_poi_categories": [
     {
       "column": "poi_id",
@@ -103,6 +160,28 @@
       "column": "occurrence_range",
       "nullable": true,
       "type": "unknown"
+    }
+  ],
+  "canonical_poi_redirects": [
+    {
+      "column": "from_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "to_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "reason",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
     }
   ],
   "canonical_pois": [
@@ -210,6 +289,11 @@
       "column": "updated_at",
       "nullable": false,
       "type": "Date"
+    },
+    {
+      "column": "active_build_id",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "geo_centroids": [
@@ -252,6 +336,58 @@
       "column": "lng",
       "nullable": false,
       "type": "number"
+    }
+  ],
+  "research_canonical_memberships": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "research_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "normalization_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "canonical_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "match_decision_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "matcher_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "active",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "assigned_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "retired_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "retirement_reason",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "research_consolidation_decisions": [
@@ -319,6 +455,185 @@
     },
     {
       "column": "fetched_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_ingest_run_records": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "run_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_file_version_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_record_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "source_ordinal",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "raw_hash",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "research_poi_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "observation_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "extract_state",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "attempts",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "last_error_class",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "last_error",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "next_retry_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "first_attempt_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "last_attempt_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_ingest_runs": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_file_version_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "category_slug",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "mode",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "requested_from_stage",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "pipeline_versions",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "options",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "counters",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "current_stage",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "resumed_from_run_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "fatal_error",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "resume_command",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "started_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "heartbeat_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "stopped_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "completed_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "created_at",
       "nullable": false,
       "type": "Date"
     }
@@ -398,6 +713,635 @@
     },
     {
       "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_normalization_requests": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "research_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "observation_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "input_hash",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "prompt_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "schema_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "profile_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "examples_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "provider",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "requested_model",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "returned_model",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "request_json",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "response_json",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "response_text",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "finish_reason",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "prompt_tokens",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "cached_tokens",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "completion_tokens",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "total_tokens",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "estimated_cost_usd",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "latency_ms",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "attempt",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "repaired_from_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "error",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "completed_at",
+      "nullable": true,
+      "type": "Date"
+    }
+  ],
+  "research_pipeline_jobs": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "run_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "target_kind",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "target_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "stage",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "desired_input_hash",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "stage_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "claim_token",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "lease_owner",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "lease_expires_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "attempts",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "next_retry_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "error_class",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "error",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "error_details",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "output_artifact_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "started_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "completed_at",
+      "nullable": true,
+      "type": "Date"
+    }
+  ],
+  "research_poi_embeddings": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "normalization_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "input_hash",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "model",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "model_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "embedding",
+      "nullable": false,
+      "type": "Array<number>"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "activated_at",
+      "nullable": true,
+      "type": "Date"
+    }
+  ],
+  "research_poi_geocodes": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "normalization_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "input_hash",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "query_norm",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "provider",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "provider_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "lat",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "lng",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "precision",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "validation",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "activated_at",
+      "nullable": true,
+      "type": "Date"
+    }
+  ],
+  "research_poi_normalization_occurrences": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "normalization_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "starts_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "ends_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "date_precision",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "timezone",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "edition_year",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "derivation",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "evidence",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "confidence",
+      "nullable": true,
+      "type": "number"
+    }
+  ],
+  "research_poi_normalizations": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "research_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "observation_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "request_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "input_hash",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "normalizer_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "is_poi",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "invalid_reason",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "entity_kind",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "display_name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "match_name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "edition_year",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "aliases",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "description",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "website",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "website_domain",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "phone",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "email",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "address",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "venue",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "city",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "region",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "country_code",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "category_slugs",
+      "nullable": true,
+      "type": "Array<string>"
+    },
+    {
+      "column": "starts_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "ends_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "date_precision",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "attributes",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "field_evidence",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "model_output",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "warnings",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "match_fingerprint",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "activated_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_poi_observations": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "research_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_file_version_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "raw_content_hash",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "raw",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "captured",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "source_is_poi_hint",
+      "nullable": true,
+      "type": "boolean"
+    },
+    {
+      "column": "redacted_paths",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "first_seen_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "last_seen_at",
       "nullable": false,
       "type": "Date"
     }
@@ -572,6 +1516,327 @@
       "column": "geocode_query_norm",
       "nullable": true,
       "type": "string"
+    },
+    {
+      "column": "active_observation_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "active_normalization_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "matched_normalization_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "normalization_state",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "normalization_input_hash",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "normalized_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "retired_at",
+      "nullable": true,
+      "type": "Date"
+    }
+  ],
+  "research_pois_current": [
+    {
+      "column": "id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "source_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "source_record_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "ingest_category",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "active_observation_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "active_normalization_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "normalization_state",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "canonical_poi_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "name_normalized",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "description",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "website",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "website_domain",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "source_url",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "phone",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "email",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "address",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "city",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "region",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "country_code",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "lng",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "lat",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "starts_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "ends_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "date_precision",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "raw_category",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "category_slugs",
+      "nullable": true,
+      "type": "Array<string>"
+    },
+    {
+      "column": "is_poi",
+      "nullable": true,
+      "type": "boolean"
+    },
+    {
+      "column": "raw",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "attributes",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "content_embedding",
+      "nullable": true,
+      "type": "Array<number>"
+    },
+    {
+      "column": "coordinate_source",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "coordinate_precision",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "geocode_query_norm",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "first_seen_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "last_seen_at",
+      "nullable": true,
+      "type": "Date"
+    }
+  ],
+  "research_source_file_versions": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_file_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "file_sha256",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "byte_size",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "record_count",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "extractor_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "error",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "completed_at",
+      "nullable": true,
+      "type": "Date"
+    }
+  ],
+  "research_source_files": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "logical_path",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "category_slug",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "mode",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "format",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "extractor_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "active_version_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "first_seen_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "last_seen_at",
+      "nullable": false,
+      "type": "Date"
     }
   ],
   "research_sources": [

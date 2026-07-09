@@ -12,6 +12,7 @@ import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { ingestConfig } from "./config.js";
 import { embedTexts, EmbedError } from "./providers/jina.js";
+import { stableHash } from "./hash.js";
 
 const DEFAULT_THROTTLE_MS = 200;
 
@@ -89,8 +90,24 @@ export function buildEmbedText(row: EmbedRow): string | null {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function writeEmbedding(db: Pool, id: string, vector: number[]): Promise<void> {
+async function writeEmbedding(db: Pool, id: string, text: string, vector: number[]): Promise<void> {
   await db.query(`UPDATE research_pois SET content_embedding = $2 WHERE id = $1`, [id, vector]);
+  const inputHash = stableHash({
+    text,
+    model: ingestConfig.embeddings.model,
+    dim: ingestConfig.embeddings.dim,
+  });
+  await db.query(
+    `INSERT INTO research_poi_embeddings (
+       normalization_id, input_hash, model, model_version, embedding, activated_at
+     )
+     SELECT active_normalization_id, $2, $3, $3, $4, now()
+     FROM research_pois
+     WHERE id = $1 AND active_normalization_id IS NOT NULL
+     ON CONFLICT (normalization_id, input_hash) DO UPDATE SET
+       embedding = EXCLUDED.embedding, activated_at = now()`,
+    [id, inputHash, ingestConfig.embeddings.model, vector],
+  );
 }
 
 async function fetchRows(db: Pool, opts: CliOptions): Promise<EmbedRow[]> {
@@ -164,7 +181,7 @@ async function runEmbed(db: Pool, opts: CliOptions): Promise<EmbedStats> {
     stats.apiCalls++;
 
     for (let j = 0; j < work.length; j++) {
-      await writeEmbedding(db, work[j]!.row.id, vectors[j]!);
+      await writeEmbedding(db, work[j]!.row.id, work[j]!.text, vectors[j]!);
       stats.embedded++;
       console.log(`✓ ${work[j]!.row.name ?? work[j]!.row.name_normalized}`);
     }

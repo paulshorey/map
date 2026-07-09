@@ -129,5 +129,15 @@ The existing `docs/poi/rv_campgrounds_data/AGENTS.md` and
 
 Even with the generic extractor, each source needs a metadata entry in
 `lib/db-map/scripts/ingest/sources.ts` (slug, display name, homepage, license, attribution,
-trust 0–100). That is a 8-line change. Custom extractor code is only needed when the file
+trust 0–100). That is a small change. Custom extractor code is only needed when the file
 shape does not conform to this spec (wrapper objects, HTML-laden CSVs, KML, etc.).
+
+When importing, always pass the canonical category explicitly:
+
+```bash
+pnpm --filter @lib/db-map ingest:run <file> --category <slug>
+# or:
+pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <slug>
+```
+
+Category is never inferred from the folder name or raw record fields.

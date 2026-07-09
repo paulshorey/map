@@ -16,13 +16,15 @@ The primary command is file-first:
 
 ```bash
 pnpm --filter @lib/db-map ingest:run \
-  docs/poi/music-festivals/directories/musicfestivalwizard_festivals.json
+  docs/poi/music-festivals/directories/musicfestivalwizard_festivals.json \
+  --category music_festival
 ```
 
-The developer supplies only the source file in the normal case. The command:
+The developer supplies the source file and canonical category. The command:
 
-1. resolves the file to exactly one registered source and category;
-2. validates the source profile, taxonomy, extractor, and required credentials;
+1. resolves the file to exactly one registered source (or an inferred source slug for generic files);
+2. uses the supplied `--category` slug for all writes — category is never inferred;
+3. validates the source profile, taxonomy, extractor, and required credentials;
 3. computes the file and pipeline fingerprints;
 4. resumes a compatible incomplete run or creates a new run;
 5. skips artifacts already complete for the same input/version;
@@ -35,28 +37,28 @@ Useful modes:
 
 ```bash
 # Explain source resolution and intended work; no writes or provider calls.
-pnpm --filter @lib/db-map ingest:run <file> --dry-run
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --dry-run
 
 # Process at most 20 new records per stage; useful for a pilot.
-pnpm --filter @lib/db-map ingest:run <file> --limit 20
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --limit 20
 
 # Stop after normalization, retaining resumable state.
-pnpm --filter @lib/db-map ingest:run <file> --stop-after normalize
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --stop-after normalize
 
 # Retry failed/retryable work without repeating successful artifacts.
-pnpm --filter @lib/db-map ingest:run <file> --retry-failed
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --retry-failed
 
 # Re-run selected logic even when its version/input cache says complete.
-pnpm --filter @lib/db-map ingest:run <file> --reprocess normalize
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --reprocess normalize
 
 # Re-run a stage and all required descendants.
-pnpm --filter @lib/db-map ingest:run <file> --from normalize
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --from normalize
 
 # Evaluate a new normalizer without activating it downstream.
-pnpm --filter @lib/db-map ingest:run <file> --from normalize --shadow
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> --from normalize --shadow
 
 # Bound external work.
-pnpm --filter @lib/db-map ingest:run <file> \
+pnpm --filter @lib/db-map ingest:run <file> --category <slug> \
   --max-llm-requests 100 --max-cost-usd 1 --geocode-limit 500
 ```
 
