@@ -124,6 +124,23 @@ CREATE TABLE public.geo_centroids (
 
 
 --
+-- Name: research_consolidation_decisions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_consolidation_decisions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    canonical_a uuid NOT NULL,
+    canonical_b uuid NOT NULL,
+    same_place boolean NOT NULL,
+    reason text,
+    method text DEFAULT 'llm'::text NOT NULL,
+    decided_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_consolidation_decisions_method_check CHECK ((method = ANY (ARRAY['llm'::text, 'override'::text]))),
+    CONSTRAINT research_consolidation_decisions_pair_ordered CHECK ((canonical_a < canonical_b))
+);
+
+
+--
 -- Name: research_geocode_cache; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -318,6 +335,22 @@ ALTER TABLE ONLY public.geo_centroids
 
 
 --
+-- Name: research_consolidation_decisions research_consolidation_decisions_pair_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_consolidation_decisions
+    ADD CONSTRAINT research_consolidation_decisions_pair_unique UNIQUE (canonical_a, canonical_b);
+
+
+--
+-- Name: research_consolidation_decisions research_consolidation_decisions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_consolidation_decisions
+    ADD CONSTRAINT research_consolidation_decisions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: research_geocode_cache research_geocode_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -488,6 +521,13 @@ CREATE INDEX geo_centroids_lng_idx ON public.geo_centroids USING btree (lng);
 
 
 --
+-- Name: research_consolidation_decisions_b_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_consolidation_decisions_b_idx ON public.research_consolidation_decisions USING btree (canonical_b);
+
+
+--
 -- Name: research_match_decisions_research_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -595,6 +635,22 @@ ALTER TABLE ONLY public.canonical_poi_occurrences
 
 ALTER TABLE ONLY public.canonical_pois
     ADD CONSTRAINT canonical_pois_primary_category_id_fkey FOREIGN KEY (primary_category_id) REFERENCES public.canonical_categories(id) ON DELETE SET NULL;
+
+
+--
+-- Name: research_consolidation_decisions research_consolidation_decisions_canonical_a_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_consolidation_decisions
+    ADD CONSTRAINT research_consolidation_decisions_canonical_a_fkey FOREIGN KEY (canonical_a) REFERENCES public.canonical_pois(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_consolidation_decisions research_consolidation_decisions_canonical_b_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_consolidation_decisions
+    ADD CONSTRAINT research_consolidation_decisions_canonical_b_fkey FOREIGN KEY (canonical_b) REFERENCES public.canonical_pois(id) ON DELETE CASCADE;
 
 
 --

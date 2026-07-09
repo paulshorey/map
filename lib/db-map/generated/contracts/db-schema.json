@@ -254,6 +254,43 @@
       "type": "number"
     }
   ],
+  "research_consolidation_decisions": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "canonical_a",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "canonical_b",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "same_place",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "reason",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "method",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "decided_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
   "research_geocode_cache": [
     {
       "column": "query_norm",
