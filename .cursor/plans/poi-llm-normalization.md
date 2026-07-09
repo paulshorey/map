@@ -202,8 +202,14 @@ Add:
 
 - `active_observation_id uuid null`;
 - `active_normalization_id uuid null`
-- `normalization_state text not null`:
-  `pending | active | rejected | degraded | failed`
+- `active_projection_state text not null`: `none | active | active_stale`; this describes
+  whether `active_normalization_id` is safe for downstream readers, independently of any
+  replacement work;
+- `normalization_refresh_state text not null`:
+  `idle | pending | leased | rejected | failed`; this is resumable work state for the latest
+  observation, never a signal for downstream eligibility;
+- `normalization_lease_owner text null`, `normalization_lease_expires_at timestamptz null`,
+  and an attempt/claim token for an atomic lease;
 - `normalization_input_hash text null`
 - `normalized_at timestamptz null`
 - `matched_normalization_id uuid null`
@@ -224,9 +230,12 @@ Insert one observation for each distinct deep-canonical raw payload:
 - uniqueness on `(research_poi_id, raw_content_hash)`.
 
 An unchanged re-import updates `last_seen_at`. A changed re-import inserts an observation,
-points `research_pois.active_observation_id` to it, and marks normalization pending, while
-the prior accepted normalization remains active until its replacement passes validation.
-Every normalization references the exact observation it interpreted.
+points `research_pois.active_observation_id` to it, sets `normalization_refresh_state` to
+`pending`, and sets `active_projection_state` to `active_stale` when a prior accepted
+normalization exists. The prior normalization remains the active downstream projection until
+its replacement passes validation. Rows without an accepted normalization are `none` and do
+not enter the current view. Every normalization references the exact observation it
+interpreted.
 
 Replace extractor `is_poi` as authority with a captured `source_is_poi_hint`. An explicit
 source flag such as `is_festival: false` is a hard constraint, not the final normalized
@@ -291,15 +300,26 @@ One row per research row and normalization input/version:
   - activated projection;
   - per-field evidence paths, derivation kind, and confidence;
   - match fingerprint and canonical-build fingerprint inputs;
-- enrichments used downstream:
-  - selected source/URL coordinate candidate and precision;
-  - geocode assignment/query;
-  - embedding text hash and vector.
 
 Interpretations are append-only. A new prompt or source policy creates a new row; activation
 changes only the pointer on `research_pois`.
 
-### 7.5 `research_poi_occurrences`: multiple dates per interpretation
+### 7.5 Versioned downstream enrichments
+
+Keep geocoding and embeddings out of the immutable semantic interpretation. Add separate,
+versioned tables keyed by `normalization_id`:
+
+- `research_poi_geocodes` records the selected source/URL coordinate candidate, geocoder
+  query/provider/version, result, precision, validation outcome, input hash, and activation
+  timestamp;
+- `research_poi_embeddings` records the embedding text hash, model/version, vector, and
+  activation timestamp.
+
+Retries or provider/model changes append a new enrichment row; they never mutate or create a
+new semantic normalization. The current view selects the activated/latest valid enrichment
+for its active normalization.
+
+### 7.6 `research_poi_occurrences`: multiple dates per interpretation
 
 Store zero or more occurrences per normalization:
 
@@ -314,17 +334,18 @@ range. End-only phrases such as “through May 29” remain partial date facts a
 an occurrence until a start is supported. Yearless recurring phrases remain recurrence
 metadata; the pipeline must not fabricate a current-year occurrence.
 
-### 7.6 `research_pois_current`: downstream compatibility view
+### 7.7 `research_pois_current`: downstream compatibility view
 
 Create one view that joins each source row to its active accepted/degraded normalization and
-exposes the effective names, locality, dates, contacts, coordinates, categories,
-attributes, and embedding.
+the selected geocode/embedding projections. It exposes the effective names, locality, dates,
+contacts, coordinates, categories, attributes, and embedding. `active_stale` is still
+included; refresh/job state never makes an otherwise active row disappear.
 
 Migrate geocode, embed, match, report, and canonical merge to this view. A single read
 contract prevents each stage from inventing its own captured-vs-normalized fallback logic.
 Rejected and failed rows do not appear as matchable POIs.
 
-### 7.7 Optional canonical build cache
+### 7.8 Optional canonical build cache
 
 When canonical synthesis is implemented, add `canonical_poi_builds` keyed by a fingerprint
 of the sorted active normalization ids, their versions, source trust, and synthesis
@@ -369,9 +390,11 @@ Each result contains:
    - missing critical evidence, contradictory source fields, suspected closure/staleness,
      and possible multi-entity record.
 
-Target JSON Schema with `strict: true` through DeepInfra's documented
-`response_format: { type: "json_schema" }`. Capability-test that mode against the configured
-V4 Flash model at startup and in the golden benchmark; fall back to
+Target JSON Schema with `strict: true` through DeepInfra's documented response format:
+`response_format: { type: "json_schema", json_schema: { name: "poi_normalization",
+strict: true, schema: <generated JSON Schema> } }`. Send that exact generated schema payload
+on every schema-mode request, persist its version/hash with the batch, and capability-test it
+against the configured V4 Flash model at startup and in the golden benchmark; fall back to
 `response_format: { type: "json_object" }` plus the same application validator if the model
 rejects the schema mode. Provider-enforced structure does not prove semantic correctness
 and can increase pressure to hallucinate required values. Every uncertain field must
@@ -499,6 +522,9 @@ Validate records independently:
 - `invalid_reason` must agree with `is_poi`.
 - categories must be in the configured allowed taxonomy subtree.
 - country codes must be valid ISO-2 values.
+- every non-null venue, address, city, and region value must cite a valid evidence path or an
+  enumerated locality candidate from the input; unsupported locality values are rejected
+  rather than trusted by geocoding or matching.
 - occurrence dates must be real, ordered, and supported by cited source paths.
 - source, URL, coordinate, contact, and identifier candidate ids must exist in the input.
 - the model cannot return a literal URL, coordinate, phone, email, or identifier that was
@@ -536,7 +562,9 @@ Activation is transactional:
 5. Preserve canonical membership when only description/non-match attributes changed, but
    mark that canonical for rebuild.
 6. Clear/reprocess membership only when identity, category, locality, coordinate, contact,
-   strong-id, or occurrence signals materially changed.
+   strong-id, or occurrence signals materially changed. Before clearing it, enqueue the prior
+   canonical for rebuild so removing this row cannot leave its selected fields, occurrences,
+   or source-count quality stale.
 7. Keep the previous active normalization if a replacement attempt fails.
 
 This removes the current failure window where re-extraction clears a working canonical link
@@ -583,9 +611,13 @@ batch token limits from the golden benchmark rather than assumption.
 
 Use a database-backed claim/lease:
 
-- select pending rows with `FOR UPDATE SKIP LOCKED`;
-- commit the claim before the network call;
-- renew or expire a lease so interrupted workers are resumable;
+- select eligible pending/expired rows with `FOR UPDATE SKIP LOCKED` and atomically write a
+  unique claim token, lease owner, `leased` refresh state, and lease expiry in the same
+  transaction;
+- commit that persisted claim before the network call, and require its token when recording
+  a completion or activation so a superseded worker cannot win a race;
+- renew leases for in-flight calls and return expired leases to pending work so interrupted
+  workers are resumable;
 - persist each completed batch before claiming another;
 - use source/category-scoped advisory locking where projection order matters.
 
@@ -603,7 +635,9 @@ Semantics:
 - default: use cache, call DeepSeek for cache misses, validate, and activate;
 - `--shadow`: store/evaluate new interpretations without activating them;
 - `--no-llm`: make no provider calls, reuse accepted cache entries, and otherwise create
-  only deterministic degraded output;
+  deterministic degraded output only in shadow or for rows with no active normalization.
+  It preserves an existing active normalization; replacing it with degraded output requires
+  an explicit force flag;
 - `--dry-run`: show selected rows, cache/call estimates, and projected changes without
   provider calls or writes;
 - limits bound new work, not cache hits;
@@ -783,7 +817,8 @@ representative corpus.
 ### Phase 1 — Versioned storage and provider client
 
 1. Add observation, normalization batch, per-row normalization, occurrence, active-pointer,
-   state, and required indexes/constraints.
+   separate geocode/embedding projection, refresh/lease state, and required
+   indexes/constraints.
 2. Add the current-view contract.
 3. Upgrade the DeepInfra provider client.
 4. Implement canonical input hashing and cache lookup.
@@ -800,7 +835,10 @@ existing downstream behavior.
 3. Implement source-homogeneous, token-budgeted batching and leasing.
 4. Implement strict response parsing, batch splitting, semantic validation, and repair.
 5. Implement deterministic degraded output and transactional activation.
-6. Replace the current row-at-a-time normalizer CLI with this orchestrator.
+6. Replace the current row-at-a-time normalizer CLI with this orchestrator while continuing
+   to project accepted active values into the legacy `research_pois` normalized columns
+   consumed by geocode, embed, and match. Retire that compatibility projection only in
+   Phase 3 after every reader has cut over to `research_pois_current`.
 
 Exit: accepted active normalizations are materially better than captured fields on the
 golden sources; unchanged reruns issue zero calls.

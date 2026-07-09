@@ -204,9 +204,9 @@ drawer still renders event status.
 
 1. Workstream E decision (city-precision publish policy) — small, unblocks festivals.
 2. `ingest:run` orchestrator (A) — every later run benefits.
-3. RIDB campground extractor + first campground run (E).
-4. LLM-native normalize golden set + shadow engine (D), then cut over before the messier
-   festival directories.
+3. LLM-native normalize golden set + shadow engine (D), then cut over before any new
+   directory-scraped campground or festival import.
+4. RIDB campground extractor + first campground run (E), using the new normalizer.
 5. Resident Advisor + Music Festival Wizard runs (E).
 6. Validation doc for gardens + first campground/festival slices (F).
 7. Staged legacy importer path (C).
