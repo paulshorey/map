@@ -10,6 +10,7 @@ Research notes, POI source files, ingestion references, and staged import data. 
 | `poi/{category}/` | Source files and notes per POI category. |
 | `import-data/` | Legacy JSON arrays ready for direct `pnpm db:import:json`. |
 | `poi-research/` | Research notes for sources and categories. |
+| `poi-research/capture-spec.md` | Required reading before mining new sources: raw data capture format that the generic extractor ingests with zero code. |
 
 ## POI ingestion
 
@@ -33,8 +34,13 @@ destructive rebuild.
 
 Organize by category folder. Typical contents:
 
-- `.kml` / `.kmz` — original downloads from external sources
+- `.kml` / `.kmz` / `.json` / `.csv` — original downloads from external sources
 - `README.md` — source URLs, licensing notes, import commands used
+
+When saving newly mined data, follow `poi-research/capture-spec.md`: flat records in a
+top-level JSON array/JSONL/CSV with stable ids, verbatim fields, and `website` kept
+separate from the listing `source_url`. Conformant files import through the generic
+extractor with no code changes.
 
 ## Legacy direct imports
 

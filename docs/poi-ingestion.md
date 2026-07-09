@@ -20,6 +20,7 @@ The important tables are:
 | `research_geocode_cache` | Forward-geocode cache and remembered misses. |
 | `research_match_decisions` | Audit trail for match decisions. |
 | `research_match_overrides` | Manual force-same / force-different corrections. |
+| `research_consolidation_decisions` | Memoized anchor-vs-anchor LLM verdicts reused across consolidation runs. |
 | `canonical_pois` | One user-facing merged POI. |
 | `canonical_categories` | Code-owned taxonomy. |
 | `canonical_poi_categories` | Many-to-many POI/category links. |
@@ -57,6 +58,7 @@ pnpm --filter @lib/db-map ingest:match --consolidate
 Useful supporting commands:
 
 ```bash
+pnpm --filter @lib/db-map ingest:report [--source <slug>] [--category <slug>]
 pnpm --filter @lib/db-map ingest:seed:centroids
 pnpm --filter @lib/db-map ingest:backfill:wikidata-coords
 pnpm --filter @lib/db-map ingest:reflow
@@ -84,6 +86,13 @@ pnpm --filter @lib/db-map ingest:extract bgci docs/poi/botanical_gardens_data/bg
 Extract stores a content hash. Re-importing unchanged records updates observation metadata
 without resetting downstream work. Changed records have derived columns reset so they can
 flow through normalize/geocode/embed/match again.
+
+Sources registered in `scripts/ingest/sources.ts` without a custom extractor fall back to
+the **generic capture-spec extractor**: files whose records follow
+`docs/poi-research/capture-spec.md` (flat objects in a top-level JSON array, JSONL, or CSV
+with the standard field names) need only a source metadata entry and zero extractor code.
+Write a custom extractor only when the file shape does not conform (wrapper objects,
+HTML-laden fields, KML, nested venue objects).
 
 ### Normalize
 
@@ -208,6 +217,29 @@ pnpm --filter @lib/db-map ingest:match --consolidate-only
 pnpm --filter @lib/db-map ingest:match --consolidate-only --dry-run
 ```
 
+Anchor-vs-anchor pairs are the only consolidation decisions that need the LLM, and those
+verdicts are memoized in `research_consolidation_decisions`. A rerun skips previously
+adjudicated pairs; a stored verdict is re-asked only when either canonical has been
+rebuilt with new data since the verdict (`canonical_pois.updated_at` newer than the memo).
+This makes repeated `--consolidate` runs after incremental imports cheap: satellite merges
+are deterministic, and only genuinely new or changed anchor pairs spend LLM calls.
+
+## Re-importing a Source (Idempotency)
+
+Re-running `ingest:extract` on a file you already imported is safe and cheap:
+
+- Rows are upserted by `(source_id, source_record_id)` with a content hash.
+- **Unchanged records** only get `last_seen_at` bumped. They keep `canonical_poi_id`, so
+  they are already linked and `ingest:match` skips them entirely.
+- **Changed records** have derived columns reset (including `canonical_poi_id`) and flow
+  through normalize/geocode/embed/match again. Only those rows are re-matched.
+- **New records** flow through the pipeline normally.
+
+You do not need to re-run matching or consolidation "on all records" after a re-import.
+`ingest:match --consolidate` processes only pending rows, and the consolidation sweep
+reuses memoized anchor verdicts, so an idempotent re-import ends in seconds. The prerequisite
+is a stable `source_record_id` per record — see `docs/poi-research/capture-spec.md`.
+
 ## Full Recluster
 
 `--recluster` is destructive. It deletes match decisions, nulls every linked
@@ -243,6 +275,22 @@ the updated pipeline again.
 
 Use `ingest:backfill:wikidata-coords` to fill coordinates from Wikidata attributes where
 available without spending geocoder budget.
+
+## Reporting
+
+`ingest:report` prints a read-only reconciliation summary: research rows by source and
+stage, match readiness (pending vs missing coords/name/categories), canonicals by primary
+category with published/hidden splits, match decisions by method, geocode cache
+effectiveness, popularity distribution, top contributing sources, and event date coverage.
+
+```bash
+pnpm --filter @lib/db-map ingest:report
+pnpm --filter @lib/db-map ingest:report --source bgci
+pnpm --filter @lib/db-map ingest:report --category music_festival
+```
+
+Run it before and after every source import; the output is compact enough to paste into a
+PR or validation log.
 
 ## Troubleshooting
 
