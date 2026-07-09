@@ -7,13 +7,24 @@
  *
  * Usage:
  *   pnpm --filter @lib/db-map ingest:match [--source <slug>] [--limit N] [--dry-run] [--no-llm]
- *   pnpm --filter @lib/db-map ingest:match --recluster
+ *   pnpm --filter @lib/db-map ingest:match --recluster [--consolidate]
  *   pnpm --filter @lib/db-map ingest:match --gc-orphans
  */
 import type { Pool, PoolClient } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { ingestConfig } from "./config.js";
 import { rebuildCanonicalPoi } from "./merge.js";
+import {
+  distinctiveName,
+  isAnchor,
+  isSatelliteLikeResearch,
+  isWithinProximityBox,
+  normalizedExactName,
+  pairNameSimilarity,
+  proximityDegFor,
+} from "./match/anchors.js";
+import { collapseDuplicateCanonicals } from "./match/canonicals.js";
+import { runConsolidation } from "./match/consolidate.js";
 import { dateCompatibility, type DateCompatibilitySignal } from "./match/dates.js";
 import { bboxAround, haversineMeters } from "./match/geo.js";
 import { extractStrongIds } from "./match/ids.js";
@@ -43,6 +54,7 @@ interface CliOptions {
   noLlm: boolean;
   recluster: boolean;
   gcOrphans: boolean;
+  consolidate: boolean;
   tHigh: number;
   tLow: number;
 }
@@ -55,8 +67,10 @@ interface MatchStats {
   auto: number;
   strongId: number;
   override: number;
+  proximity: number;
   skipped: number;
   garbageCollected: number;
+  consolidated: number;
 }
 
 interface ResearchMatchRow {
@@ -94,15 +108,21 @@ interface CandidateRow {
   canonical_lng: number;
   canonical_website: string | null;
   canonical_phone: string | null;
+  canonical_address: string | null;
   canonical_starts_at: Date | null;
   canonical_ends_at: Date | null;
   canonical_date_precision: string | null;
+  canonical_popularity: number;
+  canonical_has_website: boolean;
+  canonical_has_wikidata_qid: boolean;
+  canonical_max_source_trust: number;
   best_research_id: string | null;
   best_name: string | null;
   best_name_normalized: string | null;
   best_content_embedding: number[] | null;
   best_website_domain: string | null;
   best_phone: string | null;
+  best_address: string | null;
   best_city: string | null;
   best_region: string | null;
   best_country_code: string | null;
@@ -111,13 +131,14 @@ interface CandidateRow {
   best_ends_at: Date | null;
   best_date_precision: string | null;
   distance_m: number;
+  via: Array<"spatial" | "proximity" | "name">;
   score?: CandidateScore;
   dateCompatibility?: DateCompatibilitySignal;
 }
 
 interface Decision {
   decision: "merge" | "new";
-  method: "strong_id" | "auto" | "llm" | "override";
+  method: "strong_id" | "auto" | "llm" | "override" | "proximity";
   candidatePoiId: string | null;
   duplicateCanonicalIds?: string[];
   score: number | null;
@@ -132,6 +153,7 @@ function parseArgs(argv: string[]): CliOptions {
   let noLlm = false;
   let recluster = false;
   let gcOrphans = false;
+  let consolidate = false;
   let tHigh = ingestConfig.match.tHigh;
   let tLow = ingestConfig.match.tLow;
 
@@ -148,6 +170,7 @@ function parseArgs(argv: string[]): CliOptions {
     else if (a === "--no-llm") noLlm = true;
     else if (a === "--recluster") recluster = true;
     else if (a === "--gc-orphans") gcOrphans = true;
+    else if (a === "--consolidate") consolidate = true;
     else if (a === "--source") source = requireValue(a);
     else if (a === "--limit") limit = Number(requireValue(a));
     else if (a === "--auto-threshold") tHigh = Number(requireValue(a));
@@ -168,7 +191,7 @@ function parseArgs(argv: string[]): CliOptions {
   if (recluster && dryRun) throw new Error("--recluster cannot be combined with --dry-run");
   if (recluster && source) throw new Error("--recluster rebuilds all canonicals; run without --source");
   if (recluster && limit !== undefined) throw new Error("--recluster rebuilds all canonicals; run without --limit");
-  return { source, limit, dryRun, noLlm, recluster, gcOrphans, tHigh, tLow };
+  return { source, limit, dryRun, noLlm, recluster, gcOrphans, consolidate, tHigh, tLow };
 }
 
 async function resolveSourceId(client: PoolClient, slug: string): Promise<string> {
@@ -327,7 +350,16 @@ async function fetchCandidates(
 ): Promise<CandidateRow[]> {
   const radiusM = radiusFor(row.category_slugs);
   const bbox = bboxAround({ lat: row.lat, lng: row.lng }, radiusM);
-  const { rows } = await client.query<Omit<CandidateRow, "distance_m">>(
+  const nameBlockM = ingestConfig.match.nameBlockKm * 1000;
+  const nameBbox = bboxAround({ lat: row.lat, lng: row.lng }, nameBlockM);
+  const proximityDeg = proximityDegFor(row.category_slugs);
+  const { rows } = await client.query<
+    Omit<CandidateRow, "distance_m" | "via"> & {
+      via_spatial: boolean;
+      via_proximity: boolean;
+      via_name: boolean;
+    }
+  >(
     `SELECT
        cp.id AS canonical_id,
        cp.name AS canonical_name,
@@ -335,23 +367,52 @@ async function fetchCandidates(
        cp.lng AS canonical_lng,
        cp.website AS canonical_website,
        cp.phone AS canonical_phone,
+       cp.address AS canonical_address,
        cp.starts_at AS canonical_starts_at,
        cp.ends_at AS canonical_ends_at,
        cp.date_precision AS canonical_date_precision,
+       cp.popularity AS canonical_popularity,
+       COALESCE(meta.has_website, cp.website IS NOT NULL) AS canonical_has_website,
+       COALESCE(meta.has_wikidata_qid, false) AS canonical_has_wikidata_qid,
+       COALESCE(meta.max_source_trust, 0) AS canonical_max_source_trust,
        br.id AS best_research_id,
        br.name AS best_name,
        br.name_normalized AS best_name_normalized,
        br.content_embedding AS best_content_embedding,
        br.website_domain AS best_website_domain,
        br.phone AS best_phone,
+       br.address AS best_address,
        br.city AS best_city,
        br.region AS best_region,
        br.country_code AS best_country_code,
        br.coordinate_precision AS best_coordinate_precision,
        br.starts_at AS best_starts_at,
        br.ends_at AS best_ends_at,
-       br.date_precision AS best_date_precision
+       br.date_precision AS best_date_precision,
+       (cp.lat BETWEEN $1 AND $2 AND cp.lng BETWEEN $3 AND $4) AS via_spatial,
+       ($8::double precision > 0 AND abs(cp.lat - $6) <= $8 AND abs(cp.lng - $7) <= $8) AS via_proximity,
+       (
+         cp.lat BETWEEN $9 AND $10
+         AND cp.lng BETWEEN $11 AND $12
+         AND lower(cp.name) % $13
+         AND similarity(lower(cp.name), $13) >= 0.9
+       ) AS via_name
      FROM canonical_pois cp
+     JOIN LATERAL (
+       SELECT
+         max(rs.trust)::int AS max_source_trust,
+         bool_or(rp.website IS NOT NULL OR cp.website IS NOT NULL) AS has_website,
+         bool_or(
+           rp.attributes->>'wikidata_id' IS NOT NULL
+           OR rp.attributes->>'wikidata' IS NOT NULL
+           OR rp.raw->>'wikidata_id' IS NOT NULL
+           OR rp.raw->>'wikidata' IS NOT NULL
+           OR rp.source_record_id ~* '^Q[0-9]+$'
+         ) AS has_wikidata_qid
+       FROM research_pois rp
+       JOIN research_sources rs ON rs.id = rp.source_id
+       WHERE rp.canonical_poi_id = cp.id AND rp.is_poi
+     ) meta ON true
      LEFT JOIN LATERAL (
        SELECT rp.*, rs.trust
        FROM research_pois rp
@@ -361,24 +422,75 @@ async function fetchCandidates(
        LIMIT 1
      ) br ON true
      WHERE cp.status <> 'hidden'
-       AND cp.lat BETWEEN $1 AND $2
-       AND cp.lng BETWEEN $3 AND $4
-     LIMIT 100`,
-    [bbox.minLat, bbox.maxLat, bbox.minLng, bbox.maxLng],
+       AND EXISTS (
+         SELECT 1
+         FROM canonical_poi_categories cpc
+         JOIN canonical_categories cc ON cc.id = cpc.category_id
+         WHERE cpc.poi_id = cp.id
+           AND cc.slug = ANY($5::text[])
+       )
+       AND (
+         (cp.lat BETWEEN $1 AND $2 AND cp.lng BETWEEN $3 AND $4)
+         OR ($8::double precision > 0 AND abs(cp.lat - $6) <= $8 AND abs(cp.lng - $7) <= $8)
+         OR (
+           cp.lat BETWEEN $9 AND $10
+           AND cp.lng BETWEEN $11 AND $12
+           AND lower(cp.name) % $13
+           AND similarity(lower(cp.name), $13) >= 0.9
+         )
+       )
+     LIMIT 250`,
+    [
+      bbox.minLat,
+      bbox.maxLat,
+      bbox.minLng,
+      bbox.maxLng,
+      row.category_slugs ?? [],
+      row.lat,
+      row.lng,
+      proximityDeg,
+      nameBbox.minLat,
+      nameBbox.maxLat,
+      nameBbox.minLng,
+      nameBbox.maxLng,
+      row.name_normalized ?? row.name ?? "",
+    ],
   );
 
   return rows
     .filter((candidate) => !excluded.has(candidate.canonical_id))
-    .map((candidate) => ({
-      ...candidate,
-      distance_m: haversineMeters(
+    .map((candidate): CandidateRow => {
+      const distance_m = haversineMeters(
         { lat: row.lat, lng: row.lng },
         { lat: candidate.canonical_lat, lng: candidate.canonical_lng },
-      ),
-    }))
-    .filter((candidate) => candidate.distance_m <= radiusM)
-    .sort((a, b) => a.distance_m - b.distance_m)
-    .slice(0, 25);
+      );
+      const via: CandidateRow["via"] = [];
+      if (candidate.via_spatial && distance_m <= radiusM) via.push("spatial");
+      if (
+        candidate.via_proximity &&
+        isWithinProximityBox(
+          { lat: row.lat, lng: row.lng },
+          { lat: candidate.canonical_lat, lng: candidate.canonical_lng },
+          row.category_slugs,
+        )
+      ) {
+        via.push("proximity");
+      }
+      if (candidate.via_name && distance_m <= nameBlockM) via.push("name");
+
+      const { via_spatial, via_proximity, via_name, ...rest } = candidate;
+      void via_spatial;
+      void via_proximity;
+      void via_name;
+      return { ...rest, distance_m, via };
+    })
+    .filter((candidate) => candidate.via.length > 0)
+    .sort((a, b) => {
+      const aPriority = a.via.includes("proximity") ? 0 : a.via.includes("spatial") ? 1 : 2;
+      const bPriority = b.via.includes("proximity") ? 0 : b.via.includes("spatial") ? 1 : 2;
+      return aPriority - bPriority || a.distance_m - b.distance_m;
+    })
+    .slice(0, 40);
 }
 
 function scoreCandidates(row: ResearchMatchRow, candidates: CandidateRow[]): CandidateRow[] {
@@ -414,6 +526,107 @@ function scoreCandidates(row: ResearchMatchRow, candidates: CandidateRow[]): Can
     });
   }
   return candidates.sort((a, b) => (b.score?.score ?? 0) - (a.score?.score ?? 0));
+}
+
+function candidateAnchorMeta(candidate: CandidateRow) {
+  return {
+    canonical_id: candidate.canonical_id,
+    popularity: candidate.canonical_popularity,
+    max_source_trust: candidate.canonical_max_source_trust,
+    has_website: candidate.canonical_has_website,
+    has_wikidata_qid: candidate.canonical_has_wikidata_qid,
+  };
+}
+
+function candidateName(candidate: CandidateRow): string | null {
+  return candidate.best_name_normalized ?? candidate.best_name ?? candidate.canonical_name;
+}
+
+function dateSignalForCandidate(
+  row: ResearchMatchRow,
+  candidate: CandidateRow,
+  nameSignal: number,
+): DateCompatibilitySignal {
+  return dateCompatibility({
+    current: row,
+    candidate: {
+      starts_at: candidate.best_starts_at ?? candidate.canonical_starts_at,
+      ends_at: candidate.best_ends_at ?? candidate.canonical_ends_at,
+      date_precision: candidate.best_date_precision ?? candidate.canonical_date_precision,
+    },
+    nameSimilarity: nameSignal,
+    semanticSimilarity: nameSignal,
+    localitySimilarity: 0,
+    distanceM: candidate.distance_m,
+  });
+}
+
+async function llmDecisionForCandidate(
+  row: ResearchMatchRow,
+  candidate: CandidateRow,
+  score: CandidateScore,
+  signals: Record<string, unknown>,
+): Promise<Decision> {
+  try {
+    const llm = await adjudicateMatch({
+      current: {
+        name: row.name,
+        address: row.address,
+        city: row.city,
+        region: row.region,
+        country_code: row.country_code,
+        lat: row.lat,
+        lng: row.lng,
+        website: row.website,
+        phone: row.phone,
+        categories: row.category_slugs,
+        coordinate_precision: row.coordinate_precision,
+        starts_at: row.starts_at,
+        ends_at: row.ends_at,
+        date_precision: row.date_precision,
+      },
+      candidate: {
+        name: candidate.best_name ?? candidate.canonical_name,
+        canonical_name: candidate.canonical_name,
+        address: candidate.best_address ?? candidate.canonical_address,
+        city: candidate.best_city,
+        region: candidate.best_region,
+        country_code: candidate.best_country_code,
+        lat: candidate.canonical_lat,
+        lng: candidate.canonical_lng,
+        website: candidate.best_website_domain ?? candidate.canonical_website,
+        phone: candidate.best_phone ?? candidate.canonical_phone,
+        coordinate_precision: candidate.best_coordinate_precision,
+        starts_at: candidate.best_starts_at ?? candidate.canonical_starts_at,
+        ends_at: candidate.best_ends_at ?? candidate.canonical_ends_at,
+        date_precision: candidate.best_date_precision ?? candidate.canonical_date_precision,
+      },
+      distance_m: Math.round(candidate.distance_m),
+      score: score.score,
+      signals,
+    });
+
+    return {
+      decision: llm.samePlace ? "merge" : "new",
+      method: "llm",
+      candidatePoiId: candidate.canonical_id,
+      score: score.score,
+      signals,
+      llmReason: llm.reason,
+    };
+  } catch (err) {
+    // Conservative fallback (M0.4): an LLM/API failure must never auto-merge.
+    const message = err instanceof LlmError ? err.message : (err as Error).message;
+    console.warn(`Skipped LLM - ${row.name ?? row.id} - ${message}`);
+    return {
+      decision: "new",
+      method: "auto",
+      candidatePoiId: candidate.canonical_id,
+      score: score.score,
+      signals: { ...signals, reason: "llm_error" },
+      llmReason: message,
+    };
+  }
 }
 
 async function decideRow(
@@ -464,10 +677,36 @@ async function decideRow(
     };
   }
 
-  const candidates = scoreCandidates(
-    row,
-    await fetchCandidates(client, row, overrides.forceDifferentCanonicalIds),
-  );
+  const fetchedCandidates = await fetchCandidates(client, row, overrides.forceDifferentCanonicalIds);
+
+  const proximityAnchor = fetchedCandidates
+    .filter((candidate) => candidate.via.includes("proximity") && isAnchor(candidateAnchorMeta(candidate)))
+    .sort((a, b) => a.distance_m - b.distance_m)[0];
+
+  if (proximityAnchor) {
+    const candidateSimilarity = pairNameSimilarity(row.name_normalized ?? row.name, candidateName(proximityAnchor));
+    const dateSignal = dateSignalForCandidate(row, proximityAnchor, candidateSimilarity);
+    if (!dateSignal.conflict && isSatelliteLikeResearch(row, candidateSimilarity)) {
+      return {
+        decision: "merge",
+        method: "proximity",
+        candidatePoiId: proximityAnchor.canonical_id,
+        score: null,
+        signals: {
+          reason: "satellite_anchor_proximity",
+          best_candidate: proximityAnchor.canonical_id,
+          distance_m: Math.round(proximityAnchor.distance_m),
+          proximity_deg: proximityDegFor(row.category_slugs),
+          name_similarity: candidateSimilarity,
+          date_compatibility: dateSignal,
+          via: proximityAnchor.via,
+        },
+        llmReason: null,
+      };
+    }
+  }
+
+  const candidates = scoreCandidates(row, fetchedCandidates);
 
   if (candidates.length === 0) {
     return {
@@ -487,9 +726,98 @@ async function decideRow(
     best_candidate: best.canonical_id,
     distance_m: Math.round(best.distance_m),
     radius_m: radiusFor(row.category_slugs),
+    proximity_deg: proximityDegFor(row.category_slugs),
+    via: best.via,
     date_compatibility: dateSignal,
     signals: score.signals,
   };
+
+  const exactNameProximity = candidates.find((candidate) => {
+    return (
+      candidate.via.includes("proximity") &&
+      normalizedExactName(row.name_normalized ?? row.name, candidateName(candidate)) &&
+      !candidate.dateCompatibility!.conflict
+    );
+  });
+  if (exactNameProximity) {
+    return {
+      decision: "merge",
+      method: "auto",
+      candidatePoiId: exactNameProximity.canonical_id,
+      score: exactNameProximity.score!.score,
+      signals: {
+        reason: "exact_name_proximity",
+        best_candidate: exactNameProximity.canonical_id,
+        distance_m: Math.round(exactNameProximity.distance_m),
+        proximity_deg: proximityDegFor(row.category_slugs),
+        via: exactNameProximity.via,
+        date_compatibility: exactNameProximity.dateCompatibility,
+        signals: exactNameProximity.score!.signals,
+      },
+      llmReason: null,
+    };
+  }
+
+  const distinctiveNameBlock = candidates.find(
+    (candidate) =>
+      candidate.via.includes("name") &&
+      normalizedExactName(row.name_normalized ?? row.name, candidateName(candidate)) &&
+      distinctiveName(row.name_normalized ?? row.name) &&
+      !candidate.dateCompatibility!.conflict,
+  );
+  if (distinctiveNameBlock) {
+    return {
+      decision: "merge",
+      method: "auto",
+      candidatePoiId: distinctiveNameBlock.canonical_id,
+      score: distinctiveNameBlock.score!.score,
+      signals: {
+        reason: "distinctive_exact_name_name_block",
+        best_candidate: distinctiveNameBlock.canonical_id,
+        distance_m: Math.round(distinctiveNameBlock.distance_m),
+        name_block_km: ingestConfig.match.nameBlockKm,
+        via: distinctiveNameBlock.via,
+        date_compatibility: distinctiveNameBlock.dateCompatibility,
+        signals: distinctiveNameBlock.score!.signals,
+      },
+      llmReason: null,
+    };
+  }
+
+  const anchorProximity = candidates.find(
+    (candidate) =>
+      candidate.via.includes("proximity") &&
+      isAnchor(candidateAnchorMeta(candidate)) &&
+      !isSatelliteLikeResearch(row, candidate.score!.signals.name) &&
+      !candidate.dateCompatibility!.conflict,
+  );
+  if (anchorProximity) {
+    const anchorScore = anchorProximity.score!;
+    const anchorSignals = {
+      best_candidate: anchorProximity.canonical_id,
+      distance_m: Math.round(anchorProximity.distance_m),
+      radius_m: radiusFor(row.category_slugs),
+      proximity_deg: proximityDegFor(row.category_slugs),
+      via: anchorProximity.via,
+      date_compatibility: anchorProximity.dateCompatibility,
+      signals: anchorScore.signals,
+      match_context: "nearby same-category anchor/complex candidate",
+    };
+    if (opts.noLlm || opts.dryRun) {
+      return {
+        decision: "new",
+        method: "auto",
+        candidatePoiId: anchorProximity.canonical_id,
+        score: anchorScore.score,
+        signals: {
+          ...anchorSignals,
+          reason: opts.dryRun ? "dry_run_anchor_proximity_would_ask_llm" : "anchor_proximity_llm_disabled",
+        },
+        llmReason: null,
+      };
+    }
+    return llmDecisionForCandidate(row, anchorProximity, anchorScore, anchorSignals);
+  }
 
   if (
     !dateSignal.conflict &&
@@ -532,6 +860,20 @@ async function decideRow(
     };
   }
 
+  if (
+    !isAnchor(candidateAnchorMeta(best)) &&
+    isSatelliteLikeResearch(row, score.signals.name)
+  ) {
+    return {
+      decision: "new",
+      method: "auto",
+      candidatePoiId: best.canonical_id,
+      score: score.score,
+      signals: { ...baseSignals, reason: "satellite_pair_deferred_to_consolidation" },
+      llmReason: null,
+    };
+  }
+
   if (opts.noLlm || opts.dryRun) {
     return {
       decision: "new",
@@ -546,61 +888,14 @@ async function decideRow(
     };
   }
 
-  try {
-    const llm = await adjudicateMatch({
-      current: {
-        name: row.name,
-        address: row.address,
-        city: row.city,
-        region: row.region,
-        country_code: row.country_code,
-        website: row.website,
-        phone: row.phone,
-        categories: row.category_slugs,
-        coordinate_precision: row.coordinate_precision,
-        starts_at: row.starts_at,
-        ends_at: row.ends_at,
-        date_precision: row.date_precision,
-      },
-      candidate: {
-        name: best.best_name ?? best.canonical_name,
-        canonical_name: best.canonical_name,
-        city: best.best_city,
-        region: best.best_region,
-        country_code: best.best_country_code,
-        website: best.best_website_domain ?? best.canonical_website,
-        phone: best.best_phone ?? best.canonical_phone,
-        coordinate_precision: best.best_coordinate_precision,
-        starts_at: best.best_starts_at ?? best.canonical_starts_at,
-        ends_at: best.best_ends_at ?? best.canonical_ends_at,
-        date_precision: best.best_date_precision ?? best.canonical_date_precision,
-      },
-      distance_m: Math.round(best.distance_m),
-      score: score.score,
-      signals: baseSignals,
-    });
-
-    return {
-      decision: llm.samePlace ? "merge" : "new",
-      method: "llm",
-      candidatePoiId: best.canonical_id,
-      score: score.score,
-      signals: baseSignals,
-      llmReason: llm.reason,
-    };
-  } catch (err) {
-    // Conservative fallback (M0.4): an LLM/API failure must never auto-merge.
-    const message = err instanceof LlmError ? err.message : (err as Error).message;
-    console.warn(`Skipped LLM - ${row.name ?? row.id} - ${message}`);
-    return {
-      decision: "new",
-      method: "auto",
-      candidatePoiId: best.canonical_id,
-      score: score.score,
-      signals: { ...baseSignals, reason: "llm_error" },
-      llmReason: message,
-    };
-  }
+  return llmDecisionForCandidate(row, best, score, {
+    ...baseSignals,
+    match_context: best.via.includes("name")
+      ? "same/similar name within wide location block; decide if coordinates diverge for one real-world place"
+      : best.via.includes("proximity") && isAnchor(candidateAnchorMeta(best))
+        ? "nearby same-category anchor/complex candidate"
+        : "spatial candidate",
+  });
 }
 
 async function createCanonical(client: PoolClient, row: ResearchMatchRow): Promise<string> {
@@ -611,22 +906,6 @@ async function createCanonical(client: PoolClient, row: ResearchMatchRow): Promi
     [row.name ?? row.name_normalized ?? row.id, row.lng, row.lat],
   );
   return rows[0]!.id;
-}
-
-async function collapseDuplicateCanonicals(
-  client: PoolClient,
-  targetId: string,
-  duplicateIds: string[],
-): Promise<void> {
-  if (duplicateIds.length === 0) return;
-  await client.query(
-    `UPDATE research_pois SET canonical_poi_id = $1 WHERE canonical_poi_id = ANY($2)`,
-    [targetId, duplicateIds],
-  );
-  await client.query(
-    `UPDATE canonical_pois SET status = 'hidden', updated_at = now() WHERE id = ANY($1)`,
-    [duplicateIds],
-  );
 }
 
 async function writeDecision(
@@ -730,8 +1009,10 @@ async function runMatch(pool: Pool, opts: CliOptions): Promise<MatchStats> {
     auto: 0,
     strongId: 0,
     override: 0,
+    proximity: 0,
     skipped: 0,
     garbageCollected: 0,
+    consolidated: 0,
   };
 
   try {
@@ -789,10 +1070,18 @@ async function runMatch(pool: Pool, opts: CliOptions): Promise<MatchStats> {
         if (decision.method === "auto") stats.auto++;
         if (decision.method === "strong_id") stats.strongId++;
         if (decision.method === "override") stats.override++;
+        if (decision.method === "proximity") stats.proximity++;
       } catch (err) {
         await client.query("ROLLBACK");
         throw err;
       }
+    }
+
+    if (opts.consolidate) {
+      stats.consolidated = await runConsolidation(client, {
+        dryRun: opts.dryRun,
+        noLlm: opts.noLlm,
+      });
     }
 
     if (opts.gcOrphans) {
@@ -833,7 +1122,8 @@ async function main() {
   console.log(
     `Match${mode}${opts.source ? ` ${opts.source}` : ""}: processed=${stats.processed} ` +
       `merged=${stats.merged} created=${stats.created} auto=${stats.auto} ` +
-      `strong_id=${stats.strongId} llm=${stats.llm} override=${stats.override}` +
+      `strong_id=${stats.strongId} proximity=${stats.proximity} llm=${stats.llm} override=${stats.override}` +
+      `${opts.consolidate ? ` consolidated=${stats.consolidated}` : ""}` +
       `${opts.gcOrphans ? ` gc_orphans=${stats.garbageCollected}` : ""}`,
   );
 }

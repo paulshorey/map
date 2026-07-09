@@ -212,6 +212,48 @@
       "type": "Date"
     }
   ],
+  "geo_centroids": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "kind",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "admin1",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "country_code",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "population",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "lat",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "lng",
+      "nullable": false,
+      "type": "number"
+    }
+  ],
   "research_geocode_cache": [
     {
       "column": "query_norm",

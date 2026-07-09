@@ -42,6 +42,8 @@ export interface SourceMeta {
   license?: string;
   attribution?: string;
   trust: number;
+  /** Optional source-specific confidence for coordinates only. */
+  coord_trust?: number;
 }
 
 export interface SourceDefinition {
