@@ -122,38 +122,22 @@ Acceptance: curated JSON/KML flows through `research_pois` with provenance;
 
 ---
 
-## 6. Workstream D — LLM Triage in Normalize (new)
+## 6. Workstream D — LLM-First Normalization (own plan)
 
-The model (DeepSeek on DeepInfra) is currently used only for prose-date parsing, gray-zone
-match adjudication, and description fusion. The messy scraped sources in `docs/poi/`
-(carnival blog scrapes, Reddit extracts, directory listings) need more interpretation than
-deterministic code should attempt. Add a bounded, cached LLM triage inside
-`ingest:normalize` for rows that need it:
+Expanded from "LLM triage" into a full LLM-first rewrite of `ingest:normalize` and moved
+to its own plan: **`.cursor/plans/poi-llm-normalize.md`** (proposed, awaiting review;
+prototype validated against real messy records in
+`.cursor/plans/llm-normalize-prototype/`).
 
-- **Validity**: is this row a real place/event POI, or a region/article/organization/tour?
-  Sets `is_poi = false` + `attributes.invalid_reason` (extends the existing validity gate).
-- **Name canonicalization**: strip edition years and boilerplate
-  ("110 Above Festival 2026" → base name + `attributes.edition_year`), so editions of the
-  same festival block/merge cleanly.
-- **Locality extraction**: split free-text `location` strings ("Shoreline Waterfront,
-  Long Beach, CA") into city/region/country when the structured fields are empty —
-  directly improves geocode hit rate and locality match signals.
+Summary: DeepSeek-V4-Flash normalizes every messy scraped row (validity, canonical name +
+edition year, locality → ISO country, dates, official-website demotion, clean
+description), cached by `content_hash` + prompt version, with deterministic prep before
+and strict validation guardrails after. Structured sources (BGCI, Wikidata, OSM, RIDB)
+opt out per-source. Measured cost ≈ $5.60 per 100k rows.
 
-Design constraints (keep it cheap and reproducible):
-
-- Deterministic rules first; LLM only when fields are missing/ambiguous.
-- Batch 20–50 rows per prompt; temperature 0; strict JSON out; reject on schema mismatch.
-- Cache per `content_hash` in an `attributes.triage` block (or a small cache table) so
-  reruns and `--reflow` never re-pay for unchanged rows.
-- `--no-llm` skips triage entirely (rows fall back to today's behavior).
-- LLM output never overwrites captured source fields — it fills separate normalized
-  columns/attributes, same pattern as `date_source: "llm"`.
-
-Acceptance:
-
-- A directory-scraped festival source normalizes with ≥95% usable city/country.
-- Edition-year names collapse to one canonical with multiple occurrences.
-- Rerunning normalize on unchanged rows makes zero LLM calls.
+Why it matters here: implement before the messy festival/carnival directory imports
+(Workstream E steps 5+); it directly determines canonical name/description/locality
+quality for those categories.
 
 ---
 
