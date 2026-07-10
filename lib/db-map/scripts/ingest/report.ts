@@ -319,6 +319,86 @@ async function reportEventDates(db: Pool, opts: CliOptions): Promise<void> {
   }
 }
 
+async function reportNormalization(db: Pool, opts: CliOptions): Promise<void> {
+  const { rows } = await db.query<{
+    state: string;
+    count: string;
+  }>(
+    `SELECT rp.normalization_state AS state, count(*)::text AS count
+     FROM research_pois rp
+     JOIN research_sources rs ON rs.id = rp.source_id
+     WHERE ${RESEARCH_FILTER}
+     GROUP BY rp.normalization_state
+     ORDER BY count(*) DESC`,
+    [opts.source ?? null, opts.category ?? null],
+  );
+  heading("Hybrid normalization state");
+  if (rows.length === 0) console.log("(none)");
+  for (const row of rows) {
+    console.log(`${row.state.padEnd(18)} ${fmt(row.count).padStart(8)}`);
+  }
+
+  const requests = await db.query<{
+    total: string;
+    succeeded: string;
+    failed: string;
+    prompt_tokens: string;
+    completion_tokens: string;
+    cost: string;
+  }>(
+    `SELECT
+       count(*)::text AS total,
+       count(*) FILTER (WHERE rnr.status IN ('succeeded','repaired'))::text AS succeeded,
+       count(*) FILTER (WHERE rnr.status = 'failed')::text AS failed,
+       COALESCE(sum(rnr.prompt_tokens),0)::text AS prompt_tokens,
+       COALESCE(sum(rnr.completion_tokens),0)::text AS completion_tokens,
+       COALESCE(sum(rnr.estimated_cost_usd),0)::text AS cost
+     FROM research_normalization_requests rnr
+     JOIN research_pois rp ON rp.id = rnr.research_poi_id
+     JOIN research_sources rs ON rs.id = rp.source_id
+     WHERE ${RESEARCH_FILTER}`,
+    [opts.source ?? null, opts.category ?? null],
+  );
+  const request = requests.rows[0]!;
+  console.log(
+    `requests: ${fmt(request.total)}  succeeded: ${fmt(request.succeeded)}  ` +
+      `failed: ${fmt(request.failed)}  prompt tokens: ${fmt(request.prompt_tokens)}  ` +
+      `completion tokens: ${fmt(request.completion_tokens)}  cost: $${Number(request.cost).toFixed(6)}`,
+  );
+}
+
+async function reportIngestRuns(db: Pool, opts: CliOptions): Promise<void> {
+  const { rows } = await db.query<{
+    id: string;
+    logical_path: string;
+    status: string;
+    current_stage: string | null;
+    created_at: Date;
+  }>(
+    `SELECT rir.id, rsf.logical_path, rir.status, rir.current_stage, rir.created_at
+     FROM research_ingest_runs rir
+     JOIN research_source_file_versions rsfv ON rsfv.id = rir.source_file_version_id
+     JOIN research_source_files rsf ON rsf.id = rsfv.source_file_id
+     JOIN research_sources rs ON rs.id = rir.source_id
+     WHERE ($1::text IS NULL OR rs.slug = $1)
+       AND ($2::text IS NULL OR rir.category_slug = $2)
+     ORDER BY rir.created_at DESC
+     LIMIT 5`,
+    [opts.source ?? null, opts.category ?? null],
+  );
+  heading("Recent file ingest runs");
+  if (rows.length === 0) {
+    console.log("(none)");
+    return;
+  }
+  for (const row of rows) {
+    console.log(
+      `${row.status.padEnd(14)} ${(row.current_stage ?? "-").padEnd(12)} ` +
+        `${row.logical_path}  ${row.id}`,
+    );
+  }
+}
+
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
@@ -344,6 +424,8 @@ async function main() {
   await reportPopularity(db, opts);
   await reportTopSources(db, opts);
   await reportEventDates(db, opts);
+  await reportNormalization(db, opts);
+  await reportIngestRuns(db, opts);
 
   await db.end();
 }

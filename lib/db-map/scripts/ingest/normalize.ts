@@ -1,392 +1,68 @@
 /**
- * Normalize + categorize research_pois (M5).
+ * Hybrid deterministic + DeepSeek research normalization.
  *
- * Resumable loop over rows where name_normalized IS NULL (set on first insert and
- * whenever content_hash changes). Non-POI rows (attributes._is_poi = false) are
- * skipped so they never become matchable — the validity gate (overview §15.1).
- *
- * Usage:
- *   pnpm --filter @lib/db-map ingest:normalize [--source <slug>] [--limit N] [--no-llm]
- *   pnpm --filter @lib/db-map ingest:normalize --report-raw-categories [--source <slug>]
- *   pnpm --filter @lib/db-map ingest:normalize --report-coverage [--source <slug>]
+ * One real research record is sent per LLM request with two reviewed examples.
+ * Deterministic facts and candidate validation always gate activation.
  */
-import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
-import { normalizeName, websiteDomain, normalizePhone } from "./normalize/text.js";
-import { fixCoordinates } from "./normalize/geo.js";
-import { coordsFromRecordUrls } from "./normalize/urlcoords.js";
-import { parseEventDates } from "./normalize/dates.js";
-import { countryToCode } from "./normalize/country.js";
-import { applyCentroidRules } from "./normalize/centroids.js";
-import {
-  loadValidSlugs,
-  resolveCategorySlugs,
-} from "./normalize/category.js";
+import { runHybridNormalize, type NormalizeOptions } from "./normalize/runner.js";
 
-interface CliOptions {
-  source?: string;
-  limit?: number;
-  reportRawCategories: boolean;
-  reportCoverage: boolean;
-  noLlm: boolean;
-}
-
-interface NormalizeStats {
-  processed: number;
-  swappedCoords: number;
-  droppedCoords: number;
-  urlCoords: number;
-  centroidCity: number;
-  centroidCountry: number;
-  reverseCity: number;
-  dated: number;
-  llmDated: number;
-  swappedDates: number;
-  categorized: number;
-  skipped: number;
-}
-
-interface ResearchRow {
-  id: string;
-  name: string | null;
-  website: string | null;
-  source_url: string | null;
-  phone: string | null;
-  country_code: string | null;
-  city: string | null;
-  region: string | null;
-  lat: number | null;
-  lng: number | null;
-  raw_category: string | null;
-  ingest_category: string | null;
-  country_name: string | null;
-  attributes: Record<string, unknown> | null;
-}
-
-function parseArgs(argv: string[]): CliOptions {
-  let source: string | undefined;
-  let limit: number | undefined;
-  let reportRawCategories = false;
-  let reportCoverage = false;
-  let noLlm = false;
-
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === "--report-raw-categories") reportRawCategories = true;
-    else if (a === "--report-coverage") reportCoverage = true;
-    else if (a === "--no-llm") noLlm = true;
-    else if (a === "--source" && argv[i + 1]) source = argv[++i];
-    else if (a === "--limit" && argv[i + 1]) limit = Number(argv[++i]);
-  }
-
-  if (limit !== undefined && (!Number.isFinite(limit) || limit < 1)) {
-    throw new Error(`Invalid --limit: ${limit}`);
-  }
-  return { source, limit, reportRawCategories, reportCoverage, noLlm };
-}
-
-async function resolveSourceId(db: Pool, slug: string): Promise<string> {
-  const { rows } = await db.query<{ id: string }>(
-    `SELECT id FROM research_sources WHERE slug = $1`,
-    [slug],
-  );
-  if (rows.length === 0) throw new Error(`Unknown source slug: ${slug}`);
-  return rows[0]!.id;
-}
-
-/** Validity gate (overview §15.1): only real POIs are normalized (and thus matchable). */
-const POI_FILTER = `is_poi`;
-
-async function runNormalize(
-  db: Pool,
-  opts: CliOptions,
-  validSlugs: Set<string>,
-): Promise<NormalizeStats> {
-  const stats: NormalizeStats = {
-    processed: 0,
-    swappedCoords: 0,
-    droppedCoords: 0,
-    urlCoords: 0,
-    centroidCity: 0,
-    centroidCountry: 0,
-    reverseCity: 0,
-    dated: 0,
-    llmDated: 0,
-    swappedDates: 0,
-    categorized: 0,
-    skipped: 0,
+function parseArgs(argv: string[]): NormalizeOptions {
+  const opts: NormalizeOptions = {
+    noLlm: false,
+    shadow: false,
+    reprocess: false,
+    retryFailed: false,
   };
-
-  const params: unknown[] = [];
-  let where = `name_normalized IS NULL AND ${POI_FILTER}`;
-  if (opts.source) {
-    params.push(await resolveSourceId(db, opts.source));
-    where += ` AND source_id = $${params.length}`;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    const value = () => {
+      const next = argv[++i];
+      if (!next || next.startsWith("--")) throw new Error(`Missing value for ${arg}`);
+      return next;
+    };
+    if (arg === "--source") opts.source = value();
+    else if (arg === "--limit") opts.limit = Number(value());
+    else if (arg === "--max-requests") opts.maxRequests = Number(value());
+    else if (arg === "--max-cost-usd") opts.maxCostUsd = Number(value());
+    else if (arg === "--no-llm") opts.noLlm = true;
+    else if (arg === "--shadow") opts.shadow = true;
+    else if (arg === "--reprocess") opts.reprocess = true;
+    else if (arg === "--retry-failed") opts.retryFailed = true;
+    else throw new Error(`Unknown argument: ${arg}`);
   }
-  let limitClause = "";
-  if (opts.limit !== undefined) {
-    params.push(opts.limit);
-    limitClause = ` LIMIT $${params.length}`;
-  }
-
-  const { rows } = await db.query<ResearchRow>(
-    `SELECT id, name, website, source_url, phone, country_code, city, region, lat, lng,
-            raw_category, ingest_category, attributes->>'country_name' AS country_name,
-            attributes
-     FROM research_pois
-     WHERE ${where}
-     ORDER BY first_seen_at${limitClause}`,
-    params,
-  );
-
-  for (const row of rows) {
-    const nameNormalized = row.name ? normalizeName(row.name) : null;
-    // A row with no usable name cannot be matched; skip (stays NULL, filtered next run).
-    if (!nameNormalized) {
-      stats.skipped++;
-      console.warn(`Skipped - ${row.name ?? `(id ${row.id})`} - no usable name`);
-      continue;
+  for (const [name, value] of [
+    ["--limit", opts.limit],
+    ["--max-requests", opts.maxRequests],
+    ["--max-cost-usd", opts.maxCostUsd],
+  ] as const) {
+    if (value !== undefined && (!Number.isFinite(value) || value < 0)) {
+      throw new Error(`Invalid ${name}: ${value}`);
     }
-    if (/^q\d+$/i.test(nameNormalized)) {
-      await db.query(
-        `UPDATE research_pois SET
-           name_normalized = $2,
-           is_poi = false,
-           attributes = attributes || $3::jsonb
-         WHERE id = $1`,
-        [row.id, nameNormalized, JSON.stringify({ invalid_reason: "wikidata_qid_name" })],
-      );
-      stats.skipped++;
-      console.warn(`Skipped - ${row.name ?? `(id ${row.id})`} - bare Wikidata QID name`);
-      continue;
-    }
-
-    const sourceHadCoords = row.lat !== null && row.lng !== null;
-    const coords = fixCoordinates(row.lat, row.lng);
-    if (coords.swapped) stats.swappedCoords++;
-    if (coords.dropped) stats.droppedCoords++;
-
-    let coordinateSource: string | null =
-      sourceHadCoords && coords.lat !== null && coords.lng !== null ? "source" : null;
-    let coordinatePrecision: string | null = coordinateSource ? "point" : null;
-
-    // URL-embedded coordinates (Google Maps links etc.) — zero geocoder spend.
-    if (coords.lat === null) {
-      const fromUrl = coordsFromRecordUrls(row);
-      if (fromUrl) {
-        coords.lat = fromUrl.lat;
-        coords.lng = fromUrl.lng;
-        coordinateSource = "url";
-        coordinatePrecision = "point";
-        stats.urlCoords++;
-      }
-    }
-
-    const domain = websiteDomain(row.website);
-    const phone = normalizePhone(row.phone);
-
-    let countryCode =
-      row.country_code ??
-      countryToCode(row.region) ??
-      countryToCode(row.country_name ?? undefined) ??
-      null;
-
-    const centroid = await applyCentroidRules(db, {
-      id: row.id,
-      name: row.name,
-      city: row.city,
-      region: row.region,
-      country_code: countryCode,
-      lat: coords.lat,
-      lng: coords.lng,
-      coordinate_source: coordinateSource,
-      coordinate_precision: coordinatePrecision,
-    });
-    coordinatePrecision = centroid.coordinate_precision;
-    countryCode = centroid.country_code;
-    if (centroid.centroidKind === "city") stats.centroidCity++;
-    if (centroid.centroidKind === "country") stats.centroidCountry++;
-    if (centroid.reverseCity) stats.reverseCity++;
-
-    // Event dates: deterministic parse of attribute date strings, with LLM prose
-    // fallback ("every February" → concrete upcoming dates).
-    const attrs = row.attributes ?? {};
-    const dates = await parseEventDates({
-      start: attrs.start_date as string | undefined,
-      end: attrs.end_date as string | undefined,
-      text: (attrs.date_text ?? attrs.dates ?? attrs.date_raw) as string | undefined,
-      allowLlm: !opts.noLlm,
-    });
-    if (dates.starts_at) stats.dated++;
-    if (dates.date_source === "llm") stats.llmDated++;
-    if (dates.swapped) stats.swappedDates++;
-
-    const slugs = resolveCategorySlugs(validSlugs, row.ingest_category);
-    if (slugs.length > 0) stats.categorized++;
-
-    await db.query(
-      `UPDATE research_pois SET
-         name_normalized = $2,
-         website_domain = $3,
-         phone = $4,
-         country_code = $5,
-         city = $15,
-         region = $16,
-         lat = $6,
-         lng = $7,
-         category_slugs = $8,
-         starts_at = $9,
-         ends_at = $10,
-         date_precision = $11,
-         coordinate_source = $12,
-         coordinate_precision = $13,
-         geocode_query_norm = NULL,
-         attributes = attributes || $14::jsonb
-       WHERE id = $1`,
-      [
-        row.id,
-        nameNormalized,
-        domain,
-        phone,
-        countryCode,
-        coords.lat,
-        coords.lng,
-        slugs,
-        dates.starts_at,
-        dates.ends_at,
-        dates.date_precision,
-        coordinateSource,
-        coordinatePrecision,
-        JSON.stringify({
-          ...(dates.date_source ? { date_source: dates.date_source } : {}),
-          ...centroid.attributes,
-        }),
-        centroid.city,
-        centroid.region,
-      ],
-    );
-    stats.processed++;
-    const dateNote = dates.starts_at
-      ? ` (${dates.starts_at}${dates.ends_at ? ` → ${dates.ends_at}` : ""}${dates.date_source === "llm" ? ", llm" : ""}${dates.swapped ? ", swap-repaired" : ""})`
-      : "";
-    console.log(`✓ ${row.name}${dateNote}`);
   }
-
-  return stats;
-}
-
-async function reportRawCategories(db: Pool, opts: CliOptions): Promise<void> {
-  const params: unknown[] = [];
-  let where = `raw_category IS NOT NULL AND ${POI_FILTER}`;
-  if (opts.source) {
-    params.push(await resolveSourceId(db, opts.source));
-    where += ` AND source_id = $${params.length}`;
-  }
-
-  const { rows } = await db.query<{ raw_category: string; n: number }>(
-    `SELECT rp.raw_category, count(*)::int n
-     FROM research_pois rp
-     WHERE ${where}
-     GROUP BY rp.raw_category
-     ORDER BY n DESC`,
-    params,
-  );
-
-  if (rows.length === 0) {
-    console.log("No raw categories recorded.");
-    return;
-  }
-  console.log("Raw categories (provenance only; category assignment comes from --category):");
-  for (const r of rows) {
-    console.log(`  ${r.n.toString().padStart(6)}  ${r.raw_category}`);
-  }
-}
-
-async function reportCoverage(db: Pool, opts: CliOptions): Promise<void> {
-  const params: unknown[] = [];
-  let where = "1=1";
-  if (opts.source) {
-    params.push(await resolveSourceId(db, opts.source));
-    where += ` AND source_id = $${params.length}`;
-  }
-
-  const { rows } = await db.query<Record<string, number>>(
-    `SELECT
-       count(*)::int AS total,
-       count(name)::int AS name,
-       count(website)::int AS website,
-       count(source_url)::int AS source_url,
-       count(phone)::int AS phone,
-       count(email)::int AS email,
-       count(address)::int AS address,
-       count(city)::int AS city,
-       count(region)::int AS region,
-       count(country_code)::int AS country_code,
-       count(lat)::int AS coordinates,
-       count(name_normalized)::int AS name_normalized
-     FROM research_pois
-     WHERE ${where}`,
-    params,
-  );
-
-  const r = rows[0]!;
-  const total = r.total;
-  if (!total) {
-    console.log("No research_pois rows to report.");
-    return;
-  }
-  console.log(`Field coverage (${total} rows${opts.source ? `, source=${opts.source}` : ""}):`);
-  const fields = [
-    "name",
-    "website",
-    "source_url",
-    "phone",
-    "email",
-    "address",
-    "city",
-    "region",
-    "country_code",
-    "coordinates",
-    "name_normalized",
-  ];
-  for (const f of fields) {
-    const n = r[f] ?? 0;
-    const pct = ((n / total) * 100).toFixed(0);
-    console.log(`  ${f.padEnd(16)} ${pct.padStart(3)}%  (${n}/${total})`);
-  }
+  return opts;
 }
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
-
-  if (opts.reportRawCategories) {
-    await reportRawCategories(db, opts);
+  try {
+    const stats = await runHybridNormalize(db, opts);
+    console.log(
+      `Normalize${opts.source ? ` ${opts.source}` : ""}: selected=${stats.selected} ` +
+        `processed=${stats.processed} cache_hits=${stats.cacheHits} ` +
+        `llm_requests=${stats.llmRequests} accepted=${stats.accepted} ` +
+        `degraded=${stats.degraded} rejected=${stats.rejected} failed=${stats.failed} ` +
+        `cost_usd=${stats.costUsd.toFixed(6)}` +
+        `${stats.stoppedByBudget ? " [budget reached; rerun to continue]" : ""}`,
+    );
+    if (stats.failed > 0) process.exitCode = 2;
+  } finally {
     await db.end();
-    return;
   }
-  if (opts.reportCoverage) {
-    await reportCoverage(db, opts);
-    await db.end();
-    return;
-  }
-
-  const validSlugs = await loadValidSlugs(db);
-  const stats = await runNormalize(db, opts, validSlugs);
-  await db.end();
-
-  console.log(
-    `Normalize${opts.source ? ` ${opts.source}` : ""}: processed=${stats.processed} ` +
-      `skipped=${stats.skipped} categorized=${stats.categorized} ` +
-      `swapped_coords=${stats.swappedCoords} dropped_coords=${stats.droppedCoords} ` +
-      `url_coords=${stats.urlCoords} centroid_city=${stats.centroidCity} ` +
-      `centroid_country=${stats.centroidCountry} reverse_city=${stats.reverseCity} ` +
-      `dated=${stats.dated} llm_dated=${stats.llmDated} ` +
-      `swapped_dates=${stats.swappedDates}`,
-  );
 }
 
-main().catch((err) => {
-  console.error("Normalize failed:", err);
+main().catch((error) => {
+  console.error("Normalize failed:", error);
   process.exit(1);
 });

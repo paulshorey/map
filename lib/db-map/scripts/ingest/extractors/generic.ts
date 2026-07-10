@@ -50,58 +50,63 @@ function attributeValue(value: unknown): unknown {
   return value;
 }
 
+export function mapGenericRecord(raw: unknown): import("../types.js").RawRecord | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const r = raw as Record<string, unknown>;
+
+  const sourceUrl = str(r.source_url) ?? str(r.url);
+  const id = str(r.source_record_id) ?? str(r.id) ?? sourceUrl;
+
+  let countryCode = str(r.country_code);
+  let countryName: string | undefined;
+  const country = str(r.country);
+  if (country) {
+    if (!countryCode && /^[A-Za-z]{2}$/.test(country)) countryCode = country.toUpperCase();
+    else countryName = country;
+  }
+
+  const attributes: Record<string, unknown> = {};
+  if (countryName) attributes.country_name = countryName;
+  for (const [key, value] of Object.entries(r)) {
+    if (COLUMN_FIELDS.has(key)) continue;
+    const v = attributeValue(value);
+    if (v !== undefined) attributes[key] = v;
+  }
+  const nested = r.attributes;
+  if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+    delete attributes.attributes;
+    for (const [key, value] of Object.entries(nested as Record<string, unknown>)) {
+      const v = attributeValue(value);
+      if (v !== undefined) attributes[key] = v;
+    }
+  }
+
+  return {
+    source_record_id: id ?? "",
+    name: str(r.name) ?? str(r.title),
+    description: str(r.description) ?? str(r.excerpt),
+    website: str(r.website) ?? str(r.official_website),
+    source_url: sourceUrl,
+    phone: str(r.phone),
+    email: str(r.email),
+    address: str(r.address) ?? str(r.street_address),
+    city: str(r.city),
+    region: str(r.region) ?? str(r.state) ?? str(r.state_region),
+    country_code: countryCode,
+    lat: num(r.lat ?? r.latitude),
+    lng: num(r.lng ?? r.lon ?? r.longitude),
+    raw_category: str(r.raw_category) ?? str(r.category),
+    attributes,
+    raw: r,
+  };
+}
+
 export const genericExtractor: Extractor = {
   slug: "generic",
   async *parse(file) {
     for await (const raw of streamRecords(file)) {
-      if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
-      const r = raw as Record<string, unknown>;
-
-      const sourceUrl = str(r.source_url) ?? str(r.url);
-      const id = str(r.source_record_id) ?? str(r.id) ?? sourceUrl;
-
-      let countryCode = str(r.country_code);
-      let countryName: string | undefined;
-      const country = str(r.country);
-      if (country) {
-        if (!countryCode && /^[A-Za-z]{2}$/.test(country)) countryCode = country.toUpperCase();
-        else countryName = country;
-      }
-
-      const attributes: Record<string, unknown> = {};
-      if (countryName) attributes.country_name = countryName;
-      for (const [key, value] of Object.entries(r)) {
-        if (COLUMN_FIELDS.has(key)) continue;
-        const v = attributeValue(value);
-        if (v !== undefined) attributes[key] = v;
-      }
-      const nested = r.attributes;
-      if (nested && typeof nested === "object" && !Array.isArray(nested)) {
-        delete attributes.attributes;
-        for (const [key, value] of Object.entries(nested as Record<string, unknown>)) {
-          const v = attributeValue(value);
-          if (v !== undefined) attributes[key] = v;
-        }
-      }
-
-      yield {
-        source_record_id: id ?? "",
-        name: str(r.name),
-        description: str(r.description),
-        website: str(r.website),
-        source_url: sourceUrl,
-        phone: str(r.phone),
-        email: str(r.email),
-        address: str(r.address),
-        city: str(r.city),
-        region: str(r.region) ?? str(r.state) ?? str(r.state_region),
-        country_code: countryCode,
-        lat: num(r.lat ?? r.latitude),
-        lng: num(r.lng ?? r.lon ?? r.longitude),
-        raw_category: str(r.raw_category) ?? str(r.category),
-        attributes,
-        raw: r,
-      };
+      const record = mapGenericRecord(raw);
+      if (record) yield record;
     }
   },
 };

@@ -11,8 +11,11 @@
 import { resolve } from "node:path";
 import type { Pool } from "pg";
 import { closeDb, getDb } from "../../lib/db/postgres.js";
-import { contentHash } from "./hash.js";
-import { TAXONOMY } from "./taxonomy.js";
+import { contentHash, rawContentHash } from "./hash.js";
+import {
+  assertValidCategory,
+  listCategorySlugs,
+} from "./taxonomy.js";
 import { genericExtractor } from "./extractors/generic.js";
 import {
   getExtractor,
@@ -20,8 +23,6 @@ import {
   listSourceSlugs,
 } from "./sources.js";
 import type { RawRecord } from "./types.js";
-
-const VALID_CATEGORY_SLUGS = new Set(TAXONOMY.map((c) => c.slug));
 
 interface CliOptions {
   sourceSlug: string;
@@ -58,7 +59,7 @@ function usageError(message: string): never {
   console.error(
     "Usage: ingest:extract <source-slug> <file> --category <slug> [--limit N] [--dry-run]",
   );
-  console.error(`Known categories: ${[...VALID_CATEGORY_SLUGS].sort().join(", ")}`);
+  console.error(`Known categories: ${listCategorySlugs().join(", ")}`);
   process.exit(1);
 }
 
@@ -88,8 +89,10 @@ function parseArgs(argv: string[]): CliOptions {
   if (!category) {
     usageError("Missing required --category <slug>.");
   }
-  if (!VALID_CATEGORY_SLUGS.has(category)) {
-    usageError(`Unknown category "${category}" — not in taxonomy.ts.`);
+  try {
+    assertValidCategory(category);
+  } catch (error) {
+    usageError(error instanceof Error ? error.message : String(error));
   }
 
   return { sourceSlug, file: resolve(file), limit, dryRun, category };
@@ -129,7 +132,8 @@ INSERT INTO research_pois (
   $16, $17, $18::jsonb, $19::jsonb, $20
 )`;
 
-// A changed hash resets derived columns so the record re-flows the stages.
+// A changed mapped payload marks normalization stale. The previous active projection
+// remains available until the replacement normalization validates.
 const UPDATE_CHANGED_SQL = `
 UPDATE research_pois SET
   last_seen_at = now(),
@@ -138,10 +142,74 @@ UPDATE research_pois SET
   phone = $6, email = $7, address = $8, city = $9, region = $10,
   country_code = $11, lng = $12, lat = $13, raw_category = $14,
   is_poi = $15, raw = $16::jsonb, attributes = $17::jsonb, content_hash = $18,
-  name_normalized = NULL, category_slugs = NULL, content_embedding = NULL,
-  coordinate_source = NULL, coordinate_precision = NULL, geocode_query_norm = NULL,
-  canonical_poi_id = NULL
+  normalization_state =
+    CASE WHEN active_normalization_id IS NULL THEN 'pending' ELSE 'active_stale' END
 WHERE id = $19::uuid`;
+
+function capturedRecord(record: RawRecord): Record<string, unknown> {
+  return {
+    name: record.name ?? null,
+    description: record.description ?? null,
+    website: record.website ?? null,
+    source_url: record.source_url ?? null,
+    phone: record.phone ?? null,
+    email: record.email ?? null,
+    address: record.address ?? null,
+    city: record.city ?? null,
+    region: record.region ?? null,
+    country_code: record.country_code ?? null,
+    lat: record.lat ?? null,
+    lng: record.lng ?? null,
+    raw_category: record.raw_category ?? null,
+    attributes: record.attributes ?? {},
+  };
+}
+
+async function syncObservation(
+  db: Pool,
+  sourceId: string,
+  record: RawRecord,
+  isPoi: boolean,
+): Promise<boolean> {
+  const raw = rawContentHash(record.raw);
+  const { rows } = await db.query<{ id: string; active_hash: string | null }>(
+    `SELECT rp.id, o.raw_content_hash AS active_hash
+     FROM research_pois rp
+     LEFT JOIN research_poi_observations o ON o.id = rp.active_observation_id
+     WHERE rp.source_id = $1 AND rp.source_record_id = $2`,
+    [sourceId, record.source_record_id],
+  );
+  const row = rows[0]!;
+  const changed = row.active_hash !== raw.hash;
+  const observation = await db.query<{ id: string }>(
+    `INSERT INTO research_poi_observations (
+       research_poi_id, raw_content_hash, raw, captured,
+       source_is_poi_hint, redacted_paths
+     ) VALUES ($1,$2,$3::jsonb,$4::jsonb,$5,$6)
+     ON CONFLICT (research_poi_id, raw_content_hash) DO UPDATE SET last_seen_at=now()
+     RETURNING id`,
+    [
+      row.id,
+      raw.hash,
+      JSON.stringify(raw.redacted),
+      JSON.stringify(capturedRecord(record)),
+      isPoi,
+      raw.redactedPaths,
+    ],
+  );
+  await db.query(
+    `UPDATE research_pois SET
+       active_observation_id=$2,
+       normalization_state=CASE
+         WHEN $3 AND active_normalization_id IS NULL THEN 'pending'
+         WHEN $3 THEN 'active_stale'
+         ELSE normalization_state
+       END
+     WHERE id=$1`,
+    [row.id, observation.rows[0]!.id, changed],
+  );
+  return changed;
+}
 
 async function upsertRecord(
   db: Pool,
@@ -242,6 +310,8 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
     skipped: 0,
   };
 
+  console.log(`Extract: starting ${opts.file}`);
+
   let db = opts.dryRun ? null : getDb();
   let sourceId = db ? await ensureSourceId(db, opts.sourceSlug) : null;
 
@@ -252,7 +322,9 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
 
     if (!record.source_record_id) {
       stats.skipped++;
-      console.warn(`Skipped - ${record.name ?? "(unnamed)"} - no stable record id`);
+      console.log(
+        `extract rejected #${stats.seen + 1}${record.name ? ` "${record.name.replace(/"/g, "'")}"` : ""} (missing source_record_id)`,
+      );
       continue;
     }
 
@@ -264,24 +336,35 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
     }
 
     let result: "inserted" | "updated" | "unchanged" | undefined;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        result = await upsertRecord(db!, sourceId!, ingestCategory, record, isPoi);
-        break;
-      } catch (err) {
-        if (!isTransientDbError(err) || attempt === 3) throw err;
-        console.warn(
-          `Transient database error during extract; reconnecting and retrying ` +
-            `${record.name ?? record.source_record_id} (attempt ${attempt + 1}/3)`,
-        );
-        await closeDb();
-        db = getDb();
-        sourceId = await ensureSourceId(db, opts.sourceSlug);
+    try {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          result = await upsertRecord(db!, sourceId!, ingestCategory, record, isPoi);
+          break;
+        } catch (err) {
+          if (!isTransientDbError(err) || attempt === 3) throw err;
+          console.warn(
+            `Transient database error during extract; reconnecting and retrying ` +
+              `${record.name ?? record.source_record_id} (attempt ${attempt + 1}/3)`,
+          );
+          await closeDb();
+          db = getDb();
+          sourceId = await ensureSourceId(db, opts.sourceSlug);
+        }
       }
+      if (!result) throw new Error("Extract retry loop exited without a result");
+      const observationChanged = await syncObservation(db!, sourceId!, record, isPoi);
+      if (result === "unchanged" && observationChanged) result = "updated";
+      stats[result]++;
+      console.log(
+        `extract ok #${stats.seen} ${result} ${record.source_record_id}${record.name ? ` "${record.name.replace(/"/g, "'")}"` : ""}${isPoi ? "" : " (not a POI)"}`,
+      );
+    } catch (error) {
+      console.log(
+        `extract failed #${stats.seen} ${record.source_record_id}${record.name ? ` "${record.name.replace(/"/g, "'")}"` : ""} (${(error as Error).message.slice(0, 500)})`,
+      );
+      throw error;
     }
-    if (!result) throw new Error("Extract retry loop exited without a result");
-    stats[result]++;
-    console.log(`✓ ${record.name ?? record.source_record_id} (${result}${isPoi ? "" : ", not a POI"})`);
   }
 
   if (db) {

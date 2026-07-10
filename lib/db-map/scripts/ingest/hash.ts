@@ -27,6 +27,62 @@ export function contentHash(record: RawRecord): string {
   return createHash("sha256").update(payload).digest("hex");
 }
 
+const SECRET_KEY_RE = /^(api[_-]?key|authorization|access[_-]?token|refresh[_-]?token|token|cookie|password|secret)$/i;
+
+export function redactSecrets(
+  value: unknown,
+  path = "$",
+  redactedPaths: string[] = [],
+): { value: unknown; redactedPaths: string[] } {
+  if (Array.isArray(value)) {
+    return {
+      value: value.map((item, index) => redactSecrets(item, `${path}[${index}]`, redactedPaths).value),
+      redactedPaths,
+    };
+  }
+  if (!value || typeof value !== "object") return { value, redactedPaths };
+
+  const output: Record<string, unknown> = {};
+  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+    const childPath = `${path}.${key}`;
+    if (SECRET_KEY_RE.test(key)) {
+      output[key] = "[REDACTED]";
+      redactedPaths.push(childPath);
+    } else {
+      output[key] = redactSecrets(child, childPath, redactedPaths).value;
+    }
+  }
+  return { value: output, redactedPaths };
+}
+
+export function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (!value || typeof value !== "object") return value;
+  const output: Record<string, unknown> = {};
+  for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+    const child = (value as Record<string, unknown>)[key];
+    if (child !== undefined) output[key] = canonicalize(child);
+  }
+  return output;
+}
+
+export function stableHash(value: unknown): string {
+  return createHash("sha256").update(JSON.stringify(canonicalize(value))).digest("hex");
+}
+
+export function rawContentHash(raw: unknown): {
+  hash: string;
+  redacted: unknown;
+  redactedPaths: string[];
+} {
+  const { value, redactedPaths } = redactSecrets(raw);
+  return {
+    hash: stableHash(value),
+    redacted: value,
+    redactedPaths,
+  };
+}
+
 /** Deterministic id when a source has no natural record id (overview §14.2). */
 export function synthSourceRecordId(
   sourceSlug: string,

@@ -37,10 +37,8 @@ Implemented (in addition to the previously documented baseline):
 Still unfinished:
 
 - No one-command ingestion orchestrator (`ingest:run`).
-- Normalize uses the LLM only for prose dates; no LLM triage of messy scraped rows
-  (validity, name canonicalization, locality extraction). See Workstream D.
 - Publish policy for city-precision event coordinates is undecided; as implemented,
-  festivals that geocode to a city centroid end up `hidden` (see Workstream E decision).
+  festivals that geocode to a city centroid end up `hidden` (see Workstream D decision).
 - Legacy direct importers still write straight to canonical tables.
 - Campground and festival sources have no validated ingestion runs yet (several now work
   through the generic extractor; a few need small custom extractors — see the runbook plan
@@ -55,12 +53,10 @@ Still unfinished:
 1. Make real ingestion easy to run repeatedly: one orchestration command per source.
 2. Ingest the next two categories (campgrounds, music festivals) end to end, proving the
    temporal-POI path with real data.
-3. Use the LLM where it is strong — interpreting messy text — via a bounded, cached triage
-   step in normalize, instead of writing per-source cleanup code.
-4. Move legacy curated imports to the provenance-preserving staging path.
-5. Produce an end-to-end validation record proving idempotent, de-duplicated ingestion
+3. Move legacy curated imports to the provenance-preserving staging path.
+4. Produce an end-to-end validation record proving idempotent, de-duplicated ingestion
    across multiple categories.
-6. Add the small app UI needed to use the already-supported event date filtering.
+5. Add the small app UI needed to use the already-supported event date filtering.
 
 Non-goals (unchanged): no human review queue, no licensing gates in the POC, no deferred
 rebuilds/batch passes, no PostGIS/pgvector/queues/new infrastructure.
@@ -122,42 +118,7 @@ Acceptance: curated JSON/KML flows through `research_pois` with provenance;
 
 ---
 
-## 6. Workstream D — LLM Triage in Normalize (new)
-
-The model (DeepSeek on DeepInfra) is currently used only for prose-date parsing, gray-zone
-match adjudication, and description fusion. The messy scraped sources in `docs/poi/`
-(carnival blog scrapes, Reddit extracts, directory listings) need more interpretation than
-deterministic code should attempt. Add a bounded, cached LLM triage inside
-`ingest:normalize` for rows that need it:
-
-- **Validity**: is this row a real place/event POI, or a region/article/organization/tour?
-  Sets `is_poi = false` + `attributes.invalid_reason` (extends the existing validity gate).
-- **Name canonicalization**: strip edition years and boilerplate
-  ("110 Above Festival 2026" → base name + `attributes.edition_year`), so editions of the
-  same festival block/merge cleanly.
-- **Locality extraction**: split free-text `location` strings ("Shoreline Waterfront,
-  Long Beach, CA") into city/region/country when the structured fields are empty —
-  directly improves geocode hit rate and locality match signals.
-
-Design constraints (keep it cheap and reproducible):
-
-- Deterministic rules first; LLM only when fields are missing/ambiguous.
-- Batch 20–50 rows per prompt; temperature 0; strict JSON out; reject on schema mismatch.
-- Cache per `content_hash` in an `attributes.triage` block (or a small cache table) so
-  reruns and `--reflow` never re-pay for unchanged rows.
-- `--no-llm` skips triage entirely (rows fall back to today's behavior).
-- LLM output never overwrites captured source fields — it fills separate normalized
-  columns/attributes, same pattern as `date_source: "llm"`.
-
-Acceptance:
-
-- A directory-scraped festival source normalizes with ≥95% usable city/country.
-- Edition-year names collapse to one canonical with multiple occurrences.
-- Rerunning normalize on unchanged rows makes zero LLM calls.
-
----
-
-## 7. Workstream E — Campground + Festival Ingestion
+## 6. Workstream D — Campground + Festival Ingestion
 
 Detailed per-source commands, file paths, and gotchas live in the runbook:
 `.cursor/plans/poi-campgrounds-festivals-import.md`. Summary of order:
@@ -195,7 +156,7 @@ Acceptance:
 
 ---
 
-## 8. Workstream F — End-to-End Validation
+## 7. Workstream E — End-to-End Validation
 
 Unchanged. Create a repeatable validation record for gardens + campgrounds + festivals:
 
@@ -209,7 +170,7 @@ Unchanged. Create a repeatable validation record for gardens + campgrounds + fes
 
 ---
 
-## 9. Workstream G — Event Date Filter UI
+## 8. Workstream F — Event Date Filter UI
 
 Unchanged. Backend accepts `from`/`to` on `/api/pois`; add a compact date-range control to
 the map UI, wire it into bbox requests, keep permanent POIs visible, verify the detail
@@ -217,17 +178,16 @@ drawer still renders event status.
 
 ---
 
-## 10. Suggested Order
+## 9. Suggested Order
 
-1. Workstream E decision (city-precision publish policy) — small, unblocks festivals.
+1. Workstream D decision (city-precision publish policy) — small, unblocks festivals.
 2. `ingest:run` orchestrator (A) — every later run benefits.
-3. RIDB campground extractor + first campground run (E).
-4. LLM triage in normalize (D) — implement before the messier festival directories.
-5. Resident Advisor + Music Festival Wizard runs (E).
-6. Validation doc for gardens + first campground/festival slices (F).
-7. Staged legacy importer path (C).
-8. Event date filter UI (G).
-9. Remaining extractors by priority (E), including carnival/art-fair backlog in
+3. RIDB campground extractor + first campground run (D).
+4. Resident Advisor + Music Festival Wizard runs (D).
+5. Validation doc for gardens + first campground/festival slices (E).
+6. Staged legacy importer path (C).
+7. Event date filter UI (F).
+8. Remaining extractors by priority (D), including carnival/art-fair backlog in
    `docs/poi/carnival/` and `docs/poi/art-fairs/`.
 
 Reasoning:
@@ -236,4 +196,3 @@ Reasoning:
 - The orchestrator plus the existing report remove most operator error for everything after.
 - One campground and one festival source prove the two remaining category shapes
   (permanent-with-amenities and temporal-with-editions); later sources are repetition.
-- Triage pays for itself starting with the first directory-scraped source.

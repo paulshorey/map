@@ -3,6 +3,7 @@ import { chat } from "./providers/deepinfra.js";
 import { getSourceDefinition } from "./sources.js";
 import { isWithinProximityBox, proximityDegFor } from "./match/anchors.js";
 import { nameSimilarity, normalizeComparable } from "./match/text.js";
+import { stableHash } from "./hash.js";
 
 interface MergeRow {
   id: string;
@@ -537,5 +538,42 @@ export async function rebuildCanonicalPoi(
       dates?.ends_at ?? null,
       dates?.date_precision ?? null,
     ],
+  );
+
+  const buildFields = {
+    name: finalName,
+    description: description.value,
+    photo_url: photo.value,
+    address: address.value,
+    website: website.value,
+    hours: hours.value,
+    phone: phone.value,
+    lng: finalCoords.lng,
+    lat: finalCoords.lat,
+    attributes,
+    popularity,
+    primary_category_id: primaryCategoryId,
+    starts_at: dates?.starts_at ?? null,
+    ends_at: dates?.ends_at ?? null,
+    date_precision: dates?.date_precision ?? null,
+  };
+  const buildHash = stableHash({
+    builder: "canonical-build-v1",
+    research_ids: rows.map((row) => row.id).sort(),
+    fields: buildFields,
+  });
+  const { rows: builds } = await client.query<{ id: string }>(
+    `INSERT INTO canonical_poi_builds (
+       canonical_poi_id, input_hash, builder_version, status,
+       fields, field_provenance, activated_at
+     ) VALUES ($1,$2,'canonical-build-v1','accepted',$3::jsonb,$4::jsonb,now())
+     ON CONFLICT (canonical_poi_id, input_hash) DO UPDATE SET
+       activated_at = now()
+     RETURNING id`,
+    [canonicalId, buildHash, JSON.stringify(buildFields), JSON.stringify(fieldProvenance)],
+  );
+  await client.query(
+    `UPDATE canonical_pois SET active_build_id = $2 WHERE id = $1`,
+    [canonicalId, builds[0]!.id],
   );
 }

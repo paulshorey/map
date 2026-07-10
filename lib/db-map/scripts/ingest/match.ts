@@ -34,6 +34,7 @@ import { scoreCandidate, type CandidateScore } from "./match/score.js";
 import { LlmError } from "./providers/deepinfra.js";
 
 const ADVISORY_LOCK_ID = 0x5018a;
+const MATCHER_VERSION = "matcher-v1";
 const DEFAULT_RADIUS_M = 300;
 const RADIUS_BY_SLUG: Record<string, number> = {
   gardens: 600,
@@ -1075,11 +1076,12 @@ async function writeDecision(
   client: PoolClient,
   rowId: string,
   decision: Decision,
-): Promise<void> {
-  await client.query(
+): Promise<string> {
+  const { rows } = await client.query<{ id: string }>(
     `INSERT INTO research_match_decisions
        (research_id, candidate_poi_id, score, signals, decision, method, llm_reason)
-     VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7)`,
+     VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7)
+     RETURNING id`,
     [
       rowId,
       decision.candidatePoiId,
@@ -1090,6 +1092,7 @@ async function writeDecision(
       decision.llmReason,
     ],
   );
+  return rows[0]!.id;
 }
 
 async function resetClusters(client: PoolClient): Promise<{ researchRows: number; canonicals: number }> {
@@ -1145,11 +1148,32 @@ async function applyDecision(
 
   await collapseDuplicateCanonicals(client, canonicalId, decision.duplicateCanonicalIds ?? []);
 
-  await client.query(`UPDATE research_pois SET canonical_poi_id = $2 WHERE id = $1`, [
+  await client.query(
+    `UPDATE research_pois SET
+       canonical_poi_id = $2,
+       matched_normalization_id = active_normalization_id
+     WHERE id = $1`,
+    [
     row.id,
     canonicalId,
-  ]);
-  await writeDecision(client, row.id, decision);
+    ],
+  );
+  const decisionId = await writeDecision(client, row.id, decision);
+  await client.query(
+    `UPDATE research_canonical_memberships
+     SET active = false, retired_at = now(), retirement_reason = 'rematched'
+     WHERE research_poi_id = $1 AND active`,
+    [row.id],
+  );
+  await client.query(
+    `INSERT INTO research_canonical_memberships (
+       research_poi_id, normalization_id, canonical_poi_id,
+       match_decision_id, matcher_version
+     )
+     SELECT id, active_normalization_id, $2, $3, $4
+     FROM research_pois WHERE id = $1`,
+    [row.id, canonicalId, decisionId, MATCHER_VERSION],
+  );
   await rebuildCanonicalPoi(client, canonicalId, { noLlm: opts.noLlm });
   return canonicalId;
 }
