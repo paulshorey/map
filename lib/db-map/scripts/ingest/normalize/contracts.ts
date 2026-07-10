@@ -1,5 +1,5 @@
 export const NORMALIZER_VERSION = "hybrid-v3";
-export const PROMPT_VERSION = "poi-normalize-v1";
+export const PROMPT_VERSION = "poi-normalize-v2";
 export const SCHEMA_VERSION = "poi-normalize-schema-v1";
 export const EXAMPLES_VERSION = "poi-normalize-examples-v1";
 

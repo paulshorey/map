@@ -113,7 +113,14 @@ pnpm --filter @lib/db-map ingest:match --consolidate
 ```
 
 `ingest:run` and `ingest:extract` both require `--category`; category is never inferred from
-the file path or raw data.
+the file path or raw data. Repeat `--category` to tag every record with multiple categories
+(the first flag is the primary category), for example:
+
+```bash
+pnpm --filter @lib/db-map ingest:run \
+  docs/poi/art-fairs/craft-shows/festivalnet.json \
+  --category art_fair --category craft_fair --category renaissance_fair
+```
 
 Useful match commands:
 

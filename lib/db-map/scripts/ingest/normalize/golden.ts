@@ -63,7 +63,7 @@ const resolved = resolveNormalization({
   output: proposed,
   deterministic: facts,
   captured,
-  ingestCategory: "music_festival",
+  categorySlugs: ["music_festival"],
   profile: getNormalizationProfile("event"),
 });
 assert.equal(resolved.isPoi, false, "LLM cannot override a hard source exclusion");

@@ -88,10 +88,10 @@ export function resolveNormalization(input: {
   output: LlmNormalizationOutput | null;
   deterministic: DeterministicFacts;
   captured: DeterministicInput;
-  ingestCategory: string;
+  categorySlugs: string[];
   profile: NormalizationProfile;
 }): ResolvedNormalization {
-  const { output, deterministic, captured, ingestCategory, profile } = input;
+  const { output, deterministic, captured, categorySlugs, profile } = input;
   const proposed = output?.record ?? null;
   const evidence = output ? evidenceMap(output) : {};
   const warnings = [...deterministic.warnings, ...(proposed?.warnings ?? [])];
@@ -224,7 +224,7 @@ export function resolveNormalization(input: {
     city: city ?? null,
     region: region ?? null,
     countryCode: deterministic.countryCode ?? proposedCountry,
-    categorySlugs: [ingestCategory],
+    categorySlugs,
     startsAt: startDate,
     endsAt: endDate,
     datePrecision,

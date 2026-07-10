@@ -13,7 +13,7 @@ Authority rules:
 - Preserve native-language names. Remove edition years/ordinal boilerplate from display and series names.
 - A record is a POI only when it describes one visitable place, event series, or event occurrence.
 - Articles, organizations, regions, tours with many independent stops, and generic listings are not POIs.
-- Category choices must stay within the declared ingest category.
+- Category choices must stay within the declared ingest categories.
 - Every populated semantic field must cite one or more JSON paths from the input in evidence.
 - Descriptions must be concise and source-grounded. Do not introduce URLs, numbers, or claims absent from the input.
 

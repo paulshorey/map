@@ -35,7 +35,7 @@ pnpm --filter @lib/db-map ingest:match --consolidate
 
 Notes:
 
-- `ingest:run` and `ingest:extract` both require `--category <slug>`; category is never inferred from the file path or raw data.
+- `ingest:run` and `ingest:extract` both require `--category <slug>`; category is never inferred from the file path or raw data. Repeat `--category` to tag every record with multiple categories (first flag is primary), e.g. `--category art_fair --category craft_fair`.
 - `ingest:extract` resolves relative file paths against `lib/db-map/`; pass absolute paths.
 
 `ingest:match` is resumable. Do not use `--recluster` unless the user explicitly wants a

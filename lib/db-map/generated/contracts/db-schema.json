@@ -636,6 +636,11 @@
       "column": "created_at",
       "nullable": false,
       "type": "Date"
+    },
+    {
+      "column": "category_slugs",
+      "nullable": false,
+      "type": "Array<string>"
     }
   ],
   "research_match_decisions": [
@@ -1551,6 +1556,11 @@
       "column": "retired_at",
       "nullable": true,
       "type": "Date"
+    },
+    {
+      "column": "ingest_categories",
+      "nullable": false,
+      "type": "Array<string>"
     }
   ],
   "research_pois_current": [
@@ -1837,6 +1847,11 @@
       "column": "last_seen_at",
       "nullable": false,
       "type": "Date"
+    },
+    {
+      "column": "category_slugs",
+      "nullable": false,
+      "type": "Array<string>"
     }
   ],
   "research_sources": [

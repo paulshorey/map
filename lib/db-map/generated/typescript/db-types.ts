@@ -158,6 +158,7 @@ export interface ResearchIngestRunsRow {
   "stopped_at": Date | null;
   "completed_at": Date | null;
   "created_at": Date;
+  "category_slugs": Array<string>;
 }
 
 export interface ResearchMatchDecisionsRow {
@@ -367,6 +368,7 @@ export interface ResearchPoisRow {
   "normalization_input_hash": string | null;
   "normalized_at": Date | null;
   "retired_at": Date | null;
+  "ingest_categories": Array<string>;
 }
 
 export interface ResearchPoisCurrentRow {
@@ -432,6 +434,7 @@ export interface ResearchSourceFilesRow {
   "active_version_id": string | null;
   "first_seen_at": Date;
   "last_seen_at": Date;
+  "category_slugs": Array<string>;
 }
 
 export interface ResearchSourcesRow {

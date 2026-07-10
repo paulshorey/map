@@ -70,7 +70,7 @@ pnpm --filter @lib/db-map ingest:report [--source <source-slug>]
 
 Notes:
 
-- `ingest:run` and `ingest:extract` both require `--category <slug>`; category is never inferred.
+- `ingest:run` and `ingest:extract` both require `--category <slug>`; category is never inferred. Repeat `--category` to tag every record with multiple categories (first flag is the primary category), e.g. `--category art_fair --category craft_fair`.
 - Sources registered in `sources.ts` without a custom extractor use the generic extractor
   for files following `docs/poi-research/capture-spec.md` — new conformant sources need
   only a metadata entry, no extractor code.

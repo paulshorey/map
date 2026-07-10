@@ -88,10 +88,18 @@ pnpm --filter @lib/db-map ingest:run <docs/poi/...json|jsonl|csv> --category <sl
 ```
 
 The source registry resolves source/extractor metadata. Category is always supplied by the
-developer via `--category` — it is never inferred from the file path or raw data. The command
-records file/run/record state in PostgreSQL and resumes extract → normalize → geocode → embed
-→ match/consolidate → canonical build → report without repeating successful versioned
-artifacts.
+developer via `--category` — it is never inferred from the file path or raw data. Repeat
+`--category` to tag every record with multiple categories; the first flag is the primary
+category (used for the map marker, the normalization profile, and the denormalized
+`primary_category_id`), and the rest are additional categories on the same POI:
+
+```bash
+pnpm --filter @lib/db-map ingest:run <file> --category art_fair --category craft_fair
+```
+
+The command records file/run/record state in PostgreSQL and resumes extract → normalize →
+geocode → embed → match/consolidate → canonical build → report without repeating successful
+versioned artifacts.
 
 Useful controls:
 

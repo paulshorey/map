@@ -32,7 +32,8 @@ doubles, embeddings are stored as `real[]`, and fuzzy name matching uses `pg_trg
 
 ## Operating Principles
 
-- Ingest one source and one category at a time.
+- Ingest one source (file) at a time; a file may declare one or more categories via repeated
+  `--category` (the first is primary).
 - Keep source records forever; rebuild canonicals from linked research rows.
 - Use the category taxonomy from code, not source-provided category strings.
 - Prefer deterministic signals first: strong IDs, category, location, names, stored
@@ -57,6 +58,18 @@ The source registry resolves known files to a source, extractor, and normalizati
 Category is **not** inferred — you must pass `--category <slug>` on every run (same rule as
 `ingest:extract`). A flat top-level JSON array/JSONL/CSV can fall back to an inferred source
 slug plus the generic extractor; wrappers/nested files must be registered.
+
+Repeat `--category` to tag every record in the file with multiple categories. The first flag
+is the **primary** category (map marker, normalization profile, and the denormalized
+`primary_category_id`); the rest are additional categories on the same POI. All slugs must
+exist in the taxonomy. For example, launch sites that serve several disciplines:
+
+```bash
+pnpm --filter @lib/db-map ingest:run \
+  docs/poi/flying_site_data/sites.json \
+  --category free_flight --category hang_gliding --category paragliding
+```
+
 The orchestrator records the file hash and run in PostgreSQL, then performs:
 
 ```text
@@ -105,8 +118,15 @@ pnpm --filter @lib/db-map ingest:match:golden --no-llm
 
 `ingest:taxonomy:seed` syncs code-owned categories into `canonical_categories`.
 
-Source imports must specify one canonical category with `--category <slug>`. Unknown slugs
-are hard errors; add new categories in code first, then seed them.
+Source imports must specify at least one canonical category with `--category <slug>`. Repeat
+`--category` for multiple categories; the first is the primary. Unknown slugs are hard errors;
+add new categories in code first, then seed them.
+
+Category is stored at two granularities on `research_pois`: `ingest_category` (scalar primary,
+kept for backward-compatible reads) and `ingest_categories` (`text[]`, the full declared set).
+Normalization copies the validated set into `category_slugs`, and the canonical build unions
+`category_slugs` across linked research rows into `canonical_poi_categories` (with one
+`is_primary` link and the denormalized `primary_category_id`).
 
 ### Extract
 

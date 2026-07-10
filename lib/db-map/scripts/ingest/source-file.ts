@@ -3,6 +3,7 @@ import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { basename, dirname, relative, resolve, sep } from "node:path";
 import { listSourceDefinitions } from "./sources.js";
+import { normalizationProfileForCategory } from "./taxonomy.js";
 import type { SourceDefinition, SourceFileDefinition } from "./types.js";
 
 export const REPO_ROOT = resolve(import.meta.dirname, "../../../..");
@@ -13,6 +14,8 @@ export interface ResolvedSourceFile {
   logicalPath: string;
   source: SourceDefinition;
   file: Required<Pick<SourceFileDefinition, "pattern" | "category">> & SourceFileDefinition;
+  /** Developer-declared category set; first entry is the primary category. */
+  categories: string[];
   format: "json" | "jsonl" | "csv";
   mode: "snapshot" | "incremental";
   extractorVersion: string;
@@ -37,13 +40,6 @@ function extensionFormat(path: string): "json" | "jsonl" | "csv" {
   throw new Error(`Unsupported source file: ${path} (expected .json, .jsonl, or .csv)`);
 }
 
-export function normalizationProfileForCategory(category: string): string {
-  if (["music_festival", "carnival", "art_fair", "art_parade"].includes(category)) return "event";
-  if (category === "campground") return "campground";
-  if (category === "botanical_garden" || category === "arboretum") return "garden";
-  return "place";
-}
-
 function inferredSource(logicalPath: string, category: string): SourceDefinition {
   const filename = basename(logicalPath).replace(/\.(jsonl|json|csv)$/i, "");
   const genericNames = new Set(["facilities", "events", "records", "data", "places"]);
@@ -63,10 +59,15 @@ function inferredSource(logicalPath: string, category: string): SourceDefinition
 
 export async function resolveSourceFile(
   inputPath: string,
-  category: string,
+  categories: string[],
 ): Promise<ResolvedSourceFile> {
-  // Category always comes from the CLI. The source registry may document an expected slug,
+  // Categories always come from the CLI. The source registry may document an expected slug,
   // but ingestion never infers category from path, filename, or raw record fields.
+  // The first declared category is primary; the rest are additional (secondary) categories.
+  const primaryCategory = categories[0];
+  if (!primaryCategory) {
+    throw new Error("resolveSourceFile requires at least one category");
+  }
   const absolutePath = resolve(REPO_ROOT, inputPath);
   const poiRelative = relative(POI_ROOT, absolutePath);
   if (
@@ -89,13 +90,14 @@ export async function resolveSourceFile(
     }
   }
   if (matches.length === 0) {
-    const source = inferredSource(logicalPath, category);
-    const file: SourceFileDefinition = { pattern: logicalPath, category };
+    const source = inferredSource(logicalPath, primaryCategory);
+    const file: SourceFileDefinition = { pattern: logicalPath, category: primaryCategory };
     return {
       absolutePath,
       logicalPath,
       source,
       file,
+      categories,
       format: extensionFormat(logicalPath),
       mode: "snapshot",
       extractorVersion: "generic-v1",
@@ -121,9 +123,10 @@ export async function resolveSourceFile(
     source: {
       ...match.source,
       normalizationProfile:
-        match.source.normalizationProfile ?? normalizationProfileForCategory(category),
+        match.source.normalizationProfile ?? normalizationProfileForCategory(primaryCategory),
     },
-    file: { ...match.file, category },
+    file: { ...match.file, category: primaryCategory },
+    categories,
     format: actualFormat,
     mode: match.file.mode ?? "snapshot",
     extractorVersion: match.file.extractorVersion ?? "1",

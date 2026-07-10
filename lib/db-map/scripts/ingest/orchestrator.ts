@@ -21,7 +21,8 @@ export type IngestStage =
 
 export interface OrchestratorOptions {
   file: string;
-  category: string;
+  /** Developer-declared category set; first entry is the primary category. */
+  categories: string[];
   dryRun: boolean;
   limit?: number;
   stopAfter?: IngestStage;
@@ -98,15 +99,10 @@ async function ensureSource(db: Pool, resolved: ResolvedSourceFile): Promise<str
 }
 
 function resumeCommand(opts: OrchestratorOptions): string {
-  const args = [
-    "pnpm",
-    "--filter",
-    "@lib/db-map",
-    "ingest:run",
-    opts.file,
-    "--category",
-    opts.category,
-  ];
+  const args = ["pnpm", "--filter", "@lib/db-map", "ingest:run", opts.file];
+  for (const category of opts.categories) {
+    args.push("--category", category);
+  }
   if (opts.noLlm) args.push("--no-llm");
   if (opts.shadow) args.push("--shadow");
   if (opts.limit !== undefined) args.push("--limit", String(opts.limit));
@@ -125,10 +121,11 @@ async function createRunContext(
   const file = await hashSourceFile(resolved.absolutePath);
   const { rows: fileRows } = await db.query<{ id: string }>(
     `INSERT INTO research_source_files (
-       source_id, logical_path, category_slug, mode, format, extractor_version, last_seen_at
-     ) VALUES ($1,$2,$3,$4,$5,$6,now())
+       source_id, logical_path, category_slug, category_slugs, mode, format, extractor_version, last_seen_at
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,now())
      ON CONFLICT (source_id, logical_path) DO UPDATE SET
        category_slug = EXCLUDED.category_slug,
+       category_slugs = EXCLUDED.category_slugs,
        mode = EXCLUDED.mode,
        format = EXCLUDED.format,
        extractor_version = EXCLUDED.extractor_version,
@@ -138,6 +135,7 @@ async function createRunContext(
       sourceId,
       resolved.logicalPath,
       resolved.file.category,
+      resolved.categories,
       resolved.mode,
       resolved.format,
       resolved.extractorVersion,
@@ -162,15 +160,16 @@ async function createRunContext(
   const fileVersionId = versionRows[0]!.id;
   const { rows: runRows } = await db.query<{ id: string }>(
     `INSERT INTO research_ingest_runs (
-       source_file_version_id, source_id, category_slug, mode,
+       source_file_version_id, source_id, category_slug, category_slugs, mode,
        requested_from_stage, pipeline_versions, options, status,
        resume_command, started_at, heartbeat_at
-     ) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,'running',$8,now(),now())
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,'running',$9,now(),now())
      RETURNING id`,
     [
       fileVersionId,
       sourceId,
       resolved.file.category,
+      resolved.categories,
       opts.shadow ? "shadow" : opts.reprocess ? "reprocess" : opts.fromStage ? "from_stage" : "resume",
       opts.fromStage ?? opts.reprocess ?? null,
       JSON.stringify(PIPELINE_VERSIONS),
@@ -266,10 +265,10 @@ async function observeRecord(
          name, description, website, source_url, phone, email,
          address, city, region, country_code, lng, lat,
          raw_category, is_poi, raw, attributes, content_hash,
-         normalization_state
+         normalization_state, ingest_categories
        ) VALUES (
          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
-         $16,$17,$18::jsonb,$19::jsonb,$20,'pending'
+         $16,$17,$18::jsonb,$19::jsonb,$20,'pending',$21
        ) RETURNING id`,
       [
         ctx.sourceId,
@@ -292,6 +291,7 @@ async function observeRecord(
         JSON.stringify(rawHash.redacted),
         JSON.stringify(record.attributes ?? {}),
         rawHash.hash,
+        ctx.resolved.categories,
       ],
     );
     poiId = inserted.rows[0]!.id;
@@ -325,9 +325,9 @@ async function observeRecord(
   if (state === "unchanged") {
     await client.query(
       `UPDATE research_pois SET last_seen_at = now(), ingest_category = $2,
-         active_observation_id = $3, retired_at = NULL
+         ingest_categories = $3, active_observation_id = $4, retired_at = NULL
        WHERE id = $1`,
-      [poiId, ctx.resolved.file.category, observationId],
+      [poiId, ctx.resolved.file.category, ctx.resolved.categories, observationId],
     );
   } else if (state === "changed") {
     await client.query(
@@ -339,7 +339,7 @@ async function observeRecord(
          raw = $16::jsonb, attributes = $17::jsonb, content_hash = $18,
          active_observation_id = $19, normalization_state =
            CASE WHEN active_normalization_id IS NULL THEN 'pending' ELSE 'active_stale' END,
-         retired_at = NULL
+         retired_at = NULL, ingest_categories = $20
        WHERE id = $1`,
       [
         poiId,
@@ -361,6 +361,7 @@ async function observeRecord(
         JSON.stringify(record.attributes ?? {}),
         rawHash.hash,
         observationId,
+        ctx.resolved.categories,
       ],
     );
   } else {
@@ -613,14 +614,18 @@ function shouldStop(opts: OrchestratorOptions, stage: IngestStage): boolean {
 }
 
 export async function runOrchestration(db: Pool, opts: OrchestratorOptions): Promise<void> {
-  const resolved = await resolveSourceFile(opts.file, opts.category);
+  const resolved = await resolveSourceFile(opts.file, opts.categories);
   const hashed = await hashSourceFile(resolved.absolutePath);
+  const categoriesLabel =
+    resolved.categories.length > 1
+      ? `${resolved.categories[0]} (+${resolved.categories.slice(1).join(", ")})`
+      : resolved.categories[0]!;
   console.log(
     [
       "# ingest:run",
       `file: ${resolved.logicalPath}`,
       `source: ${resolved.source.meta.slug}`,
-      `category: ${resolved.file.category}`,
+      `category: ${categoriesLabel}`,
       `mode: ${resolved.mode}`,
       `sha256: ${hashed.sha256.slice(0, 16)}…`,
       `pipeline: ${PIPELINE_VERSIONS.orchestrator}`,

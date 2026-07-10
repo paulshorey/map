@@ -10,6 +10,8 @@ import {
   type ChatResult,
 } from "../providers/deepinfra.js";
 import { getSourceDefinition } from "../sources.js";
+import { normalizationProfileForCategory } from "../taxonomy.js";
+import { loadValidSlugs, resolveCategorySlugs } from "./category.js";
 import {
   EXAMPLES_VERSION,
   NORMALIZATION_JSON_SCHEMA,
@@ -58,6 +60,7 @@ interface NormalizeRow {
   source_slug: string;
   source_record_id: string;
   ingest_category: string;
+  ingest_categories: string[] | null;
   active_observation_id: string;
   active_normalization_id: string | null;
   active_input_hash: string | null;
@@ -123,6 +126,7 @@ function requestPacket(
   row: NormalizeRow,
   profileId: string,
   deterministic: ReturnType<typeof buildDeterministicFacts>,
+  categorySlugs: string[],
 ): Record<string, unknown> {
   return {
     record_id: row.id,
@@ -132,6 +136,7 @@ function requestPacket(
     },
     source_record_id: row.source_record_id,
     ingest_category: row.ingest_category,
+    ingest_categories: categorySlugs,
     captured: {
       name: row.name,
       description: row.description,
@@ -150,7 +155,7 @@ function requestPacket(
     },
     raw: row.raw,
     deterministic,
-    allowed_category_slugs: [row.ingest_category],
+    allowed_category_slugs: categorySlugs,
   };
 }
 
@@ -164,6 +169,7 @@ async function fetchRows(db: Pool, opts: NormalizeOptions): Promise<NormalizeRow
   const { rows } = await db.query<NormalizeRow>(
     `SELECT
        rp.id, rs.slug AS source_slug, rp.source_record_id, rp.ingest_category,
+       rp.ingest_categories,
        rp.active_observation_id, rp.active_normalization_id,
        active.input_hash AS active_input_hash,
        active.match_fingerprint AS active_match_fingerprint,
@@ -692,6 +698,7 @@ export async function runHybridNormalize(
   opts: NormalizeOptions,
 ): Promise<NormalizeRunStats> {
   const rows = await fetchRows(db, opts);
+  const validSlugs = await loadValidSlugs(db);
   const reprocessGeneration = opts.reprocess ? randomUUID() : null;
   const stats: NormalizeRunStats = {
     selected: rows.length,
@@ -709,19 +716,17 @@ export async function runHybridNormalize(
   for (const row of rows) {
     if (opts.limit !== undefined && stats.processed >= opts.limit) break;
     const source = getSourceDefinition(row.source_slug);
-    const fallbackProfile = ["music_festival", "carnival", "art_fair", "art_parade"].includes(
-      row.ingest_category,
-    )
-      ? "event"
-      : row.ingest_category === "campground"
-        ? "campground"
-        : row.ingest_category === "botanical_garden" || row.ingest_category === "arboretum"
-          ? "garden"
-          : "place";
+    // Profile selection uses the primary (first) declared category.
+    const fallbackProfile = normalizationProfileForCategory(row.ingest_category);
     const profile = getNormalizationProfile(source?.normalizationProfile ?? fallbackProfile);
+    const categorySlugs = resolveCategorySlugs(
+      validSlugs,
+      row.ingest_categories,
+      row.ingest_category,
+    );
     const captured = deterministicInput(row);
     const deterministic = buildDeterministicFacts(captured);
-    const packet = requestPacket(row, profile.id, deterministic);
+    const packet = requestPacket(row, profile.id, deterministic, categorySlugs);
     const inputHash = stableHash({
       rawContentHash: row.raw_content_hash,
       packet,
@@ -800,7 +805,7 @@ export async function runHybridNormalize(
         output,
         deterministic,
         captured,
-        ingestCategory: row.ingest_category,
+        categorySlugs,
         profile,
       });
       const normalizationId = await insertNormalization(

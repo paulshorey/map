@@ -255,6 +255,7 @@ CREATE TABLE public.research_ingest_runs (
     stopped_at timestamp with time zone,
     completed_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    category_slugs text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT research_ingest_runs_mode_check CHECK ((mode = ANY (ARRAY['resume'::text, 'reprocess'::text, 'from_stage'::text, 'shadow'::text]))),
     CONSTRAINT research_ingest_runs_status_check CHECK ((status = ANY (ARRAY['planned'::text, 'running'::text, 'paused'::text, 'waiting_budget'::text, 'partial'::text, 'succeeded'::text, 'failed'::text, 'cancelled'::text])))
 );
@@ -529,6 +530,7 @@ CREATE TABLE public.research_pois (
     normalization_input_hash text,
     normalized_at timestamp with time zone,
     retired_at timestamp with time zone,
+    ingest_categories text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT research_pois_coordinate_precision_check CHECK ((coordinate_precision = ANY (ARRAY['point'::text, 'city'::text, 'region'::text]))),
     CONSTRAINT research_pois_coordinate_source_check CHECK ((coordinate_source = ANY (ARRAY['source'::text, 'url'::text, 'geocode'::text]))),
     CONSTRAINT research_pois_date_precision_check CHECK ((date_precision = ANY (ARRAY['datetime'::text, 'day'::text, 'month'::text, 'year'::text]))),
@@ -617,6 +619,7 @@ CREATE TABLE public.research_source_files (
     active_version_id uuid,
     first_seen_at timestamp with time zone DEFAULT now() NOT NULL,
     last_seen_at timestamp with time zone DEFAULT now() NOT NULL,
+    category_slugs text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT research_source_files_format_check CHECK ((format = ANY (ARRAY['json'::text, 'jsonl'::text, 'csv'::text]))),
     CONSTRAINT research_source_files_mode_check CHECK ((mode = ANY (ARRAY['snapshot'::text, 'incremental'::text])))
 );
@@ -1204,6 +1207,13 @@ CREATE INDEX research_pois_canon_idx ON public.research_pois USING btree (canoni
 --
 
 CREATE INDEX research_pois_category_slugs_gix ON public.research_pois USING gin (category_slugs);
+
+
+--
+-- Name: research_pois_ingest_categories_gix; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_pois_ingest_categories_gix ON public.research_pois USING gin (ingest_categories);
 
 
 --

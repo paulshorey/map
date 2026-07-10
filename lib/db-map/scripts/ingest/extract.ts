@@ -2,11 +2,12 @@
  * Extract raw source data into research_pois (M4.2).
  *
  * Usage:
- *   pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <slug> [--limit N] [--dry-run]
+ *   pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <slug> [--category <slug> ...] [--limit N] [--dry-run]
  *
  * --category is required (product decision): the developer must state which taxonomy
  * category a file belongs to on every run. There is no per-source default to fall back
- * on, and an unknown slug is a hard error — extend taxonomy.ts + re-seed first.
+ * on, and an unknown slug is a hard error — extend taxonomy.ts + re-seed first. Repeat
+ * --category to tag every record with multiple categories; the first is the primary.
  */
 import { resolve } from "node:path";
 import type { Pool } from "pg";
@@ -29,7 +30,8 @@ interface CliOptions {
   file: string;
   limit?: number;
   dryRun: boolean;
-  category: string;
+  /** Developer-declared category set; first entry is the primary category. */
+  categories: string[];
 }
 
 interface ExtractStats {
@@ -57,7 +59,7 @@ function isTransientDbError(err: unknown): boolean {
 function usageError(message: string): never {
   console.error(message);
   console.error(
-    "Usage: ingest:extract <source-slug> <file> --category <slug> [--limit N] [--dry-run]",
+    "Usage: ingest:extract <source-slug> <file> --category <slug> [--category <slug> ...] [--limit N] [--dry-run]",
   );
   console.error(`Known categories: ${listCategorySlugs().join(", ")}`);
   process.exit(1);
@@ -73,29 +75,32 @@ function parseArgs(argv: string[]): CliOptions {
 
   let limit: number | undefined;
   let dryRun = false;
-  let category: string | undefined;
+  const categories: string[] = [];
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dry-run") dryRun = true;
     if (a === "--limit" && argv[i + 1]) limit = Number(argv[++i]);
-    if (a === "--category" && argv[i + 1]) category = argv[++i];
+    if (a === "--category" && argv[i + 1]) categories.push(argv[++i]!);
   }
 
   if (limit !== undefined && (!Number.isFinite(limit) || limit < 1)) {
     throw new Error(`Invalid --limit: ${limit}`);
   }
 
-  if (!category) {
-    usageError("Missing required --category <slug>.");
+  if (categories.length === 0) {
+    usageError("Missing required --category <slug> (repeat for multiple categories).");
   }
   try {
-    assertValidCategory(category);
+    for (const category of categories) assertValidCategory(category);
   } catch (error) {
     usageError(error instanceof Error ? error.message : String(error));
   }
 
-  return { sourceSlug, file: resolve(file), limit, dryRun, category };
+  const seen = new Set<string>();
+  const deduped = categories.filter((c) => (seen.has(c) ? false : (seen.add(c), true)));
+
+  return { sourceSlug, file: resolve(file), limit, dryRun, categories: deduped };
 }
 
 async function ensureSourceId(db: Pool, slug: string): Promise<string> {
@@ -124,12 +129,14 @@ INSERT INTO research_pois (
   source_id, source_record_id, ingest_category,
   name, description, website, source_url, phone, email,
   address, city, region, country_code, lng, lat,
-  raw_category, is_poi, raw, attributes, content_hash
+  raw_category, is_poi, raw, attributes, content_hash,
+  ingest_categories
 ) VALUES (
   $1, $2, $3,
   $4, $5, $6, $7, $8, $9,
   $10, $11, $12, $13, $14, $15,
-  $16, $17, $18::jsonb, $19::jsonb, $20
+  $16, $17, $18::jsonb, $19::jsonb, $20,
+  $21
 )`;
 
 // A changed mapped payload marks normalization stale. The previous active projection
@@ -142,9 +149,10 @@ UPDATE research_pois SET
   phone = $6, email = $7, address = $8, city = $9, region = $10,
   country_code = $11, lng = $12, lat = $13, raw_category = $14,
   is_poi = $15, raw = $16::jsonb, attributes = $17::jsonb, content_hash = $18,
+  ingest_categories = $19,
   normalization_state =
     CASE WHEN active_normalization_id IS NULL THEN 'pending' ELSE 'active_stale' END
-WHERE id = $19::uuid`;
+WHERE id = $20::uuid`;
 
 function capturedRecord(record: RawRecord): Record<string, unknown> {
   return {
@@ -211,14 +219,20 @@ async function syncObservation(
   return changed;
 }
 
+function sameCategorySet(a: readonly string[] | null, b: readonly string[]): boolean {
+  if (!a || a.length !== b.length) return false;
+  return a.every((value, index) => value === b[index]);
+}
+
 async function upsertRecord(
   db: Pool,
   sourceId: string,
-  ingestCategory: string | null,
+  categories: string[],
   record: RawRecord,
   isPoi: boolean,
 ): Promise<"inserted" | "updated" | "unchanged"> {
   const hash = contentHash(record);
+  const ingestCategory = categories[0] ?? null;
   const params = [
     sourceId,
     record.source_record_id,
@@ -240,14 +254,15 @@ async function upsertRecord(
     JSON.stringify(record.raw),
     JSON.stringify(record.attributes ?? {}),
     hash,
+    categories,
   ];
 
   const existing = await db.query<{
     id: string;
     content_hash: string | null;
-    ingest_category: string | null;
+    ingest_categories: string[] | null;
   }>(
-    `SELECT id, content_hash, ingest_category FROM research_pois
+    `SELECT id, content_hash, ingest_categories FROM research_pois
      WHERE source_id = $1 AND source_record_id = $2`,
     [sourceId, record.source_record_id],
   );
@@ -258,7 +273,7 @@ async function upsertRecord(
   }
 
   const row = existing.rows[0]!;
-  if (row.content_hash === hash && row.ingest_category === ingestCategory) {
+  if (row.content_hash === hash && sameCategorySet(row.ingest_categories, categories)) {
     await db.query(`UPDATE research_pois SET last_seen_at = now() WHERE id = $1::uuid`, [row.id]);
     return "unchanged";
   }
@@ -301,7 +316,7 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
     extractor = genericExtractor;
   }
 
-  const ingestCategory = opts.category;
+  const categories = opts.categories;
   const stats: ExtractStats = {
     seen: 0,
     inserted: 0,
@@ -339,7 +354,7 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
     try {
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          result = await upsertRecord(db!, sourceId!, ingestCategory, record, isPoi);
+          result = await upsertRecord(db!, sourceId!, categories, record, isPoi);
           break;
         } catch (err) {
           if (!isTransientDbError(err) || attempt === 3) throw err;
