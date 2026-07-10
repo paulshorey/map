@@ -752,7 +752,9 @@ export async function runHybridNormalize(
           stats.processed++;
           stats[cached.resolved.status]++;
           await finishJob(db, jobId, "succeeded", cached.id);
-          console.log(`CACHE ${row.name ?? row.source_record_id} (${cached.resolved.status})`);
+          console.log(
+            `normalize ok cached ${row.source_record_id}${row.name ? ` "${row.name.replace(/"/g, "'")}"` : ""} (${cached.resolved.status})`,
+          );
           continue;
         }
       }
@@ -825,7 +827,9 @@ export async function runHybridNormalize(
       );
       stats.processed++;
       stats[resolved.status]++;
-      console.log(`OK ${row.name ?? row.source_record_id} (${resolved.status})`);
+      console.log(
+        `normalize ok ${row.source_record_id}${row.name ? ` "${row.name.replace(/"/g, "'")}"` : ""} (${resolved.status})`,
+      );
     } catch (error) {
       stats.failed++;
       stats.processed++;
@@ -840,7 +844,9 @@ export async function runHybridNormalize(
         undefined,
         error,
       );
-      console.error(`FAIL ${row.name ?? row.source_record_id}:`, error);
+      console.log(
+        `normalize failed ${row.source_record_id}${row.name ? ` "${row.name.replace(/"/g, "'")}"` : ""} (${(error as Error).message.slice(0, 500)})`,
+      );
     }
   }
   return stats;

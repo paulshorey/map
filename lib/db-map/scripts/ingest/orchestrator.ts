@@ -372,6 +372,36 @@ async function observeRecord(
   return { state, poiId, observationId };
 }
 
+function recordLabel(record: RawRecord): string {
+  return record.source_record_id || record.name || "unknown";
+}
+
+function formatRecordName(record: RawRecord): string {
+  if (!record.name) return "";
+  return ` "${record.name.replace(/"/g, "'")}"`;
+}
+
+function logExtractRecord(
+  ordinal: number,
+  record: RawRecord,
+  outcome:
+    | { kind: "ok"; state: "inserted" | "changed" | "unchanged" }
+    | { kind: "rejected"; reason: string }
+    | { kind: "failed"; error: string },
+): void {
+  const id = recordLabel(record);
+  const name = formatRecordName(record);
+  if (outcome.kind === "ok") {
+    console.log(`extract ok #${ordinal} ${outcome.state} ${id}${name}`);
+    return;
+  }
+  if (outcome.kind === "rejected") {
+    console.log(`extract rejected #${ordinal} ${id}${name} (${outcome.reason})`);
+    return;
+  }
+  console.log(`extract failed #${ordinal} ${id}${name} (${outcome.error})`);
+}
+
 async function extractFile(
   db: Pool,
   ctx: RunContext,
@@ -389,6 +419,7 @@ async function extractFile(
     `UPDATE research_source_file_versions SET status = 'extracting' WHERE id = $1`,
     [ctx.fileVersionId],
   );
+  console.log(`Extract: starting ${ctx.resolved.logicalPath}`);
   const extractor = getExtractor(ctx.resolved.source.meta.slug);
 
   let ordinal = 0;
@@ -408,6 +439,10 @@ async function extractFile(
            WHERE id=$1`,
           [runRecordId],
         );
+        logExtractRecord(ordinal, record, {
+          kind: "rejected",
+          reason: "missing source_record_id",
+        });
         continue;
       }
 
@@ -430,9 +465,11 @@ async function extractFile(
         );
         await client.query("COMMIT");
         stats[result.state]++;
+        logExtractRecord(ordinal, record, { kind: "ok", state: result.state });
       } catch (error) {
         await client.query("ROLLBACK");
         stats.failed++;
+        const message = (error as Error).message.slice(0, 500);
         await db.query(
           `UPDATE research_ingest_run_records SET extract_state='failed',
              last_error_class=$2, last_error=$3
@@ -440,9 +477,10 @@ async function extractFile(
           [
             runRecordId,
             (error as { code?: string }).code ?? "record_write_error",
-            (error as Error).message.slice(0, 2000),
+            message.slice(0, 2000),
           ],
         );
+        logExtractRecord(ordinal, record, { kind: "failed", error: message });
       } finally {
         client.release();
       }
@@ -593,6 +631,7 @@ export async function runOrchestration(db: Pool, opts: OrchestratorOptions): Pro
     return;
   }
 
+  console.log("Preparing run…");
   const ctx = await createRunContext(db, resolved, opts);
   let partial = false;
   try {
@@ -618,6 +657,7 @@ export async function runOrchestration(db: Pool, opts: OrchestratorOptions): Pro
 
     if (stageEnabled(opts, "normalize")) {
       await updateRun(db, ctx, { stage: "normalize" });
+      console.log(`Normalize: starting (source=${resolved.source.meta.slug})`);
       const normalized = await runHybridNormalize(db, {
         runId: ctx.runId,
         source: resolved.source.meta.slug,
@@ -634,6 +674,11 @@ export async function runOrchestration(db: Pool, opts: OrchestratorOptions): Pro
       });
       partial ||= normalized.failed > 0 || normalized.stoppedByBudget;
       await updateRun(db, ctx, { counters: { normalize: normalized } });
+      console.log(
+        `Normalize: selected=${normalized.selected} processed=${normalized.processed} ` +
+          `accepted=${normalized.accepted} degraded=${normalized.degraded} rejected=${normalized.rejected} ` +
+          `failed=${normalized.failed} cacheHits=${normalized.cacheHits} llmRequests=${normalized.llmRequests}`,
+      );
       if (normalized.stoppedByBudget) {
         await updateRun(db, ctx, { status: "waiting_budget" });
         return;

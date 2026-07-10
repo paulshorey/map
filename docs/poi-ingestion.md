@@ -119,6 +119,17 @@ If one record fails, successful records remain committed and a rerun retries onl
 missing/failed row. If PostgreSQL is unavailable, the run stops; the immutable source file
 remains the replayable queue.
 
+During extract, the CLI prints one line per record when it finishes:
+
+```text
+extract ok #42 inserted thedyrt:12345 "Sunset RV Park"
+extract failed #43 thedyrt:99999 (connection terminated)
+```
+
+A long pause before the first line usually means the run is still hashing the file or
+writing the first database row — not a silent crash. Later stages log similarly
+(`normalize ok …`, `normalize failed …`).
+
 `ingest:extract` remains as a lower-level compatibility command.
 
 ```bash

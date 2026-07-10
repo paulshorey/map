@@ -310,6 +310,8 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
     skipped: 0,
   };
 
+  console.log(`Extract: starting ${opts.file}`);
+
   let db = opts.dryRun ? null : getDb();
   let sourceId = db ? await ensureSourceId(db, opts.sourceSlug) : null;
 
@@ -320,7 +322,9 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
 
     if (!record.source_record_id) {
       stats.skipped++;
-      console.warn(`Skipped - ${record.name ?? "(unnamed)"} - no stable record id`);
+      console.log(
+        `extract rejected #${stats.seen + 1}${record.name ? ` "${record.name.replace(/"/g, "'")}"` : ""} (missing source_record_id)`,
+      );
       continue;
     }
 
@@ -332,26 +336,35 @@ async function runExtract(opts: CliOptions): Promise<ExtractStats> {
     }
 
     let result: "inserted" | "updated" | "unchanged" | undefined;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        result = await upsertRecord(db!, sourceId!, ingestCategory, record, isPoi);
-        break;
-      } catch (err) {
-        if (!isTransientDbError(err) || attempt === 3) throw err;
-        console.warn(
-          `Transient database error during extract; reconnecting and retrying ` +
-            `${record.name ?? record.source_record_id} (attempt ${attempt + 1}/3)`,
-        );
-        await closeDb();
-        db = getDb();
-        sourceId = await ensureSourceId(db, opts.sourceSlug);
+    try {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          result = await upsertRecord(db!, sourceId!, ingestCategory, record, isPoi);
+          break;
+        } catch (err) {
+          if (!isTransientDbError(err) || attempt === 3) throw err;
+          console.warn(
+            `Transient database error during extract; reconnecting and retrying ` +
+              `${record.name ?? record.source_record_id} (attempt ${attempt + 1}/3)`,
+          );
+          await closeDb();
+          db = getDb();
+          sourceId = await ensureSourceId(db, opts.sourceSlug);
+        }
       }
+      if (!result) throw new Error("Extract retry loop exited without a result");
+      const observationChanged = await syncObservation(db!, sourceId!, record, isPoi);
+      if (result === "unchanged" && observationChanged) result = "updated";
+      stats[result]++;
+      console.log(
+        `extract ok #${stats.seen} ${result} ${record.source_record_id}${record.name ? ` "${record.name.replace(/"/g, "'")}"` : ""}${isPoi ? "" : " (not a POI)"}`,
+      );
+    } catch (error) {
+      console.log(
+        `extract failed #${stats.seen} ${record.source_record_id}${record.name ? ` "${record.name.replace(/"/g, "'")}"` : ""} (${(error as Error).message.slice(0, 500)})`,
+      );
+      throw error;
     }
-    if (!result) throw new Error("Extract retry loop exited without a result");
-    const observationChanged = await syncObservation(db!, sourceId!, record, isPoi);
-    if (result === "unchanged" && observationChanged) result = "updated";
-    stats[result]++;
-    console.log(`✓ ${record.name ?? record.source_record_id} (${result}${isPoi ? "" : ", not a POI"})`);
   }
 
   if (db) {
