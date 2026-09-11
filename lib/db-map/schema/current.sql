@@ -46,6 +46,20 @@ CREATE TABLE public.canonical_categories (
 
 
 --
+-- Name: canonical_poi_build_inputs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.canonical_poi_build_inputs (
+    build_id uuid NOT NULL,
+    research_poi_id uuid NOT NULL,
+    normalization_id uuid,
+    geocode_id uuid,
+    embedding_id uuid,
+    membership_id uuid
+);
+
+
+--
 -- Name: canonical_poi_builds; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -100,6 +114,7 @@ CREATE TABLE public.canonical_poi_redirects (
     to_poi_id uuid NOT NULL,
     reason text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    consolidation_decision_id uuid,
     CONSTRAINT canonical_poi_redirects_check CHECK ((from_poi_id <> to_poi_id))
 );
 
@@ -135,7 +150,9 @@ END) STORED,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     active_build_id uuid,
+    origin text DEFAULT 'research'::text NOT NULL,
     CONSTRAINT canonical_pois_date_precision_check CHECK ((date_precision = ANY (ARRAY['datetime'::text, 'day'::text, 'month'::text, 'year'::text]))),
+    CONSTRAINT canonical_pois_origin_check CHECK ((origin = ANY (ARRAY['research'::text, 'manual'::text]))),
     CONSTRAINT canonical_pois_status_check CHECK ((status = ANY (ARRAY['published'::text, 'draft'::text, 'hidden'::text])))
 );
 
@@ -171,7 +188,8 @@ CREATE TABLE public.research_canonical_memberships (
     active boolean DEFAULT true NOT NULL,
     assigned_at timestamp with time zone DEFAULT now() NOT NULL,
     retired_at timestamp with time zone,
-    retirement_reason text
+    retirement_reason text,
+    run_id uuid
 );
 
 
@@ -227,7 +245,7 @@ CREATE TABLE public.research_ingest_run_records (
     first_attempt_at timestamp with time zone,
     last_attempt_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT research_ingest_run_records_extract_state_check CHECK ((extract_state = ANY (ARRAY['pending'::text, 'written'::text, 'unchanged'::text, 'rejected'::text, 'failed'::text])))
+    CONSTRAINT research_ingest_run_records_extract_state_check CHECK ((extract_state = ANY (ARRAY['pending'::text, 'written'::text, 'unchanged'::text, 'rejected'::text, 'failed'::text, 'duplicate'::text, 'collision'::text])))
 );
 
 
@@ -529,10 +547,15 @@ CREATE TABLE public.research_pois (
     normalization_input_hash text,
     normalized_at timestamp with time zone,
     retired_at timestamp with time zone,
+    source_record_id_kind text DEFAULT 'natural'::text NOT NULL,
+    identity_inputs jsonb,
+    active_geocode_id uuid,
+    active_embedding_id uuid,
     CONSTRAINT research_pois_coordinate_precision_check CHECK ((coordinate_precision = ANY (ARRAY['point'::text, 'city'::text, 'region'::text]))),
     CONSTRAINT research_pois_coordinate_source_check CHECK ((coordinate_source = ANY (ARRAY['source'::text, 'url'::text, 'geocode'::text]))),
     CONSTRAINT research_pois_date_precision_check CHECK ((date_precision = ANY (ARRAY['datetime'::text, 'day'::text, 'month'::text, 'year'::text]))),
-    CONSTRAINT research_pois_normalization_state_check CHECK ((normalization_state = ANY (ARRAY['pending'::text, 'active'::text, 'active_stale'::text, 'rejected'::text, 'degraded'::text, 'failed'::text])))
+    CONSTRAINT research_pois_normalization_state_check CHECK ((normalization_state = ANY (ARRAY['pending'::text, 'active'::text, 'active_stale'::text, 'rejected'::text, 'degraded'::text, 'failed'::text]))),
+    CONSTRAINT research_pois_source_record_id_kind_check CHECK ((source_record_id_kind = ANY (ARRAY['natural'::text, 'url'::text, 'synthetic'::text])))
 );
 
 
@@ -681,6 +704,14 @@ ALTER TABLE ONLY public.canonical_categories
 
 ALTER TABLE ONLY public.canonical_categories
     ADD CONSTRAINT canonical_categories_slug_key UNIQUE (slug);
+
+
+--
+-- Name: canonical_poi_build_inputs canonical_poi_build_inputs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.canonical_poi_build_inputs
+    ADD CONSTRAINT canonical_poi_build_inputs_pkey PRIMARY KEY (build_id, research_poi_id);
 
 
 --
@@ -1011,6 +1042,13 @@ CREATE INDEX canonical_categories_parent_idx ON public.canonical_categories USIN
 
 
 --
+-- Name: canonical_poi_build_inputs_research_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX canonical_poi_build_inputs_research_idx ON public.canonical_poi_build_inputs USING btree (research_poi_id);
+
+
+--
 -- Name: canonical_poi_categories_cat_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1113,6 +1151,13 @@ CREATE UNIQUE INDEX research_canonical_memberships_active_poi_idx ON public.rese
 --
 
 CREATE INDEX research_canonical_memberships_canonical_idx ON public.research_canonical_memberships USING btree (canonical_poi_id) WHERE active;
+
+
+--
+-- Name: research_canonical_memberships_run_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_canonical_memberships_run_idx ON public.research_canonical_memberships USING btree (run_id) WHERE (run_id IS NOT NULL);
 
 
 --
@@ -1271,6 +1316,14 @@ ALTER TABLE ONLY public.canonical_categories
 
 
 --
+-- Name: canonical_poi_build_inputs canonical_poi_build_inputs_build_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.canonical_poi_build_inputs
+    ADD CONSTRAINT canonical_poi_build_inputs_build_id_fkey FOREIGN KEY (build_id) REFERENCES public.canonical_poi_builds(id) ON DELETE CASCADE;
+
+
+--
 -- Name: canonical_poi_builds canonical_poi_builds_canonical_poi_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1308,6 +1361,14 @@ ALTER TABLE ONLY public.canonical_poi_categories
 
 ALTER TABLE ONLY public.canonical_poi_occurrences
     ADD CONSTRAINT canonical_poi_occurrences_poi_id_fkey FOREIGN KEY (poi_id) REFERENCES public.canonical_pois(id) ON DELETE CASCADE;
+
+
+--
+-- Name: canonical_poi_redirects canonical_poi_redirects_consolidation_decision_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.canonical_poi_redirects
+    ADD CONSTRAINT canonical_poi_redirects_consolidation_decision_id_fkey FOREIGN KEY (consolidation_decision_id) REFERENCES public.research_consolidation_decisions(id) ON DELETE SET NULL;
 
 
 --
@@ -1372,6 +1433,14 @@ ALTER TABLE ONLY public.research_canonical_memberships
 
 ALTER TABLE ONLY public.research_canonical_memberships
     ADD CONSTRAINT research_canonical_memberships_research_poi_id_fkey FOREIGN KEY (research_poi_id) REFERENCES public.research_pois(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_canonical_memberships research_canonical_memberships_run_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_canonical_memberships
+    ADD CONSTRAINT research_canonical_memberships_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.research_ingest_runs(id) ON DELETE SET NULL;
 
 
 --
@@ -1572,6 +1641,22 @@ ALTER TABLE ONLY public.research_poi_observations
 
 ALTER TABLE ONLY public.research_poi_observations
     ADD CONSTRAINT research_poi_observations_source_file_version_id_fkey FOREIGN KEY (source_file_version_id) REFERENCES public.research_source_file_versions(id) ON DELETE SET NULL;
+
+
+--
+-- Name: research_pois research_pois_active_embedding_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_pois
+    ADD CONSTRAINT research_pois_active_embedding_fkey FOREIGN KEY (active_embedding_id) REFERENCES public.research_poi_embeddings(id) ON DELETE SET NULL;
+
+
+--
+-- Name: research_pois research_pois_active_geocode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_pois
+    ADD CONSTRAINT research_pois_active_geocode_fkey FOREIGN KEY (active_geocode_id) REFERENCES public.research_poi_geocodes(id) ON DELETE SET NULL;
 
 
 --

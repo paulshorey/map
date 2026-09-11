@@ -7,6 +7,10 @@ import { stableHash } from "./hash.js";
 
 interface MergeRow {
   id: string;
+  membership_id: string;
+  active_normalization_id: string | null;
+  active_geocode_id: string | null;
+  active_embedding_id: string | null;
   source_id: string;
   source_slug: string;
   source_trust: number;
@@ -422,16 +426,18 @@ export async function rebuildCanonicalPoi(
 ): Promise<void> {
   const { rows } = await client.query<MergeRow>(
     `SELECT
-       rp.id, rp.source_id, rs.slug AS source_slug, rs.trust AS source_trust,
+       rp.id, m.id AS membership_id, rp.active_normalization_id, rp.active_geocode_id,
+       rp.active_embedding_id, rp.source_id, rs.slug AS source_slug, rs.trust AS source_trust,
        rp.name, rp.description, rp.website, rp.phone, rp.address,
        rp.lng, rp.lat, rp.coordinate_precision,
        COALESCE(rp.attributes->>'opening_hours', rp.attributes->>'hours') AS hours,
        COALESCE(rp.attributes->>'photo_url', rp.attributes->>'image') AS photo_url,
        rp.starts_at, rp.ends_at, rp.date_precision,
        rp.category_slugs, rp.attributes
-     FROM research_pois rp
+     FROM research_canonical_memberships m
+     JOIN research_pois rp ON rp.id = m.research_poi_id
      JOIN research_sources rs ON rs.id = rp.source_id
-     WHERE rp.canonical_poi_id = $1 AND rp.is_poi
+     WHERE m.canonical_poi_id = $1 AND m.active AND rp.is_poi AND rp.retired_at IS NULL
      ORDER BY rs.trust DESC, rp.last_seen_at DESC`,
     [canonicalId],
   );
@@ -560,6 +566,13 @@ export async function rebuildCanonicalPoi(
   const buildHash = stableHash({
     builder: "canonical-build-v1",
     research_ids: rows.map((row) => row.id).sort(),
+    inputs: rows.map((row) => ({
+      research_id: row.id,
+      normalization_id: row.active_normalization_id,
+      geocode_id: row.active_geocode_id,
+      embedding_id: row.active_embedding_id,
+      membership_id: row.membership_id,
+    })).sort((a, b) => a.research_id.localeCompare(b.research_id)),
     fields: buildFields,
   });
   const { rows: builds } = await client.query<{ id: string }>(
@@ -572,6 +585,15 @@ export async function rebuildCanonicalPoi(
      RETURNING id`,
     [canonicalId, buildHash, JSON.stringify(buildFields), JSON.stringify(fieldProvenance)],
   );
+  await client.query(`DELETE FROM canonical_poi_build_inputs WHERE build_id = $1`, [builds[0]!.id]);
+  for (const row of rows) {
+    await client.query(
+      `INSERT INTO canonical_poi_build_inputs (
+         build_id, research_poi_id, normalization_id, geocode_id, embedding_id, membership_id
+       ) VALUES ($1,$2,$3,$4,$5,$6)`,
+      [builds[0]!.id, row.id, row.active_normalization_id, row.active_geocode_id, row.active_embedding_id, row.membership_id],
+    );
+  }
   await client.query(
     `UPDATE canonical_pois SET active_build_id = $2 WHERE id = $1`,
     [canonicalId, builds[0]!.id],

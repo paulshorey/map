@@ -63,6 +63,7 @@ export const TAXONOMY: CategorySeed[] = [
   },
   { slug: "arboretum", display_name: "Arboretum", parent: "gardens" },
   { slug: "campground", display_name: "Campground", sort_order: 120 },
+  { slug: "hostel", display_name: "Hostel", sort_order: 125 },
   {
     slug: "rv",
     display_name: "RV Park",

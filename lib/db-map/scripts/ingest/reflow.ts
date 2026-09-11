@@ -53,7 +53,27 @@ async function main() {
   }
 
   const { rowCount } = await db.query(
-    `UPDATE research_pois SET
+    `WITH target AS (
+       SELECT id, canonical_poi_id FROM research_pois WHERE ${whereSql} FOR UPDATE
+     ), retired AS (
+       UPDATE research_canonical_memberships
+       SET active = false, retired_at = now(), retirement_reason = 'reflow'
+       WHERE active AND research_poi_id IN (SELECT id FROM target)
+       RETURNING research_poi_id
+     ), hidden AS (
+       UPDATE canonical_pois cp SET status = 'hidden', updated_at = now()
+       WHERE cp.origin = 'research'
+         AND cp.id IN (
+           SELECT t.canonical_poi_id FROM target t
+           JOIN retired r ON r.research_poi_id = t.id
+           WHERE t.canonical_poi_id IS NOT NULL
+         )
+         AND NOT EXISTS (
+           SELECT 1 FROM research_canonical_memberships m
+           WHERE m.canonical_poi_id = cp.id AND m.active
+         )
+     )
+     UPDATE research_pois SET
        name_normalized = NULL,
        website_domain = NULL,
        category_slugs = NULL,
@@ -64,8 +84,15 @@ async function main() {
        coordinate_source = NULL,
        coordinate_precision = NULL,
        geocode_query_norm = NULL,
+       active_geocode_id = NULL,
+       active_embedding_id = NULL,
+       active_normalization_id = NULL,
+       matched_normalization_id = NULL,
+       normalization_state = 'pending',
+       normalization_input_hash = NULL,
+       normalized_at = NULL,
        canonical_poi_id = NULL
-     WHERE ${whereSql}`,
+     WHERE id IN (SELECT id FROM target)`,
     params,
   );
   await db.end();

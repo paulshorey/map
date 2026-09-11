@@ -15,6 +15,15 @@ export interface CanonicalCategoriesRow {
   "created_at": Date;
 }
 
+export interface CanonicalPoiBuildInputsRow {
+  "build_id": string;
+  "research_poi_id": string;
+  "normalization_id": string | null;
+  "geocode_id": string | null;
+  "embedding_id": string | null;
+  "membership_id": string | null;
+}
+
 export interface CanonicalPoiBuildsRow {
   "id": string;
   "canonical_poi_id": string;
@@ -49,6 +58,7 @@ export interface CanonicalPoiRedirectsRow {
   "to_poi_id": string;
   "reason": string;
   "created_at": Date;
+  "consolidation_decision_id": string | null;
 }
 
 export interface CanonicalPoisRow {
@@ -74,6 +84,7 @@ export interface CanonicalPoisRow {
   "created_at": Date;
   "updated_at": Date;
   "active_build_id": string | null;
+  "origin": string;
 }
 
 export interface GeoCentroidsRow {
@@ -98,6 +109,7 @@ export interface ResearchCanonicalMembershipsRow {
   "assigned_at": Date;
   "retired_at": Date | null;
   "retirement_reason": string | null;
+  "run_id": string | null;
 }
 
 export interface ResearchConsolidationDecisionsRow {
@@ -367,6 +379,10 @@ export interface ResearchPoisRow {
   "normalization_input_hash": string | null;
   "normalized_at": Date | null;
   "retired_at": Date | null;
+  "source_record_id_kind": string;
+  "identity_inputs": unknown | null;
+  "active_geocode_id": string | null;
+  "active_embedding_id": string | null;
 }
 
 export interface ResearchPoisCurrentRow {
@@ -465,6 +481,7 @@ export interface UsersRow {
 
 export interface PostgresDbSchema {
   "canonical_categories": CanonicalCategoriesRow;
+  "canonical_poi_build_inputs": CanonicalPoiBuildInputsRow;
   "canonical_poi_builds": CanonicalPoiBuildsRow;
   "canonical_poi_categories": CanonicalPoiCategoriesRow;
   "canonical_poi_occurrences": CanonicalPoiOccurrencesRow;

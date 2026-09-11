@@ -91,21 +91,26 @@ export function buildEmbedText(row: EmbedRow): string | null {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function writeEmbedding(db: Pool, id: string, text: string, vector: number[]): Promise<void> {
-  await db.query(`UPDATE research_pois SET content_embedding = $2 WHERE id = $1`, [id, vector]);
   const inputHash = stableHash({
     text,
     model: ingestConfig.embeddings.model,
     dim: ingestConfig.embeddings.dim,
   });
   await db.query(
-    `INSERT INTO research_poi_embeddings (
+    `WITH artifact AS (
+       INSERT INTO research_poi_embeddings (
        normalization_id, input_hash, model, model_version, embedding, activated_at
+       )
+       SELECT active_normalization_id, $2, $3, $3, $4, now()
+       FROM research_pois
+       WHERE id = $1 AND active_normalization_id IS NOT NULL
+       ON CONFLICT (normalization_id, input_hash) DO UPDATE SET
+         embedding = EXCLUDED.embedding, activated_at = now()
+       RETURNING id
      )
-     SELECT active_normalization_id, $2, $3, $3, $4, now()
-     FROM research_pois
-     WHERE id = $1 AND active_normalization_id IS NOT NULL
-     ON CONFLICT (normalization_id, input_hash) DO UPDATE SET
-       embedding = EXCLUDED.embedding, activated_at = now()`,
+     UPDATE research_pois SET content_embedding = $4,
+       active_embedding_id = (SELECT id FROM artifact)
+     WHERE id = $1`,
     [id, inputHash, ingestConfig.embeddings.model, vector],
   );
 }

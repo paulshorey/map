@@ -13,6 +13,7 @@ export {
   getUserPreferences,
   upsertUserPreferences,
 } from "./sql/users";
+export { traceCanonical, traceResearchRecord } from "./sql/lineage";
 
 export type {
   CanonicalPoisRow,

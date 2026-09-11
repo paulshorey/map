@@ -3,6 +3,7 @@ import { countryToCode } from "./country.js";
 import { fixCoordinates } from "./geo.js";
 import { normalizePhone, websiteDomain } from "./text.js";
 import { coordsFromRecordUrls } from "./urlcoords.js";
+import { parseOneDate } from "./dates.js";
 
 export interface ValueCandidate<T> {
   id: string;
@@ -125,6 +126,15 @@ export function strictDate(raw: unknown): {
     if (year >= 1800 && year <= new Date().getUTCFullYear() + 10) {
       return { iso: `${year}-01-01`, precision: "year" };
     }
+  }
+  // Capture-spec sources commonly use human-readable but fully specified dates.
+  // Reuse the event parser, retaining this function's reject-invalid-calendar rule.
+  const parsed = parseOneDate(value);
+  if (parsed && validCalendarDate(parsed.y, parsed.m, parsed.d)) {
+    return {
+      iso: `${String(parsed.y).padStart(4, "0")}-${String(parsed.m).padStart(2, "0")}-${String(parsed.d).padStart(2, "0")}`,
+      precision: parsed.precision,
+    };
   }
   return null;
 }

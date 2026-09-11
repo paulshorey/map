@@ -79,8 +79,8 @@ export async function insertPois(
       const { rows } = await db.query(
         `INSERT INTO canonical_pois
            (name, description, photo_url, address, website, hours, lng, lat,
-            starts_at, ends_at, date_precision)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+            starts_at, ends_at, date_precision, origin)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'manual')
          RETURNING id`,
         [
           poi.name,

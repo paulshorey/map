@@ -51,6 +51,10 @@ always supplied by the developer via `--category`; it is never inferred.
 
 ```bash
 pnpm --filter @lib/db-map ingest:run <file> --category <slug>
+pnpm --filter @lib/db-map ingest:clean <file> [--limit N] [--dry-run]
+pnpm --filter @lib/db-map ingest:trace --source <slug> --record <source-record-id>
+pnpm --filter @lib/db-map ingest:trace --canonical <uuid>
+pnpm --filter @lib/db-map ingest:verify
 pnpm --filter @lib/db-map ingest:extract <source> <file> --category <slug> [--limit N] [--dry-run]
 pnpm --filter @lib/db-map ingest:normalize [--source <slug>] [--no-llm] [--report-unmapped] [--report-coverage]
 pnpm --filter @lib/db-map ingest:geocode [--source <slug>] [--geocode-limit N]
@@ -65,6 +69,10 @@ matching more raw rows. Do not use `--recluster` unless explicitly starting over
 destructive. `ingest:report` is read-only reconciliation output. Sources without a custom
 extractor fall back to the generic capture-spec extractor
 (`docs/poi-research/capture-spec.md`).
+
+Active rows in `research_canonical_memberships` are the authoritative membership record;
+`research_pois.canonical_poi_id` is a synchronized lookup cache. Canonical builds retain
+relational inputs in `canonical_poi_build_inputs`; run `ingest:verify` after lineage changes.
 
 ## Workflow: schema changes
 

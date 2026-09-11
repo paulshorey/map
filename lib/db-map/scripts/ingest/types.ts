@@ -5,6 +5,10 @@
 /** Normalized staging shape produced by extractors before DB upsert. */
 export interface RawRecord {
   source_record_id: string;
+  /** How the source record key was chosen; persisted as lineage provenance. */
+  source_record_id_kind?: "natural" | "url" | "synthetic";
+  /** Stable components used to derive a synthetic source_record_id. */
+  identity_inputs?: Record<string, string | null>;
   name?: string;
   description?: string;
   /** Official site only — omit when the source has only a listing URL. */
@@ -51,6 +55,8 @@ export interface SourceDefinition {
   extractor?: Extractor;
   files?: SourceFileDefinition[];
   normalizationProfile?: string;
+  /** Identity policy for generic/capture-spec sources. */
+  identity?: { field?: string; editioned?: boolean };
 }
 
 export interface SourceFileDefinition {

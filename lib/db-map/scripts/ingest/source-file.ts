@@ -44,7 +44,7 @@ export function normalizationProfileForCategory(category: string): string {
   return "place";
 }
 
-function inferredSource(logicalPath: string, category: string): SourceDefinition {
+function inferredSource(logicalPath: string, category?: string): SourceDefinition {
   const filename = basename(logicalPath).replace(/\.(jsonl|json|csv)$/i, "");
   const genericNames = new Set(["facilities", "events", "records", "data", "places"]);
   const parent = basename(dirname(logicalPath));
@@ -57,13 +57,15 @@ function inferredSource(logicalPath: string, category: string): SourceDefinition
   if (!slug) throw new Error(`Unable to infer source slug from ${logicalPath}`);
   return {
     meta: { slug, name: slug.replace(/_/g, " "), trust: 50 },
-    normalizationProfile: normalizationProfileForCategory(category),
+    // Cleanup needs source resolution but does not use a category. Ingestion always
+    // supplies one, so its normalizer profile remains category-driven.
+    normalizationProfile: category ? normalizationProfileForCategory(category) : "place",
   };
 }
 
 export async function resolveSourceFile(
   inputPath: string,
-  category: string,
+  category?: string,
 ): Promise<ResolvedSourceFile> {
   // Category always comes from the CLI. The source registry may document an expected slug,
   // but ingestion never infers category from path, filename, or raw record fields.
@@ -90,7 +92,7 @@ export async function resolveSourceFile(
   }
   if (matches.length === 0) {
     const source = inferredSource(logicalPath, category);
-    const file: SourceFileDefinition = { pattern: logicalPath, category };
+    const file: SourceFileDefinition = { pattern: logicalPath, category: category ?? "" };
     return {
       absolutePath,
       logicalPath,
@@ -121,9 +123,11 @@ export async function resolveSourceFile(
     source: {
       ...match.source,
       normalizationProfile:
-        match.source.normalizationProfile ?? normalizationProfileForCategory(category),
+        match.source.normalizationProfile ?? normalizationProfileForCategory(category ?? match.file.category),
     },
-    file: { ...match.file, category },
+    // Ingestion intentionally lets its required CLI category define the run. File
+    // maintenance commands can omit it and use the registered category for display.
+    file: { ...match.file, category: category ?? match.file.category },
     format: actualFormat,
     mode: match.file.mode ?? "snapshot",
     extractorVersion: match.file.extractorVersion ?? "1",

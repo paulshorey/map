@@ -56,6 +56,38 @@
       "type": "Date"
     }
   ],
+  "canonical_poi_build_inputs": [
+    {
+      "column": "build_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "research_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "normalization_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "geocode_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "embedding_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "membership_id",
+      "nullable": true,
+      "type": "string"
+    }
+  ],
   "canonical_poi_builds": [
     {
       "column": "id",
@@ -182,6 +214,11 @@
       "column": "created_at",
       "nullable": false,
       "type": "Date"
+    },
+    {
+      "column": "consolidation_decision_id",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "canonical_pois": [
@@ -294,6 +331,11 @@
       "column": "active_build_id",
       "nullable": true,
       "type": "string"
+    },
+    {
+      "column": "origin",
+      "nullable": false,
+      "type": "string"
     }
   ],
   "geo_centroids": [
@@ -386,6 +428,11 @@
     },
     {
       "column": "retirement_reason",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "run_id",
       "nullable": true,
       "type": "string"
     }
@@ -1551,6 +1598,26 @@
       "column": "retired_at",
       "nullable": true,
       "type": "Date"
+    },
+    {
+      "column": "source_record_id_kind",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "identity_inputs",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "active_geocode_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "active_embedding_id",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "research_pois_current": [

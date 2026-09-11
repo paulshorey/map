@@ -88,6 +88,7 @@ export function synthSourceRecordId(
   sourceSlug: string,
   name: string,
   locality: string,
+  edition?: string | null,
 ): string {
   const norm = (s: string) =>
     s
@@ -95,7 +96,7 @@ export function synthSourceRecordId(
       .normalize("NFKD")
       .replace(/[^a-z0-9]+/g, " ")
       .trim();
-  const key = `${sourceSlug}|${norm(name)}|${norm(locality)}`;
+  const key = `${sourceSlug}|${norm(name)}|${norm(locality)}|${edition ? norm(edition) : ""}`;
   return createHash("sha1").update(key).digest("hex");
 }
 

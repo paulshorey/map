@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import type { Pool, PoolClient } from "pg";
-import { genericExtractor, mapGenericRecord } from "./extractors/generic.js";
+import { parseGenericRecords } from "./extractors/generic.js";
 import { rawContentHash } from "./hash.js";
 import { runHybridNormalize } from "./normalize/runner.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
@@ -42,6 +42,8 @@ interface ExtractStats {
   unchanged: number;
   rejected: number;
   failed: number;
+  duplicates: number;
+  collisions: number;
 }
 
 interface RunContext {
@@ -189,7 +191,14 @@ async function createRunContext(
   };
 }
 
-async function* recordsFor(resolved: ResolvedSourceFile): AsyncIterable<RawRecord> {
+/**
+ * Produce the exact record stream used by the file-first extractor stage.
+ *
+ * Maintenance commands which act on a file must use this rather than parsing the
+ * file independently: custom extractors can synthesize source ids and registered
+ * files can declare a wrapper path.
+ */
+export async function* recordsFor(resolved: ResolvedSourceFile): AsyncIterable<RawRecord> {
   const custom = getExtractor(resolved.source.meta.slug);
   if (custom) {
     yield* custom.parse(resolved.absolutePath);
@@ -203,13 +212,33 @@ async function* recordsFor(resolved: ResolvedSourceFile): AsyncIterable<RawRecor
         `Expected array at wrapper path "${resolved.file.wrapperPath}" in ${resolved.logicalPath}`,
       );
     }
+    // Wrapper files are bounded JSON documents. Reuse the generic parser's identity
+    // policy after counting URLs so shared feed/homepage URLs never become keys.
+    const { mapGenericRecord } = await import("./extractors/generic.js");
+    const urls = new Map<string, number>();
     for (const raw of records) {
-      const record = mapGenericRecord(raw);
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+      const value = raw as Record<string, unknown>;
+      const url = typeof value.detail_url === "string" ? value.detail_url : typeof value.source_url === "string" ? value.source_url : typeof value.url === "string" ? value.url : undefined;
+      if (url) urls.set(url, (urls.get(url) ?? 0) + 1);
+    }
+    const uniqueUrls = new Set([...urls].filter(([, count]) => count === 1).map(([url]) => url));
+    for (const raw of records) {
+      const record = mapGenericRecord(raw, {
+        sourceSlug: resolved.source.meta.slug,
+        field: resolved.source.identity?.field,
+        editioned: resolved.source.identity?.editioned,
+        uniqueUrls,
+      });
       if (record) yield record;
     }
     return;
   }
-  yield* genericExtractor.parse(resolved.absolutePath);
+  yield* parseGenericRecords(resolved.absolutePath, {
+    sourceSlug: resolved.source.meta.slug,
+    field: resolved.source.identity?.field,
+    editioned: resolved.source.identity?.editioned,
+  });
 }
 
 async function upsertRunRecord(
@@ -266,10 +295,11 @@ async function observeRecord(
          name, description, website, source_url, phone, email,
          address, city, region, country_code, lng, lat,
          raw_category, is_poi, raw, attributes, content_hash,
+         source_record_id_kind, identity_inputs,
          normalization_state
        ) VALUES (
          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
-         $16,$17,$18::jsonb,$19::jsonb,$20,'pending'
+         $16,$17,$18::jsonb,$19::jsonb,$20,$21,$22::jsonb,'pending'
        ) RETURNING id`,
       [
         ctx.sourceId,
@@ -292,6 +322,8 @@ async function observeRecord(
         JSON.stringify(rawHash.redacted),
         JSON.stringify(record.attributes ?? {}),
         rawHash.hash,
+        record.source_record_id_kind ?? "natural",
+        record.identity_inputs ? JSON.stringify(record.identity_inputs) : null,
       ],
     );
     poiId = inserted.rows[0]!.id;
@@ -337,6 +369,7 @@ async function observeRecord(
          phone = $7, email = $8, address = $9, city = $10, region = $11,
          country_code = $12, lng = $13, lat = $14, raw_category = $15,
          raw = $16::jsonb, attributes = $17::jsonb, content_hash = $18,
+         source_record_id_kind = $20, identity_inputs = $21::jsonb,
          active_observation_id = $19, normalization_state =
            CASE WHEN active_normalization_id IS NULL THEN 'pending' ELSE 'active_stale' END,
          retired_at = NULL
@@ -361,6 +394,8 @@ async function observeRecord(
         JSON.stringify(record.attributes ?? {}),
         rawHash.hash,
         observationId,
+        record.source_record_id_kind ?? "natural",
+        record.identity_inputs ? JSON.stringify(record.identity_inputs) : null,
       ],
     );
   } else {
@@ -414,6 +449,8 @@ async function extractFile(
     unchanged: 0,
     rejected: 0,
     failed: 0,
+    duplicates: 0,
+    collisions: 0,
   };
   await db.query(
     `UPDATE research_source_file_versions SET status = 'extracting' WHERE id = $1`,
@@ -423,6 +460,7 @@ async function extractFile(
   const extractor = getExtractor(ctx.resolved.source.meta.slug);
 
   let ordinal = 0;
+  const seenIds = new Map<string, { hash: string; ordinal: number }>();
   try {
     for await (const record of recordsFor(ctx.resolved)) {
       if (opts.limit !== undefined && stats.seen >= opts.limit) break;
@@ -445,6 +483,30 @@ async function extractFile(
         });
         continue;
       }
+      const prior = seenIds.get(record.source_record_id);
+      if (prior) {
+        if (prior.hash === hash.hash) {
+          stats.duplicates++;
+          await db.query(
+            `UPDATE research_ingest_run_records SET extract_state='duplicate',
+               last_error_class='duplicate_source_record_id',
+               last_error=$2 WHERE id=$1`,
+            [runRecordId, `Duplicate of ordinal ${prior.ordinal} with identical raw content`],
+          );
+          console.log(`extract duplicate #${ordinal} ${recordLabel(record)} (same as #${prior.ordinal})`);
+        } else {
+          stats.collisions++;
+          await db.query(
+            `UPDATE research_ingest_run_records SET extract_state='collision',
+               last_error_class='source_record_id_collision',
+               last_error=$2 WHERE id=$1`,
+            [runRecordId, `Collides with ordinal ${prior.ordinal}; records have different raw content`],
+          );
+          console.error(`extract collision #${ordinal} ${recordLabel(record)} (conflicts with #${prior.ordinal})`);
+        }
+        continue;
+      }
+      seenIds.set(record.source_record_id, { hash: hash.hash, ordinal });
 
       const client = await db.connect();
       try {
@@ -493,12 +555,12 @@ async function extractFile(
     throw error;
   }
 
-  const complete = opts.limit === undefined && stats.failed === 0;
+  const complete = opts.limit === undefined && stats.failed === 0 && stats.collisions === 0;
   await db.query(
     `UPDATE research_source_file_versions SET
        status=$2, record_count=$3, completed_at=CASE WHEN $2='complete' THEN now() ELSE NULL END
      WHERE id=$1`,
-    [ctx.fileVersionId, complete ? "complete" : "partial", stats.seen],
+    [ctx.fileVersionId, stats.collisions > 0 ? "failed" : complete ? "complete" : "partial", stats.seen],
   );
   if (complete) {
     if (ctx.resolved.mode === "snapshot") {
@@ -646,8 +708,12 @@ export async function runOrchestration(db: Pool, opts: OrchestratorOptions): Pro
         await updateRun(db, ctx, { counters: { extract } });
         console.log(
           `Extract: seen=${extract.seen} inserted=${extract.inserted} changed=${extract.changed} ` +
-            `unchanged=${extract.unchanged} rejected=${extract.rejected} failed=${extract.failed}`,
+            `unchanged=${extract.unchanged} duplicate=${extract.duplicates} collision=${extract.collisions} ` +
+            `rejected=${extract.rejected} failed=${extract.failed}`,
         );
+        if (extract.collisions > 0) {
+          throw new Error(`Extract found ${extract.collisions} source_record_id collision(s); fix source identity before retrying.`);
+        }
       }
       if (shouldStop(opts, "extract")) {
         await updateRun(db, ctx, { status: "paused" });
@@ -730,6 +796,8 @@ export async function runOrchestration(db: Pool, opts: OrchestratorOptions): Pro
     await updateRun(db, ctx, { stage: "report", status: partial ? "partial" : "succeeded" });
     const reportCode = await runCommand("ingest:report", ["--source", resolved.source.meta.slug]);
     if (reportCode !== 0) throw new Error(`ingest:report exited ${reportCode}`);
+    const verifyCode = await runCommand("ingest:verify", []);
+    if (verifyCode !== 0) throw new Error(`ingest:verify found lineage violations`);
     console.log(`Run ${ctx.runId}: ${partial ? "partial" : "succeeded"}`);
     if (partial) process.exitCode = 2;
   } catch (error) {

@@ -32,6 +32,7 @@ interface CanonicalRow extends AnchorMeta {
 }
 
 interface MemoVerdict {
+  id: string;
   same_place: boolean;
   reason: string | null;
 }
@@ -41,6 +42,7 @@ interface MergePlan {
   duplicateId: string;
   reason: string;
   distanceM: number;
+  consolidationDecisionId?: string;
 }
 
 function meta(row: CanonicalRow): AnchorMeta {
@@ -162,7 +164,7 @@ async function readConsolidationMemo(
 ): Promise<MemoVerdict | null> {
   const [lo, hi] = orderedPair(a, b);
   const { rows } = await client.query<MemoVerdict & { decided_at: Date }>(
-    `SELECT same_place, reason, decided_at
+    `SELECT id, same_place, reason, decided_at
      FROM research_consolidation_decisions
      WHERE canonical_a = $1 AND canonical_b = $2`,
     [lo.id, hi.id],
@@ -176,24 +178,26 @@ async function readConsolidationMemo(
   ) {
     return null;
   }
-  return { same_place: memo.same_place, reason: memo.reason };
+  return { id: memo.id, same_place: memo.same_place, reason: memo.reason };
 }
 
 async function writeConsolidationMemo(
   client: PoolClient,
   a: CanonicalRow,
   b: CanonicalRow,
-  verdict: MemoVerdict,
-): Promise<void> {
+  verdict: Pick<MemoVerdict, "same_place" | "reason">,
+): Promise<string> {
   const [lo, hi] = orderedPair(a, b);
-  await client.query(
+  const { rows } = await client.query<{ id: string }>(
     `INSERT INTO research_consolidation_decisions (canonical_a, canonical_b, same_place, reason, method)
      VALUES ($1, $2, $3, $4, 'llm')
      ON CONFLICT (canonical_a, canonical_b)
      DO UPDATE SET same_place = EXCLUDED.same_place, reason = EXCLUDED.reason,
-                   method = EXCLUDED.method, decided_at = now()`,
+                   method = EXCLUDED.method, decided_at = now()
+     RETURNING id`,
     [lo.id, hi.id, verdict.same_place, verdict.reason],
   );
+  return rows[0]!.id;
 }
 
 async function planAnchorAnchorMerges(
@@ -224,6 +228,7 @@ async function planAnchorAnchorMerges(
           duplicateId: ordered[1]!.id,
           reason: `anchor_anchor_memo:${memo.reason ?? "previously adjudicated same place"}`,
           distanceM,
+          consolidationDecisionId: memo.id,
         });
         continue;
       }
@@ -262,7 +267,7 @@ async function planAnchorAnchorMerges(
         },
       });
 
-      await writeConsolidationMemo(client, a, b, {
+      const consolidationDecisionId = await writeConsolidationMemo(client, a, b, {
         same_place: llm.samePlace,
         reason: llm.reason,
       });
@@ -279,6 +284,7 @@ async function planAnchorAnchorMerges(
         duplicateId: duplicate.id,
         reason: `anchor_anchor_llm:${llm.reason}`,
         distanceM,
+        consolidationDecisionId,
       });
     }
   }
@@ -369,11 +375,9 @@ async function applyPlans(client: PoolClient, plans: MergePlan[], opts: Consolid
     if (opts.shouldStop?.()) break;
     await client.query("BEGIN");
     try {
-      await collapseDuplicateCanonicals(
-        client,
-        targetId,
-        targetPlans.map((plan) => plan.duplicateId),
-      );
+      for (const plan of targetPlans) {
+        await collapseDuplicateCanonicals(client, targetId, [plan.duplicateId], plan.consolidationDecisionId);
+      }
       await rebuildCanonicalPoi(client, targetId, { noLlm: opts.noLlm });
       await client.query("COMMIT");
       for (const plan of targetPlans) {

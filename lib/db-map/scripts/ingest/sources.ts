@@ -9,6 +9,7 @@ import { wikipediaIntlExtractor } from "./extractors/wikipedia-intl.js";
 import { gardenologyExtractor } from "./extractors/gardenology.js";
 import { globalCarnivalistExtractor } from "./extractors/global-carnivalist.js";
 import { roughGuidesExtractor } from "./extractors/rough-guides.js";
+import { artFairsListExtractor } from "./extractors/artfairslist.js";
 import type { SourceDefinition } from "./types.js";
 
 const GARDEN_SOURCES: SourceDefinition[] = [
@@ -225,11 +226,33 @@ const CARNIVAL_SOURCES: SourceDefinition[] = [
   },
 ];
 
+/** Small generic fixtures used to continuously exercise capture-spec ingestion. */
+const GENERIC_SMOKE_SOURCES: SourceDefinition[] = [
+  {
+    meta: { slug: "artfairslist", name: "Art Fairs List", trust: 50 },
+    extractor: artFairsListExtractor,
+    files: [{ pattern: "docs/poi/art-fairs/craft-shows/artfairslist.json", category: "art_fair" }],
+    normalizationProfile: "event",
+  },
+  {
+    meta: { slug: "aurillac_festival", name: "Aurillac Festival", trust: 70 },
+    identity: { editioned: true },
+    files: [{ pattern: "docs/poi/art-parades/street-arts/aurillac_festival.json", category: "art_parade" }],
+    normalizationProfile: "event",
+  },
+  {
+    meta: { slug: "california_hostels", name: "California Hostels", trust: 60 },
+    files: [{ pattern: "docs/poi/hostels/california-hostels.json", category: "hostel" }],
+    normalizationProfile: "place",
+  },
+];
+
 const ALL_SOURCES: SourceDefinition[] = [
   ...GARDEN_SOURCES,
   ...CAMPGROUND_SOURCES,
   ...FESTIVAL_SOURCES,
   ...CARNIVAL_SOURCES,
+  ...GENERIC_SMOKE_SOURCES,
 ];
 
 const bySlug = new Map(ALL_SOURCES.map((s) => [s.meta.slug, s]));

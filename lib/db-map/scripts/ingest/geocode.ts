@@ -170,29 +170,27 @@ async function writeRowCoords(
   precision: GeocodeHit["precision"],
   queryNorm: string,
 ): Promise<void> {
-  await db.query(
-    `UPDATE research_pois SET
-       lat = $2,
-       lng = $3,
-       coordinate_source = 'geocode',
-       coordinate_precision = $4,
-       geocode_query_norm = $5
-     WHERE id = $1`,
-    [id, lat, lng, precision, queryNorm],
-  );
   const inputHash = stableHash({ queryNorm, provider: "locationiq", version: "locationiq-v1" });
   await db.query(
-    `INSERT INTO research_poi_geocodes (
+    `WITH artifact AS (
+       INSERT INTO research_poi_geocodes (
        normalization_id, input_hash, query_norm, provider, provider_version,
        lat, lng, precision, status, activated_at
-     )
-     SELECT active_normalization_id, $2, $3, 'locationiq', 'locationiq-v1',
-            $4, $5, $6, 'resolved', now()
-     FROM research_pois
-     WHERE id = $1 AND active_normalization_id IS NOT NULL
-     ON CONFLICT (normalization_id, input_hash) DO UPDATE SET
+       )
+       SELECT active_normalization_id, $2, $3, 'locationiq', 'locationiq-v1',
+              $4, $5, $6, 'resolved', now()
+       FROM research_pois
+       WHERE id = $1 AND active_normalization_id IS NOT NULL
+       ON CONFLICT (normalization_id, input_hash) DO UPDATE SET
        lat = EXCLUDED.lat, lng = EXCLUDED.lng, precision = EXCLUDED.precision,
-       status = EXCLUDED.status, activated_at = now()`,
+       status = EXCLUDED.status, activated_at = now()
+       RETURNING id
+     )
+     UPDATE research_pois SET
+       lat = $4, lng = $5, coordinate_source = 'geocode', coordinate_precision = $6,
+       geocode_query_norm = $3,
+       active_geocode_id = (SELECT id FROM artifact)
+     WHERE id = $1`,
     [id, inputHash, queryNorm, lat, lng, precision],
   );
 }

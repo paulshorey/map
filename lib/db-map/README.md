@@ -103,6 +103,31 @@ pnpm --filter @lib/db-map ingest:run <file> --category <slug> --from normalize -
 pnpm --filter @lib/db-map ingest:run <file> --category <slug> --retry-failed
 ```
 
+To remove a selected file slice completely while troubleshooting, use the matching
+file-first cleanup command. It reuses `ingest:run`'s source resolution and extractor, so
+custom/synthesized source record IDs and wrapper paths select the same POIs. It deletes the
+selected `research_pois` rows, their observations, normalization/provider artifacts, match
+audit/memberships, run-record entries, and stale pipeline jobs. Orphan canonicals are deleted;
+shared canonicals are rebuilt from their remaining research rows.
+
+If a bad extractor has assigned the same `source_record_id` to multiple input items, cleanup
+groups them and removes the one coalesced database lineage (including every stored observation
+under that row). The output reports the number of coalesced input records; it does not skip them.
+
+```bash
+# Inspect the exact records that would be removed.
+pnpm --filter @lib/db-map ingest:clean <file> --limit 20 --dry-run
+
+# Remove the first 20 parsed records from the source file.
+pnpm --filter @lib/db-map ingest:clean <file> --limit 20
+```
+
+The command intentionally retains shared source-file/run metadata and the shared geocode cache:
+neither is a POI-specific artifact, and deleting either would remove evidence or cache entries
+for other records. Cleanup never filters by category: it removes all lineage for the selected
+source records, including records previously imported under a different or multiple categories.
+`--category <slug>` is accepted only for compatibility and is ignored.
+
 Individual stage commands remain available for diagnostics:
 
 ```bash
@@ -118,6 +143,9 @@ Supporting maintenance commands:
 
 ```bash
 pnpm --filter @lib/db-map ingest:report [--source <slug>] [--category <slug>]
+pnpm --filter @lib/db-map ingest:trace --source <slug> --record <source-record-id>
+pnpm --filter @lib/db-map ingest:trace --canonical <uuid>
+pnpm --filter @lib/db-map ingest:verify
 pnpm --filter @lib/db-map ingest:seed:centroids
 pnpm --filter @lib/db-map ingest:backfill:wikidata-coords
 pnpm --filter @lib/db-map ingest:reflow
