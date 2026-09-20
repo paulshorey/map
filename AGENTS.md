@@ -1,95 +1,78 @@
-# POI Map
+# POI Map — agent instructions
 
-Interactive map app — users browse points of interest and click for details.
+Interactive POI map monorepo. Apps live in `apps/`; shared libraries live in `lib/`.
 
-- `apps/map` — Next.js 15 + Capacitor (web, iOS, Android)
-- `lib/db-map` — PostgreSQL migrations, SQL queries, contracts
-- `lib/config` — shared tsconfig presets
+## Read the right guide
 
-Dev server: `pnpm dev` (port 3000). Guest auth, no login required.
+- [README.md](README.md): human setup and commands for manually running full ingestion.
+- [Ingestion runbook](docs/poi-ingestion.md): shared reference for stage behavior,
+  command limits, category completeness, evidence, and troubleshooting. Read it before
+  developing, debugging, or running ingestion.
+- [Database guide](lib/db-map/AGENTS.md): database and ingestion implementation rules.
+- [Source data guide](docs/AGENTS.md): capture format and source file conventions.
+- Read the applicable folder `AGENTS.md` before editing there. App guides start at
+  `apps/AGENTS.md` and `apps/map/AGENTS.md`, with narrower guides under `apps/map/src/`.
 
-## Codebase
+Keep setup and full-run recipes in READMEs, agent working rules in AGENTS.md, and shared
+pipeline facts in the runbook. Link to the owner instead of copying its command catalog.
+When behavior changes, update that reference in the same change.
 
-This is a mono-repo. Apps go into ./apps and libraries go into ./lib folder.
+## Execution responsibilities
 
-- apps/map/ - the main app, uses Capacitor framework to build web, ios, and android apps
-- lib/db-map/ - database migrations, contracts, and types
+The human runs long ingestion, bulk reprocessing, global consolidation, and large backfills
+manually. Agents own development and debugging of the **entire** pipeline, including those
+long-running stages. Do not stop at describing a problem or hand off a reproducible code bug.
 
-## Documentation
+Agents should autonomously inspect code and data, run read-only diagnostics, implement fixes,
+and execute short, bounded validation within the requested task. Small live database writes
+and provider calls needed to validate ingestion are allowed. Start with 1–5 records for
+provider-backed work or up to 20 for deterministic checks; expand only when evidence requires
+it. These are starting budgets, not a guarantee of runtime.
 
-- `README.md` — concise human setup and ingestion commands
-- `docs/poi-ingestion.md` — deep-dive POI ingestion and conflation guide
-- `docs/` — POI source files, import staging, research notes — see `docs/AGENTS.md`
-- `docs/poi/{category}/` — source files and notes per POI category
+Before running a command, check its actual scope, selection, provider behavior, and stopping
+conditions in the runbook/code. `--dry-run` does not imply fast or provider-free, and
+`--limit` does not necessarily bound every stage. In particular, file-first runs invoke
+global consolidation when they reach matching. Use the runbook's bounded stage recipes.
+Do not launch a full run in the background or chain small batches until the full backlog
+is drained. Prepare the exact manual command when validation is complete.
 
-### Folder guides (AGENTS.md)
+If a stage lacks a suitable bound or cannot select the failing records, investigate with
+read-only queries and fixtures, then add or fix the diagnostic control when needed for the
+task. The human/agent split is about execution duration, not which code agents may work on.
+Do not interfere with a human's active run; check run state and process/lock evidence before
+starting overlapping mutations.
 
-| Path                    | Topic                                  |
-| ----------------------- | -------------------------------------- |
-| `apps/map/`             | Next.js app, Capacitor, Railway deploy |
-| `apps/map/src/`         | Source layout and key flows            |
-| `apps/map/src/app/`     | Pages and API routes                   |
-| `apps/map/src/auth/`    | User session and entitlements          |
-| `apps/map/src/basemap/` | Tile providers                         |
-| `apps/map/src/map/`     | MapLibre map and POI UI                |
-| `apps/map/src/lib/`     | Shared helpers                         |
-| `lib/db-map/`           | Migrations, SQL, contracts             |
-| `lib/`                  | Monorepo libraries overview            |
+## Ingestion development and debugging loop
 
-## Environment variables
+1. **Establish scope and baseline.** Identify category, source, source files, and relevant
+   runs. Compare expected files with observed imports, including sources with no database
+   rows. Use the runbook's category assessment; zero match-ready rows alone is not completion.
+2. **Find the earliest broken stage.** Inspect run counters/errors and trace representative
+   records from raw observation through normalization, geocoding, embedding, membership,
+   canonical build, and published output. Distinguish pending, excluded, failed, stale,
+   budget-limited, and intentionally skipped work.
+3. **Reproduce and fix.** Use the smallest useful sample. Preserve source identity,
+   provenance, resumability, and successful prior artifacts. Fix the responsible code,
+   profile, prompt, query, or source mapping instead of repeatedly rerunning the pipeline.
+4. **Validate through the affected downstream stages.** Run relevant existing checks and
+   bounded live diagnostics. Compare before/after counts and record traces; verify lineage
+   after membership/build changes. Measure quality, time, requests, cache hits, and cost
+   when optimizing. State which stages and provider paths were actually exercised.
+5. **Hand off full execution.** Report category/source coverage, linked and match-ready
+   counts, blocked/failed work, evidence of the fix, and exact full-run/resume commands.
+   Explain expected changes and the read-only checks the human should run afterward.
+   Clearly distinguish “sample validated” from “category complete.”
 
-This project does not use .env files. Instead, all environment variables are preconfigured in the shell environment. The .env.example only serves to show the developer which env vars are used by the project, to make sure they are available in the shell.
+## Environment and database
 
-## Database
+Environment variables are already provided by the shell. Do not create or load `.env` files;
+`.env.example` is a reference only. Use `DB_MAP_URL` without printing credentials.
 
-Database connection string in `DB_MAP_URL` env var. Feel free to read and write to the remote database. We're starting from scratch. Everything is backed up, so don't be afraid to run migrations and other destructive actions.
+The remote database is available for development reads and writes and is backed up. Follow
+the execution budgets above. After schema changes, run
+`pnpm --filter @lib/db-map db:sync` and include the migration, `schema/`, and `generated/`
+changes together. See the database guide for details.
 
-After making a change requiring database migration, run the sync pipeline and commit the generated files in the same PR:
-
-```bash
-cd lib/db-map && pnpm db:sync
-```
-
-This migrates the database, snapshots the schema, and regenerates TypeScript types and contracts. The updated files in `schema/` and `generated/` must be committed alongside the migration.
-
-## POI ingestion workflow for agents
-
-Use the staged pipeline for real source data:
-
-```bash
-pnpm --filter @lib/db-map ingest:taxonomy:seed
-pnpm --filter @lib/db-map ingest:run <file> --category <category-slug>
-# or stage-by-stage:
-pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <category-slug>
-pnpm --filter @lib/db-map ingest:normalize [--source <source-slug>]
-pnpm --filter @lib/db-map ingest:geocode [--source <source-slug>] [--geocode-limit 4500]
-pnpm --filter @lib/db-map ingest:embed [--source <source-slug>]
-pnpm --filter @lib/db-map ingest:match --consolidate
-pnpm --filter @lib/db-map ingest:report [--source <source-slug>]
-```
-
-Notes:
-
-- `ingest:run` and `ingest:extract` both require `--category <slug>`; category is never inferred.
-- Sources registered in `sources.ts` without a custom extractor use the generic extractor
-  for files following `docs/poi-research/capture-spec.md` — new conformant sources need
-  only a metadata entry, no extractor code.
-- Re-importing a file is idempotent: unchanged records keep their `canonical_poi_id`; only
-  new/changed records re-flow. You never need to re-match or re-consolidate "everything".
-- Consolidation memoizes anchor-vs-anchor LLM verdicts in
-  `research_consolidation_decisions`; reruns of `--consolidate` are cheap.
-- `ingest:report` is read-only; run it before and after imports to verify state.
-
-`ingest:match` is resumable. Progress is `research_pois.canonical_poi_id`; normal reruns skip linked rows and continue pending rows. First `Ctrl-C` stops gracefully after the current unit and prints a resume command.
-
-Common match operations:
-
-```bash
-pnpm --filter @lib/db-map ingest:match --limit 500
-pnpm --filter @lib/db-map ingest:match --consolidate-only --dry-run
-pnpm --filter @lib/db-map ingest:match --consolidate-only
-```
-
-Do not use `--recluster` unless the user explicitly asks to start over or approves destructive reclustering. `--recluster` deletes match decisions, unlinks all research rows, deletes canonicals, and rebuilds from raw research rows.
-
-Use `--dry-run`, `--limit`, and `--no-llm` for investigation when appropriate, but avoid leaving a production import half-described: report linked/pending counts and the exact resume command.
+Do not use `--recluster` unless the user explicitly asks to start over or approves destructive
+reclustering. It is not a resume or debugging shortcut. Preserve diagnostic evidence before
+any targeted cleanup; use the runbook's cleanup procedure when removal is part of the task.

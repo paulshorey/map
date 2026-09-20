@@ -20,7 +20,7 @@ A multi-provider interactive map application built with React, MapLibre GL JS, a
 | App      | Next.js 15, React 19, TypeScript, Tailwind CSS v4 |
 | Map      | MapLibre GL JS 5.24, react-map-gl/maplibre 8.x    |
 | Data     | TanStack Query 5                                  |
-| Database | PostgreSQL 16+ with `pg_trgm`                       |
+| Database | PostgreSQL 16+ with `pg_trgm`                     |
 
 ## Monorepo Layout
 
@@ -77,75 +77,60 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Variable                | Default                                                 | Description                                                                        |
 | ----------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `DB_MAP_URL`            | `postgresql://postgres:postgres@localhost:5432/poi_map` | PostgreSQL connection string (used by `@lib/db-map`)                             |
+| `DB_MAP_URL`            | `postgresql://postgres:postgres@localhost:5432/poi_map` | PostgreSQL connection string (used by `@lib/db-map`)                               |
 | `THUNDERFOREST_API_KEY` | —                                                       | Required for premium Thunderforest tiles                                           |
 | `NEXT_PUBLIC_API_URL`   | —                                                       | Remote API origin for Capacitor mobile builds (e.g. `https://poi-map.example.com`) |
 
 ### Database commands
 
-| Command                  | Description                                      |
-| ------------------------ | ------------------------------------------------ |
-| `pnpm db:migrate`        | Apply pending migrations                         |
-| `pnpm db:migrate:baseline` | Mark baseline migration applied (legacy DBs)   |
-| `pnpm db:verify`         | Migrate, regenerate types/contracts, assert schema |
-| `pnpm db:seed`           | Seed sample POI data                             |
+| Command                    | Description                                        |
+| -------------------------- | -------------------------------------------------- |
+| `pnpm db:migrate`          | Apply pending migrations                           |
+| `pnpm db:migrate:baseline` | Mark baseline migration applied (legacy DBs)       |
+| `pnpm db:verify`           | Migrate, regenerate types/contracts, assert schema |
+| `pnpm db:seed`             | Seed sample POI data                               |
 
 ## POI Ingestion
 
-Use the staged ingestion pipeline for real POI data. It keeps raw source rows in
-`research_pois`, then conflates them into user-facing `canonical_pois`.
+You run full imports and other long jobs manually. AI agents develop and debug every stage,
+using short, bounded runs to validate fixes before handing you commands for the remaining work.
 
-Common source workflow:
+Raw source files live in `docs/poi/`. The pipeline preserves source records and their history
+in `research_*`, then merges them into the `canonical_*` POIs shown on the map.
+
+Run these commands from the repository root. Replace `<file>` with a path under `docs/poi/`
+and `<category>` with a slug from the [taxonomy](lib/db-map/scripts/ingest/taxonomy.ts).
+Category must be explicit; it is never inferred from the file or its records.
 
 ```bash
+# Once initially, and whenever the code-owned taxonomy changes.
 pnpm --filter @lib/db-map ingest:taxonomy:seed
-pnpm --filter @lib/db-map ingest:run <file> --category <category-slug>
+
+# Record category state before the import.
+pnpm --filter @lib/db-map ingest:report --category <category>
+
+# Full run: extraction, normalization, geocoding, embedding, matching and reporting.
+pnpm --filter @lib/db-map ingest:run <file> --category <category>
+
+# Check category state after the import; repeat for its other source files.
+pnpm --filter @lib/db-map ingest:report --category <category>
 ```
 
-Or run stages individually:
+Keep the terminal output and run ID if something fails. Rerun the same full command to reuse
+completed work and continue missing work. For matching alone, resume with
+`pnpm --filter @lib/db-map ingest:match --consolidate`; its first `Ctrl-C` finishes the
+current unit and prints a resume command. Do not use `--recluster` to resume.
 
-```bash
-pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <category-slug>
-pnpm --filter @lib/db-map ingest:normalize [--source <source-slug>]
-pnpm --filter @lib/db-map ingest:geocode [--source <source-slug>] [--geocode-limit 4500]
-pnpm --filter @lib/db-map ingest:embed [--source <source-slug>]
-pnpm --filter @lib/db-map ingest:match --consolidate
-```
+A successful command is not proof that the entire category is complete: other files may
+still be missing, records may be blocked, and valid non-POIs may be intentionally excluded.
+Ask an agent to assess a category, diagnose a failed run, or optimize a slow stage; provide
+the category, file/run ID, and relevant output when available. The agent should return the
+cause, bounded validation results, remaining counts, and your next command.
 
-`ingest:run` and `ingest:extract` both require `--category`; category is never inferred from
-the file path or raw data.
-
-Useful match commands:
-
-```bash
-# Resume safely; skips rows already linked to canonicals.
-pnpm --filter @lib/db-map ingest:match --consolidate
-
-# Process in smaller chunks.
-pnpm --filter @lib/db-map ingest:match --limit 500
-
-# Clean up already-created canonicals without processing more raw rows.
-pnpm --filter @lib/db-map ingest:match --consolidate-only
-pnpm --filter @lib/db-map ingest:match --consolidate-only --dry-run
-
-# Start over from raw research rows. Destructive; use only when intentional.
-pnpm --filter @lib/db-map ingest:match --recluster --consolidate
-```
-
-`ingest:match` prints linked/pending counts at startup. First `Ctrl-C` stops after the
-current unit and prints a resume command; second `Ctrl-C` exits immediately.
-
-Check pipeline state at any time with the read-only report:
-
-```bash
-pnpm --filter @lib/db-map ingest:report [--source <slug>] [--category <slug>]
-```
-
-Re-importing a source file is idempotent: unchanged records keep their canonical links and
-are skipped; only new or changed records flow through the pipeline again.
-
-Deep-dive docs: [`docs/poi-ingestion.md`](docs/poi-ingestion.md). Raw data capture format
-for new sources: [`docs/poi-research/capture-spec.md`](docs/poi-research/capture-spec.md).
+The [ingestion runbook](docs/poi-ingestion.md) owns the stage commands, limits, completion
+criteria, troubleshooting, consolidation, cleanup, and reprocessing procedures. In particular,
+`ingest:run --limit N` still reaches global consolidation: use the runbook's bounded recipes
+for quick diagnostics. New source data should follow the [capture spec](docs/poi-research/capture-spec.md).
 
 ## Mobile (Capacitor)
 
@@ -202,8 +187,8 @@ The native app loads from your dev server instead of the static `out/` bundle.
 
 ### Scripts
 
-| Script                          | Description                                                                              |
-| ------------------------------- | ---------------------------------------------------------------------------------------- |
+| Script                           | Description                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------- |
 | `pnpm --filter map build:mobile` | Static export to `out/` + `cap sync` (temporarily excludes `/api` routes from the build) |
 | `pnpm --filter map cap:sync`     | Alias for `build:mobile`                                                                 |
 | `pnpm --filter map cap:ios`      | Build, sync, open Xcode                                                                  |

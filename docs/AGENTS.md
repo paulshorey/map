@@ -4,42 +4,21 @@ Research notes, POI source files, ingestion references, and staged import data. 
 
 ## Layout
 
-| Path | Purpose |
-| --- | --- |
-| `poi-ingestion.md` | Deep-dive guide for the implemented staged POI ingestion pipeline. |
-| `poi/{category}/` | Source files and notes per POI category. |
-| `import-data/` | Legacy JSON arrays ready for direct `pnpm db:import:json`. |
-| `poi-research/` | Research notes for sources and categories. |
+| Path                           | Purpose                                                                                                                |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `poi-ingestion.md`             | Deep-dive guide for the implemented staged POI ingestion pipeline.                                                     |
+| `poi/{category}/`              | Source files and notes per POI category.                                                                               |
+| `import-data/`                 | Legacy JSON arrays ready for direct `pnpm db:import:json`.                                                             |
+| `poi-research/`                | Research notes for sources and categories.                                                                             |
 | `poi-research/capture-spec.md` | Required reading before mining new sources: raw data capture format that the generic extractor ingests with zero code. |
 
-## POI ingestion
+## Documentation ownership
 
-Use the staged pipeline for real POI data. See `docs/poi-ingestion.md` before changing or
-running ingestion workflows.
-
-Common flow:
-
-```bash
-pnpm --filter @lib/db-map ingest:run <file> --category <category-slug>
-```
-
-Or stage-by-stage:
-
-```bash
-pnpm --filter @lib/db-map ingest:extract <source-slug> <file> --category <category-slug>
-pnpm --filter @lib/db-map ingest:normalize [--source <source-slug>]
-pnpm --filter @lib/db-map ingest:geocode [--source <source-slug>]
-pnpm --filter @lib/db-map ingest:embed [--source <source-slug>]
-pnpm --filter @lib/db-map ingest:match --consolidate
-```
-
-Notes:
-
-- `ingest:run` and `ingest:extract` both require `--category <slug>`; category is never inferred from the file path or raw data.
-- `ingest:extract` resolves relative file paths against `lib/db-map/`; pass absolute paths.
-
-`ingest:match` is resumable. Do not use `--recluster` unless the user explicitly wants a
-destructive rebuild.
+[Root AGENTS.md](../AGENTS.md) defines agent execution budgets and the development/debugging
+workflow. The [root README](../README.md#poi-ingestion) contains human full-run instructions.
+The [ingestion runbook](poi-ingestion.md) owns shared pipeline behavior, bounded diagnostics,
+category completeness, and troubleshooting. Read it before changing or running ingestion;
+update it when behavior changes instead of duplicating recipes here or in source notes.
 
 ## POI sources (`poi/`)
 

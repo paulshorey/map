@@ -1,115 +1,73 @@
-# @lib/db-map
+# @lib/db-map — agent instructions
 
-Database-first package: migrations, SQL queries, generated types, and app API contracts. Consumed by `apps/map` API routes and import scripts.
+Database-first package consumed by the app and import scripts. Follow the
+[root agent workflow](../../AGENTS.md); use the [package README](README.md) for layout and
+schema commands. Read the [ingestion runbook](../../docs/poi-ingestion.md) before ingestion
+work. It owns command semantics, limits, completion criteria, and troubleshooting.
 
-## Directory map
+## Database changes
 
-| Path                    | Purpose                                                                                                                      |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `migrations/`           | Timestamped SQL migrations (`YYYYMMDDHHMM__description.sql`). Currently a single `__baseline.sql` (greenfield).              |
-| `schema/current.sql`    | Auto-generated schema snapshot after migrate                                                                                 |
-| `sql/`                  | Typed query functions (`pois.ts`, `users.ts`) — use these, not raw SQL in the app                                            |
-| `contracts/map-app.ts`  | Hand-maintained TypeScript types for API payloads                                                                            |
-| `generated/typescript/` | Auto-generated row types from schema                                                                                         |
-| `generated/contracts/`  | JSON schemas derived from contracts                                                                                          |
-| `scripts/`              | Migrate, snapshot, typegen, import, seed tooling                                                                             |
-| `scripts/ingest/`       | POI ingestion pipeline (extract → normalize → geocode → embed → match). See `docs/poi-ingestion.md`.                         |
-| `lib/db/postgres.ts`    | `getDb()` — pg Pool from `DB_MAP_URL`                                                                                        |
+- Put application queries in `sql/`; use those helpers from the app.
+- Use migrations for schema changes. Create one with
+  `pnpm --filter @lib/db-map db:migration:new -- description`.
+- Run `pnpm --filter @lib/db-map db:sync` after schema changes and include the migration,
+  schema snapshot, and generated types/contracts in the same change. Do not hand-edit
+  generated artifacts. The snapshot requires a `pg_dump` matching the server major version.
+- Update `contracts/map-app.ts` if API payloads change; run
+  `pnpm --filter @lib/db-map check-types` to check types and app contract drift.
+- Schema uses plain coordinates, `real[]` embeddings, and `pg_trgm`; no PostGIS/pgvector.
+  There is no unique coordinate constraint: identity is determined by matching.
 
-Public exports: `index.ts` re-exports db, sql, and types.
+## Ingestion implementation map
 
-## Schema (current) — two-layer POI architecture
+Paths below are relative to `scripts/ingest/` unless shown otherwise.
 
-Raw source data lands in `research_*` tables; the de-duplicated, user-facing places live in
-`canonical_*` tables. The ingestion pipeline conflates the former into the latter. Portable
-schema — **no PostGIS/pgvector**: plain `lng`/`lat` doubles, `real[]` embeddings, `pg_trgm` for
-name similarity, `tstzrange` for event dates.
+| Concern                                         | Start here                                                                                        |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| CLI options, stage dispatch, run checkpoints    | `run.ts`, `orchestrator.ts`                                                                       |
+| Source/file resolution, stable IDs, parsing     | `source-file.ts`, `sources.ts`, `extractors/`, `io.ts`                                            |
+| Taxonomy and provider configuration             | `taxonomy.ts`, `config.ts`, `providers/`                                                          |
+| Normalization selection, caching, activation    | `normalize/runner.ts`                                                                             |
+| Deterministic facts and LLM evidence validation | `normalize/deterministic.ts`, `normalize/resolve.ts`                                              |
+| Profiles, prompt, examples, output contract     | `normalize/profiles.ts`, `normalize/prompt.ts`, `normalize/examples.ts`, `normalize/contracts.ts` |
+| Geocoding and embedding eligibility/budgets     | `geocode.ts`, `embed.ts`                                                                          |
+| Match selection and decision routing            | `match.ts`, `match/score.ts`, `match/ids.ts`, `match/llm.ts`                                      |
+| Global canonical consolidation                  | `match/consolidate.ts`, `match/anchors.ts`, `match/canonicals.ts`                                 |
+| Published canonical fields and builds           | `merge.ts`                                                                                        |
+| Status, lineage, integrity                      | `report.ts`, `trace.ts`, `verify.ts`, `../../sql/lineage.ts`                                      |
+| Artifact versioning                             | `pipeline-versions.ts`, `normalize/contracts.ts`, source/profile versions                         |
+| Targeted cleanup and legacy reflow              | `clean.ts`, `reflow.ts`                                                                           |
 
-**Published (user-facing):**
+## Invariants to preserve
 
-- **`canonical_pois`** — merged place: name, description, lng/lat, `attributes` (jsonb), `field_provenance`, `popularity`, `status`, event dates (`starts_at`/`ends_at`/`date_precision`/`event_range`), and `primary_category_id` (denormalized shortcut). **No `UNIQUE (lng,lat)`** — dedup is done by the matcher, not coordinate equality.
-- **`canonical_categories`** — code-owned taxonomy (slug, display_name, `parent_id`, `is_temporal`). Seeded from `scripts/ingest/taxonomy.ts`.
-- **`canonical_poi_categories`** — M:N place↔category (source of truth) with `is_primary`.
-- **`canonical_poi_occurrences`** — recurring event editions.
+- Require an explicit code-owned category at ingestion. Keep `(source_id, source_record_id)`
+  stable; do not silently coalesce different source records. Preserve raw observations and
+  their provenance. Use the generic capture-spec extractor when the format conforms.
+- Preserve resumability and idempotency. A refresh failure must leave prior valid output
+  available. Snapshot retirement requires a complete successful extraction, never a limited
+  sample. See the runbook for current cache and retry limitations.
+- Validate model output against source evidence. Coordinates come from source/URL evidence
+  or geocoding, never LLM guesses. A deterministic-only run does not validate the LLM path.
+- Active `research_canonical_memberships` are authoritative; `canonical_poi_id` is a lookup
+  cache. Keep both consistent. Canonical builds retain their inputs in
+  `canonical_poi_build_inputs`; use `ingest:verify` after lineage or membership changes.
+- Rebuild canonical output from linked research rows; preserve audit decisions, manual
+  overrides, and redirects. Do not patch published fields just to conceal an upstream bug.
+- When changing outputs, check the actual cache keys and invalidation path. Version constants
+  alone do not guarantee a stage reruns. Prove the affected sample recomputes and then resumes
+  without unnecessary provider calls.
 
-**Research (raw/staging):**
+## Validation and diagnostic tooling
 
-- **`research_sources`** — source registry (slug, license, attribution, trust).
-- **`research_pois`** — one row per (source, record). Derived state is column NULL-ness (`name_normalized`, `lat`, `content_embedding`, `canonical_poi_id`); `content_hash` versions input; `category_slugs text[]` + `is_poi` are set by normalize. `UNIQUE (source_id, source_record_id)` is the idempotency anchor.
-- **`research_match_decisions`**, **`research_match_overrides`**, **`research_geocode_cache`** — match audit, manual overrides, geocode dedupe/miss cache.
-- **`research_consolidation_decisions`** — memoized anchor-vs-anchor consolidation LLM verdicts, keyed on ordered canonical pair; stale (re-asked) when either canonical's `updated_at` passes the verdict's `decided_at`.
+Use the bounded recipes and existing checks in the runbook. Read the CLI parser before
+adding flags to a command; some scripts reject unknown flags and others silently ignore them.
 
-**Auth:**
+When implementing diagnostic controls, make scope and bounds explicit at every invoked
+stage. Print selected/processed/skipped/failed counts, stop reason, and a usable resume
+command. A row limit must not silently permit an unbounded downstream sweep. Keep read-only
+status and record-level error evidence available so agents can diagnose a failure without
+rerunning the full job. When a control is missing or misleading, document the current limit
+and fix it as part of the relevant development task.
 
-- **`users`** — text id, display_name, tier (`free` \| `premium`), is_guest
-- **`user_preferences`** — per-user basemap_id, last viewport, FK to users
-
-## Ingestion pipeline
-
-Per-source, resumable, idempotent stages (one **category × source** at a time). Category is
-always supplied by the developer via `--category`; it is never inferred.
-
-```bash
-pnpm --filter @lib/db-map ingest:run <file> --category <slug>
-pnpm --filter @lib/db-map ingest:clean <file> [--limit N] [--dry-run]
-pnpm --filter @lib/db-map ingest:trace --source <slug> --record <source-record-id>
-pnpm --filter @lib/db-map ingest:trace --canonical <uuid>
-pnpm --filter @lib/db-map ingest:verify
-pnpm --filter @lib/db-map ingest:extract <source> <file> --category <slug> [--limit N] [--dry-run]
-pnpm --filter @lib/db-map ingest:normalize [--source <slug>] [--no-llm] [--report-unmapped] [--report-coverage]
-pnpm --filter @lib/db-map ingest:geocode [--source <slug>] [--geocode-limit N]
-pnpm --filter @lib/db-map ingest:embed [--source <slug>] [--batch-size N]
-pnpm --filter @lib/db-map ingest:taxonomy:seed
-pnpm --filter @lib/db-map ingest:match --consolidate
-pnpm --filter @lib/db-map ingest:report [--source <slug>] [--category <slug>]
-```
-
-`ingest:match` is resumable. Use `--consolidate-only` for canonical cleanup without
-matching more raw rows. Do not use `--recluster` unless explicitly starting over; it is
-destructive. `ingest:report` is read-only reconciliation output. Sources without a custom
-extractor fall back to the generic capture-spec extractor
-(`docs/poi-research/capture-spec.md`).
-
-Active rows in `research_canonical_memberships` are the authoritative membership record;
-`research_pois.canonical_poi_id` is a synchronized lookup cache. Canonical builds retain
-relational inputs in `canonical_poi_build_inputs`; run `ingest:verify` after lineage changes.
-
-## Workflow: schema changes
-
-1. Create migration: `pnpm --filter @lib/db-map db:migration:new -- description`
-2. Edit the new file in `migrations/`
-3. Run full sync from repo root or package:
-
-```bash
-cd lib/db-map && pnpm db:sync
-```
-
-This runs migrate → schema snapshot → typegen → contract JSON generation. **Commit all generated artifacts** with the migration.
-
-4. If API shapes change, update `contracts/map-app.ts` and run `pnpm app:contract:check` (also runs in app build).
-
-## Importing POIs
-
-Two paths:
-
-- **Ingestion pipeline** (bulk, de-duplicated, with provenance) — the primary path for real data; see the ingestion commands above and `docs/poi-ingestion.md`.
-- **Direct curated insert** (`insertPois()` in `sql/pois.ts`) — used by `db:seed` and `IMPORTING.md`'s KML/JSON importers for dev fixtures and small curated sets. Writes straight to `canonical_pois` + `canonical_poi_categories` (+ `primary_category_id`); it does **not** upsert on lng/lat (no such constraint) and does not compute provenance/popularity. Per the M9 plan these importers will move to staging under a `manual` source.
-
-POI source files and research notes live in repo `docs/poi/`.
-
-## Environment
-
-| Variable     | Required                     |
-| ------------ | ---------------------------- |
-| `DB_MAP_URL` | PostgreSQL connection string |
-
-No `.env` files in repo — vars must be in the shell (see root `AGENTS.md`).
-
-## Quirks
-
-- `listPoisGeoJson` builds GeoJSON in SQL (`jsonb_build_object`) — not PostGIS.
-- World-view requests (`isWorldView`) skip bbox filter and cap by limit only.
-- App build fails if generated contracts drift: `apps/map` runs `contracts:check` before `next build`.
-- `queries/` folder is reserved/placeholder — active queries are in `sql/*.ts`.
-- **`pg_dump` version**: `db:sync` / `db:verify` / `db:schema:snapshot` require a `pg_dump` whose major version matches the server (currently 18). If the default on `PATH` is older (e.g. 16), prepend the right bin dir: `export PATH="/usr/lib/postgresql/18/bin:$PATH"`.
-- **Greenfield migrations**: the baseline is edited in place until launch, so an existing DB must be wiped (`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`) before re-applying. After launch, migrations become append-only.
+Direct KML/JSON importers are for small curated fixtures; real source data belongs in the
+staged pipeline. Source capture conventions live in [docs/AGENTS.md](../../docs/AGENTS.md).
