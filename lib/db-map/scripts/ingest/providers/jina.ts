@@ -33,6 +33,7 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
   try {
     res = await fetch(BASE_URL, {
       method: "POST",
+      signal: AbortSignal.timeout(60_000),
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${key}`,
@@ -54,13 +55,16 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
     throw new EmbedError("Rate limited (429)");
   }
   if (!res.ok) {
-    const msg = body.detail ?? body.message ?? `Unexpected status ${res.status}`;
+    const msg =
+      body.detail ?? body.message ?? `Unexpected status ${res.status}`;
     throw new EmbedError(msg);
   }
 
   const rows = body.data;
   if (!rows || rows.length !== texts.length) {
-    throw new EmbedError(`Expected ${texts.length} embeddings, got ${rows?.length ?? 0}`);
+    throw new EmbedError(
+      `Expected ${texts.length} embeddings, got ${rows?.length ?? 0}`,
+    );
   }
 
   const ordered = new Array<number[]>(texts.length);

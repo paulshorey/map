@@ -36,3 +36,6 @@ android/app/src/main/assets/public
 *.njsproj
 *.sln
 *.sw?
+
+# Local ingestion journals survive database failures; never commit source/error logs.
+lib/db-map/.ingest-logs/

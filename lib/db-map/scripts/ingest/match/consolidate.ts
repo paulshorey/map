@@ -1,3 +1,4 @@
+import { currentAttempt, type AttemptResult } from "../execution.js";
 import type { PoolClient } from "pg";
 import { rebuildCanonicalPoi } from "../merge.js";
 import {
@@ -86,7 +87,10 @@ function bucketKey(lat: number, lng: number, deg: number): string {
   return `${Math.floor(lat / deg)}:${Math.floor(lng / deg)}`;
 }
 
-function buildIndex(rows: CanonicalRow[], deg: number): Map<string, CanonicalRow[]> {
+function buildIndex(
+  rows: CanonicalRow[],
+  deg: number,
+): Map<string, CanonicalRow[]> {
   const index = new Map<string, CanonicalRow[]>();
   for (const row of rows) {
     const key = bucketKey(row.lat, row.lng, deg);
@@ -95,13 +99,19 @@ function buildIndex(rows: CanonicalRow[], deg: number): Map<string, CanonicalRow
   return index;
 }
 
-function nearbyRows(index: Map<string, CanonicalRow[]>, row: CanonicalRow, deg: number): CanonicalRow[] {
+function nearbyRows(
+  index: Map<string, CanonicalRow[]>,
+  row: CanonicalRow,
+  deg: number,
+): CanonicalRow[] {
   const latBucket = Math.floor(row.lat / deg);
   const lngBucket = Math.floor(row.lng / deg);
   const rows: CanonicalRow[] = [];
   for (let dLat = -1; dLat <= 1; dLat++) {
     for (let dLng = -1; dLng <= 1; dLng++) {
-      rows.push(...(index.get(`${latBucket + dLat}:${lngBucket + dLng}`) ?? []));
+      rows.push(
+        ...(index.get(`${latBucket + dLat}:${lngBucket + dLng}`) ?? []),
+      );
     }
   }
   return rows;
@@ -149,7 +159,10 @@ function addPlan(plans: Map<string, MergePlan>, plan: MergePlan): void {
   plans.set(plan.duplicateId, plan);
 }
 
-function orderedPair(a: CanonicalRow, b: CanonicalRow): [CanonicalRow, CanonicalRow] {
+function orderedPair(
+  a: CanonicalRow,
+  b: CanonicalRow,
+): [CanonicalRow, CanonicalRow] {
   return a.id < b.id ? [a, b] : [b, a];
 }
 
@@ -237,40 +250,62 @@ async function planAnchorAnchorMerges(
         continue;
       }
 
-      const llm = await adjudicateMatch({
-        current: {
-          name: a.name,
-          description: a.description,
-          address: a.address,
-          website: a.website,
-          phone: a.phone,
-          lat: a.lat,
-          lng: a.lng,
-          categories: a.category_slugs,
-        },
-        candidate: {
-          name: b.name,
-          description: b.description,
-          address: b.address,
-          website: b.website,
-          phone: b.phone,
-          lat: b.lat,
-          lng: b.lng,
-          categories: b.category_slugs,
-        },
-        distance_m: Math.round(distanceM),
-        score: 0,
-        signals: {
-          reason: "anchor_anchor_proximity_consolidation",
-          proximity_deg: proximityDegFor(sameCategorySlugs(a, b)),
-          guidance: "Decide whether these are one real-world place or one visitor complex despite different names.",
-        },
-      });
+      const decide = async () => {
+        const llm = await adjudicateMatch({
+          current: {
+            name: a.name,
+            description: a.description,
+            address: a.address,
+            website: a.website,
+            phone: a.phone,
+            lat: a.lat,
+            lng: a.lng,
+            categories: a.category_slugs,
+          },
+          candidate: {
+            name: b.name,
+            description: b.description,
+            address: b.address,
+            website: b.website,
+            phone: b.phone,
+            lat: b.lat,
+            lng: b.lng,
+            categories: b.category_slugs,
+          },
+          distance_m: Math.round(distanceM),
+          score: 0,
+          signals: {
+            reason: "anchor_anchor_proximity_consolidation",
+            proximity_deg: proximityDegFor(sameCategorySlugs(a, b)),
+            guidance:
+              "Decide whether these are one real-world place or one visitor complex despite different names.",
+          },
+        });
 
-      const consolidationDecisionId = await writeConsolidationMemo(client, a, b, {
-        same_place: llm.samePlace,
-        reason: llm.reason,
-      });
+        const consolidationDecisionId = await writeConsolidationMemo(
+          client,
+          a,
+          b,
+          {
+            same_place: llm.samePlace,
+            reason: llm.reason,
+          },
+        );
+        return { status: "succeeded" as const, llm, consolidationDecisionId };
+      };
+      const ex = currentAttempt()?.execution;
+      const result = ex
+        ? await ex.attempt(
+            "consolidate",
+            `pair:${a.id}:${b.id}`,
+            { canonical_a: a.id, canonical_b: b.id },
+            decide,
+            false,
+          )
+        : await decide();
+      const { llm, consolidationDecisionId } = result as Awaited<
+        ReturnType<typeof decide>
+      >;
       console.log(
         `Anchor-anchor LLM verdict: ${a.name} / ${b.name} → ${llm.samePlace ? "same" : "different"} (${llm.reason})`,
       );
@@ -309,15 +344,23 @@ async function planMerges(
     const deg = proximityDegFor(key ? [key] : groupRows[0]!.category_slugs);
     if (deg <= 0) continue;
 
-    const anchors = groupRows.filter((row) => isAnchor(meta(row))).sort(strongerFirst);
-    const satellites = groupRows.filter((row) => !isAnchor(meta(row))).sort(strongerFirst);
+    const anchors = groupRows
+      .filter((row) => isAnchor(meta(row)))
+      .sort(strongerFirst);
+    const satellites = groupRows
+      .filter((row) => !isAnchor(meta(row)))
+      .sort(strongerFirst);
     const anchorIndex = buildIndex(anchors, deg);
 
     for (const satellite of satellites) {
       if (opts.shouldStop?.()) break;
       const anchor = nearbyRows(anchorIndex, satellite, deg)
         .filter((candidate) => withinProximity(satellite, candidate))
-        .sort((a, b) => strongerFirst(a, b) || pairDistanceM(satellite, a) - pairDistanceM(satellite, b))[0];
+        .sort(
+          (a, b) =>
+            strongerFirst(a, b) ||
+            pairDistanceM(satellite, a) - pairDistanceM(satellite, b),
+        )[0];
       if (!anchor) continue;
       addPlan(plans, {
         targetId: anchor.id,
@@ -328,20 +371,24 @@ async function planMerges(
     }
 
     const satelliteIndex = buildIndex(satellites, deg);
-    const remaining = new Set(satellites.filter((row) => !plans.has(row.id)).map((row) => row.id));
+    const remaining = new Set(
+      satellites.filter((row) => !plans.has(row.id)).map((row) => row.id),
+    );
     for (const seed of satellites) {
       if (opts.shouldStop?.()) break;
       if (!remaining.has(seed.id)) continue;
-      const seedCluster = nearbyRows(satelliteIndex, seed, deg)
-        .filter((row) => remaining.has(row.id) && withinProximity(seed, row));
+      const seedCluster = nearbyRows(satelliteIndex, seed, deg).filter(
+        (row) => remaining.has(row.id) && withinProximity(seed, row),
+      );
       if (seedCluster.length <= 1) {
         remaining.delete(seed.id);
         continue;
       }
 
       const leader = medoid(seedCluster);
-      const cluster = nearbyRows(satelliteIndex, leader, deg)
-        .filter((row) => remaining.has(row.id) && withinProximity(leader, row));
+      const cluster = nearbyRows(satelliteIndex, leader, deg).filter(
+        (row) => remaining.has(row.id) && withinProximity(leader, row),
+      );
       if (cluster.length <= 1) {
         remaining.delete(seed.id);
         continue;
@@ -364,31 +411,62 @@ async function planMerges(
     await planAnchorAnchorMerges(client, groupRows, plans, opts);
   }
 
-  return [...plans.values()].sort((a, b) => a.targetId.localeCompare(b.targetId) || a.duplicateId.localeCompare(b.duplicateId));
+  return [...plans.values()].sort(
+    (a, b) =>
+      a.targetId.localeCompare(b.targetId) ||
+      a.duplicateId.localeCompare(b.duplicateId),
+  );
 }
 
-async function applyPlans(client: PoolClient, plans: MergePlan[], opts: ConsolidateOptions): Promise<void> {
+async function applyPlans(
+  client: PoolClient,
+  plans: MergePlan[],
+  opts: ConsolidateOptions,
+): Promise<void> {
   const byTarget = new Map<string, MergePlan[]>();
-  for (const plan of plans) byTarget.set(plan.targetId, [...(byTarget.get(plan.targetId) ?? []), plan]);
+  for (const plan of plans)
+    byTarget.set(plan.targetId, [...(byTarget.get(plan.targetId) ?? []), plan]);
 
   for (const [targetId, targetPlans] of byTarget) {
     if (opts.shouldStop?.()) break;
-    await client.query("BEGIN");
-    try {
-      for (const plan of targetPlans) {
-        await collapseDuplicateCanonicals(client, targetId, [plan.duplicateId], plan.consolidationDecisionId);
+    const apply = async (): Promise<AttemptResult> => {
+      await client.query("BEGIN");
+      try {
+        for (const plan of targetPlans) {
+          await collapseDuplicateCanonicals(
+            client,
+            targetId,
+            [plan.duplicateId],
+            plan.consolidationDecisionId,
+          );
+        }
+        await rebuildCanonicalPoi(client, targetId, { noLlm: opts.noLlm });
+        await client.query("COMMIT");
+        for (const plan of targetPlans) {
+          console.log(
+            `Consolidated ${plan.duplicateId} -> ${targetId} (${plan.reason}, ${Math.round(plan.distanceM)}m)`,
+          );
+        }
+      } catch (err) {
+        await client.query("ROLLBACK");
+        throw err;
       }
-      await rebuildCanonicalPoi(client, targetId, { noLlm: opts.noLlm });
-      await client.query("COMMIT");
-      for (const plan of targetPlans) {
-        console.log(
-          `Consolidated ${plan.duplicateId} -> ${targetId} (${plan.reason}, ${Math.round(plan.distanceM)}m)`,
-        );
-      }
-    } catch (err) {
-      await client.query("ROLLBACK");
-      throw err;
-    }
+      return {
+        status: "succeeded",
+        canonical_id: targetId,
+        merged_ids: targetPlans.map((p) => p.duplicateId),
+      };
+    };
+    const ex = currentAttempt()?.execution;
+    if (ex)
+      await ex.attempt(
+        "consolidate",
+        `group:${targetId}`,
+        { plans: targetPlans },
+        apply,
+        false,
+      );
+    else await apply();
   }
 }
 
@@ -400,7 +478,7 @@ export async function runConsolidation(
   for (let iteration = 1; iteration <= 10; iteration++) {
     if (opts.shouldStop?.()) break;
     const plans = await planMerges(client, opts);
-    if (plans.length === 0) break;
+    if (plans.length === 0) return total;
 
     if (opts.dryRun) {
       for (const plan of plans) {
@@ -414,5 +492,9 @@ export async function runConsolidation(
     await applyPlans(client, plans, opts);
     total += plans.length;
   }
+  if (!opts.shouldStop?.())
+    throw new Error(
+      "Consolidation reached its 10-pass bound; committed merges are preserved. Resume to continue and verify convergence.",
+    );
   return total;
 }

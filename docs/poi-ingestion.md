@@ -1,373 +1,296 @@
-# POI Ingestion and Conflation
+# POI ingestion: operation and recovery
 
-This is the shared reference for developing, operating, and debugging the implemented pipeline.
-The [root README](../README.md#poi-ingestion) is the human full-run entry point;
-[root AGENTS.md](../AGENTS.md) defines agent responsibilities and execution budgets.
-Keep pipeline facts here so humans and agents use the same reference.
+This is the shared reference for humans and agents. [README](../README.md#poi-ingestion)
+owns human setup and full-run commands. [AGENTS.md](../AGENTS.md) owns agent execution
+budgets and working rules. The [database guide](../lib/db-map/AGENTS.md) maps implementation
+files. Keep pipeline facts here rather than copying them into both entry points.
 
-- [Command scope and limits](#command-scope-and-limits)
-- [Bounded stage diagnostics](#bounded-stage-diagnostics)
-- [Assessing category completeness](#assessing-category-completeness)
-- [Stage details](#stage-details)
-- [Troubleshooting and optimization](#troubleshooting-and-optimization)
-- [Targeted cleanup](#targeted-cleanup)
+## Operating model
 
-## Model
+Humans run long imports and global maintenance. Agents develop and debug **every stage**
+with a fixed small selection, inspect database evidence, fix causes, and validate downstream
+results before handing off the full command. Both use the same managed `ingest:run` command.
+All examples run from the repository root; replace angle-bracket placeholders.
 
-The database has two POI layers:
+```text
+file → extract → fixed record cohort → normalize → geocode → embed → match → canonical check
+                                                                           ↓
+                                              optional global consolidation → report → verify
+```
 
-- `research_*`: raw and normalized source records. These rows are internal and kept for
-  provenance, re-ingestion, debugging, and match audit history.
-- `canonical_*`: merged, user-facing POIs served by the map app.
+Canonical builds happen transactionally inside matching/merging and normalization refresh;
+`canonical` checks their existence. It is not a separate rebuild algorithm. Stages process
+one record at a time, with all selected records finishing a stage before the next starts.
+A failed required operation stops the run. Non-POIs are explicitly skipped downstream.
 
-The important tables are:
+Three distinct questions need distinct evidence:
 
-| Table                                                                           | Purpose                                                                                                               |
-| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `research_sources`                                                              | Source registry, trust, licensing/attribution metadata.                                                               |
-| `research_pois`                                                                 | One row per source record, with active artifact pointers, normalization state, retirement, and derived lookup fields. |
-| `research_geocode_cache`                                                        | Forward-geocode cache and remembered misses.                                                                          |
-| `research_match_decisions`                                                      | Audit trail for match decisions.                                                                                      |
-| `research_match_overrides`                                                      | Manual force-same / force-different corrections.                                                                      |
-| `research_consolidation_decisions`                                              | Memoized anchor-vs-anchor LLM verdicts reused across consolidation runs.                                              |
-| `research_source_files`, `research_source_file_versions`                        | Observed file registrations, hashes, and extraction status; not an inventory of files never imported.                 |
-| `research_ingest_runs`, `research_ingest_run_records`                           | Run scope, stage, counters, errors, and per-record extraction outcomes.                                               |
-| `research_poi_observations`, `research_poi_normalizations`                      | Immutable captured input and validated normalization artifacts.                                                       |
-| `research_normalization_requests`, `research_pipeline_jobs`                     | Request outcomes, tokens/cost, job attempts and errors. Check which stages actually populate jobs.                    |
-| `research_poi_geocodes`, `research_poi_embeddings`                              | Derived artifact history tied to normalization inputs.                                                                |
-| `research_canonical_memberships`                                                | Authoritative active membership and historical assignments; `research_pois.canonical_poi_id` is a lookup cache.       |
-| `canonical_poi_builds`, `canonical_poi_build_inputs`, `canonical_poi_redirects` | Published build provenance and redirects after merges.                                                                |
-| `canonical_pois`                                                                | One user-facing merged POI.                                                                                           |
-| `canonical_categories`                                                          | Code-owned taxonomy.                                                                                                  |
-| `canonical_poi_categories`                                                      | Many-to-many POI/category links.                                                                                      |
-| `canonical_poi_occurrences`                                                     | Event editions for recurring temporal POIs.                                                                           |
-| `geo_centroids`                                                                 | Local centroid references used by normalization and coordinate checks.                                                |
+1. **What happened in this invocation?** Execution and attempt history, provider requests,
+   timestamps, errors, and local journal.
+2. **Did this selected run finish?** All requested stages completed, report and global lineage
+   verification and selected-record output checks passed, and the run has `status=succeeded` with `verified_at`.
+3. **Is the category complete?** Every expected source/file is accounted for, intended records
+   reached acceptable outputs, exclusions are reviewed, and quality checks pass. A successful
+   sample or zero match-ready rows does not answer this question.
 
-The schema intentionally avoids PostGIS and pgvector. Coordinates are plain `lng`/`lat`
-doubles, embeddings are stored as `real[]`, and fuzzy name matching uses `pg_trgm`.
+## Durable state
 
-## Operating principles
+| Object                            | Meaning                                                                                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `research_ingest_runs`            | Logical task: source, category, file version/hash, options, pipeline versions, current stage, stop reason, verification time.                    |
+| `research_ingest_executions`      | One process invocation of a run: host, PID, options, start/finish, five-second heartbeat, outcome and error. A resume creates another execution. |
+| `research_ingest_run_items`       | Fixed source-record IDs and observation IDs selected after extraction; resume never expands a sample.                                            |
+| `research_ingest_attempts`        | One attempt at a stage/target: execution, input IDs, output IDs, timing, structured error. Retries append rows; old errors remain.               |
+| `research_ingest_run_records`     | Extraction ordinals, identities, payload hashes and outcomes. The original file is the replayable extraction input.                              |
+| `research_normalization_requests` | Provider request/response, tokens, cost and latency, linked to exact run and attempt for managed work.                                           |
+| `research_pipeline_jobs`          | Older mutable normalization job state. Useful diagnostic evidence, but not the execution history or managed resume authority.                    |
 
-- Develop and debug all stages with small samples; run full workloads manually as a human.
-- Identify the category, source, file version, and record IDs before changing data.
-- Preserve source evidence, stable IDs, prior valid artifacts, and resumable progress.
-- Use deterministic signals first, then evidence-validated LLM interpretation where needed.
-- Diagnose the earliest failed stage and validate its downstream effects.
-- Use the code-owned taxonomy. Category is required by `ingest:run` and `ingest:extract`.
-- Use `--recluster` only with explicit user authorization to start over.
+Attempts are inserted as `running` before work. They finish as `succeeded`, `reused`,
+`skipped`, `failed`, `blocked`, `waiting_budget`, or `paused`. When a replacement worker
+owns the source lock, unfinished attempts of the resumed run become `interrupted` and retries
+append new attempts. Completed record attempts are skipped on resume while their outputs remain valid; missing or changed downstream outputs are checked again, then recomputed where supported or reported as blocked. Report/verify rerun.
+The JSON output from an attempt identifies its normalization, geocode, embedding, canonical,
+or build artifact where applicable. Existing source coordinates need no geocode artifact.
+
+`research_pois` holds current projections and active artifact pointers. Immutable observations,
+normalizations, geocodes and embeddings preserve provenance. Active
+`research_canonical_memberships` are authoritative; `canonical_poi_id` is a lookup cache.
+`canonical_poi_builds` / `canonical_poi_build_inputs` show how map output was built.
+`research_match_decisions`, overrides, consolidation memos and redirects preserve match history.
 
 ## Command scope and limits
 
-Commands below run from the repo root; replace angle-bracket placeholders before execution.
-File arguments resolve against the repository root and must be under `docs/poi/` (including
-for the compatibility `ingest:extract` entry point). The source registry resolves known
-files; unregistered flat JSON/JSONL/CSV files use an inferred source slug and generic extractor.
-Check the printed source before continuing. Nested/wrapper formats need registry configuration.
+File paths resolve from the repository root and must be under `docs/poi/`. Categories must
+exist in the code-owned taxonomy and are explicit on new runs. Known files use the source
+registry; other flat JSON/JSONL/CSV files use a derived source slug and generic extractor.
+Inspect the printed source. Wrapper/nested formats need extractor configuration. See the
+[capture spec](poi-research/capture-spec.md) before adding sources.
 
-The file-first command records a file hash/run and dispatches:
+| Control                                    | Behavior                                                                                                                                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--limit N`                                | Positive integer; caps extraction selection and freezes at most N records for every record stage. Not a time limit; hashing/parsing can still scan a large file.                      |
+| `--record ID`                              | Exact **source record ID**, not research UUID; defaults to a one-record limit. Useful for a failure late in a file.                                                                   |
+| `--stop-after STAGE`                       | Pause after extract, normalize, geocode, embed, match, canonical, consolidate, or report. Verify is the final stage. Exit code 2 indicates deliberate incomplete work.                |
+| `--resume UUID`                            | Same managed run/cohort; new execution. Preserves original options; clears the old stop point. Only a new stop point, dry-run, and provider budgets may be supplied.                  |
+| `--from STAGE`                             | New run starting record-stage processing at that stage; extraction and scope selection still happen. Skipped prerequisites must already exist. Prefer resume for failures.            |
+| `--dry-run`                                | Resolve/hash file and print effective options, without writes/provider calls. Does not parse/validate all rows or simulate the pipeline.                                              |
+| `--reprocess normalize`                    | New run with a stable run-specific normalization generation; recomputes once, then resumes using that generation's cached result.                                                     |
+| `--reprocess extract` / `all`              | Replay extraction; `all` also forces normalization. Other forced stage values are rejected. Downstream work follows invalidation/readiness, not a blanket reset.                      |
+| `--retry-failed`                           | Freeze records currently in failed/stale normalization state. It is a new repair selection, not a substitute for resuming the failed run.                                             |
+| `--shadow`                                 | Evaluate normalization without activating its output; pause after normalization. Original shadow option persists on resume.                                                           |
+| `--no-llm`                                 | Deterministic normalization, matching and descriptions. Does not disable geocoder or embedding calls. Degraded output does not validate the LLM path.                                 |
+| `--max-llm-requests N`, `--max-cost-usd N` | Normalization budgets per execution, checked between records. Cached/deterministic results remain usable at zero budget. Repair/fallback within a record may exceed the threshold. Not a hard monetary cap and not a budget for matching/fusion. |
+| `--geocode-limit N`                        | Geocoder calls per execution (default 4500); cache hits do not consume it. No shared daily-quota enforcement.                                                                         |
+| `--consolidate`                            | Explicit global canonical sweep, with audited pair adjudications and merge groups. Incompatible with limited/record runs. Requires full-run human execution.                          |
 
-```text
-extract → normalize → geocode → embed → match + global consolidation → report + lineage verification
-                                          └─ canonical builds occur during matching/merging
-```
-
-Its stage names are `extract`, `normalize`, `geocode`, `embed`, `match`, `canonical`, and
-`report`. There is currently no separate canonical rebuild pass: `--from canonical` skips
-matching and reaches reporting/verification. To diagnose a build, trace the canonical and
-exercise the responsible match/merge path on a controlled sample.
-
-These are current implementation limits, not promises about future behavior:
-
-| Control                                                          | Actual scope and consequence                                                                                                                                                                                                                       |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ingest:run --dry-run`                                           | Resolves and hashes the file, then exits without database writes or provider calls. Does **not** parse/validate every record or simulate downstream stages; hashing a large file can take time.                                                    |
-| `ingest:run --limit N`                                           | Caps extraction and passes a limit to individual row stages. Later stages select by **source**, not file/category/selected record IDs. They can process different records than extraction.                                                         |
-| `--stop-after embed` (or an earlier stage)                       | Stops before matching and global consolidation. Combine with a small limit for agent diagnostics. `--stop-after match` stops only after consolidation has run.                                                                                     |
-| `ingest:normalize --limit N`                                     | Fetches source rows first, then limits processed rows; cached rows count toward N. Repeating a small limit may keep visiting the same prefix. This is not a pagination/resume cursor or a database scan bound.                                     |
-| `ingest:geocode --limit N --geocode-limit M`                     | N bounds selected rows; M bounds new API calls in this invocation. Cache hits/misses still require work; M is not a persistent daily quota.                                                                                                        |
-| `ingest:embed --limit N --batch-size M`                          | N caps rows; M controls request batch size only. A small batch size alone does not make a short run.                                                                                                                                               |
-| `ingest:match --source <source> --limit N`                       | Caps pending research rows for that source. Canonical candidates and builds can include other sources. No category filter.                                                                                                                         |
-| `--consolidate` / `--consolidate-only`                           | Global canonical sweep, unaffected by source or row limit. Consolidate-only rejects `--source` and `--limit`. A dry run can still scan broadly and call the LLM. Human full-run operation.                                                         |
-| `ingest:run --max-llm-requests N` / normalize `--max-requests N` | Normalization budget, not a cap on the full pipeline's provider calls. Repairs/retries can add requests.                                                                                                                                           |
-| `--max-cost-usd N`                                               | Normalization checks accumulated estimated cost between records; an in-flight request can exceed it. Does not cap geocoding, embedding, matching, or consolidation.                                                                                |
-| `--no-llm`                                                       | Deterministic/degraded normalization or matching. Does not disable geocoding or embedding providers. Match dry runs need this flag to avoid LLM adjudication.                                                                                      |
-| `--shadow`                                                       | Writes normalization evaluation artifacts without activating them. Can call the provider. File-first runs stop after normalization, but extraction can already have written data; use `--from normalize --shadow` for existing observations.       |
-| `--from <stage>`                                                 | Skips earlier dispatch stages; does not isolate a single stage. `--from normalize` also forces normalization. Pair with `--stop-after` and a limit for bounded evaluation.                                                                         |
-| `--reprocess <stage>`                                            | File-first code forces extraction or normalization for those stages (or `all`). It does not currently force new geocodes, embeddings, matches, or canonical builds. Inspect selectors/cache invalidation before promising downstream reprocessing. |
-| `--retry-failed`                                                 | Accepted and passed to normalization, but the current runner does not use it to filter/retry only failed rows. Normal runs revisit source rows and reuse successful caches.                                                                        |
-
-Do not assume every CLI supports every flag: for example, standalone normalize has no
-`--dry-run`, and most standalone stages have no `--category`. Inspect its parser when in doubt.
-If the required scope is unavailable, use record fixtures/read-only evidence and implement a
-proper diagnostic control as part of the relevant fix. Do not silently broaden execution.
+A paused/blocked/budget-limited run exits 2 (pnpm prints its nonzero-exit banner); failure
+exits 1; successful verified work exits 0. An empty selection is `partial`, not success.
+A run beginning with `--from` only certifies its requested suffix and the integrity checks,
+not that it regenerated all upstream data. A `--no-llm` success can contain degraded output.
 
 ## Bounded stage diagnostics
 
-Start with a read-only baseline, then choose the affected stage. Live runs below can write
-to the database; the limits reduce work, not necessarily all query/scan time. Use 1–5 records
-initially when providers are involved. Source-wide selectors may include multiple categories.
+```bash
+# Choose the failing record directly; validate normalization with a small provider budget.
+pnpm --filter @lib/db-map ingest:run <file> --category <category> --record <id> --stop-after normalize --max-llm-requests 3 --max-cost-usd 0.05
+
+# Continue the SAME record through geocoding/embedding, then matching and verification.
+pnpm --filter @lib/db-map ingest:run --resume <uuid> --stop-after embed
+pnpm --filter @lib/db-map ingest:run --resume <uuid>
+
+# A deterministic sample; embedding/geocoding can still call providers if continued.
+pnpm --filter @lib/db-map ingest:run <file> --category <category> --limit 3 --no-llm --stop-after normalize
+
+# Validate a normalizer change against an exact record without activating the result.
+pnpm --filter @lib/db-map ingest:run <file> --category <category> --record <id> --reprocess normalize --shadow
+```
+
+Resuming a sample does not drain the remaining source. After validation, the human starts a
+new full file run. Do not loop small batches as a disguised full background import.
+
+## Investigating the latest attempted run
+
+```bash
+pnpm --filter @lib/db-map ingest:status
+pnpm --filter @lib/db-map ingest:status --source <source> --category <category>
+pnpm --filter @lib/db-map ingest:status --run <uuid> --json --limit 10
+pnpm --filter @lib/db-map ingest:trace --source <source> --record <id>
+pnpm --filter @lib/db-map ingest:trace --canonical <uuid>
+```
+
+`latest` orders by the latest execution start (including resuming an older run), falling back
+to run creation for legacy records. Pin the returned UUID before investigating further.
+The compact view shows scope, execution identity, stage outcomes, recent work, unresolved
+attempts, stop reason and resume command. JSON adds exact input/output IDs, errors and source
+state/artifact samples. Samples are capped at 1–20 per section, not a full history export.
+Queries use a consistent read-only snapshot and timeouts.
+
+1. Inspect the latest execution and unresolved attempt. Distinguish **started work** from
+   **committed results**. A stale heartbeat (over 30 seconds) is suspicion, not proof of death.
+2. Read the error, input IDs, output IDs and prior attempts for that target. Trace its raw
+   observation, provider response, active artifacts, membership and canonical build.
+3. Fix the earliest broken stage. A schema/evidence rejection differs from a provider outage,
+   a remembered geocode miss, or an intentional budget/stop limit.
+4. Resume the pinned UUID. The worker acquires its source lock before recovering unfinished
+   attempts; it refuses if another managed worker owns the source. File hash, extractor and
+   pipeline version changes require a new run. Replaced/deleted pinned observations or changed
+   active normalization output also refuse resume rather than silently mixing data.
+5. Recheck status, trace representative output, and report category coverage separately.
+
+For full history or exact recent writes, connect using the existing `DB_MAP_URL` environment
+variable (never print credentials). For example, in psql set `run_id` to the chosen UUID:
+
+```sql
+-- Most recently attempted/finished units, including prior failed retries.
+SELECT id, execution_id, stage, target_key, status, started_at, finished_at,
+       input, output, error
+FROM research_ingest_attempts
+WHERE run_id = :'run_id'::uuid
+ORDER BY greatest(started_at, finished_at) DESC, id DESC
+LIMIT 30;
+
+-- Provider evidence attributable to this run, not merely the same source/time window.
+SELECT q.* FROM research_normalization_requests q
+WHERE q.run_id = :'run_id'::uuid
+ORDER BY q.created_at DESC LIMIT 10;
+
+-- Cohort with current output pointers: current state may be newer than the run's artifacts.
+SELECT i.source_record_id, i.observation_id, rp.normalization_state,
+       rp.active_normalization_id, rp.active_geocode_id, rp.active_embedding_id,
+       rp.canonical_poi_id
+FROM research_ingest_run_items i
+LEFT JOIN research_pois rp ON rp.id=i.research_poi_id
+WHERE i.run_id = :'run_id'::uuid ORDER BY i.source_ordinal;
+```
+
+`first_seen_at` means insertion and `last_seen_at` means source observation, not a general
+update time. Use stage artifacts and attempt output IDs for downstream write evidence.
+Source-wide sections of status/report include other runs; they do not prove run attribution.
+
+## Pausing and crash recovery
+
+```bash
+pnpm --filter @lib/db-map ingest:pause --run <uuid>
+pnpm --filter @lib/db-map ingest:run --resume <uuid>
+```
+
+The first Ctrl-C or SIGTERM requests a stop after the current unit. A remote pause is noticed
+on the next five-second heartbeat. The current provider request/transaction is allowed to
+finish; this is not instantaneous cancellation. A second signal exits immediately.
+Provider adapters have request timeouts, but retries may extend the total wait.
+
+Each managed invocation owns a PostgreSQL session advisory lock for its source. Heartbeats
+use that connection; losing it terminates the worker. The matcher also holds its existing
+global match lock during match/consolidation work. Locks protect managed workers; avoid
+concurrent standalone mutations or cleanup, which do not share the managed source lock.
+
+On an abrupt kill, the database may still say running. After acquiring the source lock,
+a resumed worker marks abandoned execution/attempt rows interrupted, records that the exact
+termination cause is unknown, and retries unfinished work. It does not invent an OOM, timeout,
+or user-cancellation explanation. Historical legacy runs are not retroactively rewritten.
+
+The printed `lib/db-map/.ingest-logs/<run>-<execution>.jsonl` journal preserves process-local
+starts, outcomes, errors and signals when database writes fail. It is ignored by git and
+best-effort: retain it with terminal output when investigating an outage. Database history is
+the shared authority; a local result entry alone does not prove its audit update committed.
+
+Recovery is **at least once**. Stage transactions and artifact caches make replay safe, but
+process death between a provider response/data commit and saving the attempt outcome may
+repeat a provider call. Do not promise exactly-once billing. Successful artifacts are reused;
+failed attempts stay visible. Run/execution start and final states are updated transactionally, as is freezing the record cohort.
+
+Legacy runs lack execution/attempt history. Status labels their weaker evidence explicitly;
+mutable jobs and source-wide timestamps can suggest the stopping point but cannot reconstruct
+missing history. `--resume <legacy-uuid>` creates a new managed run linked via
+`resumed_from_run_id`, reusing valid data under the original file/options. It does not invent
+legacy attempt records.
+
+## Stage behavior and invalidation
+
+- **Extract:** stable `(source_id, source_record_id)` identities; immutable raw observations.
+  Each record commits separately and is replayable. Missing IDs/collisions/write failures stop
+  advancement. Snapshot removals retire only after an unlimited successful extraction, never
+  a sample or interrupted pass. File completion is recorded after retirement/finalization.
+- **Normalize:** deterministic facts plus evidence-validated model interpretation. Source/URL
+  coordinates are authoritative; models cannot invent coordinates, contacts, or identifiers.
+  Cache inputs come from immutable captured evidence, never derived projections. Keys include model, prompt/schema/examples/profile/normalizer versions.
+  Failed refresh keeps prior valid output and marks it stale. Accepted changes clear derived
+  embeddings/geocode pointers, invalidate old geocoded coordinates, and refresh or retire
+  memberships/builds according to match changes. Prompt output must retain the input UUID.
+- **Geocode:** only records missing latitude or longitude need lookup. Queries and misses are
+  cached. Missing locality or a remembered miss is `blocked`; rerunning cannot fix bad input.
+- **Embed:** normalized POIs need a stored embedding in the managed pipeline. Current managed
+  execution uses one-record requests for precise checkpointing. Standalone embedding supports
+  batches, but does not provide the managed execution ledger.
+- **Match/build:** source coordinates, normalized name/category and embedding stage completion
+  feed matching. Decisions, memberships and canonical rebuilds commit together. Managed LLM
+  adjudication/fusion errors propagate as failures instead of silently falling back to success.
+- **Consolidate:** optional global sweep; pair requests and group merges have nested attempts.
+  Existing verdict memos and committed groups support resuming. Reaching the ten-pass bound fails explicitly; resume continues from committed merges and checks convergence. It can be expensive even when
+  row matching is limited, so limited managed runs cannot request it.
+- **Report/verify:** report failure captures the child output tail. Lineage checks cover
+  membership caches, visible canonical membership, build-input counts, dangling artifacts,
+  and redirect targets. Success is recorded only afterward. These are structural checks,
+  not proof of geographic or editorial quality; they are global and may expose unrelated faults.
+
+Standalone `ingest:extract`, `normalize`, `geocode`, `embed`, and `match` remain compatibility
+and maintenance tools. They have their own flags and weaker audit semantics. Prefer managed
+runs for new work and record-specific repairs; inspect each parser before using standalone
+commands. Their dry-run/provider behavior is not the same as managed `ingest:run --dry-run`.
+
+## Assessing category completeness
 
 ```bash
 pnpm --filter @lib/db-map ingest:report --category <category>
 pnpm --filter @lib/db-map ingest:report --source <source> --category <category>
-pnpm --filter @lib/db-map ingest:trace --source <source> --record <source-record-id>
-pnpm --filter @lib/db-map ingest:trace --canonical <uuid>
-```
-
-| Stage                                                 | Small diagnostic command (prefix each with `pnpm --filter @lib/db-map`)                                                |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Resolve file and source                               | `ingest:run <file> --category <category> --dry-run`                                                                    |
-| Observe/extract                                       | `ingest:run <file> --category <category> --limit 5 --stop-after extract`                                               |
-| Normalize existing rows, deterministic evaluation     | `ingest:normalize --source <source> --limit 5 --no-llm --shadow`                                                       |
-| Normalize existing rows, real provider and activation | `ingest:normalize --source <source> --limit 3 --max-requests 3 --max-cost-usd 0.10`                                    |
-| Evaluate a normalizer change without activation       | `ingest:run <file> --category <category> --from normalize --shadow --limit 3 --max-llm-requests 3 --max-cost-usd 0.10` |
-| Geocode preview                                       | `ingest:geocode --source <source> --limit 5 --geocode-limit 3 --dry-run`                                               |
-| Geocode live                                          | `ingest:geocode --source <source> --limit 5 --geocode-limit 3`                                                         |
-| Embed preview                                         | `ingest:embed --source <source> --limit 5 --dry-run`                                                                   |
-| Embed live                                            | `ingest:embed --source <source> --limit 5 --batch-size 5`                                                              |
-| Match startup counts, no row processing               | `ingest:match --source <source> --limit 0 --dry-run --no-llm`                                                          |
-| Match deterministic preview                           | `ingest:match --source <source> --limit 5 --dry-run --no-llm`                                                          |
-| Match and build live, deterministic                   | `ingest:match --source <source> --limit 3 --no-llm`                                                                    |
-| Match and build live, provider path                   | `ingest:match --source <source> --limit 1`                                                                             |
-
-For a short pass across the earlier stages, use
-`ingest:run <file> --category <category> --limit 3 --stop-after embed --max-llm-requests 3 --max-cost-usd 0.10 --geocode-limit 3`
-with the same pnpm prefix. Then use bounded standalone matching, followed by reports and
-traces. Confirm the same target records actually reached each stage; selectors are independent.
-Global consolidation needs fixtures or a scoped implementation test for quick agent validation.
-
-Existing checks (choose those relevant to the change):
-
-```bash
-# Local deterministic normalization checks; no live provider required.
-pnpm --filter @lib/db-map ingest:normalize:golden
-# Reads one record from each configured garden source fixture.
-pnpm --filter @lib/db-map ingest:test-extractors
-# Uses database records; missing golden fixtures affect coverage.
-pnpm --filter @lib/db-map ingest:match:golden --no-llm
-# Read-only, database-wide lineage checks; no source/limit filter.
 pnpm --filter @lib/db-map ingest:verify
+```
+
+Compare expected files under `docs/poi/` and source research notes with
+`research_source_files` / `research_source_file_versions`. Unimported files have no database
+rows; a database-only report cannot prove inventory completeness. Distinguish partial
+extraction, intended exclusions, failed/stale normalization, blocked coordinates/embeddings,
+match-ready unlinked records, and linked published/hidden output. Counts alone do not prove
+artifact freshness or quality. Report includes source-scoped sections and global canonical/cache
+sections; read the labels before attributing counts to the selected file/run.
+
+Handoff should state source/file coverage, selected vs remaining records, failure/block reasons,
+linked/pending counts, degraded or excluded output, verification results, and the exact next
+command. A successful sample must be described as a sample.
+
+## Troubleshooting and optimization
+
+| Evidence                                | Action                                                                                                                                                         |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Extraction collision or wrong count     | Check parser, wrapper shape, source identity, ordinal and file hash; fix before normalization.                                                                 |
+| Normalization validation/provider error | Inspect linked request, exact UUID, response, validation warnings and profile; reproduce the exact record.                                                     |
+| Blocked geocode                         | Check normalized locality, source evidence, cache query/miss and quota. Correct evidence/query or deliberately invalidate the specific cache result.           |
+| Failed embed/match/build                | Inspect attempt error and artifact pointers; repair the provider/configuration or responsible algorithm, then resume.                                          |
+| Wrong canonical/merge                   | Trace members, decisions, overrides, coordinate election and build inputs; validate known same/different pairs.                                                |
+| Old run refuses resume                  | Its pinned input/output or pipeline version changed; start a new run with an explicit repair selection and review cached artifacts.                            |
+| Slow run                                | Compare attempt duration, provider latency/tokens/cost, query plans and cache hits on the same sample. Distinguish warm-cache speedups from code improvements. |
+
+Current tradeoffs: managed processing is sequential; record-level checkpoint queries and
+single-record embeddings favor debuggability over maximum throughput. Normalization cost
+accounting is richer than matching/fusion accounting. Budgets are stage-specific thresholds,
+not a universal quota service. There is no automated file inventory, scheduler, or guarantee
+that standalone scripts participate in managed locking. Add batching/concurrency only with
+failure injection and unchanged provenance/recovery guarantees.
+
+Validation commands:
+
+```bash
 pnpm --filter @lib/db-map check-types
+pnpm --filter @lib/db-map ingest:normalize:golden
+pnpm --filter @lib/db-map ingest:test-recovery
 ```
 
-A deterministic check does not validate live model quality. Verification checks structural
-lineage, not category completeness or the correctness of every merge. Report coverage and
-limitations explicitly; read-only aggregate checks may still take time on a large database.
-
-## Assessing category completeness
-
-1. **Inventory expected inputs.** Read `taxonomy.ts`, `sources.ts`, and the category's files
-   and source notes under `docs/poi/`. Identify each intended source/file and exclusions.
-   Compare them with `research_source_files` and the latest file versions. An unimported
-   source is absent from reports, not complete. If the expected inventory is unknown, say so.
-2. **Run a category report**, then source/category reports for bottlenecks. Record the time,
-   file versions, and run IDs. Run reports before and after bounded validation.
-3. **Reconcile extraction.** Check complete/partial/failed file versions, run counters,
-   identity collisions, rejected records, retirement, and changed files. Raw item counts can
-   differ from distinct source IDs; explain duplicates instead of expecting equality.
-4. **Reconcile each stage.** Separate pending/stale normalization from accepted, degraded,
-   valid non-POI rejection, and technical failures. Explain missing coordinates, cached
-   geocoder misses, missing embeddings, ready-to-match rows, and linked rows.
-5. **Check publication.** Trace representative linked rows to active memberships/build inputs,
-   published/hidden canonicals, redirects, category links, and event occurrences as applicable.
-   Inspect the map/API when debugging display behavior. Consolidation quality needs evidence
-   beyond “all rows linked.” Run lineage verification for membership/build changes.
-6. **State what remains.** A category is complete only relative to its declared input inventory
-   and quality requirements: all intended inputs processed, exclusions explained, no
-   unexplained failures/stale/blocked records, matchable rows linked, and expected canonicals
-   published and validated. Missing embeddings need an explicit disposition because matching
-   does not require them. Report unresolved geocodes or deferred consolidation as remaining work.
-
-Report interpretation matters:
-
-- `pending` means **ready to match**, not all unfinished ingestion work.
-- Stage counts are overlapping field-presence counts, not disjoint buckets or freshness checks.
-  An old active value can remain while a refresh fails; inspect state, hashes, and artifacts.
-- Readiness assigns unlinked POIs to missing coordinates first, then name, then categories;
-  later missing-field counts do not enumerate every row missing that field.
-- Research-side category filtering uses ingest category **or** normalized category membership.
-  Counts currently include retired rows; use scoped SQL when an active-only denominator matters.
-- Canonical sections are category-scoped but not source-scoped; geocode-cache totals are global.
-  Provider totals in the report cover normalization requests, not every pipeline provider.
-- Only five recent runs are shown. A `succeeded` run is not an exhaustive coverage certificate.
-  Standalone stage runs also do not provide all the same orchestrator run counters.
-
-Use this compact handoff shape for an assessment; include separate rows for each source/file
-when needed, and say “unknown” rather than inventing missing counts:
-
-| Category/source/file  | Extraction coverage                       | Normalization state                       | Coordinates/embeddings       | Linked / ready / blocked | Publication and remaining work  |
-| --------------------- | ----------------------------------------- | ----------------------------------------- | ---------------------------- | ------------------------ | ------------------------------- |
-| `<scope and version>` | `<observed vs expected; partial/missing>` | `<active/degraded/rejected/failed/stale>` | `<present/missing; reasons>` | `<counts with scope>`    | `<published/hidden; next step>` |
-
-If reporting lacks the necessary evidence, inspect the schema and query it directly.
-For example, open `psql "$DB_MAP_URL" -v category=campground` and run these read-only queries
-(replace the category in the invocation):
-
-```sql
--- Observed file versions only: compare with the source-file inventory on disk.
-SELECT rs.slug, f.logical_path, v.file_sha256, v.status, v.record_count,
-       v.error, v.created_at, v.completed_at
-FROM research_source_files f
-JOIN research_sources rs ON rs.id = f.source_id
-JOIN research_source_file_versions v ON v.source_file_id = f.id
-WHERE f.category_slug = :'category'
-ORDER BY f.logical_path, v.created_at DESC;
-
--- More detail than the report's five recent runs.
-SELECT id, source_file_version_id, status, current_stage, counters,
-       fatal_error, resume_command, heartbeat_at, created_at
-FROM research_ingest_runs
-WHERE category_slug = :'category'
-ORDER BY created_at DESC
-LIMIT 20;
-```
-
-Inspect `research_ingest_run_records.last_error`, `research_normalization_requests.error`,
-and `research_pipeline_jobs.error/error_details` for the relevant run/record IDs. An extraction
-failure may have no `research_pois` row and thus no trace: use its run record/source ordinal.
-A stale `running` status alone does not prove a process is alive; correlate with terminal
-output, heartbeat, active processes, and database locks before resuming overlapping work.
-
-## Stage Details
-
-The commands in this section illustrate full manual operations. For agent execution, use
-the [bounded recipes](#bounded-stage-diagnostics) above.
-
-### Taxonomy
-
-`ingest:taxonomy:seed` syncs code-owned categories into `canonical_categories`.
-
-Source imports must specify one canonical category with `--category <slug>`. Unknown slugs
-are hard errors; add new categories in code first, then seed them.
-
-### Extract
-
-The orchestrated observation pass streams the source file and upserts stable identities by
-`(source_id, source_record_id)`. Each distinct redacted raw payload becomes an immutable
-`research_poi_observations` row. `research_pois` points to its active observation.
-
-Record-level writes are logged in `research_ingest_run_records` before the research write.
-If one record fails, successful records remain committed and a rerun retries only the
-missing/failed row. If PostgreSQL is unavailable, the run stops; the immutable source file
-remains the replayable queue.
-
-During extract, the CLI prints one line per record when it finishes:
-
-```text
-extract ok #42 inserted thedyrt:12345 "Sunset RV Park"
-extract failed #43 thedyrt:99999 (connection terminated)
-```
-
-A long pause before the first line usually means the run is still hashing the file or
-writing the first database row — not a silent crash. Later stages log similarly
-(`normalize ok …`, `normalize failed …`).
-
-`ingest:extract` remains as a lower-level compatibility command.
-
-```bash
-pnpm --filter @lib/db-map ingest:extract bgci docs/poi/botanical_gardens_data/bgci_gardens_full.json --category botanical_garden
-```
-
-Re-importing unchanged records updates observation metadata without resetting downstream
-work. Changed records create a new observation and mark normalization stale while the prior
-active normalization remains available until its replacement validates.
-
-Sources registered in `scripts/ingest/sources.ts` without a custom extractor fall back to
-the **generic capture-spec extractor**: files whose records follow
-`docs/poi-research/capture-spec.md` (flat objects in a top-level JSON array, JSONL, or CSV
-with the standard field names) need only a source metadata entry and zero extractor code.
-Write a custom extractor only when the file shape does not conform (wrapper objects,
-HTML-laden fields or nested venue objects). The file-first resolver currently accepts only
-JSON, JSONL, and CSV; other formats need conversion or resolver support as well as parsing.
-
-### Normalize
-
-`ingest:normalize` is a hybrid deterministic + DeepSeek stage:
-
-1. Deterministic code validates structured dates, coordinates, URLs, contacts, country
-   codes, source flags, and taxonomy constraints.
-2. DeepSeek receives exactly one real record plus two reviewed example conversations.
-3. The model classifies validity and interprets identity, edition, locality, URL roles,
-   description, and typed attributes.
-4. Deterministic resolvers reject invalid dates, unsupported facts, listing URLs promoted
-   as official, and any model-invented contacts/identifiers.
-5. DeepSeek never returns coordinates; coordinates come only from source data, URL parsing,
-   or geocoding.
-6. Accepted output is stored as an immutable `research_poi_normalizations` artifact and
-   activated transactionally.
-
-```bash
-pnpm --filter @lib/db-map ingest:normalize --source bgci
-```
-
-Use `--no-llm` for a deterministic degraded projection. Default execution is sequential,
-one record per LLM request, with additional calls possible for fallback/repair. Results are
-cached by observation, prompt, schema, examples, profile, model, and normalizer versions;
-matching successful cache entries avoid new normalization requests. A deterministic-only
-projection has its own cache key and does not replace an existing active normalization.
-
-### Geocode
-
-`ingest:geocode` only selects POI rows where `lat IS NULL`. Rows that already carry source
-coordinates do not spend geocoder budget.
-
-```bash
-pnpm --filter @lib/db-map ingest:geocode --source bgci --geocode-limit 4500
-```
-
-Geocode results and misses are cached by normalized query in `research_geocode_cache`. When
-the per-run call budget is hit, remaining rows still have `lat IS NULL`. Check the provider
-quota before resuming; repeated invocations do not enforce a shared daily budget.
-
-### Embed
-
-`ingest:embed` selects normalized POI rows missing `content_embedding`.
-
-```bash
-pnpm --filter @lib/db-map ingest:embed --source bgci --batch-size 32
-```
-
-Embeddings are a scoring signal, not a hard prerequisite for matching.
-
-### Match
-
-`ingest:match` links matchable `research_pois` rows into `canonical_pois`.
-
-Matchable rows have:
-
-- `canonical_poi_id IS NULL`
-- `is_poi = true`
-- coordinates
-- `name_normalized`
-- `category_slugs`
-
-Normal matching is resumable:
-
-```bash
-pnpm --filter @lib/db-map ingest:match --consolidate
-```
-
-Progress is the `research_pois.canonical_poi_id` value. Completed rows are skipped on the
-next run. The script prints linked/pending counts, not-ready counts, existing decision
-counts, and a suggested resume command at startup.
-
-For smaller work chunks:
-
-```bash
-pnpm --filter @lib/db-map ingest:match --limit 500
-```
-
-First `Ctrl-C` stops after the current row or consolidation group and prints a resume
-command. A second `Ctrl-C` exits immediately.
-
-Additional matcher controls:
-
-| Option                                    | Effect                                                                                                                         |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `--gc-orphans`                            | Hides canonicals without linked research rows after row work; global maintenance, not bounded by the row limit.                |
-| `--auto-threshold N`, `--low-threshold N` | Override automatic-merge and new-POI score thresholds; validate labeled pairs before changing them.                            |
-| `--no-llm`                                | Skips match adjudication and description fusion; ambiguous pairs may become new POIs.                                          |
-| `--recluster`                             | Resets clusters globally; incompatible with `--source`, `--limit`, and `--dry-run`. See the explicit authorization rule below. |
+The recovery integration test requires `DB_MAP_URL`, creates an isolated temporary source,
+and cleans up its rows. It exercises a fixed cohort, resume without repeated completed work,
+real SIGKILL recovery, periodic heartbeat, graceful SIGTERM, source-lock exclusion, retained
+failure history, remote pause, latest-execution selection, changed-file refusal, stable cache
+inputs, missing-output recovery, and success only after verification. It uses non-POI fixtures and no paid providers. Live provider and output
+quality checks remain separate, bounded validation.
 
 ## Match and Merge Rules
 
@@ -410,71 +333,6 @@ Coordinate election prefers corroborated point coordinates over a single high-tr
 Canonical descriptions are rebuilt from source rows and may include contained feature
 sections plus `attributes.contained_features`.
 
-## Consolidation
-
-Row matching is order-dependent: a satellite may be ingested before its anchor, or an earlier
-run may have been executed with `--no-llm`. Consolidation is the canonical-vs-canonical
-cleanup sweep that heals those cases.
-
-Run it after matching:
-
-```bash
-pnpm --filter @lib/db-map ingest:match --consolidate
-```
-
-Run only consolidation without processing pending research rows:
-
-```bash
-pnpm --filter @lib/db-map ingest:match --consolidate-only
-pnpm --filter @lib/db-map ingest:match --consolidate-only --dry-run
-```
-
-Anchor-vs-anchor pairs are the only consolidation decisions that need the LLM, and those
-verdicts are memoized in `research_consolidation_decisions`. A rerun skips previously
-adjudicated pairs; a stored verdict is re-asked only when either canonical has been
-rebuilt with new data since the verdict (`canonical_pois.updated_at` newer than the memo).
-Memoization reduces repeated adjudication calls; it does not bound the global sweep's
-runtime. Satellite merge decisions are deterministic, while canonical rebuilds may still
-invoke description fusion when LLMs are enabled.
-
-## Re-importing a Source (Idempotency)
-
-Normal reruns reuse extraction and normalization work where input/version keys match:
-
-- File bytes are tracked in `research_source_file_versions`.
-- Rows are keyed by `(source_id, source_record_id)` and raw observation hash.
-- **Unchanged files** skip completed extraction; normalization reuses matching cached artifacts.
-  Later stages select by their own readiness fields, and consolidation still performs a sweep.
-- **Changed records** append observations and trigger normalization; downstream work depends
-  on activation/invalidation and each stage selector. Trace the affected artifacts to verify it.
-- Normalization activation preserves prior output when a replacement fails; validate active
-  pointers and downstream build inputs when diagnosing a failed refresh.
-- **New records** flow through the pipeline normally.
-- For registered `snapshot` files, removed records retire only after a complete successful
-  extraction pass; limited/interrupted runs never infer deletion.
-
-Normalization hashes include model, prompt, schema, examples, profile, and implementation
-versions. Do not assume changing any version constant automatically reruns every affected
-stage. See [command scope and limits](#command-scope-and-limits) for the implemented behavior
-of `--reprocess`, `--from`, `--shadow`, and retry flags. None implies a full recluster.
-
-The prerequisite remains a stable `source_record_id` per record — see
-`docs/poi-research/capture-spec.md`.
-
-## Full Recluster
-
-`--recluster` is destructive. It deletes match decisions, nulls every linked
-`research_pois.canonical_poi_id`, deletes canonicals, and rebuilds from raw research rows.
-
-The human runs this only when intentionally starting over; agents require explicit user
-authorization for destructive reclustering:
-
-```bash
-pnpm --filter @lib/db-map ingest:match --recluster --consolidate
-```
-
-Do not use `--recluster` to resume a stopped run.
-
 ## Event POIs
 
 Permanent POIs have no dates. Temporal categories, such as music festivals, use typed date
@@ -488,73 +346,6 @@ columns:
 
 The canonical row stores the representative occurrence: next upcoming when available,
 otherwise the most recent. Status such as upcoming, ongoing, or past is derived at read time.
-
-## Reflow and Backfills
-
-After changing pipeline logic, verify the affected stage's cache key and invalidation path,
-then use the bounded diagnostics above. Normalization supports forced reprocessing and shadow
-evaluation; downstream `--reprocess` values currently do not force recomputation. Prepare the
-full manual rerun only after proving that the changed sample actually recomputes.
-
-`ingest:reflow` remains a legacy maintenance command for pre-orchestration rows; it resets
-derived columns and is not the normal reprocessing path.
-
-Other maintenance entry points (use the `pnpm --filter @lib/db-map` prefix):
-
-- `ingest:seed:centroids` loads local centroid references.
-- `ingest:backfill:wikidata-coords` fills coordinates from Wikidata attributes where available
-  without spending geocoder budget.
-- `ingest:override` manages manual force-same / force-different match corrections.
-
-Inspect each parser and intended scope before running it. A maintenance command is not a
-short diagnostic merely because it avoids a provider. Human full runs follow bounded validation.
-
-## Reporting
-
-`ingest:report` prints a read-only reconciliation summary: research rows by source and
-stage, match readiness (pending vs missing coords/name/categories), canonicals by primary
-category with published/hidden splits, match decisions by method, geocode cache
-effectiveness, popularity distribution, top contributing sources, event date coverage,
-hybrid normalization/request totals, cost/tokens, and recent file ingest runs.
-
-```bash
-pnpm --filter @lib/db-map ingest:report
-pnpm --filter @lib/db-map ingest:report --source bgci
-pnpm --filter @lib/db-map ingest:report --category music_festival
-```
-
-Run it before and after every source import; the output is compact enough to paste into a
-PR or validation log.
-
-## Troubleshooting and optimization
-
-Work from the earliest incorrect artifact forward. Use traces for provenance and targeted SQL
-for request/job errors absent from traces. Do not erase evidence to make a run look clean.
-
-| Symptom                                             | Evidence and next action                                                                                                                                                                                                                     |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Source/category absent from report                  | Compare disk/registry inventory with observed file versions. Confirm category/source resolution, whether extraction ran, and its run-record errors.                                                                                          |
-| Few extracted rows or ID collisions                 | Inspect extractor output, wrappers, stable ID generation, source ordinals, duplicate/collision counters, and full vs limited file status. Fix identity before retrying.                                                                      |
-| Normalization repeatedly fails or degrades          | Inspect observation, request/response, validation warnings, job errors, profile, model, and input hash. Distinguish provider failures from evidence/schema rejection; reproduce with a small shadow run.                                     |
-| Limited normalization never reaches failing records | Cache hits consume the prefix limit. Use fixtures or implement record-targeted selection; do not loop the same prefix or increase to an unbounded run.                                                                                       |
-| Missing coordinates                                 | Check source/URL coordinates, normalized locality, geocode query, remembered miss, quota and call counters. A remembered miss is not fixed merely by rerunning; correct evidence/query or targeted cache handling. Never invent coordinates. |
-| Missing embeddings                                  | Inspect normalized text, provider/configuration errors, selection predicate, and artifact pointer. Matching may proceed without embeddings; assess whether degraded scoring is acceptable.                                                   |
-| No match progress                                   | Check readiness, not just total unlinked rows. Matching cannot repair missing coordinates/name/categories. Inspect lock ownership if another matcher is running.                                                                             |
-| Wrong merge or duplicate canonicals                 | Trace both records/canonicals; inspect `research_match_decisions`, overrides, candidate blocking, scores, dates, coordinates, and consolidation memos. Validate known same/different pairs before changing thresholds.                       |
-| Linked but hidden/wrong on map                      | Inspect canonical status/category/coordinates, active membership, build inputs, redirects, and app query filters. Run lineage verification and inspect a representative API/UI result.                                                       |
-| Run says succeeded but work remains                 | Reconcile file inventory, limited-stage counters, normalization state, blocked rows, and publication. Exit status alone does not establish completeness.                                                                                     |
-| Run is slow or costly                               | Identify time in file hashing, DB queries, provider calls/retries, rebuilds, or global consolidation. Check selected vs processed rows, cache hits, request tokens/cost, and whether the intended limit reaches the expensive stage.         |
-
-For optimization, compare the same representative inputs and configuration before/after.
-Record elapsed time, records processed, provider calls, tokens/cost when available, cache hits,
-failures, and output quality. Distinguish warm-cache speedups from algorithmic improvements.
-Inspect query plans before broad index/concurrency changes; remember `EXPLAIN ANALYZE` executes
-the query. Preserve idempotency, lineage, and matching quality while reducing work.
-
-Handoff after a fix: identify the cause and evidence, what changed, checks actually run,
-before/after scoped counts, unresolved work, and the exact human full-run/resume command plus
-verification commands. If only a sample was validated, say so. Do not declare an entire
-category complete from a successful sample, or conceal a missing diagnostic capability.
 
 ## Targeted cleanup
 

@@ -1,3 +1,4 @@
+import { pathToFileURL } from "node:url";
 /**
  * Geocode research_pois rows missing coordinates (M6).
  *
@@ -17,13 +18,19 @@
  */
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
-import { geocode, GeocodeError, type GeocodeHit } from "./providers/locationiq.js";
+import {
+  geocode,
+  GeocodeError,
+  type GeocodeHit,
+} from "./providers/locationiq.js";
 import { stableHash } from "./hash.js";
 
 const DEFAULT_GEOCODE_LIMIT = 4500;
 const DEFAULT_THROTTLE_MS = 1000; // LocationIQ free tier: stay comfortably under 2 req/s.
 
-interface CliOptions {
+export interface CliOptions {
+  recordId?: string;
+  runId?: string;
   source?: string;
   limit?: number;
   geocodeLimit: number;
@@ -66,8 +73,10 @@ function parseArgs(argv: string[]): CliOptions {
     if (a === "--dry-run") dryRun = true;
     else if (a === "--source" && argv[i + 1]) source = argv[++i];
     else if (a === "--limit" && argv[i + 1]) limit = Number(argv[++i]);
-    else if (a === "--geocode-limit" && argv[i + 1]) geocodeLimit = Number(argv[++i]);
-    else if (a === "--throttle-ms" && argv[i + 1]) throttleMs = Number(argv[++i]);
+    else if (a === "--geocode-limit" && argv[i + 1])
+      geocodeLimit = Number(argv[++i]);
+    else if (a === "--throttle-ms" && argv[i + 1])
+      throttleMs = Number(argv[++i]);
   }
 
   for (const [name, val] of [
@@ -102,7 +111,10 @@ async function resolveSourceId(db: Pool, slug: string): Promise<string> {
  * to wrong matches. Place records (gardens, campgrounds) keep the name: it IS
  * the place name and is often the only usable signal (e.g. ArbNet).
  */
-function buildQuery(row: GeoRow, temporalSlugs: Set<string>): { display: string; norm: string } | null {
+function buildQuery(
+  row: GeoRow,
+  temporalSlugs: Set<string>,
+): { display: string; norm: string } | null {
   if (/^q\d+$/i.test(row.name?.trim() ?? "")) return null;
   const isEvent = (row.category_slugs ?? []).some((s) => temporalSlugs.has(s));
   const locality = [
@@ -138,7 +150,14 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function readCache(
   db: Pool,
   norm: string,
-): Promise<{ lat: number | null; lng: number | null; precision: GeocodeHit["precision"] | null } | undefined> {
+): Promise<
+  | {
+      lat: number | null;
+      lng: number | null;
+      precision: GeocodeHit["precision"] | null;
+    }
+  | undefined
+> {
   const { rows } = await db.query<{
     lat: number | null;
     lng: number | null;
@@ -150,7 +169,11 @@ async function readCache(
   return rows[0];
 }
 
-async function writeCache(db: Pool, norm: string, hit: GeocodeHit | null): Promise<void> {
+async function writeCache(
+  db: Pool,
+  norm: string,
+  hit: GeocodeHit | null,
+): Promise<void> {
   await db.query(
     `INSERT INTO research_geocode_cache (query_norm, lat, lng, precision, provider)
      VALUES ($1, $2, $3, $4, $5)
@@ -158,7 +181,13 @@ async function writeCache(db: Pool, norm: string, hit: GeocodeHit | null): Promi
        lat = EXCLUDED.lat, lng = EXCLUDED.lng,
        precision = EXCLUDED.precision, provider = EXCLUDED.provider,
        fetched_at = now()`,
-    [norm, hit?.lat ?? null, hit?.lng ?? null, hit?.precision ?? null, hit?.provider ?? "locationiq"],
+    [
+      norm,
+      hit?.lat ?? null,
+      hit?.lng ?? null,
+      hit?.precision ?? null,
+      hit?.provider ?? "locationiq",
+    ],
   );
 }
 
@@ -170,7 +199,11 @@ async function writeRowCoords(
   precision: GeocodeHit["precision"],
   queryNorm: string,
 ): Promise<void> {
-  const inputHash = stableHash({ queryNorm, provider: "locationiq", version: "locationiq-v1" });
+  const inputHash = stableHash({
+    queryNorm,
+    provider: "locationiq",
+    version: "locationiq-v1",
+  });
   await db.query(
     `WITH artifact AS (
        INSERT INTO research_poi_geocodes (
@@ -195,7 +228,10 @@ async function writeRowCoords(
   );
 }
 
-async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
+export async function runGeocode(
+  db: Pool,
+  opts: CliOptions,
+): Promise<GeocodeStats> {
   const stats: GeocodeStats = {
     selected: 0,
     cacheHits: 0,
@@ -208,11 +244,16 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
   };
 
   const params: unknown[] = [];
-  let where = `lat IS NULL AND is_poi`;
+  let where = `(lat IS NULL OR lng IS NULL) AND is_poi`;
   if (opts.source) {
     params.push(await resolveSourceId(db, opts.source));
     where += ` AND source_id = $${params.length}`;
   }
+  if (opts.recordId) {
+    params.push(opts.recordId);
+    where += ` AND id = $${params.length}`;
+  }
+  where += " AND retired_at IS NULL";
   let limitClause = "";
   if (opts.limit !== undefined) {
     params.push(opts.limit);
@@ -238,7 +279,9 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
     const q = buildQuery(row, temporalSlugs);
     if (!q) {
       stats.noQuery++;
-      console.warn(`Skipped - ${row.name ?? `(id ${row.id})`} - unable to parse location (no locality fields)`);
+      console.warn(
+        `Skipped - ${row.name ?? `(id ${row.id})`} - unable to parse location (no locality fields)`,
+      );
       continue;
     }
 
@@ -246,14 +289,23 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
     if (cached) {
       if (cached.lat !== null && cached.lng !== null) {
         if (!opts.dryRun) {
-          await writeRowCoords(db, row.id, cached.lat, cached.lng, cached.precision ?? "point", q.norm);
+          await writeRowCoords(
+            db,
+            row.id,
+            cached.lat,
+            cached.lng,
+            cached.precision ?? "point",
+            q.norm,
+          );
         }
         stats.cacheHits++;
         stats.resolved++;
         console.log(`✓ ${row.name} (cache: ${cached.lat}, ${cached.lng})`);
       } else {
         stats.knownMisses++;
-        console.warn(`Skipped - ${row.name} - unable to parse location (known geocode miss)`);
+        console.warn(
+          `Skipped - ${row.name} - unable to parse location (known geocode miss)`,
+        );
       }
       continue;
     }
@@ -276,8 +328,9 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
       hit = await geocode(q.display);
     } catch (err) {
       if (err instanceof GeocodeError) {
-        console.error(`Stopping: ${err.message} (query: ${q.display})`);
-        break;
+        throw new Error(`Geocode failed for ${row.id}: ${err.message}`, {
+          cause: err,
+        });
       }
       throw err;
     }
@@ -290,7 +343,9 @@ async function runGeocode(db: Pool, opts: CliOptions): Promise<GeocodeStats> {
       console.log(`✓ ${row.name} (${hit.lat}, ${hit.lng}, ${hit.precision})`);
     } else {
       stats.unresolved++;
-      console.warn(`Skipped - ${row.name} - unable to parse location (geocoder found no match)`);
+      console.warn(
+        `Skipped - ${row.name} - unable to parse location (geocoder found no match)`,
+      );
     }
   }
 
@@ -312,7 +367,8 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error("Geocode failed:", err);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
+  main().catch((err) => {
+    console.error("Geocode failed:", err);
+    process.exit(1);
+  });

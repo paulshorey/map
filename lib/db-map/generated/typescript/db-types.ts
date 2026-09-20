@@ -131,6 +131,44 @@ export interface ResearchGeocodeCacheRow {
   "fetched_at": Date;
 }
 
+export interface ResearchIngestAttemptsRow {
+  "id": string;
+  "execution_id": string;
+  "run_id": string;
+  "stage": string;
+  "target_key": string;
+  "research_poi_id": string | null;
+  "source_record_id": string | null;
+  "status": string;
+  "input": unknown;
+  "output": unknown | null;
+  "error": unknown | null;
+  "started_at": Date;
+  "finished_at": Date | null;
+}
+
+export interface ResearchIngestExecutionsRow {
+  "id": string;
+  "run_id": string;
+  "host": string;
+  "pid": number;
+  "status": string;
+  "options": unknown;
+  "started_at": Date;
+  "heartbeat_at": Date;
+  "finished_at": Date | null;
+  "stop_reason": string | null;
+  "error": unknown | null;
+}
+
+export interface ResearchIngestRunItemsRow {
+  "run_id": string;
+  "source_record_id": string;
+  "research_poi_id": string | null;
+  "observation_id": string | null;
+  "source_ordinal": number;
+}
+
 export interface ResearchIngestRunRecordsRow {
   "id": string;
   "run_id": string;
@@ -170,6 +208,10 @@ export interface ResearchIngestRunsRow {
   "stopped_at": Date | null;
   "completed_at": Date | null;
   "created_at": Date;
+  "managed": boolean;
+  "stop_requested": boolean;
+  "stop_reason": string | null;
+  "verified_at": Date | null;
 }
 
 export interface ResearchMatchDecisionsRow {
@@ -221,6 +263,8 @@ export interface ResearchNormalizationRequestsRow {
   "error": string | null;
   "created_at": Date;
   "completed_at": Date | null;
+  "run_id": string | null;
+  "ingest_attempt_id": string | null;
 }
 
 export interface ResearchPipelineJobsRow {
@@ -491,6 +535,9 @@ export interface PostgresDbSchema {
   "research_canonical_memberships": ResearchCanonicalMembershipsRow;
   "research_consolidation_decisions": ResearchConsolidationDecisionsRow;
   "research_geocode_cache": ResearchGeocodeCacheRow;
+  "research_ingest_attempts": ResearchIngestAttemptsRow;
+  "research_ingest_executions": ResearchIngestExecutionsRow;
+  "research_ingest_run_items": ResearchIngestRunItemsRow;
   "research_ingest_run_records": ResearchIngestRunRecordsRow;
   "research_ingest_runs": ResearchIngestRunsRow;
   "research_match_decisions": ResearchMatchDecisionsRow;

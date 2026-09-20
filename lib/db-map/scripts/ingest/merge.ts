@@ -1,3 +1,4 @@
+import { currentAttempt } from "./execution.js";
 import type { PoolClient } from "pg";
 import { chat } from "./providers/deepinfra.js";
 import { getSourceDefinition } from "./sources.js";
@@ -82,7 +83,10 @@ function chooseText(
       if (opts.preferLonger) return b.value.length - a.value.length;
       return 0;
     });
-  return { value: candidates[0]?.value ?? null, row: candidates[0]?.row ?? null };
+  return {
+    value: candidates[0]?.value ?? null,
+    row: candidates[0]?.row ?? null,
+  };
 }
 
 function coordinateRank(value: string | null): number {
@@ -93,7 +97,9 @@ function coordinateRank(value: string | null): number {
 }
 
 function coordTrust(row: MergeRow): number {
-  return getSourceDefinition(row.source_slug)?.meta.coord_trust ?? row.source_trust;
+  return (
+    getSourceDefinition(row.source_slug)?.meta.coord_trust ?? row.source_trust
+  );
 }
 
 function coordinateSlugs(rows: MergeRow[]): string[] {
@@ -102,7 +108,12 @@ function coordinateSlugs(rows: MergeRow[]): string[] {
 }
 
 function chooseCorroboratedPoint(rows: MergeRow[]): MergeRow | null {
-  const pointRows = rows.filter((row) => row.coordinate_precision === "point" && row.lat !== null && row.lng !== null);
+  const pointRows = rows.filter(
+    (row) =>
+      row.coordinate_precision === "point" &&
+      row.lat !== null &&
+      row.lng !== null,
+  );
   if (pointRows.length < 2) return null;
 
   const slugs = coordinateSlugs(rows);
@@ -123,16 +134,26 @@ function chooseCorroboratedPoint(rows: MergeRow[]): MergeRow | null {
     };
   });
 
-  groups.sort((a, b) => b.sourceSupport - a.sourceSupport || b.members.length - a.members.length);
+  groups.sort(
+    (a, b) =>
+      b.sourceSupport - a.sourceSupport || b.members.length - a.members.length,
+  );
   const best = groups[0];
   const second = groups[1];
   if (!best || best.sourceSupport < 2) return null;
   if (second && second.sourceSupport === best.sourceSupport) return null;
 
-  return [...best.members].sort((a, b) => coordTrust(b) - coordTrust(a) || b.source_trust - a.source_trust)[0] ?? null;
+  return (
+    [...best.members].sort(
+      (a, b) =>
+        coordTrust(b) - coordTrust(a) || b.source_trust - a.source_trust,
+    )[0] ?? null
+  );
 }
 
-function chooseCoordinates(rows: MergeRow[]): FieldChoice<{ lat: number; lng: number }> {
+function chooseCoordinates(
+  rows: MergeRow[],
+): FieldChoice<{ lat: number; lng: number }> {
   const corroborated = chooseCorroboratedPoint(rows);
   if (corroborated && corroborated.lat !== null && corroborated.lng !== null) {
     return {
@@ -144,13 +165,18 @@ function chooseCoordinates(rows: MergeRow[]): FieldChoice<{ lat: number; lng: nu
   const candidates = rows
     .filter((row) => row.lat !== null && row.lng !== null)
     .sort((a, b) => {
-      const precision = coordinateRank(b.coordinate_precision) - coordinateRank(a.coordinate_precision);
+      const precision =
+        coordinateRank(b.coordinate_precision) -
+        coordinateRank(a.coordinate_precision);
       if (precision !== 0) return precision;
       return coordTrust(b) - coordTrust(a) || b.source_trust - a.source_trust;
     });
   const row = candidates[0] ?? null;
   return {
-    value: row && row.lat !== null && row.lng !== null ? { lat: row.lat, lng: row.lng } : null,
+    value:
+      row && row.lat !== null && row.lng !== null
+        ? { lat: row.lat, lng: row.lng }
+        : null,
     row,
   };
 }
@@ -167,18 +193,26 @@ function featureRows(rows: MergeRow[], anchorName: string | null): MergeRow[] {
   const anchorNorm = normalizeComparable(anchorName);
   if (!anchorNorm) return [];
   return rows.filter((row) => {
-    const hasContent = nonEmpty(row.name) !== null || nonEmpty(row.description) !== null;
+    const hasContent =
+      nonEmpty(row.name) !== null || nonEmpty(row.description) !== null;
     if (!hasContent) return false;
     if (normalizeComparable(row.name) === anchorNorm) return false;
     return nameSimilarity(anchorName, row.name) < 0.9;
   });
 }
 
-function containedFeatureNames(rows: MergeRow[], anchorName: string | null): string[] {
+function containedFeatureNames(
+  rows: MergeRow[],
+  anchorName: string | null,
+): string[] {
   const names = featureRows(rows, anchorName)
     .map((row) => nonEmpty(row.name))
     .filter((name): name is string => name !== null)
-    .sort((a, b) => normalizeComparable(a).localeCompare(normalizeComparable(b)) || a.localeCompare(b));
+    .sort(
+      (a, b) =>
+        normalizeComparable(a).localeCompare(normalizeComparable(b)) ||
+        a.localeCompare(b),
+    );
   return [...new Set(names)];
 }
 
@@ -190,8 +224,12 @@ function proximityDescription(
   if (features.length === 0) return null;
 
   const anchorNorm = normalizeComparable(anchorName);
-  const anchorRows = rows.filter((row) => normalizeComparable(row.name) === anchorNorm);
-  const anchorDescription = descriptionFallback(anchorRows.length > 0 ? anchorRows : rows);
+  const anchorRows = rows.filter(
+    (row) => normalizeComparable(row.name) === anchorNorm,
+  );
+  const anchorDescription = descriptionFallback(
+    anchorRows.length > 0 ? anchorRows : rows,
+  );
 
   const byName = new Map<string, MergeRow[]>();
   for (const row of features) {
@@ -202,8 +240,12 @@ function proximityDescription(
   const sections = [...byName.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([, group]) => {
-      const title = chooseText(group, (row) => row.name, { preferShorter: true }).value;
-      const body = chooseText(group, (row) => row.description, { preferLonger: true }).value;
+      const title = chooseText(group, (row) => row.name, {
+        preferShorter: true,
+      }).value;
+      const body = chooseText(group, (row) => row.description, {
+        preferLonger: true,
+      }).value;
       if (title && body) return `**${title}**\n${body}`;
       if (title) return `**${title}**`;
       return body ?? "";
@@ -212,7 +254,9 @@ function proximityDescription(
 
   if (sections.length === 0) return null;
 
-  const parts = [anchorDescription.value, ...sections].filter((part): part is string => Boolean(part));
+  const parts = [anchorDescription.value, ...sections].filter(
+    (part): part is string => Boolean(part),
+  );
   return {
     value: parts.join("\n\n"),
     provenance: {
@@ -230,7 +274,10 @@ async function chooseDescription(
   rows: MergeRow[],
   noLlm: boolean,
   anchorName: string | null,
-): Promise<{ value: string | null; provenance: Record<string, unknown> | null }> {
+): Promise<{
+  value: string | null;
+  provenance: Record<string, unknown> | null;
+}> {
   const aggregated = proximityDescription(rows, anchorName);
   if (aggregated) return aggregated;
 
@@ -244,7 +291,9 @@ async function chooseDescription(
     unique.set(normalizeComparable(d.value), d);
   }
   if (unique.size === 1) {
-    const only = descriptions.sort((a, b) => b.row.source_trust - a.row.source_trust)[0]!;
+    const only = descriptions.sort(
+      (a, b) => b.row.source_trust - a.row.source_trust,
+    )[0]!;
     return { value: only.value, provenance: provenance(only.row) };
   }
 
@@ -270,7 +319,9 @@ async function chooseDescription(
       }),
       maxTokens: 700,
     });
-    const introduced = [...extractUrls(fused)].filter((url) => !allowedUrls.has(url));
+    const introduced = [...extractUrls(fused)].filter(
+      (url) => !allowedUrls.has(url),
+    );
     if (introduced.length === 0 && fused.trim().length > 0) {
       return {
         value: fused.trim(),
@@ -283,7 +334,10 @@ async function chooseDescription(
       };
     }
   } catch (err) {
-    console.warn(`Description fusion failed; using verbatim fallback: ${(err as Error).message}`);
+    if (currentAttempt()) throw err;
+    console.warn(
+      `Description fusion failed; using verbatim fallback: ${(err as Error).message}`,
+    );
   }
 
   const fallback = descriptionFallback(rows);
@@ -296,9 +350,12 @@ function mergeAttributes(rows: MergeRow[]): Record<string, unknown> {
   for (const row of ordered) {
     const attrs = asRecord(row.attributes);
     for (const [key, value] of Object.entries(attrs)) {
-      if (value === undefined || value === null || key.startsWith("_")) continue;
+      if (value === undefined || value === null || key.startsWith("_"))
+        continue;
       if (Array.isArray(value)) {
-        const current = Array.isArray(merged[key]) ? (merged[key] as unknown[]) : [];
+        const current = Array.isArray(merged[key])
+          ? (merged[key] as unknown[])
+          : [];
         merged[key] = [...new Set([...current, ...value])];
       } else if (typeof value === "object" && !Array.isArray(value)) {
         merged[key] = { ...asRecord(merged[key]), ...asRecord(value) };
@@ -316,7 +373,9 @@ async function syncCategories(
   rows: MergeRow[],
 ): Promise<string | null> {
   const slugs = [...new Set(rows.flatMap((row) => row.category_slugs ?? []))];
-  await client.query(`DELETE FROM canonical_poi_categories WHERE poi_id = $1`, [canonicalId]);
+  await client.query(`DELETE FROM canonical_poi_categories WHERE poi_id = $1`, [
+    canonicalId,
+  ]);
   if (slugs.length === 0) return null;
 
   const { rows: categories } = await client.query<{
@@ -333,8 +392,11 @@ async function syncCategories(
   if (categories.length === 0) return null;
 
   const bestRow = [...rows].sort((a, b) => b.source_trust - a.source_trust)[0];
-  const preferredSlug = bestRow?.category_slugs?.find((slug) => categories.some((c) => c.slug === slug));
-  const primary = categories.find((c) => c.slug === preferredSlug) ?? categories[0]!;
+  const preferredSlug = bestRow?.category_slugs?.find((slug) =>
+    categories.some((c) => c.slug === slug),
+  );
+  const primary =
+    categories.find((c) => c.slug === preferredSlug) ?? categories[0]!;
 
   for (const category of categories) {
     await client.query(
@@ -377,21 +439,38 @@ function buildOccurrences(rows: MergeRow[]): OccurrenceChoice[] {
   }
 
   return [...byStart.values()].sort(
-    (a, b) => a.starts_at.getTime() - b.starts_at.getTime() || b.row.source_trust - a.row.source_trust,
+    (a, b) =>
+      a.starts_at.getTime() - b.starts_at.getTime() ||
+      b.row.source_trust - a.row.source_trust,
   );
 }
 
-function chooseRepresentativeOccurrence(occurrences: OccurrenceChoice[]): OccurrenceChoice | null {
+function chooseRepresentativeOccurrence(
+  occurrences: OccurrenceChoice[],
+): OccurrenceChoice | null {
   if (occurrences.length === 0) return null;
   const now = new Date();
-  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const todayUtc = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  );
   const activeOrUpcoming = occurrences
-    .filter((occurrence) => (occurrence.ends_at ?? occurrence.starts_at).getTime() >= todayUtc)
-    .sort((a, b) => a.starts_at.getTime() - b.starts_at.getTime() || b.row.source_trust - a.row.source_trust);
+    .filter(
+      (occurrence) =>
+        (occurrence.ends_at ?? occurrence.starts_at).getTime() >= todayUtc,
+    )
+    .sort(
+      (a, b) =>
+        a.starts_at.getTime() - b.starts_at.getTime() ||
+        b.row.source_trust - a.row.source_trust,
+    );
   if (activeOrUpcoming[0]) return activeOrUpcoming[0];
 
   return [...occurrences].sort(
-    (a, b) => b.starts_at.getTime() - a.starts_at.getTime() || b.row.source_trust - a.row.source_trust,
+    (a, b) =>
+      b.starts_at.getTime() - a.starts_at.getTime() ||
+      b.row.source_trust - a.row.source_trust,
   )[0]!;
 }
 
@@ -401,7 +480,10 @@ async function syncOccurrences(
   rows: MergeRow[],
 ): Promise<OccurrenceChoice[]> {
   const occurrences = buildOccurrences(rows);
-  await client.query(`DELETE FROM canonical_poi_occurrences WHERE poi_id = $1`, [canonicalId]);
+  await client.query(
+    `DELETE FROM canonical_poi_occurrences WHERE poi_id = $1`,
+    [canonicalId],
+  );
   for (const occurrence of occurrences) {
     await client.query(
       `INSERT INTO canonical_poi_occurrences (poi_id, starts_at, ends_at, date_precision)
@@ -443,10 +525,14 @@ export async function rebuildCanonicalPoi(
   );
 
   if (rows.length === 0) {
-    await client.query(`DELETE FROM canonical_poi_occurrences WHERE poi_id = $1`, [canonicalId]);
-    await client.query(`UPDATE canonical_pois SET status = 'hidden', updated_at = now() WHERE id = $1`, [
-      canonicalId,
-    ]);
+    await client.query(
+      `DELETE FROM canonical_poi_occurrences WHERE poi_id = $1`,
+      [canonicalId],
+    );
+    await client.query(
+      `UPDATE canonical_pois SET status = 'hidden', updated_at = now() WHERE id = $1`,
+      [canonicalId],
+    );
     return;
   }
 
@@ -454,7 +540,9 @@ export async function rebuildCanonicalPoi(
   const description = await chooseDescription(rows, opts.noLlm, name.value);
   const website = chooseText(rows, (row) => row.website);
   const phone = chooseText(rows, (row) => row.phone);
-  const address = chooseText(rows, (row) => row.address, { preferLonger: true });
+  const address = chooseText(rows, (row) => row.address, {
+    preferLonger: true,
+  });
   const hours = chooseText(rows, (row) => row.hours);
   const photo = chooseText(rows, (row) => row.photo_url);
   const coords = chooseCoordinates(rows);
@@ -480,7 +568,9 @@ export async function rebuildCanonicalPoi(
     occurrences: {
       count: occurrences.length,
       research_ids: occurrences.map((occurrence) => occurrence.row.id),
-      sources: [...new Set(occurrences.map((occurrence) => occurrence.row.source_slug))],
+      sources: [
+        ...new Set(occurrences.map((occurrence) => occurrence.row.source_slug)),
+      ],
     },
     attributes: {
       sources: [...new Set(rows.map((row) => row.source_slug))],
@@ -536,7 +626,9 @@ export async function rebuildCanonicalPoi(
       JSON.stringify(attributes),
       JSON.stringify(fieldProvenance),
       popularity,
-      primaryCategoryId && coords.row?.coordinate_precision !== "region" && coords.row?.coordinate_precision !== "city"
+      primaryCategoryId &&
+      coords.row?.coordinate_precision !== "region" &&
+      coords.row?.coordinate_precision !== "city"
         ? "published"
         : "hidden",
       primaryCategoryId,
@@ -566,13 +658,15 @@ export async function rebuildCanonicalPoi(
   const buildHash = stableHash({
     builder: "canonical-build-v1",
     research_ids: rows.map((row) => row.id).sort(),
-    inputs: rows.map((row) => ({
-      research_id: row.id,
-      normalization_id: row.active_normalization_id,
-      geocode_id: row.active_geocode_id,
-      embedding_id: row.active_embedding_id,
-      membership_id: row.membership_id,
-    })).sort((a, b) => a.research_id.localeCompare(b.research_id)),
+    inputs: rows
+      .map((row) => ({
+        research_id: row.id,
+        normalization_id: row.active_normalization_id,
+        geocode_id: row.active_geocode_id,
+        embedding_id: row.active_embedding_id,
+        membership_id: row.membership_id,
+      }))
+      .sort((a, b) => a.research_id.localeCompare(b.research_id)),
     fields: buildFields,
   });
   const { rows: builds } = await client.query<{ id: string }>(
@@ -583,15 +677,30 @@ export async function rebuildCanonicalPoi(
      ON CONFLICT (canonical_poi_id, input_hash) DO UPDATE SET
        activated_at = now()
      RETURNING id`,
-    [canonicalId, buildHash, JSON.stringify(buildFields), JSON.stringify(fieldProvenance)],
+    [
+      canonicalId,
+      buildHash,
+      JSON.stringify(buildFields),
+      JSON.stringify(fieldProvenance),
+    ],
   );
-  await client.query(`DELETE FROM canonical_poi_build_inputs WHERE build_id = $1`, [builds[0]!.id]);
+  await client.query(
+    `DELETE FROM canonical_poi_build_inputs WHERE build_id = $1`,
+    [builds[0]!.id],
+  );
   for (const row of rows) {
     await client.query(
       `INSERT INTO canonical_poi_build_inputs (
          build_id, research_poi_id, normalization_id, geocode_id, embedding_id, membership_id
        ) VALUES ($1,$2,$3,$4,$5,$6)`,
-      [builds[0]!.id, row.id, row.active_normalization_id, row.active_geocode_id, row.active_embedding_id, row.membership_id],
+      [
+        builds[0]!.id,
+        row.id,
+        row.active_normalization_id,
+        row.active_geocode_id,
+        row.active_embedding_id,
+        row.membership_id,
+      ],
     );
   }
   await client.query(

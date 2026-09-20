@@ -26,8 +26,19 @@ const PROVIDER = "locationiq";
 function precisionFrom(row: LocationIqRow): GeocodeHit["precision"] {
   const type = (row.type ?? "").toLowerCase();
   const cls = (row.class ?? "").toLowerCase();
-  if (type === "country" || type === "state" || cls === "boundary") return "region";
-  if (["city", "town", "village", "administrative", "county", "suburb", "municipality"].includes(type)) {
+  if (type === "country" || type === "state" || cls === "boundary")
+    return "region";
+  if (
+    [
+      "city",
+      "town",
+      "village",
+      "administrative",
+      "county",
+      "suburb",
+      "municipality",
+    ].includes(type)
+  ) {
     return "city";
   }
   return "point";
@@ -48,7 +59,7 @@ export async function geocode(query: string): Promise<GeocodeHit | null> {
 
   let res: Response;
   try {
-    res = await fetch(url);
+    res = await fetch(url, { signal: AbortSignal.timeout(60_000) });
   } catch (err) {
     throw new GeocodeError(`Network error: ${(err as Error).message}`);
   }

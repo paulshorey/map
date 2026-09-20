@@ -1,3 +1,4 @@
+import { currentAttempt } from "../execution.js";
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import { ingestConfig } from "../config.js";
@@ -30,6 +31,8 @@ import { resolveNormalization, type ResolvedNormalization } from "./resolve.js";
 
 export interface NormalizeOptions {
   runId?: string;
+  recordId?: string;
+  generation?: string;
   source?: string;
   limit?: number;
   noLlm: boolean;
@@ -41,6 +44,7 @@ export interface NormalizeOptions {
 }
 
 export interface NormalizeRunStats {
+  artifactId?: string;
   selected: number;
   processed: number;
   cacheHits: number;
@@ -63,6 +67,7 @@ interface NormalizeRow {
   active_input_hash: string | null;
   active_match_fingerprint: string | null;
   canonical_poi_id: string | null;
+  coordinate_source: string | null;
   name: string | null;
   description: string | null;
   website: string | null;
@@ -94,7 +99,8 @@ function parseJsonContent(content: string): unknown {
   } catch {
     const start = content.indexOf("{");
     const end = content.lastIndexOf("}");
-    if (start >= 0 && end > start) return JSON.parse(content.slice(start, end + 1));
+    if (start >= 0 && end > start)
+      return JSON.parse(content.slice(start, end + 1));
     throw new Error("DeepSeek response was not valid JSON");
   }
 }
@@ -154,34 +160,43 @@ function requestPacket(
   };
 }
 
-async function fetchRows(db: Pool, opts: NormalizeOptions): Promise<NormalizeRow[]> {
+async function fetchRows(
+  db: Pool,
+  opts: NormalizeOptions,
+): Promise<NormalizeRow[]> {
   const values: unknown[] = [];
   let sourceClause = "";
   if (opts.source) {
     values.push(opts.source);
     sourceClause = `AND rs.slug = $${values.length}`;
   }
+  if (opts.recordId) {
+    values.push(opts.recordId);
+    sourceClause += ` AND rp.id = $${values.length}`;
+  }
+  if (opts.retryFailed)
+    sourceClause += " AND rp.normalization_state = 'failed'";
   const { rows } = await db.query<NormalizeRow>(
     `SELECT
        rp.id, rs.slug AS source_slug, rp.source_record_id, rp.ingest_category,
        rp.active_observation_id, rp.active_normalization_id,
        active.input_hash AS active_input_hash,
        active.match_fingerprint AS active_match_fingerprint,
-       rp.canonical_poi_id,
-       COALESCE(o.captured->>'name', rp.name) AS name,
-       COALESCE(o.captured->>'description', rp.description) AS description,
-       COALESCE(o.captured->>'website', rp.website) AS website,
-       COALESCE(o.captured->>'source_url', rp.source_url) AS source_url,
-       COALESCE(o.captured->>'phone', rp.phone) AS phone,
-       COALESCE(o.captured->>'email', rp.email) AS email,
-       COALESCE(o.captured->>'address', rp.address) AS address,
-       COALESCE(o.captured->>'city', rp.city) AS city,
-       COALESCE(o.captured->>'region', rp.region) AS region,
-       COALESCE(o.captured->>'country_code', rp.country_code) AS country_code,
-       COALESCE((o.captured->>'lat')::double precision, rp.lat) AS lat,
-       COALESCE((o.captured->>'lng')::double precision, rp.lng) AS lng,
-       COALESCE(o.captured->>'raw_category', rp.raw_category) AS raw_category,
-       COALESCE(o.captured->'attributes', rp.attributes, '{}'::jsonb) AS attributes,
+       rp.canonical_poi_id, rp.coordinate_source,
+       o.captured->>'name' AS name,
+       o.captured->>'description' AS description,
+       o.captured->>'website' AS website,
+       o.captured->>'source_url' AS source_url,
+       o.captured->>'phone' AS phone,
+       o.captured->>'email' AS email,
+       o.captured->>'address' AS address,
+       o.captured->>'city' AS city,
+       o.captured->>'region' AS region,
+       o.captured->>'country_code' AS country_code,
+       (o.captured->>'lat')::double precision AS lat,
+       (o.captured->>'lng')::double precision AS lng,
+       o.captured->>'raw_category' AS raw_category,
+       COALESCE(o.captured->'attributes', '{}'::jsonb) AS attributes,
        o.raw, o.source_is_poi_hint, o.raw_content_hash
      FROM research_pois rp
      JOIN research_sources rs ON rs.id = rp.source_id
@@ -209,8 +224,8 @@ async function insertRequest(
     `INSERT INTO research_normalization_requests (
        id, research_poi_id, observation_id, input_hash,
        prompt_version, schema_version, profile_version, examples_version,
-       provider, requested_model, status, request_json, repaired_from_id, attempt
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'deepinfra',$9,'started',$10::jsonb,$11,$12)`,
+       provider, requested_model, status, request_json, repaired_from_id, attempt, run_id, ingest_attempt_id
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'deepinfra',$9,'started',$10::jsonb,$11,$12,$13,$14)`,
     [
       id,
       row.id,
@@ -224,6 +239,8 @@ async function insertRequest(
       JSON.stringify(requestJson),
       repairedFromId ?? null,
       repairedFromId ? 2 : 1,
+      currentAttempt()?.runId ?? null,
+      currentAttempt()?.attemptId ?? null,
     ],
   );
   return id;
@@ -277,13 +294,19 @@ async function callNormalizer(
   profileId: string,
   profileVersion: string,
   packet: Record<string, unknown>,
-): Promise<{ output: LlmNormalizationOutput; result: ChatResult; requestId: string }> {
+): Promise<{
+  output: LlmNormalizationOutput;
+  result: ChatResult;
+  requestId: string;
+}> {
   const messages: ChatMessage[] = [
     { role: "system", content: NORMALIZATION_SYSTEM_PROMPT },
     ...fewShotMessages(profileId),
     { role: "user", content: JSON.stringify(packet) },
   ];
-  const requestId = await insertRequest(db, row, inputHash, profileVersion, { messages });
+  const requestId = await insertRequest(db, row, inputHash, profileVersion, {
+    messages,
+  });
   let result: ChatResult | null = null;
   let parsed: unknown;
   try {
@@ -323,7 +346,7 @@ async function callNormalizer(
         role: "user",
         content:
           `The response failed validation: ${(error as Error).message}. ` +
-          "Return one corrected JSON object matching the schema. Do not explain.",
+          `Return one corrected JSON object matching the schema. record.record_id must be exactly ${row.id}, not source_record_id. Do not explain.`,
       },
     ];
     const repairId = await insertRequest(
@@ -358,7 +381,13 @@ async function callNormalizer(
       );
       return { output: repaired, result: repairResult, requestId: repairId };
     } catch (repairError) {
-      await finishRequest(db, repairId, repairResult, repairParsed, repairError);
+      await finishRequest(
+        db,
+        repairId,
+        repairResult,
+        repairParsed,
+        repairError,
+      );
       throw repairError;
     }
   }
@@ -500,8 +529,18 @@ async function finishJob(
       jobId,
       status,
       outputArtifactId ?? null,
-      error instanceof LlmError ? (error.retryable ? "llm_transient" : "llm_error") : error ? "normalization_error" : null,
-      error instanceof Error ? error.message.slice(0, 2000) : error ? String(error).slice(0, 2000) : null,
+      error instanceof LlmError
+        ? error.retryable
+          ? "llm_transient"
+          : "llm_error"
+        : error
+          ? "normalization_error"
+          : null,
+      error instanceof Error
+        ? error.message.slice(0, 2000)
+        : error
+          ? String(error).slice(0, 2000)
+          : null,
     ],
   );
 }
@@ -601,8 +640,10 @@ async function activateNormalization(
   try {
     await client.query("BEGIN");
     const shouldRematch =
-      row.active_match_fingerprint !== null &&
-      row.active_match_fingerprint !== resolved.matchFingerprint;
+      (row.active_match_fingerprint !== null &&
+        row.active_match_fingerprint !== resolved.matchFingerprint) ||
+      (row.active_normalization_id !== normalizationId &&
+        row.coordinate_source === "geocode");
     await client.query(
       `UPDATE research_pois SET
          active_normalization_id = $2::uuid,
@@ -625,11 +666,13 @@ async function activateNormalization(
          starts_at = $18,
          ends_at = $19,
          date_precision = $20,
-         lat = COALESCE($21, lat),
-         lng = COALESCE($22, lng),
-         coordinate_source = COALESCE($23, coordinate_source),
-         coordinate_precision = COALESCE($24, coordinate_precision),
-         content_embedding = CASE WHEN $25 THEN NULL ELSE content_embedding END,
+         lat = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid AND coordinate_source='geocode' THEN NULL ELSE COALESCE($21,lat) END,
+         lng = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid AND coordinate_source='geocode' THEN NULL ELSE COALESCE($22,lng) END,
+         coordinate_source = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid AND coordinate_source='geocode' THEN NULL ELSE COALESCE($23,coordinate_source) END,
+         coordinate_precision = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid AND coordinate_source='geocode' THEN NULL ELSE COALESCE($24,coordinate_precision) END,
+         content_embedding = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid THEN NULL ELSE content_embedding END,
+         active_geocode_id = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid THEN NULL ELSE active_geocode_id END,
+         active_embedding_id = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid THEN NULL ELSE active_embedding_id END,
          canonical_poi_id = CASE WHEN $25 THEN NULL ELSE canonical_poi_id END,
          matched_normalization_id = CASE WHEN $25 THEN NULL ELSE $2::uuid END,
          attributes = COALESCE(attributes, '{}'::jsonb) || $26::jsonb
@@ -638,7 +681,11 @@ async function activateNormalization(
         row.id,
         normalizationId,
         inputHash,
-        resolved.status === "rejected" ? "rejected" : resolved.status === "degraded" ? "degraded" : "active",
+        resolved.status === "rejected"
+          ? "rejected"
+          : resolved.status === "degraded"
+            ? "degraded"
+            : "active",
         resolved.displayName,
         resolved.matchName,
         resolved.description,
@@ -675,8 +722,27 @@ async function activateNormalization(
       `UPDATE research_poi_normalizations SET activated_at = now() WHERE id = $1`,
       [normalizationId],
     );
+    if (row.canonical_poi_id && shouldRematch) {
+      await client.query(
+        `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
+        retirement_reason='normalization_changed' WHERE research_poi_id=$1 AND active`,
+        [row.id],
+      );
+    } else if (row.canonical_poi_id) {
+      await client.query(
+        `WITH retired AS (
+        UPDATE research_canonical_memberships SET active=false, retired_at=now(), retirement_reason='normalization_refreshed'
+        WHERE research_poi_id=$1 AND active AND normalization_id IS DISTINCT FROM $2::uuid
+        RETURNING research_poi_id,canonical_poi_id,match_decision_id,matcher_version
+      ) INSERT INTO research_canonical_memberships(research_poi_id,normalization_id,canonical_poi_id,match_decision_id,matcher_version,run_id)
+        SELECT research_poi_id,$2,canonical_poi_id,match_decision_id,matcher_version,$3 FROM retired`,
+        [row.id, normalizationId, currentAttempt()?.runId ?? null],
+      );
+    }
     if (row.canonical_poi_id) {
-      await rebuildCanonicalPoi(client as PoolClient, row.canonical_poi_id, { noLlm: true });
+      await rebuildCanonicalPoi(client as PoolClient, row.canonical_poi_id, {
+        noLlm: true,
+      });
     }
     await client.query("COMMIT");
   } catch (error) {
@@ -692,7 +758,9 @@ export async function runHybridNormalize(
   opts: NormalizeOptions,
 ): Promise<NormalizeRunStats> {
   const rows = await fetchRows(db, opts);
-  const reprocessGeneration = opts.reprocess ? randomUUID() : null;
+  const reprocessGeneration = opts.reprocess
+    ? (opts.generation ?? randomUUID())
+    : null;
   const stats: NormalizeRunStats = {
     selected: rows.length,
     processed: 0,
@@ -709,16 +777,22 @@ export async function runHybridNormalize(
   for (const row of rows) {
     if (opts.limit !== undefined && stats.processed >= opts.limit) break;
     const source = getSourceDefinition(row.source_slug);
-    const fallbackProfile = ["music_festival", "carnival", "art_fair", "art_parade"].includes(
-      row.ingest_category,
-    )
+    const fallbackProfile = [
+      "music_festival",
+      "carnival",
+      "art_fair",
+      "art_parade",
+    ].includes(row.ingest_category)
       ? "event"
       : row.ingest_category === "campground"
         ? "campground"
-        : row.ingest_category === "botanical_garden" || row.ingest_category === "arboretum"
+        : row.ingest_category === "botanical_garden" ||
+            row.ingest_category === "arboretum"
           ? "garden"
           : "place";
-    const profile = getNormalizationProfile(source?.normalizationProfile ?? fallbackProfile);
+    const profile = getNormalizationProfile(
+      source?.normalizationProfile ?? fallbackProfile,
+    );
     const captured = deterministicInput(row);
     const deterministic = buildDeterministicFacts(captured);
     const packet = requestPacket(row, profile.id, deterministic);
@@ -737,7 +811,7 @@ export async function runHybridNormalize(
     const jobId = await startJob(db, row, inputHash, opts.runId);
 
     try {
-      if (!opts.reprocess) {
+      {
         const cached = await loadCached(db, row.id, inputHash);
         if (cached) {
           await activateNormalization(
@@ -748,6 +822,7 @@ export async function runHybridNormalize(
             cached.resolved,
             opts.shadow || (opts.noLlm && row.active_normalization_id !== null),
           );
+          stats.artifactId = cached.id;
           stats.cacheHits++;
           stats.processed++;
           stats[cached.resolved.status]++;
@@ -765,7 +840,13 @@ export async function runHybridNormalize(
         deterministic.hardIsPoi !== false &&
         !opts.noLlm
       ) {
-        await finishJob(db, jobId, "retryable", undefined, new Error("LLM request budget reached"));
+        await finishJob(
+          db,
+          jobId,
+          "retryable",
+          undefined,
+          new Error("LLM request budget reached"),
+        );
         stats.stoppedByBudget = true;
         break;
       }
@@ -775,7 +856,13 @@ export async function runHybridNormalize(
         deterministic.hardIsPoi !== false &&
         !opts.noLlm
       ) {
-        await finishJob(db, jobId, "retryable", undefined, new Error("LLM cost budget reached"));
+        await finishJob(
+          db,
+          jobId,
+          "retryable",
+          undefined,
+          new Error("LLM cost budget reached"),
+        );
         stats.stoppedByBudget = true;
         break;
       }
@@ -811,6 +898,7 @@ export async function runHybridNormalize(
         resolved,
         output,
       );
+      stats.artifactId = normalizationId;
       await activateNormalization(
         db,
         row,
@@ -833,10 +921,11 @@ export async function runHybridNormalize(
     } catch (error) {
       stats.failed++;
       stats.processed++;
-      await db.query(
-        `UPDATE research_pois SET normalization_state = 'failed' WHERE id = $1`,
-        [row.id],
-      );
+      if (!opts.shadow && !(opts.noLlm && row.active_normalization_id))
+        await db.query(
+          `UPDATE research_pois SET normalization_state = CASE WHEN active_normalization_id IS NULL THEN 'failed' ELSE 'active_stale' END WHERE id = $1`,
+          [row.id],
+        );
       await finishJob(
         db,
         jobId,
@@ -844,6 +933,7 @@ export async function runHybridNormalize(
         undefined,
         error,
       );
+      if (opts.recordId && currentAttempt()) throw error;
       console.log(
         `normalize failed ${row.source_record_id}${row.name ? ` "${row.name.replace(/"/g, "'")}"` : ""} (${(error as Error).message.slice(0, 500)})`,
       );

@@ -225,6 +225,62 @@ CREATE TABLE public.research_geocode_cache (
 
 
 --
+-- Name: research_ingest_attempts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_attempts (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    execution_id uuid NOT NULL,
+    run_id uuid NOT NULL,
+    stage text NOT NULL,
+    target_key text NOT NULL,
+    research_poi_id uuid,
+    source_record_id text,
+    status text DEFAULT 'running'::text NOT NULL,
+    input jsonb DEFAULT '{}'::jsonb NOT NULL,
+    output jsonb,
+    error jsonb,
+    started_at timestamp with time zone DEFAULT now() NOT NULL,
+    finished_at timestamp with time zone,
+    CONSTRAINT research_ingest_attempts_stage_check CHECK ((stage = ANY (ARRAY['extract'::text, 'normalize'::text, 'geocode'::text, 'embed'::text, 'match'::text, 'canonical'::text, 'consolidate'::text, 'report'::text, 'verify'::text]))),
+    CONSTRAINT research_ingest_attempts_status_check CHECK ((status = ANY (ARRAY['running'::text, 'succeeded'::text, 'reused'::text, 'skipped'::text, 'blocked'::text, 'failed'::text, 'interrupted'::text, 'waiting_budget'::text, 'paused'::text])))
+);
+
+
+--
+-- Name: research_ingest_executions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_executions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    run_id uuid NOT NULL,
+    host text NOT NULL,
+    pid integer NOT NULL,
+    status text DEFAULT 'running'::text NOT NULL,
+    options jsonb NOT NULL,
+    started_at timestamp with time zone DEFAULT now() NOT NULL,
+    heartbeat_at timestamp with time zone DEFAULT now() NOT NULL,
+    finished_at timestamp with time zone,
+    stop_reason text,
+    error jsonb,
+    CONSTRAINT research_ingest_executions_status_check CHECK ((status = ANY (ARRAY['running'::text, 'succeeded'::text, 'paused'::text, 'partial'::text, 'failed'::text, 'interrupted'::text, 'waiting_budget'::text])))
+);
+
+
+--
+-- Name: research_ingest_run_items; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_run_items (
+    run_id uuid NOT NULL,
+    source_record_id text NOT NULL,
+    research_poi_id uuid,
+    observation_id uuid,
+    source_ordinal integer NOT NULL
+);
+
+
+--
 -- Name: research_ingest_run_records; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -273,8 +329,12 @@ CREATE TABLE public.research_ingest_runs (
     stopped_at timestamp with time zone,
     completed_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    managed boolean DEFAULT false NOT NULL,
+    stop_requested boolean DEFAULT false NOT NULL,
+    stop_reason text,
+    verified_at timestamp with time zone,
     CONSTRAINT research_ingest_runs_mode_check CHECK ((mode = ANY (ARRAY['resume'::text, 'reprocess'::text, 'from_stage'::text, 'shadow'::text]))),
-    CONSTRAINT research_ingest_runs_status_check CHECK ((status = ANY (ARRAY['planned'::text, 'running'::text, 'paused'::text, 'waiting_budget'::text, 'partial'::text, 'succeeded'::text, 'failed'::text, 'cancelled'::text])))
+    CONSTRAINT research_ingest_runs_status_check CHECK ((status = ANY (ARRAY['planned'::text, 'running'::text, 'paused'::text, 'waiting_budget'::text, 'partial'::text, 'succeeded'::text, 'failed'::text, 'cancelled'::text, 'interrupted'::text])))
 );
 
 
@@ -344,6 +404,8 @@ CREATE TABLE public.research_normalization_requests (
     error text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     completed_at timestamp with time zone,
+    run_id uuid,
+    ingest_attempt_id uuid,
     CONSTRAINT research_normalization_requests_status_check CHECK ((status = ANY (ARRAY['started'::text, 'succeeded'::text, 'failed'::text, 'repaired'::text])))
 );
 
@@ -811,6 +873,30 @@ ALTER TABLE ONLY public.research_geocode_cache
 
 
 --
+-- Name: research_ingest_attempts research_ingest_attempts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_attempts
+    ADD CONSTRAINT research_ingest_attempts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_executions research_ingest_executions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_executions
+    ADD CONSTRAINT research_ingest_executions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_run_items research_ingest_run_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_run_items
+    ADD CONSTRAINT research_ingest_run_items_pkey PRIMARY KEY (run_id, source_record_id);
+
+
+--
 -- Name: research_ingest_run_records research_ingest_run_records_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1168,6 +1254,41 @@ CREATE INDEX research_consolidation_decisions_b_idx ON public.research_consolida
 
 
 --
+-- Name: research_ingest_attempts_recent_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_attempts_recent_idx ON public.research_ingest_attempts USING btree (run_id, started_at DESC);
+
+
+--
+-- Name: research_ingest_attempts_run_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_attempts_run_idx ON public.research_ingest_attempts USING btree (run_id, stage, target_key, started_at DESC);
+
+
+--
+-- Name: research_ingest_attempts_running_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX research_ingest_attempts_running_idx ON public.research_ingest_attempts USING btree (run_id, stage, target_key) WHERE (status = 'running'::text);
+
+
+--
+-- Name: research_ingest_executions_run_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_executions_run_idx ON public.research_ingest_executions USING btree (run_id, started_at DESC);
+
+
+--
+-- Name: research_ingest_run_items_poi_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_run_items_poi_idx ON public.research_ingest_run_items USING btree (research_poi_id);
+
+
+--
 -- Name: research_ingest_run_records_state_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1200,6 +1321,13 @@ CREATE INDEX research_match_decisions_research_idx ON public.research_match_deci
 --
 
 CREATE INDEX research_normalization_requests_input_idx ON public.research_normalization_requests USING btree (research_poi_id, input_hash, created_at DESC);
+
+
+--
+-- Name: research_normalization_requests_run_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_normalization_requests_run_idx ON public.research_normalization_requests USING btree (run_id, created_at DESC);
 
 
 --
@@ -1460,6 +1588,62 @@ ALTER TABLE ONLY public.research_consolidation_decisions
 
 
 --
+-- Name: research_ingest_attempts research_ingest_attempts_execution_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_attempts
+    ADD CONSTRAINT research_ingest_attempts_execution_id_fkey FOREIGN KEY (execution_id) REFERENCES public.research_ingest_executions(id);
+
+
+--
+-- Name: research_ingest_attempts research_ingest_attempts_research_poi_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_attempts
+    ADD CONSTRAINT research_ingest_attempts_research_poi_id_fkey FOREIGN KEY (research_poi_id) REFERENCES public.research_pois(id) ON DELETE SET NULL;
+
+
+--
+-- Name: research_ingest_attempts research_ingest_attempts_run_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_attempts
+    ADD CONSTRAINT research_ingest_attempts_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.research_ingest_runs(id);
+
+
+--
+-- Name: research_ingest_executions research_ingest_executions_run_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_executions
+    ADD CONSTRAINT research_ingest_executions_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.research_ingest_runs(id);
+
+
+--
+-- Name: research_ingest_run_items research_ingest_run_items_observation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_run_items
+    ADD CONSTRAINT research_ingest_run_items_observation_id_fkey FOREIGN KEY (observation_id) REFERENCES public.research_poi_observations(id) ON DELETE SET NULL;
+
+
+--
+-- Name: research_ingest_run_items research_ingest_run_items_research_poi_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_run_items
+    ADD CONSTRAINT research_ingest_run_items_research_poi_id_fkey FOREIGN KEY (research_poi_id) REFERENCES public.research_pois(id) ON DELETE SET NULL;
+
+
+--
+-- Name: research_ingest_run_items research_ingest_run_items_run_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_run_items
+    ADD CONSTRAINT research_ingest_run_items_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.research_ingest_runs(id);
+
+
+--
 -- Name: research_ingest_run_records research_ingest_run_records_observation_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1548,6 +1732,14 @@ ALTER TABLE ONLY public.research_match_overrides
 
 
 --
+-- Name: research_normalization_requests research_normalization_requests_ingest_attempt_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_normalization_requests
+    ADD CONSTRAINT research_normalization_requests_ingest_attempt_id_fkey FOREIGN KEY (ingest_attempt_id) REFERENCES public.research_ingest_attempts(id);
+
+
+--
 -- Name: research_normalization_requests research_normalization_requests_observation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1569,6 +1761,14 @@ ALTER TABLE ONLY public.research_normalization_requests
 
 ALTER TABLE ONLY public.research_normalization_requests
     ADD CONSTRAINT research_normalization_requests_research_poi_id_fkey FOREIGN KEY (research_poi_id) REFERENCES public.research_pois(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_normalization_requests research_normalization_requests_run_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_normalization_requests
+    ADD CONSTRAINT research_normalization_requests_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.research_ingest_runs(id);
 
 
 --

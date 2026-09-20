@@ -116,21 +116,33 @@ pnpm --filter @lib/db-map ingest:run <file> --category <category>
 pnpm --filter @lib/db-map ingest:report --category <category>
 ```
 
-Keep the terminal output and run ID if something fails. Rerun the same full command to reuse
-completed work and continue missing work. For matching alone, resume with
-`pnpm --filter @lib/db-map ingest:match --consolidate`; its first `Ctrl-C` finishes the
-current unit and prints a resume command. Do not use `--recluster` to resume.
+The command prints a run UUID. Inspect it, request a graceful pause from another terminal,
+or resume it after fixing a failure:
 
-A successful command is not proof that the entire category is complete: other files may
-still be missing, records may be blocked, and valid non-POIs may be intentionally excluded.
-Ask an agent to assess a category, diagnose a failed run, or optimize a slow stage; provide
-the category, file/run ID, and relevant output when available. The agent should return the
-cause, bounded validation results, remaining counts, and your next command.
+```bash
+pnpm --filter @lib/db-map ingest:status
+pnpm --filter @lib/db-map ingest:status --run <uuid> --json
+pnpm --filter @lib/db-map ingest:pause --run <uuid>
+pnpm --filter @lib/db-map ingest:run --resume <uuid>
+```
 
-The [ingestion runbook](docs/poi-ingestion.md) owns the stage commands, limits, completion
-criteria, troubleshooting, consolidation, cleanup, and reprocessing procedures. In particular,
-`ingest:run --limit N` still reaches global consolidation: use the runbook's bounded recipes
-for quick diagnostics. New source data should follow the [capture spec](docs/poi-research/capture-spec.md).
+The first `Ctrl-C` also requests a graceful stop. Resume uses the same file and fixed record
+selection, preserves errors from previous attempts, and skips completed steps. It continues
+past an earlier `--stop-after` unless you supply a new stop point. Changed file bytes require
+a new file run. Keep the printed local journal path for diagnosing database/network outages.
+
+Agents can run `ingest:run <file> --category <category> --record <source-record-id>
+--stop-after normalize` or `--limit 3` to debug a small selection, then resume that same
+selection through downstream stages. A successful run means its selected scope passed the
+pipeline and lineage checks; it does not certify the entire category. Other source files,
+blocked records, and data quality still need review.
+
+Global consolidation is a separate, explicit choice: add `--consolidate` to a full file run.
+It cannot be combined with `--record` or `--limit`. Do not use `--recluster` to resume.
+
+The [ingestion runbook](docs/poi-ingestion.md) owns command semantics, failure investigation,
+category completeness, cleanup, and reprocessing. New source data should follow the
+[capture spec](docs/poi-research/capture-spec.md).
 
 ## Mobile (Capacitor)
 

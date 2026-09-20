@@ -506,6 +506,157 @@
       "type": "Date"
     }
   ],
+  "research_ingest_attempts": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "execution_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "run_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "stage",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "target_key",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "research_poi_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "source_record_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "input",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "output",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "error",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "started_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "finished_at",
+      "nullable": true,
+      "type": "Date"
+    }
+  ],
+  "research_ingest_executions": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "run_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "host",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "pid",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "options",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "started_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "heartbeat_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "finished_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "stop_reason",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "error",
+      "nullable": true,
+      "type": "unknown"
+    }
+  ],
+  "research_ingest_run_items": [
+    {
+      "column": "run_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_record_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "research_poi_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "observation_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "source_ordinal",
+      "nullable": false,
+      "type": "number"
+    }
+  ],
   "research_ingest_run_records": [
     {
       "column": "id",
@@ -682,6 +833,26 @@
     {
       "column": "created_at",
       "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "managed",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "stop_requested",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "stop_reason",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "verified_at",
+      "nullable": true,
       "type": "Date"
     }
   ],
@@ -899,6 +1070,16 @@
       "column": "completed_at",
       "nullable": true,
       "type": "Date"
+    },
+    {
+      "column": "run_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "ingest_attempt_id",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "research_pipeline_jobs": [

@@ -1,5 +1,5 @@
 export const NORMALIZER_VERSION = "hybrid-v3";
-export const PROMPT_VERSION = "poi-normalize-v1";
+export const PROMPT_VERSION = "poi-normalize-v2";
 export const SCHEMA_VERSION = "poi-normalize-schema-v1";
 export const EXAMPLES_VERSION = "poi-normalize-examples-v1";
 
@@ -124,7 +124,10 @@ export const NORMALIZATION_JSON_SCHEMA: Record<string, unknown> = {
         starts_at: nullableString,
         ends_at: nullableString,
         date_precision: {
-          anyOf: [{ type: "string", enum: ["day", "month", "year"] }, { type: "null" }],
+          anyOf: [
+            { type: "string", enum: ["day", "month", "year"] },
+            { type: "null" },
+          ],
         },
         attributes: {
           type: "array",
@@ -134,7 +137,13 @@ export const NORMALIZATION_JSON_SCHEMA: Record<string, unknown> = {
             required: ["key", "value"],
             properties: {
               key: { type: "string" },
-              value: { anyOf: [{ type: "string" }, { type: "number" }, { type: "boolean" }] },
+              value: {
+                anyOf: [
+                  { type: "string" },
+                  { type: "number" },
+                  { type: "boolean" },
+                ],
+              },
             },
           },
         },
@@ -160,7 +169,10 @@ function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === "string";
 }
 
-export function parseNormalizationOutput(value: unknown, expectedId: string): LlmNormalizationOutput {
+export function parseNormalizationOutput(
+  value: unknown,
+  expectedId: string,
+): LlmNormalizationOutput {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("Normalization output must be an object");
   }
@@ -169,8 +181,10 @@ export function parseNormalizationOutput(value: unknown, expectedId: string): Ll
     throw new Error("Normalization output missing record object");
   }
   const r = record as Record<string, unknown>;
-  if (r.record_id !== expectedId) throw new Error("Normalization record_id mismatch");
-  if (typeof r.is_poi !== "boolean") throw new Error("Normalization is_poi must be boolean");
+  if (r.record_id !== expectedId)
+    throw new Error("Normalization record_id mismatch");
+  if (typeof r.is_poi !== "boolean")
+    throw new Error("Normalization is_poi must be boolean");
   for (const key of [
     "invalid_reason",
     "display_name",
@@ -187,13 +201,23 @@ export function parseNormalizationOutput(value: unknown, expectedId: string): Ll
     "starts_at",
     "ends_at",
   ]) {
-    if (!isNullableString(r[key])) throw new Error(`Normalization ${key} must be string or null`);
+    if (!isNullableString(r[key]))
+      throw new Error(`Normalization ${key} must be string or null`);
   }
-  if (!Array.isArray(r.aliases) || !r.aliases.every((v) => typeof v === "string")) {
+  if (
+    !Array.isArray(r.aliases) ||
+    !r.aliases.every((v) => typeof v === "string")
+  ) {
     throw new Error("Normalization aliases must be strings");
   }
-  if (!Array.isArray(r.attributes) || !Array.isArray(r.warnings) || !Array.isArray(r.evidence)) {
-    throw new Error("Normalization attributes/warnings/evidence must be arrays");
+  if (
+    !Array.isArray(r.attributes) ||
+    !Array.isArray(r.warnings) ||
+    !Array.isArray(r.evidence)
+  ) {
+    throw new Error(
+      "Normalization attributes/warnings/evidence must be arrays",
+    );
   }
   return value as LlmNormalizationOutput;
 }

@@ -1,3 +1,5 @@
+import { currentAttempt } from "./execution.js";
+import { pathToFileURL } from "node:url";
 /**
  * Match research_pois into canonical_pois (M8).
  *
@@ -26,7 +28,10 @@ import {
 } from "./match/anchors.js";
 import { collapseDuplicateCanonicals } from "./match/canonicals.js";
 import { runConsolidation } from "./match/consolidate.js";
-import { dateCompatibility, type DateCompatibilitySignal } from "./match/dates.js";
+import {
+  dateCompatibility,
+  type DateCompatibilitySignal,
+} from "./match/dates.js";
 import { bboxAround, haversineMeters } from "./match/geo.js";
 import { extractStrongIds } from "./match/ids.js";
 import { adjudicateMatch } from "./match/llm.js";
@@ -49,7 +54,9 @@ const RADIUS_BY_SLUG: Record<string, number> = {
   art_parade: 800,
 };
 
-interface CliOptions {
+export interface CliOptions {
+  recordId?: string;
+  runId?: string;
   source?: string;
   limit?: number;
   dryRun: boolean;
@@ -179,7 +186,8 @@ function parseArgs(argv: string[]): CliOptions {
 
   const requireValue = (flag: string): string => {
     const value = argv[++i];
-    if (!value || value.startsWith("--")) throw new Error(`Missing value for ${flag}`);
+    if (!value || value.startsWith("--"))
+      throw new Error(`Missing value for ${flag}`);
     return value;
   };
 
@@ -194,8 +202,7 @@ function parseArgs(argv: string[]): CliOptions {
     else if (a === "--consolidate-only") {
       consolidate = true;
       consolidateOnly = true;
-    }
-    else if (a === "--source") source = requireValue(a);
+    } else if (a === "--source") source = requireValue(a);
     else if (a === "--limit") limit = Number(requireValue(a));
     else if (a === "--auto-threshold") tHigh = Number(requireValue(a));
     else if (a === "--low-threshold") tLow = Number(requireValue(a));
@@ -211,26 +218,50 @@ function parseArgs(argv: string[]): CliOptions {
       throw new Error(`Invalid ${name}: ${val}`);
     }
   }
-  if (tLow >= tHigh) throw new Error("--low-threshold must be lower than --auto-threshold");
-  if (recluster && dryRun) throw new Error("--recluster cannot be combined with --dry-run");
-  if (recluster && source) throw new Error("--recluster rebuilds all canonicals; run without --source");
-  if (recluster && limit !== undefined) throw new Error("--recluster rebuilds all canonicals; run without --limit");
+  if (tLow >= tHigh)
+    throw new Error("--low-threshold must be lower than --auto-threshold");
+  if (recluster && dryRun)
+    throw new Error("--recluster cannot be combined with --dry-run");
+  if (recluster && source)
+    throw new Error(
+      "--recluster rebuilds all canonicals; run without --source",
+    );
+  if (recluster && limit !== undefined)
+    throw new Error("--recluster rebuilds all canonicals; run without --limit");
   if (consolidateOnly && recluster) {
     throw new Error("--consolidate-only cannot be combined with --recluster");
   }
   if (consolidateOnly && source) {
-    throw new Error("--consolidate-only runs across canonicals; run without --source");
+    throw new Error(
+      "--consolidate-only runs across canonicals; run without --source",
+    );
   }
   if (consolidateOnly && limit !== undefined) {
-    throw new Error("--consolidate-only skips row matching; run without --limit");
+    throw new Error(
+      "--consolidate-only skips row matching; run without --limit",
+    );
   }
   if (consolidateOnly && gcOrphans) {
     throw new Error("--consolidate-only cannot be combined with --gc-orphans");
   }
-  return { source, limit, dryRun, noLlm, recluster, gcOrphans, consolidate, consolidateOnly, tHigh, tLow };
+  return {
+    source,
+    limit,
+    dryRun,
+    noLlm,
+    recluster,
+    gcOrphans,
+    consolidate,
+    consolidateOnly,
+    tHigh,
+    tLow,
+  };
 }
 
-async function resolveSourceId(client: PoolClient, slug: string): Promise<string> {
+async function resolveSourceId(
+  client: PoolClient,
+  slug: string,
+): Promise<string> {
   const { rows } = await client.query<{ id: string }>(
     `SELECT id FROM research_sources WHERE slug = $1`,
     [slug],
@@ -241,7 +272,9 @@ async function resolveSourceId(client: PoolClient, slug: string): Promise<string
 
 function radiusFor(slugs: string[] | null): number {
   if (!slugs || slugs.length === 0) return DEFAULT_RADIUS_M;
-  return Math.max(...slugs.map((slug) => RADIUS_BY_SLUG[slug] ?? DEFAULT_RADIUS_M));
+  return Math.max(
+    ...slugs.map((slug) => RADIUS_BY_SLUG[slug] ?? DEFAULT_RADIUS_M),
+  );
 }
 
 function formatInt(value: number): string {
@@ -249,9 +282,13 @@ function formatInt(value: number): string {
 }
 
 function decisionSummary(decisionsByMethod: Record<string, number>): string {
-  const entries = Object.entries(decisionsByMethod).sort(([a], [b]) => a.localeCompare(b));
+  const entries = Object.entries(decisionsByMethod).sort(([a], [b]) =>
+    a.localeCompare(b),
+  );
   return entries.length > 0
-    ? entries.map(([method, count]) => `${method}=${formatInt(count)}`).join(" ")
+    ? entries
+        .map(([method, count]) => `${method}=${formatInt(count)}`)
+        .join(" ")
     : "none";
 }
 
@@ -261,11 +298,15 @@ function resumeCommand(opts: CliOptions): string {
   if (opts.noLlm) args.push("--no-llm");
   if (opts.consolidateOnly) args.push("--consolidate-only");
   else if (opts.consolidate) args.push("--consolidate");
-  if (opts.limit !== undefined && !opts.consolidateOnly) args.push("--limit", String(opts.limit));
+  if (opts.limit !== undefined && !opts.consolidateOnly)
+    args.push("--limit", String(opts.limit));
   return args.join(" ");
 }
 
-async function loadMatchSnapshot(client: Pool | PoolClient, sourceSlug?: string): Promise<MatchSnapshot> {
+async function loadMatchSnapshot(
+  client: Pool | PoolClient,
+  sourceSlug?: string,
+): Promise<MatchSnapshot> {
   const { rows } = await client.query<{
     linked: string;
     pending: string;
@@ -276,7 +317,7 @@ async function loadMatchSnapshot(client: Pool | PoolClient, sourceSlug?: string)
     `SELECT
        count(*) FILTER (WHERE rp.canonical_poi_id IS NOT NULL)::text AS linked,
        count(*) FILTER (
-         WHERE rp.canonical_poi_id IS NULL
+         WHERE rp.canonical_poi_id IS NULL AND rp.retired_at IS NULL
            AND rp.is_poi
            AND rp.lat IS NOT NULL
            AND rp.lng IS NOT NULL
@@ -284,19 +325,19 @@ async function loadMatchSnapshot(client: Pool | PoolClient, sourceSlug?: string)
            AND rp.category_slugs IS NOT NULL
        )::text AS pending,
        count(*) FILTER (
-         WHERE rp.canonical_poi_id IS NULL
+         WHERE rp.canonical_poi_id IS NULL AND rp.retired_at IS NULL
            AND rp.is_poi
            AND (rp.lat IS NULL OR rp.lng IS NULL)
        )::text AS missing_coords,
        count(*) FILTER (
-         WHERE rp.canonical_poi_id IS NULL
+         WHERE rp.canonical_poi_id IS NULL AND rp.retired_at IS NULL
            AND rp.is_poi
            AND rp.lat IS NOT NULL
            AND rp.lng IS NOT NULL
            AND rp.name_normalized IS NULL
        )::text AS missing_name,
        count(*) FILTER (
-         WHERE rp.canonical_poi_id IS NULL
+         WHERE rp.canonical_poi_id IS NULL AND rp.retired_at IS NULL
            AND rp.is_poi
            AND rp.lat IS NOT NULL
            AND rp.lng IS NOT NULL
@@ -376,12 +417,17 @@ async function fetchNextRow(
   client: PoolClient,
   sourceId: string | null,
   excludedIds: Set<string> = new Set(),
+  recordId?: string,
 ): Promise<ResearchMatchRow | null> {
   const params: unknown[] = [];
   let sourceClause = "";
   if (sourceId) {
     params.push(sourceId);
     sourceClause = `AND rp.source_id = $${params.length}`;
+  }
+  if (recordId) {
+    params.push(recordId);
+    sourceClause += ` AND rp.id = $${params.length}`;
   }
   let excludedClause = "";
   if (excludedIds.size > 0) {
@@ -400,7 +446,7 @@ async function fetchNextRow(
        rp.attributes, rp.raw
      FROM research_pois rp
      JOIN research_sources rs ON rs.id = rp.source_id
-     WHERE rp.canonical_poi_id IS NULL
+     WHERE rp.canonical_poi_id IS NULL AND rp.retired_at IS NULL
        AND rp.is_poi
        AND rp.lat IS NOT NULL
        AND rp.lng IS NOT NULL
@@ -419,7 +465,11 @@ async function fetchNextRow(
 async function loadOverrideDecision(
   client: PoolClient,
   rowId: string,
-): Promise<{ forceNew: boolean; forceSameCanonicalId: string | null; forceDifferentCanonicalIds: Set<string> }> {
+): Promise<{
+  forceNew: boolean;
+  forceSameCanonicalId: string | null;
+  forceDifferentCanonicalIds: Set<string>;
+}> {
   const forceSame = await client.query<{ canonical_poi_id: string }>(
     `SELECT other.canonical_poi_id
      FROM research_match_overrides o
@@ -432,7 +482,10 @@ async function loadOverrideDecision(
     [rowId],
   );
 
-  const forceDifferent = await client.query<{ canonical_poi_id: string | null; force_new: boolean }>(
+  const forceDifferent = await client.query<{
+    canonical_poi_id: string | null;
+    force_new: boolean;
+  }>(
     `SELECT other.canonical_poi_id, false AS force_new
      FROM research_match_overrides o
      JOIN research_pois other ON other.id = CASE WHEN o.record_a = $1 THEN o.record_b ELSE o.record_a END
@@ -490,7 +543,10 @@ async function findStrongIdCanonicalIds(
 
   if (clauses.length === 0) return [];
 
-  const { rows } = await client.query<{ canonical_poi_id: string; trust: number }>(
+  const { rows } = await client.query<{
+    canonical_poi_id: string;
+    trust: number;
+  }>(
     `SELECT rp.canonical_poi_id, max(rs.trust)::int AS trust
      FROM research_pois rp
      JOIN research_sources rs ON rs.id = rp.source_id
@@ -502,9 +558,7 @@ async function findStrongIdCanonicalIds(
     params,
   );
 
-  return rows
-    .map((r) => r.canonical_poi_id)
-    .filter((id) => !excluded.has(id));
+  return rows.map((r) => r.canonical_poi_id).filter((id) => !excluded.has(id));
 }
 
 async function fetchCandidates(
@@ -650,23 +704,36 @@ async function fetchCandidates(
     })
     .filter((candidate) => candidate.via.length > 0)
     .sort((a, b) => {
-      const aPriority = a.via.includes("proximity") ? 0 : a.via.includes("spatial") ? 1 : 2;
-      const bPriority = b.via.includes("proximity") ? 0 : b.via.includes("spatial") ? 1 : 2;
+      const aPriority = a.via.includes("proximity")
+        ? 0
+        : a.via.includes("spatial")
+          ? 1
+          : 2;
+      const bPriority = b.via.includes("proximity")
+        ? 0
+        : b.via.includes("spatial")
+          ? 1
+          : 2;
       return aPriority - bPriority || a.distance_m - b.distance_m;
     })
     .slice(0, 40);
 }
 
-function scoreCandidates(row: ResearchMatchRow, candidates: CandidateRow[]): CandidateRow[] {
+function scoreCandidates(
+  row: ResearchMatchRow,
+  candidates: CandidateRow[],
+): CandidateRow[] {
   const radiusM = radiusFor(row.category_slugs);
   for (const candidate of candidates) {
     candidate.score = scoreCandidate({
       current: row,
       candidate: {
         name: candidate.best_name ?? candidate.canonical_name,
-        name_normalized: candidate.best_name_normalized ?? candidate.canonical_name,
+        name_normalized:
+          candidate.best_name_normalized ?? candidate.canonical_name,
         content_embedding: candidate.best_content_embedding,
-        website_domain: candidate.best_website_domain ?? candidate.canonical_website,
+        website_domain:
+          candidate.best_website_domain ?? candidate.canonical_website,
         phone: candidate.best_phone ?? candidate.canonical_phone,
         city: candidate.best_city,
         region: candidate.best_region,
@@ -681,7 +748,8 @@ function scoreCandidates(row: ResearchMatchRow, candidates: CandidateRow[]): Can
       candidate: {
         starts_at: candidate.best_starts_at ?? candidate.canonical_starts_at,
         ends_at: candidate.best_ends_at ?? candidate.canonical_ends_at,
-        date_precision: candidate.best_date_precision ?? candidate.canonical_date_precision,
+        date_precision:
+          candidate.best_date_precision ?? candidate.canonical_date_precision,
       },
       nameSimilarity: candidate.score.signals.name,
       semanticSimilarity: candidate.score.signals.semantic,
@@ -689,7 +757,9 @@ function scoreCandidates(row: ResearchMatchRow, candidates: CandidateRow[]): Can
       distanceM: candidate.distance_m,
     });
   }
-  return candidates.sort((a, b) => (b.score?.score ?? 0) - (a.score?.score ?? 0));
+  return candidates.sort(
+    (a, b) => (b.score?.score ?? 0) - (a.score?.score ?? 0),
+  );
 }
 
 function candidateAnchorMeta(candidate: CandidateRow) {
@@ -703,7 +773,11 @@ function candidateAnchorMeta(candidate: CandidateRow) {
 }
 
 function candidateName(candidate: CandidateRow): string | null {
-  return candidate.best_name_normalized ?? candidate.best_name ?? candidate.canonical_name;
+  return (
+    candidate.best_name_normalized ??
+    candidate.best_name ??
+    candidate.canonical_name
+  );
 }
 
 function dateSignalForCandidate(
@@ -716,7 +790,8 @@ function dateSignalForCandidate(
     candidate: {
       starts_at: candidate.best_starts_at ?? candidate.canonical_starts_at,
       ends_at: candidate.best_ends_at ?? candidate.canonical_ends_at,
-      date_precision: candidate.best_date_precision ?? candidate.canonical_date_precision,
+      date_precision:
+        candidate.best_date_precision ?? candidate.canonical_date_precision,
     },
     nameSimilarity: nameSignal,
     semanticSimilarity: nameSignal,
@@ -763,7 +838,8 @@ async function llmDecisionForCandidate(
         coordinate_precision: candidate.best_coordinate_precision,
         starts_at: candidate.best_starts_at ?? candidate.canonical_starts_at,
         ends_at: candidate.best_ends_at ?? candidate.canonical_ends_at,
-        date_precision: candidate.best_date_precision ?? candidate.canonical_date_precision,
+        date_precision:
+          candidate.best_date_precision ?? candidate.canonical_date_precision,
       },
       distance_m: Math.round(candidate.distance_m),
       score: score.score,
@@ -779,8 +855,10 @@ async function llmDecisionForCandidate(
       llmReason: llm.reason,
     };
   } catch (err) {
+    if (currentAttempt()) throw err;
     // Conservative fallback (M0.4): an LLM/API failure must never auto-merge.
-    const message = err instanceof LlmError ? err.message : (err as Error).message;
+    const message =
+      err instanceof LlmError ? err.message : (err as Error).message;
     console.warn(`Skipped LLM - ${row.name ?? row.id} - ${message}`);
     return {
       decision: "new",
@@ -841,16 +919,34 @@ async function decideRow(
     };
   }
 
-  const fetchedCandidates = await fetchCandidates(client, row, overrides.forceDifferentCanonicalIds);
+  const fetchedCandidates = await fetchCandidates(
+    client,
+    row,
+    overrides.forceDifferentCanonicalIds,
+  );
 
   const proximityAnchor = fetchedCandidates
-    .filter((candidate) => candidate.via.includes("proximity") && isAnchor(candidateAnchorMeta(candidate)))
+    .filter(
+      (candidate) =>
+        candidate.via.includes("proximity") &&
+        isAnchor(candidateAnchorMeta(candidate)),
+    )
     .sort((a, b) => a.distance_m - b.distance_m)[0];
 
   if (proximityAnchor) {
-    const candidateSimilarity = pairNameSimilarity(row.name_normalized ?? row.name, candidateName(proximityAnchor));
-    const dateSignal = dateSignalForCandidate(row, proximityAnchor, candidateSimilarity);
-    if (!dateSignal.conflict && isSatelliteLikeResearch(row, candidateSimilarity)) {
+    const candidateSimilarity = pairNameSimilarity(
+      row.name_normalized ?? row.name,
+      candidateName(proximityAnchor),
+    );
+    const dateSignal = dateSignalForCandidate(
+      row,
+      proximityAnchor,
+      candidateSimilarity,
+    );
+    if (
+      !dateSignal.conflict &&
+      isSatelliteLikeResearch(row, candidateSimilarity)
+    ) {
       return {
         decision: "merge",
         method: "proximity",
@@ -878,7 +974,10 @@ async function decideRow(
       method: "auto",
       candidatePoiId: null,
       score: null,
-      signals: { reason: "no_candidates", radius_m: radiusFor(row.category_slugs) },
+      signals: {
+        reason: "no_candidates",
+        radius_m: radiusFor(row.category_slugs),
+      },
       llmReason: null,
     };
   }
@@ -899,7 +998,10 @@ async function decideRow(
   const exactNameProximity = candidates.find((candidate) => {
     return (
       candidate.via.includes("proximity") &&
-      normalizedExactName(row.name_normalized ?? row.name, candidateName(candidate)) &&
+      normalizedExactName(
+        row.name_normalized ?? row.name,
+        candidateName(candidate),
+      ) &&
       !candidate.dateCompatibility!.conflict
     );
   });
@@ -925,7 +1027,10 @@ async function decideRow(
   const distinctiveNameBlock = candidates.find(
     (candidate) =>
       candidate.via.includes("name") &&
-      normalizedExactName(row.name_normalized ?? row.name, candidateName(candidate)) &&
+      normalizedExactName(
+        row.name_normalized ?? row.name,
+        candidateName(candidate),
+      ) &&
       distinctiveName(row.name_normalized ?? row.name) &&
       !candidate.dateCompatibility!.conflict,
   );
@@ -975,12 +1080,19 @@ async function decideRow(
         score: anchorScore.score,
         signals: {
           ...anchorSignals,
-          reason: opts.dryRun ? "dry_run_anchor_proximity_would_ask_llm" : "anchor_proximity_llm_disabled",
+          reason: opts.dryRun
+            ? "dry_run_anchor_proximity_would_ask_llm"
+            : "anchor_proximity_llm_disabled",
         },
         llmReason: null,
       };
     }
-    return llmDecisionForCandidate(row, anchorProximity, anchorScore, anchorSignals);
+    return llmDecisionForCandidate(
+      row,
+      anchorProximity,
+      anchorScore,
+      anchorSignals,
+    );
   }
 
   if (
@@ -999,7 +1111,11 @@ async function decideRow(
     };
   }
 
-  if (dateSignal.conflict && (opts.noLlm || opts.dryRun) && score.score > opts.tLow) {
+  if (
+    dateSignal.conflict &&
+    (opts.noLlm || opts.dryRun) &&
+    score.score > opts.tLow
+  ) {
     return {
       decision: "new",
       method: "auto",
@@ -1007,7 +1123,9 @@ async function decideRow(
       score: score.score,
       signals: {
         ...baseSignals,
-        reason: opts.dryRun ? "dry_run_date_conflict_would_ask_llm" : "date_conflict_llm_disabled",
+        reason: opts.dryRun
+          ? "dry_run_date_conflict_would_ask_llm"
+          : "date_conflict_llm_disabled",
       },
       llmReason: null,
     };
@@ -1033,7 +1151,10 @@ async function decideRow(
       method: "auto",
       candidatePoiId: best.canonical_id,
       score: score.score,
-      signals: { ...baseSignals, reason: "satellite_pair_deferred_to_consolidation" },
+      signals: {
+        ...baseSignals,
+        reason: "satellite_pair_deferred_to_consolidation",
+      },
       llmReason: null,
     };
   }
@@ -1046,7 +1167,9 @@ async function decideRow(
       score: score.score,
       signals: {
         ...baseSignals,
-        reason: opts.dryRun ? "dry_run_would_ask_llm" : "llm_disabled_gray_zone",
+        reason: opts.dryRun
+          ? "dry_run_would_ask_llm"
+          : "llm_disabled_gray_zone",
       },
       llmReason: null,
     };
@@ -1062,7 +1185,10 @@ async function decideRow(
   });
 }
 
-async function createCanonical(client: PoolClient, row: ResearchMatchRow): Promise<string> {
+async function createCanonical(
+  client: PoolClient,
+  row: ResearchMatchRow,
+): Promise<string> {
   const { rows } = await client.query<{ id: string }>(
     `INSERT INTO canonical_pois (name, lng, lat, status, attributes, field_provenance, popularity)
      VALUES ($1, $2, $3, 'draft', '{}'::jsonb, '{}'::jsonb, 1)
@@ -1095,7 +1221,9 @@ async function writeDecision(
   return rows[0]!.id;
 }
 
-async function resetClusters(client: PoolClient): Promise<{ researchRows: number; canonicals: number }> {
+async function resetClusters(
+  client: PoolClient,
+): Promise<{ researchRows: number; canonicals: number }> {
   const canonicalCount = await client.query<{ count: string }>(
     `SELECT count(*)::text AS count FROM canonical_pois`,
   );
@@ -1103,7 +1231,9 @@ async function resetClusters(client: PoolClient): Promise<{ researchRows: number
     `SELECT count(*)::text AS count FROM research_pois WHERE canonical_poi_id IS NOT NULL`,
   );
   await client.query(`DELETE FROM research_match_decisions`);
-  await client.query(`UPDATE research_pois SET canonical_poi_id = NULL WHERE canonical_poi_id IS NOT NULL`);
+  await client.query(
+    `UPDATE research_pois SET canonical_poi_id = NULL WHERE canonical_poi_id IS NOT NULL`,
+  );
   await client.query(`DELETE FROM canonical_pois`);
   return {
     researchRows: Number(linkedCount.rows[0]?.count ?? 0),
@@ -1111,7 +1241,10 @@ async function resetClusters(client: PoolClient): Promise<{ researchRows: number
   };
 }
 
-async function gcOrphanCanonicals(client: PoolClient, dryRun: boolean): Promise<number> {
+async function gcOrphanCanonicals(
+  client: PoolClient,
+  dryRun: boolean,
+): Promise<number> {
   if (dryRun) {
     const { rows } = await client.query<{ count: string }>(
       `SELECT count(*)::text AS count
@@ -1146,17 +1279,18 @@ async function applyDecision(
       ? decision.candidatePoiId
       : await createCanonical(client, row);
 
-  await collapseDuplicateCanonicals(client, canonicalId, decision.duplicateCanonicalIds ?? []);
+  await collapseDuplicateCanonicals(
+    client,
+    canonicalId,
+    decision.duplicateCanonicalIds ?? [],
+  );
 
   await client.query(
     `UPDATE research_pois SET
        canonical_poi_id = $2,
        matched_normalization_id = active_normalization_id
      WHERE id = $1`,
-    [
-    row.id,
-    canonicalId,
-    ],
+    [row.id, canonicalId],
   );
   const decisionId = await writeDecision(client, row.id, decision);
   await client.query(
@@ -1168,11 +1302,11 @@ async function applyDecision(
   await client.query(
     `INSERT INTO research_canonical_memberships (
        research_poi_id, normalization_id, canonical_poi_id,
-       match_decision_id, matcher_version
+       match_decision_id, matcher_version, run_id
      )
-     SELECT id, active_normalization_id, $2, $3, $4
+     SELECT id, active_normalization_id, $2, $3, $4, $5
      FROM research_pois WHERE id = $1`,
-    [row.id, canonicalId, decisionId, MATCHER_VERSION],
+    [row.id, canonicalId, decisionId, MATCHER_VERSION, opts.runId ?? null],
   );
   await rebuildCanonicalPoi(client, canonicalId, { noLlm: opts.noLlm });
   return canonicalId;
@@ -1191,7 +1325,9 @@ function installShutdownHandler(signal: ShutdownSignal): () => void {
     signal.count++;
     if (signal.count === 1) {
       signal.requested = true;
-      console.warn("\nSIGINT received; stopping after the current row or consolidation group. Press Ctrl-C again to exit immediately.");
+      console.warn(
+        "\nSIGINT received; stopping after the current row or consolidation group. Press Ctrl-C again to exit immediately.",
+      );
       return;
     }
     console.warn("\nSecond SIGINT received; exiting immediately.");
@@ -1202,7 +1338,11 @@ function installShutdownHandler(signal: ShutdownSignal): () => void {
   return () => process.off("SIGINT", onSigint);
 }
 
-async function runMatch(pool: Pool, opts: CliOptions, shutdown: ShutdownSignal): Promise<MatchStats> {
+export async function runMatch(
+  pool: Pool,
+  opts: CliOptions,
+  shutdown: ShutdownSignal,
+): Promise<MatchStats> {
   const client = await pool.connect();
   const stats: MatchStats = {
     processed: 0,
@@ -1224,8 +1364,10 @@ async function runMatch(pool: Pool, opts: CliOptions, shutdown: ShutdownSignal):
       throw new Error("Another ingest:match process is already running.");
     }
 
-    const snapshot = await loadMatchSnapshot(client, opts.source);
-    printStartupBanner(opts, snapshot);
+    if (!opts.recordId) {
+      const snapshot = await loadMatchSnapshot(client, opts.source);
+      printStartupBanner(opts, snapshot);
+    }
 
     if (opts.recluster) {
       await client.query("BEGIN");
@@ -1241,12 +1383,23 @@ async function runMatch(pool: Pool, opts: CliOptions, shutdown: ShutdownSignal):
       }
     }
 
-    const sourceId = opts.source ? await resolveSourceId(client, opts.source) : null;
+    const sourceId = opts.source
+      ? await resolveSourceId(client, opts.source)
+      : null;
     const dryRunSeen = new Set<string>();
-    while (!opts.consolidateOnly && !shutdown.requested && (opts.limit === undefined || stats.processed < opts.limit)) {
+    while (
+      !opts.consolidateOnly &&
+      !shutdown.requested &&
+      (opts.limit === undefined || stats.processed < opts.limit)
+    ) {
       await client.query("BEGIN");
       try {
-        const row = await fetchNextRow(client, sourceId, opts.dryRun ? dryRunSeen : undefined);
+        const row = await fetchNextRow(
+          client,
+          sourceId,
+          opts.dryRun ? dryRunSeen : undefined,
+          opts.recordId,
+        );
         if (!row) {
           await client.query("COMMIT");
           break;
@@ -1298,10 +1451,14 @@ async function runMatch(pool: Pool, opts: CliOptions, shutdown: ShutdownSignal):
         stats.garbageCollected = await gcOrphanCanonicals(client, opts.dryRun);
         if (opts.dryRun) {
           await client.query("ROLLBACK");
-          console.log(`Orphan GC dry-run: would hide ${stats.garbageCollected} canonical POIs`);
+          console.log(
+            `Orphan GC dry-run: would hide ${stats.garbageCollected} canonical POIs`,
+          );
         } else {
           await client.query("COMMIT");
-          console.log(`Orphan GC: hid ${stats.garbageCollected} canonical POIs`);
+          console.log(
+            `Orphan GC: hid ${stats.garbageCollected} canonical POIs`,
+          );
         }
       } catch (err) {
         await client.query("ROLLBACK");
@@ -1360,7 +1517,8 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error("Match failed:", err);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
+  main().catch((err) => {
+    console.error("Match failed:", err);
+    process.exit(1);
+  });

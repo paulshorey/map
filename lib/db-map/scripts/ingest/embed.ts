@@ -1,3 +1,4 @@
+import { pathToFileURL } from "node:url";
 /**
  * Embed research_pois rows missing content_embedding (M7).
  *
@@ -16,7 +17,9 @@ import { stableHash } from "./hash.js";
 
 const DEFAULT_THROTTLE_MS = 200;
 
-interface CliOptions {
+export interface CliOptions {
+  recordId?: string;
+  runId?: string;
   source?: string;
   limit?: number;
   batchSize: number;
@@ -53,7 +56,8 @@ function parseArgs(argv: string[]): CliOptions {
     else if (a === "--source" && argv[i + 1]) source = argv[++i];
     else if (a === "--limit" && argv[i + 1]) limit = Number(argv[++i]);
     else if (a === "--batch-size" && argv[i + 1]) batchSize = Number(argv[++i]);
-    else if (a === "--throttle-ms" && argv[i + 1]) throttleMs = Number(argv[++i]);
+    else if (a === "--throttle-ms" && argv[i + 1])
+      throttleMs = Number(argv[++i]);
   }
 
   for (const [name, val] of [
@@ -90,7 +94,12 @@ export function buildEmbedText(row: EmbedRow): string | null {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function writeEmbedding(db: Pool, id: string, text: string, vector: number[]): Promise<void> {
+async function writeEmbedding(
+  db: Pool,
+  id: string,
+  text: string,
+  vector: number[],
+): Promise<void> {
   const inputHash = stableHash({
     text,
     model: ingestConfig.embeddings.model,
@@ -117,11 +126,16 @@ async function writeEmbedding(db: Pool, id: string, text: string, vector: number
 
 async function fetchRows(db: Pool, opts: CliOptions): Promise<EmbedRow[]> {
   const params: unknown[] = [];
-  let where = `content_embedding IS NULL AND is_poi AND name_normalized IS NOT NULL`;
+  let where = `(content_embedding IS NULL OR active_embedding_id IS NULL) AND is_poi AND name_normalized IS NOT NULL`;
   if (opts.source) {
     params.push(await resolveSourceId(db, opts.source));
     where += ` AND source_id = $${params.length}`;
   }
+  if (opts.recordId) {
+    params.push(opts.recordId);
+    where += ` AND id = $${params.length}`;
+  }
+  where += " AND retired_at IS NULL";
   let limitClause = "";
   if (opts.limit !== undefined) {
     params.push(opts.limit);
@@ -138,7 +152,10 @@ async function fetchRows(db: Pool, opts: CliOptions): Promise<EmbedRow[]> {
   return rows;
 }
 
-async function runEmbed(db: Pool, opts: CliOptions): Promise<EmbedStats> {
+export async function runEmbed(
+  db: Pool,
+  opts: CliOptions,
+): Promise<EmbedStats> {
   const stats: EmbedStats = {
     selected: 0,
     embedded: 0,
@@ -157,7 +174,9 @@ async function runEmbed(db: Pool, opts: CliOptions): Promise<EmbedStats> {
       const text = buildEmbedText(row);
       if (!text) {
         stats.skippedEmpty++;
-        console.warn(`Skipped - ${row.name ?? `(id ${row.id})`} - nothing to embed`);
+        console.warn(
+          `Skipped - ${row.name ?? `(id ${row.id})`} - nothing to embed`,
+        );
         continue;
       }
       work.push({ row, text });
@@ -178,8 +197,7 @@ async function runEmbed(db: Pool, opts: CliOptions): Promise<EmbedStats> {
       vectors = await embedTexts(work.map((w) => w.text));
     } catch (err) {
       if (err instanceof EmbedError) {
-        console.error(`Stopping: ${err.message}`);
-        break;
+        throw err;
       }
       throw err;
     }
@@ -208,7 +226,8 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error("Embed failed:", err);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
+  main().catch((err) => {
+    console.error("Embed failed:", err);
+    process.exit(1);
+  });

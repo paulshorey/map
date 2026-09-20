@@ -24,7 +24,8 @@ Paths below are relative to `scripts/ingest/` unless shown otherwise.
 
 | Concern                                         | Start here                                                                                        |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| CLI options, stage dispatch, run checkpoints    | `run.ts`, `orchestrator.ts`                                                                       |
+| CLI options, stage dispatch, run checkpoints    | `run.ts`, `orchestrator.ts`, `execution.ts`                                                       |
+| Execution history, locking, heartbeat, pause    | `execution.ts`, `pause.ts`, `recovery.test.ts`                                                    |
 | Source/file resolution, stable IDs, parsing     | `source-file.ts`, `sources.ts`, `extractors/`, `io.ts`                                            |
 | Taxonomy and provider configuration             | `taxonomy.ts`, `config.ts`, `providers/`                                                          |
 | Normalization selection, caching, activation    | `normalize/runner.ts`                                                                             |
@@ -34,7 +35,7 @@ Paths below are relative to `scripts/ingest/` unless shown otherwise.
 | Match selection and decision routing            | `match.ts`, `match/score.ts`, `match/ids.ts`, `match/llm.ts`                                      |
 | Global canonical consolidation                  | `match/consolidate.ts`, `match/anchors.ts`, `match/canonicals.ts`                                 |
 | Published canonical fields and builds           | `merge.ts`                                                                                        |
-| Status, lineage, integrity                      | `report.ts`, `trace.ts`, `verify.ts`, `../../sql/lineage.ts`                                      |
+| Status, lineage, integrity                      | `status.ts`, `report.ts`, `trace.ts`, `verify.ts`, `../../sql/lineage.ts`                         |
 | Artifact versioning                             | `pipeline-versions.ts`, `normalize/contracts.ts`, source/profile versions                         |
 | Targeted cleanup and legacy reflow              | `clean.ts`, `reflow.ts`                                                                           |
 
@@ -43,6 +44,11 @@ Paths below are relative to `scripts/ingest/` unless shown otherwise.
 - Require an explicit code-owned category at ingestion. Keep `(source_id, source_record_id)`
   stable; do not silently coalesce different source records. Preserve raw observations and
   their provenance. Use the generic capture-spec extractor when the format conforms.
+- Managed runs freeze their record/observation cohort. Each invocation appends an execution;
+  each retry appends an attempt with input IDs, output IDs, timing, and structured errors.
+  Never overwrite prior failures or advance past an unsuccessful required stage. Only mark
+  success after reporting and verification. Keep stage data writes atomic; recovery is
+  at-least-once, so do not promise exactly-once provider calls.
 - Preserve resumability and idempotency. A refresh failure must leave prior valid output
   available. Snapshot retirement requires a complete successful extraction, never a limited
   sample. See the runbook for current cache and retry limitations.

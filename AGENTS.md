@@ -31,8 +31,9 @@ it. These are starting budgets, not a guarantee of runtime.
 
 Before running a command, check its actual scope, selection, provider behavior, and stopping
 conditions in the runbook/code. `--dry-run` does not imply fast or provider-free, and
-`--limit` does not necessarily bound every stage. In particular, file-first runs invoke
-global consolidation when they reach matching. Use the runbook's bounded stage recipes.
+`--limit` on managed `ingest:run` fixes the record cohort across every record stage.
+Global consolidation is opt-in and incompatible with limited runs. Standalone stage commands
+have different semantics; prefer managed `--record` / `--limit` and `--stop-after`.
 Do not launch a full run in the background or chain small batches until the full backlog
 is drained. Prepare the exact manual command when validation is complete.
 
@@ -44,10 +45,16 @@ starting overlapping mutations.
 
 ## Ingestion development and debugging loop
 
-1. **Establish scope and baseline.** Identify category, source, source files, and relevant
-   runs. Compare expected files with observed imports, including sources with no database
+1. **Establish scope and baseline.** For “the latest run,” start with
+   `pnpm --filter @lib/db-map ingest:status`, pin the returned run UUID, and follow the
+   runbook’s latest-attempt investigation. Distinguish last committed output from last
+   attempted work; do not trust `running` or heartbeat alone. Identify category, source,
+   source files, and relevant runs. Compare expected files with observed imports, including sources with no database
    rows. Use the runbook's category assessment; zero match-ready rows alone is not completion.
-2. **Find the earliest broken stage.** Inspect run counters/errors and trace representative
+2. **Find the earliest broken stage.** Inspect executions and append-only attempt history,
+   including exact input/output IDs and errors. Use `ingest:run --resume <uuid>` after fixing
+   the cause; it preserves completed work and the original scope. File/version changes require
+   a new run. Do not infer a kill cause from a stale heartbeat. Trace representative
    records from raw observation through normalization, geocoding, embedding, membership,
    canonical build, and published output. Distinguish pending, excluded, failed, stale,
    budget-limited, and intentionally skipped work.
