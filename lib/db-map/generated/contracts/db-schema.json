@@ -630,6 +630,152 @@
       "type": "unknown"
     }
   ],
+  "research_ingest_inventory": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "logical_path",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "format",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "file_sha256",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "byte_size",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "modified_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "extractor_version",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "source_slug",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "category_slug",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "disposition",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "notes",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "priority",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "first_seen_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "last_seen_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "scanned_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "missing_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "scan_error",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "updated_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_ingest_inventory_edits": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "inventory_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "previous",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "updated",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_ingest_inventory_versions": [
+    {
+      "column": "inventory_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "file_sha256",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "byte_size",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "first_seen_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "last_seen_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
   "research_ingest_run_items": [
     {
       "column": "run_id",

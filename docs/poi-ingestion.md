@@ -238,6 +238,30 @@ and maintenance tools. They have their own flags and weaker audit semantics. Pre
 runs for new work and record-specific repairs; inspect each parser before using standalone
 commands. Their dry-run/provider behavior is not the same as managed `ingest:run --dry-run`.
 
+## File inventory and dashboard
+
+Run `pnpm --filter @lib/db-map ingest:inventory --refresh` after adding or changing captures,
+then `pnpm dev:ingestion` to open the local operations app on port 5001. The same assessment
+is available as `ingest:inventory --json` or `--file <path> --json` for agent diagnostics.
+See the [dashboard guide](../apps/ingestion/README.md) for setup and exact completion rules.
+
+Inventory scans discover untouched files independently of ingestion, hash content, retain old
+hashes and missing paths, and preserve operator notes, explicit category, disposition and priority.
+They do not call providers or start ingestion. Resolve `needs_review` files before treating them
+as an expected import set; alternate exports and supporting JSON are not automatically imports.
+
+The dashboard derives current progress from extraction records, active artifacts, memberships,
+build inputs and successful verification scopes. Retries are deduplicated by source record ID.
+A completed sample cannot certify a full file. Complete extraction plus ready outputs without
+current verification becomes `ready_to_verify`; its command uses `--from report` to check the
+whole file. A changed hash/extractor/category requires a new run. Coverage is independent of the
+latest execution's outcome and of whether the source file is still present locally.
+
+The inventory tables are `research_ingest_inventory`, `research_ingest_inventory_versions`,
+and `research_ingest_inventory_edits`. Current progress is computed, never hand-edited. File
+hash state reflects the last scan of this checkout; database progress refreshes independently.
+Full histories remain in PostgreSQL; dashboard drill-downs show bounded recent samples.
+
 ## Assessing category completeness
 
 ```bash
@@ -273,7 +297,7 @@ command. A successful sample must be described as a sample.
 Current tradeoffs: managed processing is sequential; record-level checkpoint queries and
 single-record embeddings favor debuggability over maximum throughput. Normalization cost
 accounting is richer than matching/fusion accounting. Budgets are stage-specific thresholds,
-not a universal quota service. There is no automated file inventory, scheduler, or guarantee
+not a universal quota service. File discovery is available through the inventory scanner; there is no scheduler or guarantee
 that standalone scripts participate in managed locking. Add batching/concurrency only with
 failure injection and unchanged provenance/recovery guarantees.
 

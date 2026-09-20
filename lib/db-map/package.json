@@ -11,7 +11,9 @@
     "./generated/typescript/db-types": "./generated/typescript/db-types.ts",
     "./sql/pois": "./sql/pois.ts",
     "./sql/users": "./sql/users.ts",
-    "./sql/*": "./sql/*.ts"
+    "./sql/*": "./sql/*.ts",
+    "./ingestion/*": "./lib/ingestion/*.ts",
+    "./ingest/status": "./scripts/ingest/status.ts"
   },
   "scripts": {
     "app:contract:check": "node scripts/generate-app-contract.mjs --check",
@@ -47,7 +49,10 @@
     "ingest:override": "tsx scripts/ingest/override.ts",
     "ingest:test-extractors": "tsx scripts/ingest/test-extractors.ts",
     "db:import:kml": "tsx scripts/import-kml.ts",
-    "db:import:json": "tsx scripts/import-json.ts"
+    "db:import:json": "tsx scripts/import-json.ts",
+    "ingest:inventory": "tsx scripts/ingest/inventory.ts",
+    "ingest:test-inventory": "tsx --test lib/ingestion/*.test.ts",
+    "ingest:test-inventory:integration": "tsx scripts/ingest/inventory-integration.test.ts"
   },
   "dependencies": {
     "csv-parse": "^7.0.1",

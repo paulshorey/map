@@ -15,7 +15,8 @@
     "verify": "pnpm run verify:db-contracts && pnpm run verify:map",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "dev:ingestion": "pnpm --filter @app/ingestion start"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

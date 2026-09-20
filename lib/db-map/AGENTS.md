@@ -39,6 +39,11 @@ Paths below are relative to `scripts/ingest/` unless shown otherwise.
 | Artifact versioning                             | `pipeline-versions.ts`, `normalize/contracts.ts`, source/profile versions                         |
 | Targeted cleanup and legacy reflow              | `clean.ts`, `reflow.ts`                                                                           |
 
+Inventory/discovery lives in `lib/ingestion/inventory-scan.ts`, shared coverage assessment in
+`lib/ingestion/assessment.ts`, and application queries in `sql/ingestion-inventory.ts`.
+`apps/ingestion` and `scripts/ingest/inventory.ts` must consume the same assessment. Preserve
+operator notes/classification on scans; never infer full-file completion from the latest sample.
+
 ## Invariants to preserve
 
 - Require an explicit code-owned category at ingestion. Keep `(source_id, source_record_id)`

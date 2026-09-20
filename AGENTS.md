@@ -49,7 +49,10 @@ starting overlapping mutations.
    `pnpm --filter @lib/db-map ingest:status`, pin the returned run UUID, and follow the
    runbook’s latest-attempt investigation. Distinguish last committed output from last
    attempted work; do not trust `running` or heartbeat alone. Identify category, source,
-   source files, and relevant runs. Compare expected files with observed imports, including sources with no database
+   source files, and relevant runs. Use `ingest:inventory --refresh` to discover current files,
+   then `ingest:inventory --json` for file coverage, changed/missing files, and operator notes.
+   Read-only metadata discovery is allowed across the capture tree; it performs no ingestion or
+   provider work. Compare expected files with observed imports, including sources with no database
    rows. Use the runbook's category assessment; zero match-ready rows alone is not completion.
 2. **Find the earliest broken stage.** Inspect executions and append-only attempt history,
    including exact input/output IDs and errors. Use `ingest:run --resume <uuid>` after fixing

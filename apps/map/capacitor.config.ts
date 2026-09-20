@@ -15,7 +15,7 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     // Uncomment for live reload against the Next.js dev server:
-    // url: 'http://YOUR_LOCAL_IP:3000',
+    // url: 'http://YOUR_LOCAL_IP:5000',
     // cleartext: true,
   },
   plugins: {

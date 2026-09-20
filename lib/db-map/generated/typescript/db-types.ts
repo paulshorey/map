@@ -161,6 +161,43 @@ export interface ResearchIngestExecutionsRow {
   "error": unknown | null;
 }
 
+export interface ResearchIngestInventoryRow {
+  "id": string;
+  "logical_path": string;
+  "format": string;
+  "file_sha256": string | null;
+  "byte_size": number | null;
+  "modified_at": Date | null;
+  "extractor_version": string | null;
+  "source_slug": string | null;
+  "category_slug": string | null;
+  "disposition": string;
+  "notes": string;
+  "priority": number;
+  "first_seen_at": Date;
+  "last_seen_at": Date;
+  "scanned_at": Date;
+  "missing_at": Date | null;
+  "scan_error": string | null;
+  "updated_at": Date;
+}
+
+export interface ResearchIngestInventoryEditsRow {
+  "id": number;
+  "inventory_id": string;
+  "previous": unknown;
+  "updated": unknown;
+  "created_at": Date;
+}
+
+export interface ResearchIngestInventoryVersionsRow {
+  "inventory_id": string;
+  "file_sha256": string;
+  "byte_size": number;
+  "first_seen_at": Date;
+  "last_seen_at": Date;
+}
+
 export interface ResearchIngestRunItemsRow {
   "run_id": string;
   "source_record_id": string;
@@ -537,6 +574,9 @@ export interface PostgresDbSchema {
   "research_geocode_cache": ResearchGeocodeCacheRow;
   "research_ingest_attempts": ResearchIngestAttemptsRow;
   "research_ingest_executions": ResearchIngestExecutionsRow;
+  "research_ingest_inventory": ResearchIngestInventoryRow;
+  "research_ingest_inventory_edits": ResearchIngestInventoryEditsRow;
+  "research_ingest_inventory_versions": ResearchIngestInventoryVersionsRow;
   "research_ingest_run_items": ResearchIngestRunItemsRow;
   "research_ingest_run_records": ResearchIngestRunRecordsRow;
   "research_ingest_runs": ResearchIngestRunsRow;

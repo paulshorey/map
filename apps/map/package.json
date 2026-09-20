@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 5000",
     "contracts:check": "pnpm --filter @lib/db-map app:contract:check",
     "build": "pnpm run contracts:check && next build",
-    "start": "next start",
+    "start": "next start --port ${PORT:-5000}",
     "lint": "eslint . --ignore-pattern .next",
     "check-types": "pnpm run contracts:check && tsc --noEmit",
     "verify": "pnpm run check-types && pnpm run build",

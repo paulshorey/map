@@ -18,6 +18,25 @@ importers:
         specifier: 5.8.3
         version: 5.8.3
 
+  apps/ingestion:
+    dependencies:
+      '@lib/db-map':
+        specifier: workspace:*
+        version: link:../../lib/db-map
+    devDependencies:
+      '@lib/config':
+        specifier: workspace:*
+        version: link:../../lib/config
+      '@types/node':
+        specifier: ^24.12.4
+        version: 24.12.4
+      tsx:
+        specifier: ^4.19.0
+        version: 4.22.3
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
   apps/map:
     dependencies:
       '@capacitor/android':

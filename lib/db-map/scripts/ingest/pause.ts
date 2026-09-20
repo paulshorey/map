@@ -1,4 +1,5 @@
 import { getDb } from "../../lib/db/postgres.js";
+import { pauseIngestion } from "../../sql/ingestion-inventory.js";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -11,15 +12,7 @@ async function main() {
   }
   const db = getDb();
   try {
-    const { rowCount } = await db.query(
-      `UPDATE research_ingest_runs SET stop_requested=true
-      WHERE id=$1 AND managed AND status='running'`,
-      [args[1]],
-    );
-    if (!rowCount)
-      throw new Error(
-        "No running managed run with this ID; inspect ingest:status",
-      );
+    await pauseIngestion(db, args[1]!);
     console.log(
       `Pause requested for ${args[1]}; the worker checks every five seconds and finishes its current record.`,
     );

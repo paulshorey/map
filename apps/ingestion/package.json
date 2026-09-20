@@ -1,0 +1,20 @@
+{
+  "name": "@app/ingestion",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "PORT=${PORT:-5001} tsx server.ts",
+    "check-types": "tsc --noEmit",
+    "test": "tsx --test server.test.ts"
+  },
+  "dependencies": {
+    "@lib/db-map": "workspace:*"
+  },
+  "devDependencies": {
+    "@lib/config": "workspace:*",
+    "@types/node": "^24.12.4",
+    "tsx": "^4.19.0",
+    "typescript": "5.8.3"
+  }
+}

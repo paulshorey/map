@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Ingestion — POI Operations</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="POI Operations home"
+        ><span class="brand-icon">◈</span
+        ><span>POI<span class="muted"> / </span>OPERATIONS</span></a
+      >
+      <div class="workspace-label">DEVELOPER WORKSPACE</div>
+      <button class="nav active" id="all-nav">
+        ▦ &nbsp; Source inventory <span id="nav-count">—</span></button
+      ><button class="nav" id="attention-nav">
+        ◉ &nbsp; Needs attention <span id="attention-count">—</span>
+      </button>
+      <div class="workspace-label categories-label">CATEGORIES</div>
+      <div id="category-nav"></div>
+      <div class="sidebar-bottom">
+        <span class="local-dot"></span> Local workspace<br /><small
+          >Long jobs run in your terminal.<br />Progress stays here.</small
+        >
+      </div>
+    </aside>
+    <main>
+      <header>
+        <div class="breadcrumb">DATA PIPELINE <span>/</span> INGESTION</div>
+        <div class="live">
+          <span class="local-dot"></span><span id="connection">Connecting…</span
+          ><button class="text-button" id="refresh-data">Refresh status</button>
+        </div>
+      </header>
+      <section class="title-row">
+        <div>
+          <div class="eyebrow">KNOW WHAT’S NEXT</div>
+          <h1>Source inventory</h1>
+          <p>Every file. Every stage. A clear place to pick up.</p>
+        </div>
+        <button class="primary" id="scan">↻ &nbsp; Scan source files</button>
+      </section>
+      <div id="notice" role="status" hidden></div>
+      <div id="error" role="alert" hidden></div>
+      <section class="stats" aria-label="Inventory summary">
+        <button class="stat" data-view="all">
+          <span>Discovered files</span><strong id="stat-total">—</strong
+          ><small>Across your capture folders</small></button
+        ><button class="stat" data-view="complete">
+          <span>Complete</span><strong id="stat-complete">—</strong
+          ><small>Current outputs verified</small></button
+        ><button class="stat" data-view="unfinished">
+          <span>In progress / partial</span><strong id="stat-partial">—</strong
+          ><small>More work or verification needed</small></button
+        ><button class="stat" data-view="unstarted">
+          <span>Unstarted</span><strong id="stat-unstarted">—</strong
+          ><small>No extraction for current version</small>
+        </button>
+      </section>
+      <section class="inventory-panel">
+        <div class="panel-top">
+          <div>
+            <h2>Files <span id="filtered-count" class="count">—</span></h2>
+            <p id="table-caption">Loading recorded evidence…</p>
+          </div>
+          <label class="search"
+            ><span>⌕</span
+            ><input
+              id="search"
+              type="search"
+              placeholder="Search file, source, or notes…"
+              aria-label="Search inventory"
+          /></label>
+        </div>
+        <div class="filters">
+          <div class="tabs" role="group" aria-label="Work queue">
+            <button class="selected" data-view="all">All files</button
+            ><button data-view="attention">Needs attention</button
+            ><button data-view="unfinished">Unfinished</button
+            ><button data-view="unstarted">Unstarted</button
+            ><button data-view="review">Needs review</button
+            ><button data-view="complete">Complete</button>
+          </div>
+          <select id="category" aria-label="Filter category">
+            <option value="">All categories</option></select
+          ><select id="disposition" aria-label="Filter disposition">
+            <option value="">All dispositions</option>
+            <option value="import">Import</option>
+            <option value="needs_review">Needs review</option>
+            <option value="alternate">Alternate export</option>
+            <option value="supporting">Supporting file</option>
+            <option value="ignored">Ignored</option>
+          </select>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>FILE / SOURCE</th>
+                <th>COVERAGE</th>
+                <th>STAGE PROGRESS</th>
+                <th>LAST ACTIVITY</th>
+                <th>NEXT ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="files">
+              <tr>
+                <td colspan="5" class="empty">Loading inventory…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span
+            >Completion is for the whole file, never just a successful
+            sample.</span
+          ><span id="scanned">No scan yet</span>
+        </div>
+      </section>
+      <footer>
+        <span
+          >● Evidence from PostgreSQL · Source discovery from
+          <code>docs/poi</code></span
+        ><span id="updated">—</span>
+      </footer>
+    </main>
+    <dialog id="detail">
+      <div class="drawer-heading">
+        <div>
+          <div class="eyebrow">FILE WORKSPACE</div>
+          <h2 id="detail-name">File detail</h2>
+        </div>
+        <button
+          id="close-detail"
+          class="icon-button"
+          aria-label="Close file detail"
+        >
+          ×
+        </button>
+      </div>
+      <div id="detail-body"></div>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+  </body>
+</html>

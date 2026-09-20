@@ -268,6 +268,76 @@ CREATE TABLE public.research_ingest_executions (
 
 
 --
+-- Name: research_ingest_inventory; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_inventory (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    logical_path text NOT NULL,
+    format text NOT NULL,
+    file_sha256 text,
+    byte_size bigint,
+    modified_at timestamp with time zone,
+    extractor_version text,
+    source_slug text,
+    category_slug text,
+    disposition text DEFAULT 'needs_review'::text NOT NULL,
+    notes text DEFAULT ''::text NOT NULL,
+    priority integer DEFAULT 0 NOT NULL,
+    first_seen_at timestamp with time zone DEFAULT now() NOT NULL,
+    last_seen_at timestamp with time zone DEFAULT now() NOT NULL,
+    scanned_at timestamp with time zone DEFAULT now() NOT NULL,
+    missing_at timestamp with time zone,
+    scan_error text,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_ingest_inventory_disposition_check CHECK ((disposition = ANY (ARRAY['needs_review'::text, 'import'::text, 'alternate'::text, 'supporting'::text, 'ignored'::text]))),
+    CONSTRAINT research_ingest_inventory_format_check CHECK ((format = ANY (ARRAY['json'::text, 'jsonl'::text, 'csv'::text, 'kml'::text, 'kmz'::text]))),
+    CONSTRAINT research_ingest_inventory_logical_path_check CHECK ((logical_path ~~ 'docs/poi/%'::text)),
+    CONSTRAINT research_ingest_inventory_priority_check CHECK (((priority >= 0) AND (priority <= 3)))
+);
+
+
+--
+-- Name: research_ingest_inventory_edits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_inventory_edits (
+    id bigint NOT NULL,
+    inventory_id uuid NOT NULL,
+    previous jsonb NOT NULL,
+    updated jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: research_ingest_inventory_edits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.research_ingest_inventory_edits ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.research_ingest_inventory_edits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: research_ingest_inventory_versions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_inventory_versions (
+    inventory_id uuid NOT NULL,
+    file_sha256 text NOT NULL,
+    byte_size bigint NOT NULL,
+    first_seen_at timestamp with time zone DEFAULT now() NOT NULL,
+    last_seen_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: research_ingest_run_items; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -889,6 +959,38 @@ ALTER TABLE ONLY public.research_ingest_executions
 
 
 --
+-- Name: research_ingest_inventory_edits research_ingest_inventory_edits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_inventory_edits
+    ADD CONSTRAINT research_ingest_inventory_edits_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_inventory research_ingest_inventory_logical_path_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_inventory
+    ADD CONSTRAINT research_ingest_inventory_logical_path_key UNIQUE (logical_path);
+
+
+--
+-- Name: research_ingest_inventory research_ingest_inventory_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_inventory
+    ADD CONSTRAINT research_ingest_inventory_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_inventory_versions research_ingest_inventory_versions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_inventory_versions
+    ADD CONSTRAINT research_ingest_inventory_versions_pkey PRIMARY KEY (inventory_id, file_sha256);
+
+
+--
 -- Name: research_ingest_run_items research_ingest_run_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1282,6 +1384,13 @@ CREATE INDEX research_ingest_executions_run_idx ON public.research_ingest_execut
 
 
 --
+-- Name: research_ingest_run_items_observation_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_run_items_observation_idx ON public.research_ingest_run_items USING btree (observation_id, run_id);
+
+
+--
 -- Name: research_ingest_run_items_poi_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1617,6 +1726,22 @@ ALTER TABLE ONLY public.research_ingest_attempts
 
 ALTER TABLE ONLY public.research_ingest_executions
     ADD CONSTRAINT research_ingest_executions_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.research_ingest_runs(id);
+
+
+--
+-- Name: research_ingest_inventory_edits research_ingest_inventory_edits_inventory_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_inventory_edits
+    ADD CONSTRAINT research_ingest_inventory_edits_inventory_id_fkey FOREIGN KEY (inventory_id) REFERENCES public.research_ingest_inventory(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_ingest_inventory_versions research_ingest_inventory_versions_inventory_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_inventory_versions
+    ADD CONSTRAINT research_ingest_inventory_versions_inventory_id_fkey FOREIGN KEY (inventory_id) REFERENCES public.research_ingest_inventory(id) ON DELETE CASCADE;
 
 
 --

@@ -7,6 +7,7 @@ Application packages in the monorepo. Each subdirectory is a deployable app with
 | App | Path | Description |
 | --- | --- | --- |
 | POI Map | `map/` | Next.js + Capacitor map app — see `map/AGENTS.md` |
+| Ingestion operations | `ingestion/` | Local file inventory and ingestion dashboard — see `ingestion/AGENTS.md` |
 
 ## Conventions
 

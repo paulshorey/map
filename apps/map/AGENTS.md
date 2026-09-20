@@ -19,7 +19,7 @@ Main POI Map application — Next.js 15 web app with Capacitor shells for iOS an
 Run from repo root or this directory:
 
 ```bash
-pnpm dev              # Next dev server (port 3000)
+pnpm dev              # Next dev server (port 5000)
 pnpm build            # Production web build (runs db contract check first)
 pnpm start            # Serve production build
 pnpm verify           # Typecheck + build

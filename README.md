@@ -71,7 +71,7 @@ cd lib/db-map && pnpm db:sync
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:5000](http://localhost:5000).
 
 ### Environment Variables
 
@@ -144,6 +144,19 @@ The [ingestion runbook](docs/poi-ingestion.md) owns command semantics, failure i
 category completeness, cleanup, and reprocessing. New source data should follow the
 [capture spec](docs/poi-research/capture-spec.md).
 
+### Ingestion dashboard and file inventory
+
+```bash
+pnpm --filter @lib/db-map ingest:inventory --refresh
+pnpm dev:ingestion
+```
+
+Open [the local ingestion dashboard](http://127.0.0.1:5001) to see every discovered file,
+including files without an ingest run. Filter unfinished work, inspect errors, leave notes,
+classify alternate/supporting files, and copy the exact next command. Full imports still run
+in your terminal. File coverage, current execution, and changed/missing files are shown separately.
+See the [dashboard guide](apps/ingestion/README.md) for completion semantics and controls.
+
 ## Mobile (Capacitor)
 
 This app supports **web**, **iOS**, and **Android** from one codebase using [Capacitor 8](https://capacitorjs.com/).
@@ -192,7 +205,7 @@ pnpm --filter map cap:android   # builds, syncs, opens Android Studio
 ### Live reload during development
 
 1. Start the Next.js dev server: `pnpm dev`
-2. Uncomment the `server.url` block in `capacitor.config.ts` and set your machine's LAN IP (e.g. `http://192.168.1.10:3000`)
+2. Uncomment the `server.url` block in `capacitor.config.ts` and set your machine's LAN IP (e.g. `http://192.168.1.10:5000`)
 3. Run `npx cap run ios` or `npx cap run android`
 
 The native app loads from your dev server instead of the static `out/` bundle.
