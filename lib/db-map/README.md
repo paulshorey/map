@@ -76,7 +76,9 @@ recipes, category assessment, record tracing, cleanup, and troubleshooting.
 
 Agent development and execution responsibilities are in [AGENTS.md](AGENTS.md) and the
 [root agent guide](../../AGENTS.md). Long-running stages remain within the agent's
-development/debugging scope; the human runs the full workload after bounded validation.
+operational scope; humans usually launch full workloads after bounded validation. Use the shared
+[process-control workflow](../../docs/poi-ingestion.md#process-control-and-maintenance) to stop
+workers and close admission before runtime/schema edits.
 
 ## Source Data
 

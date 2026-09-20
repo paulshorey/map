@@ -5,8 +5,10 @@ Node/TypeScript server plus a small static browser app, separate from the public
 
 - Keep completion logic in `@lib/db-map/sql/ingestion-inventory` and its shared assessment;
   do not implement a second browser-only interpretation of success.
-- No API may launch ingestion or execute supplied shell commands. Expose exact quoted commands
-  for the human, read-only diagnostics, inventory classification/notes, discovery, and pause.
+- Use the shared `ingest:control` CLI for human/agent worker lifecycle and maintenance.
+  Display the shared maintenance state; never imply that a pause request proves worker exit.
+  Agents may stop/restart runs under the root authorization. Keep browser APIs typed and
+  bounded; do not add arbitrary shell execution. Launch/resume remains in the terminal/CLI.
 - Keep Host/origin checks, non-simple JSON mutation requests, static asset allowlist, and CSP.
   Treat raw filenames, errors, notes and provider responses as untrusted display content.
 - Preserve draft edits while refreshing evidence. Keep file coverage, execution and freshness

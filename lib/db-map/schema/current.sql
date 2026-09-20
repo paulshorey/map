@@ -248,6 +248,49 @@ CREATE TABLE public.research_ingest_attempts (
 
 
 --
+-- Name: research_ingest_control; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_control (
+    singleton boolean DEFAULT true NOT NULL,
+    maintenance boolean DEFAULT false NOT NULL,
+    maintenance_token uuid,
+    reason text,
+    actor text,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_ingest_control_check CHECK ((maintenance = (maintenance_token IS NOT NULL))),
+    CONSTRAINT research_ingest_control_singleton_check CHECK (singleton)
+);
+
+
+--
+-- Name: research_ingest_control_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_control_events (
+    id bigint NOT NULL,
+    action text NOT NULL,
+    actor text NOT NULL,
+    details jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: research_ingest_control_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.research_ingest_control_events ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.research_ingest_control_events_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: research_ingest_executions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -948,6 +991,22 @@ ALTER TABLE ONLY public.research_geocode_cache
 
 ALTER TABLE ONLY public.research_ingest_attempts
     ADD CONSTRAINT research_ingest_attempts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_control_events research_ingest_control_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_control_events
+    ADD CONSTRAINT research_ingest_control_events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_control research_ingest_control_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_control
+    ADD CONSTRAINT research_ingest_control_pkey PRIMARY KEY (singleton);
 
 
 --

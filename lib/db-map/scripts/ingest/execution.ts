@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { hostname } from "node:os";
 import type { Pool, PoolClient } from "pg";
+import { admitWorker } from "../../sql/ingestion-control.js";
 
 export type Outcome =
   | "succeeded"
@@ -36,12 +37,15 @@ export async function lockSource(
   const lock = await db.connect();
   try {
     await lock.query("SET statement_timeout = '10s'");
+    await lock.query("BEGIN");
+    await admitWorker(lock);
     const { rows } = await lock.query(
       "SELECT pg_try_advisory_lock(hashtextextended($1, 91831)) AS locked",
       [source],
     );
     if (!rows[0]?.locked)
       throw new Error(`Another managed ingestion owns source ${source}`);
+    await lock.query("COMMIT");
     return lock;
   } catch (error) {
     lock.release(true);
@@ -170,7 +174,8 @@ export class Execution {
   async heartbeat() {
     const { rows } = await this.lock.query(
       `UPDATE research_ingest_runs SET heartbeat_at=now()
-      WHERE id=$1 RETURNING stop_requested`,
+      WHERE id=$1 RETURNING stop_requested OR
+        (SELECT maintenance FROM research_ingest_control WHERE singleton) AS stop_requested`,
       [this.runId],
     );
     await this.lock.query(
@@ -184,6 +189,30 @@ export class Execution {
   }
   check() {
     if (this.heartbeatError) throw this.heartbeatError;
+  }
+
+  /** One durable append per reused record, inserted together without re-running its stage. */
+  async reuseBatch(
+    stage: string,
+    items: Array<{ input: Record<string, unknown>; output: AttemptResult }>,
+  ) {
+    this.check();
+    if (!items.length) return 0;
+    this.journal("reuse_batch_start", { stage, count: items.length });
+    const { rowCount } = await this.db.query(
+      `INSERT INTO research_ingest_attempts(run_id,execution_id,stage,target_key,research_poi_id,source_record_id,input,output,status,finished_at)
+      SELECT $1,$2,$3,x.input->>'source_record_id',(x.input->>'research_poi_id')::uuid,
+        x.input->>'source_record_id',x.input,x.output,x.output->>'status',clock_timestamp()
+      FROM jsonb_to_recordset($4::jsonb) x(input jsonb,output jsonb)
+      JOIN research_ingest_run_items i ON i.run_id=$1 AND i.source_record_id=x.input->>'source_record_id'
+      JOIN research_pois rp ON rp.id=i.research_poi_id AND rp.active_observation_id=i.observation_id AND rp.retired_at IS NULL
+      WHERE ($3 <> 'normalize' OR (rp.active_normalization_id::text=x.output->>'normalization_id'
+        AND rp.normalization_state IN ('active','degraded','rejected')))`,
+      [this.runId, this.id, stage, JSON.stringify(items)],
+    );
+    this.completed.delete(stage);
+    this.journal("reuse_batch_finished", { stage, count: rowCount });
+    return rowCount ?? 0;
   }
 
   async attempt(

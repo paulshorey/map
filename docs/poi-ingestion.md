@@ -7,9 +7,11 @@ files. Keep pipeline facts here rather than copying them into both entry points.
 
 ## Operating model
 
-Humans run long imports and global maintenance. Agents develop and debug **every stage**
-with a fixed small selection, inspect database evidence, fix causes, and validate downstream
-results before handing off the full command. Both use the same managed `ingest:run` command.
+Humans usually launch long imports manually. Agents own development, debugging and operation
+of **every stage**, including stopping human-started workers, migrations and experimental data
+repairs. Small fixed selections remain the default for debugging; full execution is appropriate
+when the requested task requires it. Both use the same managed `ingest:run` and `ingest:control`
+interfaces. Stop and confirm quiescence before runtime/schema changes.
 All examples run from the repository root; replace angle-bracket placeholders.
 
 ```text
@@ -39,6 +41,7 @@ Three distinct questions need distinct evidence:
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `research_ingest_runs`            | Logical task: source, category, file version/hash, options, pipeline versions, current stage, stop reason, verification time.                    |
 | `research_ingest_executions`      | One process invocation of a run: host, PID, options, start/finish, five-second heartbeat, outcome and error. A resume creates another execution. |
+| `research_ingest_control` / `research_ingest_control_events` | Persistent maintenance gate, ownership token/reason, and append-only operator actions. |
 | `research_ingest_run_items`       | Fixed source-record IDs and observation IDs selected after extraction; resume never expands a sample.                                            |
 | `research_ingest_attempts`        | One attempt at a stage/target: execution, input IDs, output IDs, timing, structured error. Retries append rows; old errors remain.               |
 | `research_ingest_run_records`     | Extraction ordinals, identities, payload hashes and outcomes. The original file is the replayable extraction input.                              |
@@ -81,12 +84,46 @@ Inspect the printed source. Wrapper/nested formats need extractor configuration.
 | `--no-llm`                                 | Deterministic normalization, matching and descriptions. Does not disable geocoder or embedding calls. Degraded output does not validate the LLM path.                                 |
 | `--max-llm-requests N`, `--max-cost-usd N` | Normalization budgets per execution, checked between records. Cached/deterministic results remain usable at zero budget. Repair/fallback within a record may exceed the threshold. Not a hard monetary cap and not a budget for matching/fusion. |
 | `--geocode-limit N`                        | Geocoder calls per execution (default 4500); cache hits do not consume it. No shared daily-quota enforcement.                                                                         |
-| `--consolidate`                            | Explicit global canonical sweep, with audited pair adjudications and merge groups. Incompatible with limited/record runs. Requires full-run human execution.                          |
+| `--consolidate`                            | Explicit global canonical sweep, with audited pair adjudications and merge groups. Incompatible with limited/record runs. Usually a manually launched long job; agents may operate it when required by the task. |
 
 A paused/blocked/budget-limited run exits 2 (pnpm prints its nonzero-exit banner); failure
 exits 1; successful verified work exits 0. An empty selection is `partial`, not success.
 A run beginning with `--from` only certifies its requested suffix and the integrity checks,
 not that it regenerated all upstream data. A `--no-llm` success can contain degraded output.
+
+## Continuing efficiently
+
+`ingest:run <file> --category <category>` creates a **new logical run**. To continue interrupted
+work, use the exact UUID printed by that process:
+
+```bash
+pnpm --filter @lib/db-map ingest:run --resume <uuid>
+```
+
+Resume preserves the original cohort, options and successful checkpoints. It selects unfinished
+stage items in PostgreSQL instead of visiting each completed item in application code. This is
+per-record completion, not a highest-ID cursor: earlier failed or invalidated items remain eligible
+when later items have already completed. Source IDs need not be numeric or sequential.
+
+New runs and unfinished parts of resumed runs also reuse existing outputs efficiently. In batches
+of 500 metadata records, normalization checks the same exact input hash as the normalizer:
+immutable captured evidence, model/mode, prompt/schema/examples/profile/normalizer versions and
+reprocess generation. Matching active artifacts are recorded as reused in a bulk audit insert;
+they are not reactivated, jobs are not re-leased, and canonical output is not rebuilt. Downstream
+ready/excluded records are similarly audited in batches. Missing/stale outputs remain real work.
+Shadow evaluation keeps its regular validation path. Paid provider work stays sequential and
+bounded by the original cohort and budgets.
+
+Each stage prints `checkpointed`, `reused in batches`, and `need work` counts, with preparation
+time. These summaries also live in `research_ingest_runs.counters.queue`. Successful reuse still
+has one durable attempt per record; batching changes round trips, not the audit granularity.
+Same-run resume avoids per-record cache checks for completed checkpoints. A fresh run must still
+check current cache identity, but performs those checks in batches. File hashing and database
+validation remain necessary; starting or resuming is not constant-time.
+
+Use Ctrl-C or `ingest:pause` to stop a live worker, wait for its exit, then restart with `--resume`.
+Code changes take effect in the next process; do not start an overlapping worker for the source.
+The dashboard lists **Continue existing run** before **Start NEW full run** when resume is valid.
 
 ## Bounded stage diagnostics
 
@@ -105,7 +142,7 @@ pnpm --filter @lib/db-map ingest:run <file> --category <category> --limit 3 --no
 pnpm --filter @lib/db-map ingest:run <file> --category <category> --record <id> --reprocess normalize --shadow
 ```
 
-Resuming a sample does not drain the remaining source. After validation, the human starts a
+Resuming a sample does not drain the remaining source. After validation, the operator starts a
 new full file run. Do not loop small batches as a disguised full background import.
 
 ## Investigating the latest attempted run
@@ -167,10 +204,75 @@ WHERE i.run_id = :'run_id'::uuid ORDER BY i.source_ordinal;
 update time. Use stage artifacts and attempt output IDs for downstream write evidence.
 Source-wide sections of status/report include other runs; they do not prove run attribution.
 
+## Process control and maintenance
+
+Use the same typed CLI from terminals, agents and automation. JSON output is the machine
+interface; operator actions are recorded in `research_ingest_control_events`.
+
+```bash
+# Discover recorded workers, host/PIDs, source locks and local script candidates.
+pnpm --filter @lib/db-map ingest:control list --json
+
+# Gracefully stop one run or all currently recorded managed runs, and wait for evidence.
+pnpm --filter @lib/db-map ingest:control stop --run <run-uuid> --wait-seconds 30
+pnpm --filter @lib/db-map ingest:control stop --all --wait-seconds 30
+
+# BEFORE changing ingestion runtime code, profiles, in-use inputs, schema or shared data:
+pnpm --filter @lib/db-map ingest:control maintenance enter --reason 'Describe the change' --wait-seconds 30
+pnpm --filter @lib/db-map ingest:control list --json
+# Proceed only when quiescent=true; retain the printed maintenance token.
+
+# Optional: repair an abandoned LOCAL execution label after proving absence and released locks.
+pnpm --filter @lib/db-map ingest:control reconcile --execution <execution-uuid>
+
+# After edits/static checks, reopen admission for bounded validation or an intended resume.
+pnpm --filter @lib/db-map ingest:control maintenance exit --token <maintenance-token>
+pnpm --filter @lib/db-map ingest:run --resume <run-uuid>
+```
+
+Maintenance is persistent, database-wide, and independent of the operator process. It rejects
+new managed workers, requests existing workers to pause, and is also checked on heartbeats.
+Admission and gate changes share a transaction mutex; each admitted worker holds a shared
+lifetime lock even before creating its run. This closes the startup/discovery race. A source
+session lock still excludes overlapping work for that source. Exit requires the current gate's
+token, preventing accidental replacement of another operator's maintenance session. Tokens are
+coordination identifiers, not secrets or authentication. Inspect owner/reason before reopening.
+
+Entering maintenance or stopping exits 0 only when the requested stop is confirmed; exit 2 means
+not confirmed within the wait budget (0–60 seconds). The gate and stop requests remain active on
+timeout; never start editing just because a pause was requested. Inspect again with `list`,
+allow the current provider request to finish, or investigate a stuck worker. The old `ingest:pause`
+command and dashboard pause button only request a pause; they do not wait for process exit.
+Stopping all is a snapshot operation; maintenance additionally prevents new admission.
+
+Evidence is deliberately separate: stored `running`, stale heartbeat, source locks, admitted
+workers and local PID presence can disagree. A local PID may have been reused, so the CLI never
+signals a process just because its PID matches a database row. For necessary targeted termination,
+verify host, PID, command and process start time with host tools first; use SIGTERM before forced
+termination. Never kill all Node/pnpm processes. Reconcile only accepts an absent local worker
+while maintenance is enabled and locks are released; it preserves errors and marks unfinished
+attempts interrupted without claiming to know why the worker exited. Remote/unknown PIDs require
+host inspection; no forced termination or remote process supervision is hidden in this CLI.
+
+Managed admission covers connected hosts using the updated runtime. Local `ps` discovery also
+flags standalone ingestion/import scripts conservatively, but cannot discover arbitrary wrappers,
+other checkouts or remote standalone writers reliably. Stop those explicitly on their host; a
+maintenance flag cannot fence old code that does not honor it. Prefer managed orchestration for
+writable work. Read-only diagnostics remain available during maintenance. Dashboard inventory
+shows the gate's reason; lifecycle commands run in the terminal, without a web shell endpoint.
+
+For implementation changes, keep maintenance on through edits, migrations and static checks.
+Reopen for bounded integration/provider validation only after code is ready; re-enter before
+further edits if validation fails. Resume old runs only when stored file/pipeline versions and
+artifact semantics remain compatible. A performance/control-only change need not discard the
+cohort; input/prompt/schema changes may require version bumps and a new run. Do not automatically
+restart all previously running jobs. Report final gate state and which runs remain paused.
+
 ## Pausing and crash recovery
 
 ```bash
 pnpm --filter @lib/db-map ingest:pause --run <uuid>
+pnpm --filter @lib/db-map ingest:control stop --run <uuid> --wait-seconds 30
 pnpm --filter @lib/db-map ingest:run --resume <uuid>
 ```
 
@@ -295,7 +397,8 @@ command. A successful sample must be described as a sample.
 | Slow run                                | Compare attempt duration, provider latency/tokens/cost, query plans and cache hits on the same sample. Distinguish warm-cache speedups from code improvements. |
 
 Current tradeoffs: managed processing is sequential; record-level checkpoint queries and
-single-record embeddings favor debuggability over maximum throughput. Normalization cost
+single-record provider embeddings favor debuggability over maximum throughput. Already-valid
+artifacts and completed checkpoints use the batched work queue described above. Normalization cost
 accounting is richer than matching/fusion accounting. Budgets are stage-specific thresholds,
 not a universal quota service. File discovery is available through the inventory scanner; there is no scheduler or guarantee
 that standalone scripts participate in managed locking. Add batching/concurrency only with
@@ -307,7 +410,15 @@ Validation commands:
 pnpm --filter @lib/db-map check-types
 pnpm --filter @lib/db-map ingest:normalize:golden
 pnpm --filter @lib/db-map ingest:test-recovery
+pnpm --filter @lib/db-map ingest:test-work-queue
+pnpm --filter @lib/db-map ingest:test-control
 ```
+
+The control integration test (`ingest:test-control:integration`) exercises the global gate and
+requires quiescence. If maintenance is already enabled, pass `--maintenance-token <token>` to
+authorize temporarily reopening it for its isolated one-record fixture. It restores the prior
+on/off state, prints the new token when left enabled, and never calls paid providers. Run it
+alone, not concurrently with ingestion tests or operator work.
 
 The recovery integration test requires `DB_MAP_URL`, creates an isolated temporary source,
 and cleans up its rows. It exercises a fixed cohort, resume without repeated completed work,

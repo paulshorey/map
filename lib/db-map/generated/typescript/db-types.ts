@@ -147,6 +147,23 @@ export interface ResearchIngestAttemptsRow {
   "finished_at": Date | null;
 }
 
+export interface ResearchIngestControlRow {
+  "singleton": boolean;
+  "maintenance": boolean;
+  "maintenance_token": string | null;
+  "reason": string | null;
+  "actor": string | null;
+  "updated_at": Date;
+}
+
+export interface ResearchIngestControlEventsRow {
+  "id": number;
+  "action": string;
+  "actor": string;
+  "details": unknown;
+  "created_at": Date;
+}
+
 export interface ResearchIngestExecutionsRow {
   "id": string;
   "run_id": string;
@@ -573,6 +590,8 @@ export interface PostgresDbSchema {
   "research_consolidation_decisions": ResearchConsolidationDecisionsRow;
   "research_geocode_cache": ResearchGeocodeCacheRow;
   "research_ingest_attempts": ResearchIngestAttemptsRow;
+  "research_ingest_control": ResearchIngestControlRow;
+  "research_ingest_control_events": ResearchIngestControlEventsRow;
   "research_ingest_executions": ResearchIngestExecutionsRow;
   "research_ingest_inventory": ResearchIngestInventoryRow;
   "research_ingest_inventory_edits": ResearchIngestInventoryEditsRow;

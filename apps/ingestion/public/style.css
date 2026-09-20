@@ -488,6 +488,7 @@ code {
   color: var(--muted);
 }
 #notice,
+#maintenance,
 #error {
   padding: 13px 17px;
   margin-bottom: 18px;
@@ -495,7 +496,8 @@ code {
   font-size: 12px;
   line-height: 1.6;
 }
-#notice {
+#notice,
+#maintenance {
   background: #e9f0e4;
   color: #426341;
 }

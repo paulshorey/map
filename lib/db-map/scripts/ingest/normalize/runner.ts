@@ -32,6 +32,8 @@ import { resolveNormalization, type ResolvedNormalization } from "./resolve.js";
 export interface NormalizeOptions {
   runId?: string;
   recordId?: string;
+  recordIds?: string[];
+  activeOnly?: boolean;
   generation?: string;
   source?: string;
   limit?: number;
@@ -65,6 +67,9 @@ interface NormalizeRow {
   active_observation_id: string;
   active_normalization_id: string | null;
   active_input_hash: string | null;
+  normalization_state: string;
+  active_status: string | null;
+  normalization_observation_id: string | null;
   active_match_fingerprint: string | null;
   canonical_poi_id: string | null;
   coordinate_source: string | null;
@@ -174,12 +179,21 @@ async function fetchRows(
     values.push(opts.recordId);
     sourceClause += ` AND rp.id = $${values.length}`;
   }
+  if (opts.recordIds) {
+    values.push(opts.recordIds);
+    sourceClause += ` AND rp.id = ANY($${values.length}::uuid[])`;
+  }
+  if (opts.activeOnly)
+    sourceClause +=
+      " AND rp.active_normalization_id IS NOT NULL AND rp.normalization_state IN ('active','degraded','rejected')";
   if (opts.retryFailed)
     sourceClause += " AND rp.normalization_state = 'failed'";
   const { rows } = await db.query<NormalizeRow>(
     `SELECT
        rp.id, rs.slug AS source_slug, rp.source_record_id, rp.ingest_category,
        rp.active_observation_id, rp.active_normalization_id,
+       rp.normalization_state, active.status AS active_status,
+       active.observation_id AS normalization_observation_id,
        active.input_hash AS active_input_hash,
        active.match_fingerprint AS active_match_fingerprint,
        rp.canonical_poi_id, rp.coordinate_source,
@@ -753,6 +767,84 @@ async function activateNormalization(
   }
 }
 
+function prepareNormalization(
+  row: NormalizeRow,
+  opts: Pick<NormalizeOptions, "noLlm">,
+  reprocessGeneration: string | null,
+) {
+  const source = getSourceDefinition(row.source_slug);
+  const fallbackProfile = [
+    "music_festival",
+    "carnival",
+    "art_fair",
+    "art_parade",
+  ].includes(row.ingest_category)
+    ? "event"
+    : row.ingest_category === "campground"
+      ? "campground"
+      : row.ingest_category === "botanical_garden" ||
+          row.ingest_category === "arboretum"
+        ? "garden"
+        : "place";
+  const profile = getNormalizationProfile(
+    source?.normalizationProfile ?? fallbackProfile,
+  );
+  const captured = deterministicInput(row);
+  const deterministic = buildDeterministicFacts(captured);
+  const packet = requestPacket(row, profile.id, deterministic);
+  const inputHash = stableHash({
+    rawContentHash: row.raw_content_hash,
+    packet,
+    normalizerVersion: NORMALIZER_VERSION,
+    promptVersion: PROMPT_VERSION,
+    schemaVersion: SCHEMA_VERSION,
+    profileVersion: profile.version,
+    examplesVersion: EXAMPLES_VERSION,
+    model: ingestConfig.llm.model,
+    llmMode: opts.noLlm ? "deterministic_only" : "deepseek",
+    reprocessGeneration,
+  });
+  return { profile, captured, deterministic, packet, inputHash };
+}
+
+/** Read-only exact-cache probe. Never reactivate an already-current artifact. */
+export async function findReusableNormalizations(
+  db: Pool,
+  opts: NormalizeOptions,
+  recordIds: string[],
+) {
+  if (!recordIds.length || opts.shadow) return [];
+  const rows = await fetchRows(db, {
+    ...opts,
+    recordId: undefined,
+    recordIds,
+    activeOnly: true,
+  });
+  const generation = opts.reprocess ? opts.generation : null;
+  if (opts.reprocess && !generation) return [];
+  return rows.flatMap((row) => {
+    if (
+      !row.active_normalization_id ||
+      !["active", "degraded", "rejected"].includes(row.normalization_state) ||
+      row.normalization_observation_id !== row.active_observation_id ||
+      !["accepted", "degraded", "rejected"].includes(row.active_status ?? "")
+    )
+      return [];
+    const { inputHash } = prepareNormalization(row, opts, generation ?? null);
+    if (inputHash !== row.active_input_hash) return [];
+    return [
+      {
+        research_poi_id: row.id,
+        source_record_id: row.source_record_id,
+        observation_id: row.active_observation_id,
+        normalization_id: row.active_normalization_id,
+        input_hash: inputHash,
+        normalization_status: row.active_status,
+      },
+    ];
+  });
+}
+
 export async function runHybridNormalize(
   db: Pool,
   opts: NormalizeOptions,
@@ -776,38 +868,8 @@ export async function runHybridNormalize(
 
   for (const row of rows) {
     if (opts.limit !== undefined && stats.processed >= opts.limit) break;
-    const source = getSourceDefinition(row.source_slug);
-    const fallbackProfile = [
-      "music_festival",
-      "carnival",
-      "art_fair",
-      "art_parade",
-    ].includes(row.ingest_category)
-      ? "event"
-      : row.ingest_category === "campground"
-        ? "campground"
-        : row.ingest_category === "botanical_garden" ||
-            row.ingest_category === "arboretum"
-          ? "garden"
-          : "place";
-    const profile = getNormalizationProfile(
-      source?.normalizationProfile ?? fallbackProfile,
-    );
-    const captured = deterministicInput(row);
-    const deterministic = buildDeterministicFacts(captured);
-    const packet = requestPacket(row, profile.id, deterministic);
-    const inputHash = stableHash({
-      rawContentHash: row.raw_content_hash,
-      packet,
-      normalizerVersion: NORMALIZER_VERSION,
-      promptVersion: PROMPT_VERSION,
-      schemaVersion: SCHEMA_VERSION,
-      profileVersion: profile.version,
-      examplesVersion: EXAMPLES_VERSION,
-      model: ingestConfig.llm.model,
-      llmMode: opts.noLlm ? "deterministic_only" : "deepseek",
-      reprocessGeneration,
-    });
+    const { profile, captured, deterministic, packet, inputHash } =
+      prepareNormalization(row, opts, reprocessGeneration);
     const jobId = await startJob(db, row, inputHash, opts.runId);
 
     try {

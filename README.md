@@ -92,8 +92,12 @@ Open [http://localhost:5000](http://localhost:5000).
 
 ## POI Ingestion
 
-You run full imports and other long jobs manually. AI agents develop and debug every stage,
-using short, bounded runs to validate fixes before handing you commands for the remaining work.
+You usually launch full imports manually. AI agents share ownership of every stage and may
+stop/resume your runs, migrate schema, and repair experimental data as needed. They normally
+validate fixes with short runs. Before changing a running pipeline, use the shared
+[process-control workflow](docs/poi-ingestion.md#process-control-and-maintenance) to enter
+maintenance and confirm shutdown. `pnpm --filter @lib/db-map ingest:control list --json`
+shows worker evidence and maintenance state.
 
 Raw source files live in `docs/poi/`. The pipeline preserves source records and their history
 in `research_*`, then merges them into the `canonical_*` POIs shown on the map.
@@ -109,7 +113,8 @@ pnpm --filter @lib/db-map ingest:taxonomy:seed
 # Record category state before the import.
 pnpm --filter @lib/db-map ingest:report --category <category>
 
-# Full run: extraction, normalization, geocoding, embedding, matching and reporting.
+# NEW full run: extraction, normalization, geocoding, embedding, matching and reporting.
+# To continue an interrupted run instead, use ingest:run --resume <uuid>.
 pnpm --filter @lib/db-map ingest:run <file> --category <category>
 
 # Check category state after the import; repeat for its other source files.
@@ -127,8 +132,9 @@ pnpm --filter @lib/db-map ingest:run --resume <uuid>
 ```
 
 The first `Ctrl-C` also requests a graceful stop. Resume uses the same file and fixed record
-selection, preserves errors from previous attempts, and skips completed steps. It continues
-past an earlier `--stop-after` unless you supply a new stop point. Changed file bytes require
+selection, preserves errors from previous attempts, and selects unfinished steps directly in
+PostgreSQL. New runs check existing artifacts in batches, without reactivating valid cache hits.
+Resume continues past an earlier `--stop-after` unless you supply a new stop point. Changed file bytes require
 a new file run. Keep the printed local journal path for diagnosing database/network outages.
 
 Agents can run `ingest:run <file> --category <category> --record <source-record-id>

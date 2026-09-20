@@ -1,3 +1,4 @@
+import { prepareStageQueue } from "./work-queue.js";
 import { spawn } from "node:child_process";
 import { Execution, lockSource, type AttemptResult } from "./execution.js";
 import { runGeocode } from "./geocode.js";
@@ -1017,7 +1018,7 @@ export async function runOrchestration(
   }
   const ex = execution;
   console.log(
-    `Run ${ctx.runId}; execution ${ex.id}; source=${resolved.source.meta.slug}`,
+    `${previous?.managed ? "Resuming" : "Created NEW"} run ${ctx.runId}; execution ${ex.id}; source=${resolved.source.meta.slug}`,
   );
   console.log(`Local journal: ${ex.logPath}`);
   console.log(
@@ -1093,7 +1094,21 @@ export async function runOrchestration(
     let geocodeCalls = 0;
     for (const stage of stages) {
       if (start > ordered.indexOf(stage)) continue;
-      for (const item of items) {
+      const queue = await prepareStageQueue(db, ex, stage, items.length, {
+        source: resolved.source.meta.slug,
+        runId: ctx.runId,
+        noLlm: opts.noLlm,
+        shadow: opts.shadow,
+        reprocess: opts.reprocess === "normalize" || opts.reprocess === "all",
+        generation: ctx.runId,
+        retryFailed: false,
+      });
+      if (ex.stopped) {
+        finalStatus = "paused";
+        reason = ex.stopReason;
+        return;
+      }
+      for (const item of queue.items) {
         ex.check();
         if (ex.stopped) {
           finalStatus = "paused";

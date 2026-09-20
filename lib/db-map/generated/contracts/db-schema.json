@@ -573,6 +573,65 @@
       "type": "Date"
     }
   ],
+  "research_ingest_control": [
+    {
+      "column": "singleton",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "maintenance",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "maintenance_token",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "reason",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "actor",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "updated_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_ingest_control_events": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "action",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "actor",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "details",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
   "research_ingest_executions": [
     {
       "column": "id",

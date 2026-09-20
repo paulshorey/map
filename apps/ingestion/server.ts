@@ -15,6 +15,7 @@ import {
 } from "@lib/db-map/sql/ingestion-inventory";
 import { refreshInventory } from "@lib/db-map/ingestion/inventory-scan";
 import { inspectRun, parseStatusArgs } from "@lib/db-map/ingest/status";
+import { controlState } from "@lib/db-map/sql/ingestion-control";
 
 export function authorizeRequest(
   req: Pick<IncomingMessage, "headers" | "method">,
@@ -82,6 +83,7 @@ export function createDashboard(port: number) {
       if (req.method === "GET" && url.pathname === "/api/inventory") {
         json(200, {
           ...(await inventory()),
+          control: await controlState(db),
           refreshing,
           refreshResult,
           refreshError,

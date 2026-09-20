@@ -64,6 +64,10 @@ function chooseView(next) {
 }
 function render() {
   if (!snapshot) return;
+  $("maintenance").hidden = !snapshot.control?.maintenance;
+  $("maintenance").textContent = snapshot.control?.maintenance
+    ? `Maintenance: new managed runs are blocked. ${snapshot.control.reason || ""} Use ingest:control list --json to inspect workers and gate ownership.`
+    : "";
   const files = snapshot.files;
   $("nav-count").textContent = number(files.length);
   $("attention-count").textContent = number(
@@ -219,10 +223,15 @@ function summary(f) {
 function commands(f) {
   return (
     Object.entries(f.commands)
+      .sort(
+        ([a], [b]) =>
+          ["resume", "status", "verify", "start"].indexOf(a) -
+          ["resume", "status", "verify", "start"].indexOf(b),
+      )
       .filter(([, cmd]) => cmd)
       .map(
         ([key, cmd]) =>
-          `<div class="command"><code><label>${esc({ start: "Start whole file (manual)", resume: "Resume original scope (manual)", verify: "Verify current outputs (manual)", status: "Inspect run evidence" }[key])}</label>${esc(cmd)}</code><button class="small-button" data-copy="${esc(cmd)}">Copy</button></div>`,
+          `<div class="command"><code><label>${esc({ start: "Start NEW full run (checks existing caches)", resume: "Continue existing run (keeps checkpoints)", verify: "Verify current outputs (manual)", status: "Inspect run evidence" }[key])}</label>${esc(cmd)}</code><button class="small-button" data-copy="${esc(cmd)}">Copy</button></div>`,
       )
       .join("") ||
     "<p>Classify this file and choose a category to get an ingestion command. Unsupported or missing files need attention first.</p>"

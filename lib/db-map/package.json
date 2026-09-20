@@ -52,7 +52,11 @@
     "db:import:json": "tsx scripts/import-json.ts",
     "ingest:inventory": "tsx scripts/ingest/inventory.ts",
     "ingest:test-inventory": "tsx --test lib/ingestion/*.test.ts",
-    "ingest:test-inventory:integration": "tsx scripts/ingest/inventory-integration.test.ts"
+    "ingest:test-inventory:integration": "tsx scripts/ingest/inventory-integration.test.ts",
+    "ingest:test-work-queue": "tsx scripts/ingest/work-queue.test.ts",
+    "ingest:control": "tsx scripts/ingest/control.ts",
+    "ingest:test-control": "tsx --test scripts/ingest/control.test.ts",
+    "ingest:test-control:integration": "tsx scripts/ingest/control.integration.ts"
   },
   "dependencies": {
     "csv-parse": "^7.0.1",

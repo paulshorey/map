@@ -7,6 +7,10 @@ work. It owns command semantics, limits, completion criteria, and troubleshootin
 
 ## Database changes
 
+- Agents are authorized to operate human- or agent-started workers and apply needed schema/data
+  repairs. Before runtime/schema/data changes, enter maintenance through `ingest:control`,
+  confirm quiescence, and keep admission closed until edits and static checks are complete.
+  Follow the root workflow; do not infer that a stale heartbeat grants exclusive ownership.
 - Put application queries in `sql/`; use those helpers from the app.
 - Use migrations for schema changes. Create one with
   `pnpm --filter @lib/db-map db:migration:new -- description`.
@@ -26,6 +30,8 @@ Paths below are relative to `scripts/ingest/` unless shown otherwise.
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | CLI options, stage dispatch, run checkpoints    | `run.ts`, `orchestrator.ts`, `execution.ts`                                                       |
 | Execution history, locking, heartbeat, pause    | `execution.ts`, `pause.ts`, `recovery.test.ts`                                                    |
+| Pending work selection and batched cache reuse | `work-queue.ts`, `work-queue.test.ts`                                                            |
+| Process discovery, stop-and-wait, maintenance admission | `control.ts`, `../../sql/ingestion-control.ts`, `control.test.ts`, `control.integration.ts` |
 | Source/file resolution, stable IDs, parsing     | `source-file.ts`, `sources.ts`, `extractors/`, `io.ts`                                            |
 | Taxonomy and provider configuration             | `taxonomy.ts`, `config.ts`, `providers/`                                                          |
 | Normalization selection, caching, activation    | `normalize/runner.ts`                                                                             |
@@ -54,9 +60,18 @@ operator notes/classification on scans; never infer full-file completion from th
   Never overwrite prior failures or advance past an unsuccessful required stage. Only mark
   success after reporting and verification. Keep stage data writes atomic; recovery is
   at-least-once, so do not promise exactly-once provider calls.
+- Managed workers must pass the maintenance admission gate and hold their worker/source locks
+  through finalization. Check maintenance during heartbeats. Keep operator actions auditable;
+  never report pause requests as confirmed stops or reconcile a live/unknown PID as dead.
+  Use managed orchestration for writable diagnostics; standalone scripts are legacy interfaces
+  without cross-host lifecycle registration and require explicit process discovery.
 - Preserve resumability and idempotency. A refresh failure must leave prior valid output
   available. Snapshot retirement requires a complete successful extraction, never a limited
   sample. See the runbook for current cache and retry limitations.
+- Select unfinished records from durable per-record attempts; a maximum source ID or offset
+  can hide earlier failures. Reuse exact active caches in batches without reactivating artifacts
+  or rebuilding canonicals. Preserve one audit attempt per reused record and keep cache identity
+  checks shared with the normal stage implementation.
 - Validate model output against source evidence. Coordinates come from source/URL evidence
   or geocoding, never LLM guesses. A deterministic-only run does not validate the LLM path.
 - Active `research_canonical_memberships` are authoritative; `canonical_poi_id` is a lookup
