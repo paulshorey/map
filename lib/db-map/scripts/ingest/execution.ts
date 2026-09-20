@@ -169,6 +169,15 @@ export class Execution {
     execution.timer.unref();
     process.on("SIGINT", execution.onSignal);
     process.on("SIGTERM", execution.onSignal);
+    // A detached supervisor receives identity directly, without parsing logs or polling the DB.
+    if (process.send && process.connected) {
+      process.send(
+        { type: "ingest.execution", run_id: runId, execution_id: executionId },
+        () => {
+          // Supervisor disconnection must not crash a checkpointed worker.
+        },
+      );
+    }
     return execution;
   }
   async heartbeat() {

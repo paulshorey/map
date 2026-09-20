@@ -5,6 +5,17 @@ Database-first package consumed by the app and import scripts. Follow the
 schema commands. Read the [ingestion runbook](../../docs/poi-ingestion.md) before ingestion
 work. It owns command semantics, limits, completion criteria, and troubleshooting.
 
+## Agent execution cost
+
+Follow the root model/delegation rules and [agent operations](../../docs/ingestion-agents.md).
+Full ingestion belongs to the explicit cheap runner; the expensive engineer only runs short,
+time-limited smoke selections. Do not add model calls to progress/heartbeat/health loops.
+`supervise.ts` owns detached jobs and terminal evidence; `supervisor-process.ts` owns live child
+groups; `codex-notify.ts` is the optional verified parent transport. Keep monitoring deterministic,
+notification failures durable, delivery conservative, and resume decisions with the orchestrator.
+Never use a persisted PID as signal authorization, auto-relaunch an abandoned job, or report
+terminal delivery as proven without a transport receipt. Tests must mock parent wake-ups.
+
 ## Database changes
 
 - Agents are authorized to operate human- or agent-started workers and apply needed schema/data
@@ -26,24 +37,24 @@ work. It owns command semantics, limits, completion criteria, and troubleshootin
 
 Paths below are relative to `scripts/ingest/` unless shown otherwise.
 
-| Concern                                         | Start here                                                                                        |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| CLI options, stage dispatch, run checkpoints    | `run.ts`, `orchestrator.ts`, `execution.ts`                                                       |
-| Execution history, locking, heartbeat, pause    | `execution.ts`, `pause.ts`, `recovery.test.ts`                                                    |
-| Pending work selection and batched cache reuse | `work-queue.ts`, `work-queue.test.ts`                                                            |
-| Process discovery, stop-and-wait, maintenance admission | `control.ts`, `../../sql/ingestion-control.ts`, `control.test.ts`, `control.integration.ts` |
-| Source/file resolution, stable IDs, parsing     | `source-file.ts`, `sources.ts`, `extractors/`, `io.ts`                                            |
-| Taxonomy and provider configuration             | `taxonomy.ts`, `config.ts`, `providers/`                                                          |
-| Normalization selection, caching, activation    | `normalize/runner.ts`                                                                             |
-| Deterministic facts and LLM evidence validation | `normalize/deterministic.ts`, `normalize/resolve.ts`                                              |
-| Profiles, prompt, examples, output contract     | `normalize/profiles.ts`, `normalize/prompt.ts`, `normalize/examples.ts`, `normalize/contracts.ts` |
-| Geocoding and embedding eligibility/budgets     | `geocode.ts`, `embed.ts`                                                                          |
-| Match selection and decision routing            | `match.ts`, `match/score.ts`, `match/ids.ts`, `match/llm.ts`                                      |
-| Global canonical consolidation                  | `match/consolidate.ts`, `match/anchors.ts`, `match/canonicals.ts`                                 |
-| Published canonical fields and builds           | `merge.ts`                                                                                        |
-| Status, lineage, integrity                      | `status.ts`, `report.ts`, `trace.ts`, `verify.ts`, `../../sql/lineage.ts`                         |
-| Artifact versioning                             | `pipeline-versions.ts`, `normalize/contracts.ts`, source/profile versions                         |
-| Targeted cleanup and legacy reflow              | `clean.ts`, `reflow.ts`                                                                           |
+| Concern                                                 | Start here                                                                                        |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| CLI options, stage dispatch, run checkpoints            | `run.ts`, `orchestrator.ts`, `execution.ts`                                                       |
+| Execution history, locking, heartbeat, pause            | `execution.ts`, `pause.ts`, `recovery.test.ts`                                                    |
+| Pending work selection and batched cache reuse          | `work-queue.ts`, `work-queue.test.ts`                                                             |
+| Process discovery, stop-and-wait, maintenance admission | `control.ts`, `../../sql/ingestion-control.ts`, `control.test.ts`, `control.integration.ts`       |
+| Source/file resolution, stable IDs, parsing             | `source-file.ts`, `sources.ts`, `extractors/`, `io.ts`                                            |
+| Taxonomy and provider configuration                     | `taxonomy.ts`, `config.ts`, `providers/`                                                          |
+| Normalization selection, caching, activation            | `normalize/runner.ts`                                                                             |
+| Deterministic facts and LLM evidence validation         | `normalize/deterministic.ts`, `normalize/resolve.ts`                                              |
+| Profiles, prompt, examples, output contract             | `normalize/profiles.ts`, `normalize/prompt.ts`, `normalize/examples.ts`, `normalize/contracts.ts` |
+| Geocoding and embedding eligibility/budgets             | `geocode.ts`, `embed.ts`                                                                          |
+| Match selection and decision routing                    | `match.ts`, `match/score.ts`, `match/ids.ts`, `match/llm.ts`                                      |
+| Global canonical consolidation                          | `match/consolidate.ts`, `match/anchors.ts`, `match/canonicals.ts`                                 |
+| Published canonical fields and builds                   | `merge.ts`                                                                                        |
+| Status, lineage, integrity                              | `status.ts`, `report.ts`, `trace.ts`, `verify.ts`, `../../sql/lineage.ts`                         |
+| Artifact versioning                                     | `pipeline-versions.ts`, `normalize/contracts.ts`, source/profile versions                         |
+| Targeted cleanup and legacy reflow                      | `clean.ts`, `reflow.ts`                                                                           |
 
 Inventory/discovery lives in `lib/ingestion/inventory-scan.ts`, shared coverage assessment in
 `lib/ingestion/assessment.ts`, and application queries in `sql/ingestion-inventory.ts`.

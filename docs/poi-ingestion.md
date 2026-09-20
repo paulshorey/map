@@ -1,5 +1,9 @@
 # POI ingestion: operation and recovery
 
+For agent-operated long runs, use [economical agent operations](ingestion-agents.md): explicit
+cheap-runner delegation, hourly model-free supervision, terminal reporting, and bounded smoke tests.
+The process-control and maintenance rules in this runbook still apply.
+
 This is the shared reference for humans and agents. [README](../README.md#poi-ingestion)
 owns human setup and full-run commands. [AGENTS.md](../AGENTS.md) owns agent execution
 budgets and working rules. The [database guide](../lib/db-map/AGENTS.md) maps implementation

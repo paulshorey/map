@@ -50,6 +50,35 @@ If a stage lacks a suitable bound or cannot select the failing records, investig
 read-only queries and fixtures, then add or fix the diagnostic control when needed for the
 task. The human/agent split is about typical execution duration, not code or process ownership.
 
+## Economical long-run orchestration
+
+Read [agent ingestion operations](docs/ingestion-agents.md) for the interface, handoff template,
+notification setup, and recovery limits. The following model rules narrow the execution preference
+above; operational ownership does not authorize wasting expensive model time.
+
+- The expensive orchestrator (including GPT-6 Astra and GPT-5.6 Sol) makes decisions and repairs
+  code/data. **Never launch full ingestion directly.** Explicitly delegate the approved scope to
+  `ingestion-runner` / `gpt-5.6-luna` with low reasoning and minimal context. Do not let model
+  inheritance silently select the expensive parent, or substitute a bigger runner model.
+- Direct ingestion tests use `ingest:supervise smoke`, a NEW 1–5 record cohort and an expected
+  runtime under 45 seconds. Set provider budgets and stop-after as appropriate. The supervisor
+  enforces a maximum 60-second deadline plus termination grace. A timed-out test needs diagnosis;
+  never repeatedly launch small batches to finish a full import.
+- The cheap runner launches `ingest:supervise start` with a verified parent callback and the exact
+  approved scope, budgets and deadline. Ordinary code owns waiting and hourly health checks.
+  Neither agent should poll, stream logs, run sleep/wait loops, or create an expensive recurring
+  automation to stay alive. Return the launch receipt, then **end the turn**. No healthy status
+  report should invoke a model. No automatic ingestion retry, scope expansion, or backlog drain.
+- Only a terminal result/error should start a new expensive decision turn. Keep the handoff and
+  report compact (about 150 words); retain raw logs locally. Check the stable event ID to avoid
+  handling duplicate notifications. Verified database completion, not exit zero alone, is success.
+- Verify the host supports the notification path before unattended launch. A cheap subagent's
+  launch receipt is not proof of later wake-up. If unavailable, report that limitation; do not
+  silently use `--local-only`, an independent app server, or expensive polling as a substitute.
+  Local-only detached operation is for humans or a separately verified notification integration.
+- Token-efficient supervision does not limit ingestion provider bills. Preserve explicit provider
+  budgets. Preserve maintenance, process identity, evidence and resume rules below.
+
 ## Stop before changing a running pipeline
 
 Before editing ingestion runtime code, prompts/profiles, source files in use, or database

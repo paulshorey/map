@@ -56,7 +56,10 @@
     "ingest:test-work-queue": "tsx scripts/ingest/work-queue.test.ts",
     "ingest:control": "tsx scripts/ingest/control.ts",
     "ingest:test-control": "tsx --test scripts/ingest/control.test.ts",
-    "ingest:test-control:integration": "tsx scripts/ingest/control.integration.ts"
+    "ingest:test-control:integration": "tsx scripts/ingest/control.integration.ts",
+    "ingest:supervise": "tsx scripts/ingest/supervise.ts",
+    "ingest:test-supervisor": "tsx --test scripts/ingest/supervisor-process.test.ts scripts/ingest/supervise.test.ts scripts/ingest/codex-notify.test.ts",
+    "ingest:test-supervisor:integration": "tsx scripts/ingest/supervisor.integration.ts"
   },
   "dependencies": {
     "csv-parse": "^7.0.1",

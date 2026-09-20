@@ -39,3 +39,4 @@ android/app/src/main/assets/public
 
 # Local ingestion journals survive database failures; never commit source/error logs.
 lib/db-map/.ingest-logs/
+lib/db-map/.ingest-jobs/

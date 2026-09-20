@@ -308,3 +308,12 @@ The frontend auth hooks (`useAuth`, `useEntitlements`, `usePremiumKey`) already 
 | `PATCH` | `/api/me/preferences`                      | Update user preferences (basemap, viewport)           |
 | `GET`   | `/api/providers/:id/credentials`           | Provider API key (premium only, 403 for free)         |
 | `GET`   | `/api/health`                              | Health check                                          |
+
+### Agent-operated long ingestion
+
+Agents use a cheap runner and a detached supervisor; ordinary code checks health hourly and
+keeps logs without spending model tokens. The expensive agent returns only to decide after a
+terminal event. See [agent operations](docs/ingestion-agents.md) for commands and notification
+setup. Automatic wake-up requires a verified local Codex connection on every operator host. This
+development Mac uses the official standalone Codex managed daemon and task queue. Manual foreground
+`ingest:run` remains available.
