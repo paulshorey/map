@@ -82,7 +82,7 @@ Behavior:
 4. Stop on first failed stage and print the exact command to resume that stage manually.
 5. Print `ingest:report --source <slug>` output at the end.
 
-Implementation note: spawn the stage scripts as child processes (same commands the docs
+Implementation note: spawn the stage scripts as child processes (same commands the data
 teach) rather than importing their `main()`s — keeps each stage's CLI contract the single
 interface and the orchestrator trivial.
 

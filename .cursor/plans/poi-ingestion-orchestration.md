@@ -858,7 +858,7 @@ Schema/generated:
 - `lib/db-map/generated/typescript/`
 - `lib/db-map/generated/contracts/`
 
-Docs:
+Data:
 
 - `poi-ingestion.md`
 - `poi-research/capture-spec.md`

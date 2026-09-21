@@ -1278,7 +1278,7 @@ Schema/generated output:
 - `lib/db-map/generated/typescript/`
 - `lib/db-map/generated/contracts/`
 
-Evaluation and docs:
+Evaluation and data:
 
 - `lib/db-map/data/normalization-golden.json`
 - `lib/db-map/scripts/ingest/normalize/golden.ts`

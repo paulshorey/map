@@ -154,7 +154,7 @@ function render() {
             .join("");
           const filename = f.logical_path.split("/").at(-1),
             folder = f.logical_path
-              .replace(/^docs\/poi\//, "")
+              .replace(/^data\/poi\//, "")
               .split("/")
               .slice(0, -1)
               .join(" / ");

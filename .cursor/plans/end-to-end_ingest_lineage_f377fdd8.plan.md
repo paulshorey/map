@@ -29,7 +29,7 @@ todos:
   - id: reingest
     content: Wipe research/canonical data (keep taxonomy, centroids, geocode cache) and re-ingest all poi sources; verify
     status: pending
-  - id: docs
+  - id: data
     content: Update lib/db-map AGENTS.md and README with new doctrine and commands
     status: pending
 isProject: false
@@ -102,7 +102,7 @@ In [orchestrator.ts](lib/db-map/scripts/ingest/orchestrator.ts) `extractFile`, t
 
 ### Capture spec
 
-- Write the missing `poi-research/capture-spec.md` documenting: required fields, the identity ladder, when to supply `source_record_id`, per-edition vs per-series sources, and `website` vs `source_url` roles. It is referenced by three AGENTS/docs files but doesn't exist.
+- Write the missing `poi-research/capture-spec.md` documenting: required fields, the identity ladder, when to supply `source_record_id`, per-edition vs per-series sources, and `website` vs `source_url` roles. It is referenced by three AGENTS/data files but doesn't exist.
 
 ### Clean/trace implications
 
@@ -175,6 +175,6 @@ Per your choice, no backfill. After schema + code changes land:
 2. Re-run `ingest:taxonomy:seed`, then `ingest:run` for each source file under `poi/` with its category.
 3. Run `ingest:verify` and `ingest:report` to confirm complete lineage and expected counts.
 
-## Docs
+## Data
 
 Update [lib/db-map/AGENTS.md](lib/db-map/AGENTS.md) and [lib/db-map/README.md](lib/db-map/README.md): membership-is-authoritative doctrine, `ingest:trace`/`ingest:verify` usage, new clean semantics.
