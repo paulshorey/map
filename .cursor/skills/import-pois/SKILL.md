@@ -13,8 +13,8 @@ pipeline instead (`scripts/ingest/`, see `.cursor/plans/poi-ingestion-*.md`).
 
 1. Receive JSON data from the user
 2. Validate and fix the JSON so it's well-formed
-3. Write to `docs/import-data/<descriptive-name>.json`
-4. Dry-run: `pnpm db:import:json /workspace/docs/import-data/<file>.json --dry-run`
+3. Write to `import-data/<descriptive-name>.json`
+4. Dry-run: `pnpm db:import:json /workspace/import-data/<file>.json --dry-run`
 5. If valid, run the actual import
 6. Verify the reconciliation report — confirm all items were inserted
 
@@ -57,26 +57,26 @@ New categories are allowed when none of these fit.
 
 ## Step 3: Write the File and Run
 
-Save the validated JSON to `docs/import-data/` using a descriptive kebab-case filename:
+Save the validated JSON to `import-data/` using a descriptive kebab-case filename:
 
 ```
-docs/import-data/<region-or-topic>-<category>.json
+import-data/<region-or-topic>-<category>.json
 ```
 
 Examples: `colorado-hostels.json`, `nyc-cafes.json`, `ushpa-flying-sites.json`
 
 ```bash
-mkdir -p docs/import-data
+mkdir -p import-data
 ```
 
 Then run:
 
 ```bash
 # Always dry-run first:
-pnpm db:import:json /workspace/docs/import-data/<file>.json --category "Hostel" --dry-run
+pnpm db:import:json /workspace/import-data/<file>.json --category "Hostel" --dry-run
 
 # If dry-run passes, run for real:
-pnpm db:import:json /workspace/docs/import-data/<file>.json --category "Hostel"
+pnpm db:import:json /workspace/import-data/<file>.json --category "Hostel"
 ```
 
 **Important:** Use absolute paths (starting with `/workspace/`). Relative paths resolve from `lib/db-map/`, not the repo root.
@@ -100,6 +100,7 @@ The script outputs a reconciliation table like:
 ```
 
 **You must check these numbers.** If any items failed:
+
 - Report to the user which items failed and why
 - The script lists each failure by index and name
 - Common DB failures: duplicate entries, encoding issues, overly long text fields
@@ -108,11 +109,11 @@ If `Failed validation` > 0, the script lists each invalid item with specific rea
 
 ## CLI Options
 
-| Flag | Effect |
-|------|--------|
+| Flag                | Effect                                                                          |
+| ------------------- | ------------------------------------------------------------------------------- |
 | `--category "Name"` | Default category for items missing one. Useful when all items share a category. |
-| `--dry-run` | Validate and preview without writing to DB |
-| `--replace` | Delete ALL existing POIs first. Only use if user explicitly asks. |
+| `--dry-run`         | Validate and preview without writing to DB                                      |
+| `--replace`         | Delete ALL existing POIs first. Only use if user explicitly asks.               |
 
 ## KML Import (alternative)
 

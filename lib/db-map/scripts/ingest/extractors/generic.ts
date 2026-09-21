@@ -1,6 +1,6 @@
 /**
  * Generic extractor for files that follow the raw research capture spec
- * (docs/poi-research/capture-spec.md).
+ * (poi-research/capture-spec.md).
  *
  * Sources registered in sources.ts without a custom extractor fall back to this
  * one, so a new spec-conformant source needs only a metadata entry — no code.
@@ -61,12 +61,21 @@ function attributeValue(value: unknown): unknown {
   return value;
 }
 
-function localityFor(r: Record<string, unknown>, lat: number | undefined, lng: number | undefined): string {
-  const locality = [str(r.city), str(r.region) ?? str(r.state) ?? str(r.state_region), str(r.country_code) ?? str(r.country)]
+function localityFor(
+  r: Record<string, unknown>,
+  lat: number | undefined,
+  lng: number | undefined,
+): string {
+  const locality = [
+    str(r.city),
+    str(r.region) ?? str(r.state) ?? str(r.state_region),
+    str(r.country_code) ?? str(r.country),
+  ]
     .filter((value): value is string => Boolean(value))
     .join(", ");
   if (locality) return locality;
-  if (lat !== undefined && lng !== undefined) return `${lat.toFixed(3)},${lng.toFixed(3)}`;
+  if (lat !== undefined && lng !== undefined)
+    return `${lat.toFixed(3)},${lng.toFixed(3)}`;
   return str(r.address) ?? str(r.street_address) ?? "";
 }
 
@@ -77,13 +86,20 @@ function identityFor(
   lat: number | undefined,
   lng: number | undefined,
   options: GenericIdentityOptions,
-): Pick<import("../types.js").RawRecord, "source_record_id" | "source_record_id_kind" | "identity_inputs"> {
+): Pick<
+  import("../types.js").RawRecord,
+  "source_record_id" | "source_record_id_kind" | "identity_inputs"
+> {
   const configured = options.field ? str(r[options.field]) : undefined;
   const edition = options.editioned
-    ? (str(r.start_date) ?? str(r.starts_at) ?? str(r.date)?.slice(0, 4) ?? null)
+    ? (str(r.start_date) ??
+      str(r.starts_at) ??
+      str(r.date)?.slice(0, 4) ??
+      null)
     : null;
   const explicit = str(r.source_record_id);
-  if (explicit) return { source_record_id: explicit, source_record_id_kind: "natural" };
+  if (explicit)
+    return { source_record_id: explicit, source_record_id_kind: "natural" };
   // A configured field may identify a series rather than an occurrence. Keep its
   // value readable while making an explicitly editioned source one-row-per-edition.
   if (configured) {
@@ -92,9 +108,16 @@ function identityFor(
       source_record_id_kind: "natural",
     };
   }
-  const natural = str(r.id) ?? str(r.slug) ?? str(r.mbid) ??
-    str(r.wikidata_qid) ?? str(r.wikidata_id) ?? str(r.artsy_id) ?? str(r.ra_event_id);
-  if (natural) return { source_record_id: natural, source_record_id_kind: "natural" };
+  const natural =
+    str(r.id) ??
+    str(r.slug) ??
+    str(r.mbid) ??
+    str(r.wikidata_qid) ??
+    str(r.wikidata_id) ??
+    str(r.artsy_id) ??
+    str(r.ra_event_id);
+  if (natural)
+    return { source_record_id: natural, source_record_id_kind: "natural" };
 
   const url = str(r.detail_url) ?? sourceUrl;
   if (url && (!options.uniqueUrls || options.uniqueUrls.has(url))) {
@@ -102,9 +125,15 @@ function identityFor(
   }
 
   const locality = localityFor(r, lat, lng);
-  if (!name || !locality) return { source_record_id: "", source_record_id_kind: "synthetic" };
+  if (!name || !locality)
+    return { source_record_id: "", source_record_id_kind: "synthetic" };
   return {
-    source_record_id: synthSourceRecordId(options.sourceSlug, name, locality, edition),
+    source_record_id: synthSourceRecordId(
+      options.sourceSlug,
+      name,
+      locality,
+      edition,
+    ),
     source_record_id_kind: "synthetic",
     identity_inputs: { name, locality, edition },
   };
@@ -127,7 +156,8 @@ export function mapGenericRecord(
   let countryName: string | undefined;
   const country = str(r.country);
   if (country) {
-    if (!countryCode && /^[A-Za-z]{2}$/.test(country)) countryCode = country.toUpperCase();
+    if (!countryCode && /^[A-Za-z]{2}$/.test(country))
+      countryCode = country.toUpperCase();
     else countryName = country;
   }
 
@@ -141,7 +171,9 @@ export function mapGenericRecord(
   const nested = r.attributes;
   if (nested && typeof nested === "object" && !Array.isArray(nested)) {
     delete attributes.attributes;
-    for (const [key, value] of Object.entries(nested as Record<string, unknown>)) {
+    for (const [key, value] of Object.entries(
+      nested as Record<string, unknown>,
+    )) {
       const v = attributeValue(value);
       if (v !== undefined) attributes[key] = v;
     }
@@ -183,11 +215,20 @@ export async function* parseGenericRecords(
   for await (const raw of streamRecords(file)) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
     const r = raw as Record<string, unknown>;
-    if (str(r.source_record_id) ?? str(r[options.field ?? ""]) ?? str(r.id) ?? str(r.slug) ?? str(r.mbid)) continue;
+    if (
+      str(r.source_record_id) ??
+      str(r[options.field ?? ""]) ??
+      str(r.id) ??
+      str(r.slug) ??
+      str(r.mbid)
+    )
+      continue;
     const url = str(r.detail_url) ?? str(r.source_url) ?? str(r.url);
     if (url) counts.set(url, (counts.get(url) ?? 0) + 1);
   }
-  const uniqueUrls = new Set([...counts].filter(([, count]) => count === 1).map(([url]) => url));
+  const uniqueUrls = new Set(
+    [...counts].filter(([, count]) => count === 1).map(([url]) => url),
+  );
   for await (const raw of streamRecords(file)) {
     const record = mapGenericRecord(raw, { ...options, uniqueUrls });
     if (record) yield record;

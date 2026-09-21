@@ -13,7 +13,7 @@ import { inspectRun, parseStatusArgs } from "./status.js";
 const db = getDb();
 const slug = `recovery_test_${randomUUID().replaceAll("-", "")}`;
 const root = resolve(fileURLToPath(new URL("../../../../", import.meta.url)));
-const dir = await mkdtemp(resolve(root, "docs/poi/recovery-test-"));
+const dir = await mkdtemp(resolve(root, "poi/recovery-test-"));
 const file = resolve(dir, `${slug}.json`);
 let sourceId: string | undefined;
 let open: Execution | undefined;

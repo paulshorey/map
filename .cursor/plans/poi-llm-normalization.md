@@ -379,7 +379,7 @@ Each result contains:
 1. **Classification**
    - entity kind:
      `place | event_series | event_occurrence | contained_feature | organization |
-     article | region | tour | listing | other`;
+article | region | tour | listing | other`;
    - `is_poi`, an enumerated reason when false, and suggested category mismatch when useful.
 2. **Identity**
    - visitor-facing display name;
@@ -681,9 +681,18 @@ validators, and SQL updates.
 ```ts
 for (const observation of claimPendingObservations({ concurrency: 1 })) {
   const profile = loadSourceProfile(observation.sourceSlug);
-  const deterministic = buildAndValidateDeterministicFacts(observation, profile);
+  const deterministic = buildAndValidateDeterministicFacts(
+    observation,
+    profile,
+  );
   const input = buildEvidencePacket(observation, deterministic, profile);
-  const inputHash = hashInputAndVersions(input, profile, examples, schema, model);
+  const inputHash = hashInputAndVersions(
+    input,
+    profile,
+    examples,
+    schema,
+    model,
+  );
 
   const cached = await loadAcceptedNormalization(inputHash);
   if (cached) {
@@ -693,15 +702,27 @@ for (const observation of claimPendingObservations({ concurrency: 1 })) {
 
   const modelOutput = await normalizeOneRecord({
     systemPrompt,
-    exampleConversations: selectTwoExamples(profile, observation.ingestCategory),
+    exampleConversations: selectTwoExamples(
+      profile,
+      observation.ingestCategory,
+    ),
     input,
   });
 
   const parsed = validateOutputSchema(modelOutput);
-  const resolved = resolveAllFields({ observation, deterministic, parsed, profile });
+  const resolved = resolveAllFields({
+    observation,
+    deterministic,
+    parsed,
+    profile,
+  });
   const checked = validateResolvedNormalization(resolved);
 
-  await persistRequestAndNormalization({ input, modelOutput, resolved: checked });
+  await persistRequestAndNormalization({
+    input,
+    modelOutput,
+    resolved: checked,
+  });
   await activateOrQuarantine(checked);
 }
 ```
@@ -1022,18 +1043,18 @@ existing pipeline runnable.
 ### N0 — Freeze the contract and seed evaluation data
 
 - [ ] Add `normalize/contracts.ts` with the single-record input/output TypeScript types,
-  invalid-reason enum, category attribute schemas, and generated strict JSON Schema.
+      invalid-reason enum, category attribute schemas, and generated strict JSON Schema.
 - [ ] Ensure the LLM output schema contains coordinate candidate ids but no numeric
-  `lat`/`lng` fields.
+      `lat`/`lng` fields.
 - [ ] Add `normalize/examples.ts` with exactly two reviewed conversations for each initial
-  policy family: temporal event and permanent place.
+      policy family: temporal event and permanent place.
 - [ ] Add 50–75 compact real-source snapshots to
-  `lib/db-map/data/normalization-golden.json`, including the known prototype failures.
+      `lib/db-map/data/normalization-golden.json`, including the known prototype failures.
 - [ ] Add `normalize/golden.ts` and package script `ingest:normalize:golden`. Fixture mode
-  checks resolver behavior without network access; `--live` calls DeepSeek one fixture at a
-  time and records metrics.
+      checks resolver behavior without network access; `--live` calls DeepSeek one fixture at a
+      time and records metrics.
 - [ ] Run each live fixture at least three times before cache use to compare 0/1/2/3
-  examples and thinking modes.
+      examples and thinking modes.
 
 Done when:
 
@@ -1049,16 +1070,16 @@ gates in Section 15 are met.
 ### N1 — Add immutable observations and normalization storage
 
 - [ ] Add schema for `research_poi_observations`, `research_normalization_requests`,
-  `research_poi_normalizations`, `research_poi_occurrences`,
-  `research_poi_geocodes`, and `research_poi_embeddings`.
+      `research_poi_normalizations`, `research_poi_occurrences`,
+      `research_poi_geocodes`, and `research_poi_embeddings`.
 - [ ] Add active observation/normalization pointers, refresh/lease state, claim token,
-  matched-normalization id, timestamps, checks, unique keys, and pending-work indexes.
+      matched-normalization id, timestamps, checks, unique keys, and pending-work indexes.
 - [ ] Add foreign keys so a normalization must reference the exact observation and request
-  that produced it.
+      that produced it.
 - [ ] Add `research_pois_current`; initially it may project accepted values back through the
-  existing research columns for compatibility.
+      existing research columns for compatibility.
 - [ ] Change extract upsert so a changed raw payload inserts an observation and marks
-  refresh pending without deleting the prior active normalization or canonical membership.
+      refresh pending without deleting the prior active normalization or canonical membership.
 - [ ] Backfill observations for existing research rows.
 - [ ] Run the required schema/type/contract synchronization.
 
@@ -1075,15 +1096,15 @@ extraction appends an observation without losing the active projection.
 ### N2 — Upgrade the DeepInfra client
 
 - [ ] Extend `providers/deepinfra.ts` to accept a full `messages` array so user/assistant
-  few-shot pairs can precede the real input.
+      few-shot pairs can precede the real input.
 - [ ] Add strict `json_schema` response format with a capability-tested `json_object`
-  fallback.
+      fallback.
 - [ ] Add abort timeout, bounded 429/5xx retry with `Retry-After`, finish-reason checking,
-  returned-model capture, token/cost/latency telemetry, and safe redaction.
+      returned-model capture, token/cost/latency telemetry, and safe redaction.
 - [ ] Preserve existing match/date/fusion callers through a small compatibility wrapper
-  until they are migrated.
+      until they are migrated.
 - [ ] Persist every real normalization request/response and retry link in
-  `research_normalization_requests`.
+      `research_normalization_requests`.
 
 Done when mocked transport cases cover success, timeout, 429, 5xx, truncated response,
 invalid JSON, and empty content, and one live golden fixture records complete telemetry.
@@ -1091,16 +1112,16 @@ invalid JSON, and empty content, and one live golden fixture records complete te
 ### N3 — Build deterministic facts and candidates
 
 - [ ] Add `normalize/deterministic.ts` for deep canonical hashing, credential redaction,
-  HTML/entity cleanup, Unicode-safe text cleanup, URL/contact/id extraction, ISO mapping,
-  DMS/numeric/URL coordinate extraction, and strict date parsing.
+      HTML/entity cleanup, Unicode-safe text cleanup, URL/contact/id extraction, ISO mapping,
+      DMS/numeric/URL coordinate extraction, and strict date parsing.
 - [ ] Replace date clamping with reject-on-invalid calendar semantics.
 - [ ] Add `normalize/evidence.ts` to assign stable candidate ids and evidence paths.
 - [ ] Add `normalize/profiles.ts` and `normalize/policies.ts` for source field authority,
-  listing domains, hard exclusions, allowed taxonomy subtree, volatile/secret paths, and
-  prompt-size limits.
+      listing domains, hard exclusions, allowed taxonomy subtree, volatile/secret paths, and
+      prompt-size limits.
 - [ ] Add fixture tests for June 31, reversed ranges, null island, swapped coordinates, DMS,
-  ISO-3 countries, tracking URLs, RA/Eventbrite listing URLs, malformed phones, source hard
-  exclusions, and missing-vs-false attributes.
+      ISO-3 countries, tracking URLs, RA/Eventbrite listing URLs, malformed phones, source hard
+      exclusions, and missing-vs-false attributes.
 
 Done when the evidence packet for every seed fixture is deterministic byte-for-byte and no
 provider call is needed to validate already structured coordinates, dates, ids, or contacts.
@@ -1110,12 +1131,12 @@ provider call is needed to validate already structured coordinates, dates, ids, 
 - [ ] Add `normalize/prompt.ts` with the universal system rules.
 - [ ] Select source-specific examples first and category fallback examples second.
 - [ ] Build exactly six messages: system, example user, example assistant, second example
-  user, second example assistant, real user.
+      user, second example assistant, real user.
 - [ ] Include deterministic facts, candidate ids, hard constraints, allowed taxonomy, and
-  evidence-path rules in the real user packet.
+      evidence-path rules in the real user packet.
 - [ ] Include prompt, schema, profile, policy, and example-set versions in the input hash.
 - [ ] Add an adversarial fixture whose description tells the model to ignore the system
-  prompt; verify it remains data.
+      prompt; verify it remains data.
 
 Done when a snapshot test proves the exact message sequence and any example edit changes
 the cache key.
@@ -1124,17 +1145,17 @@ the cache key.
 
 - [ ] Add `normalize/resolve.ts` with one resolver for each authority family in Section 10.1.
 - [ ] Add `normalize/validate.ts` for schema, echoed id, evidence paths, taxonomy, strict
-  dates, locality consistency, candidate membership, attribute schema, and description
-  factuality checks.
+      dates, locality consistency, candidate membership, attribute schema, and description
+      factuality checks.
 - [ ] Reject literal coordinates, URLs, phones, emails, and strong ids not present in
-  deterministic candidates.
+      deterministic candidates.
 - [ ] Record deterministic value, model proposal, selected value, selection reason,
-  evidence, and warnings for every field.
+      evidence, and warnings for every field.
 - [ ] Add `normalize/repair.ts` for one repair attempt using the same examples plus exact
-  validator errors.
+      validator errors.
 - [ ] Add negative fixtures where DeepSeek output invents coordinates, returns February 30,
-  promotes a listing URL, changes a strong id, contradicts a source hard flag, or turns
-  missing booleans into false.
+      promotes a listing URL, changes a strong id, contradicts a source hard flag, or turns
+      missing booleans into false.
 
 Done when all negative fixtures are rejected or safely degraded and no invalid model value
 reaches the resolved projection.
@@ -1142,13 +1163,13 @@ reaches the resolved projection.
 ### N6 — Implement the resumable sequential runner
 
 - [ ] Add `normalize/runner.ts` to claim one pending observation with a durable lease and
-  commit before any network call.
+      commit before any network call.
 - [ ] Default `--concurrency` to `1`; process and persist one record completely before
-  claiming the next.
+      claiming the next.
 - [ ] Implement cache lookup, request persistence, one-record DeepSeek call, validation,
-  repair, resolution, quarantine, and lease expiry.
+      repair, resolution, quarantine, and lease expiry.
 - [ ] Implement `--source`, `--limit`, `--concurrency`, `--shadow`, `--no-llm`,
-  `--retry-failed`, `--dry-run`, `--max-requests`, and `--max-cost-usd`.
+      `--retry-failed`, `--dry-run`, `--max-requests`, and `--max-cost-usd`.
 - [ ] Implement graceful Ctrl-C after the current record and print the exact resume command.
 - [ ] Replace `normalize.ts` with CLI parsing and delegation to the runner.
 
@@ -1158,14 +1179,14 @@ nor skips work, and a second unchanged run makes zero DeepSeek calls.
 ### N7 — Persist and activate safely
 
 - [ ] Add `normalize/project.ts` to append request/normalization/occurrence rows in a
-  transaction and activate only accepted or explicitly allowed degraded output.
+      transaction and activate only accepted or explicitly allowed degraded output.
 - [ ] Compute separate match, geocode, embedding, and canonical-build fingerprints.
 - [ ] Preserve the prior active normalization when a refresh fails.
 - [ ] Preserve canonical membership for description-only changes; rematch only when
-  match-critical fields change.
+      match-critical fields change.
 - [ ] Rebuild the prior canonical after detaching a changed research row.
 - [ ] During transition, project active normalized values into legacy columns used by
-  geocode/embed/match.
+      geocode/embed/match.
 
 Done when activation rollback tests prove that a provider or database failure cannot replace
 a valid active normalization or leave a stale canonical.
@@ -1173,18 +1194,18 @@ a valid active normalization or leave a stale canonical.
 ### N8 — Cut downstream stages over to the active view
 
 - [ ] Update geocode to use normalized locality, ranked queries, country validation, and
-  versioned `research_poi_geocodes`.
+      versioned `research_poi_geocodes`.
 - [ ] Update embed to use normalized identity/locality/category and versioned
-  `research_poi_embeddings`.
+      `research_poi_embeddings`.
 - [ ] Update match/scoring/prompts to use series name, aliases, normalized contacts,
-  locality, occurrences, strong ids, and normalization-version signals.
+      locality, occurrences, strong ids, and normalization-version signals.
 - [ ] Update `merge.ts` to read active normalized fields and field-quality metadata.
 - [ ] Update reflow to schedule a new normalization version rather than delete accepted
-  output.
+      output.
 - [ ] Update report with normalization state, request/cache totals, first-pass/repair/failure
-  rates, warning reasons, tokens, cost, latency, and active model/prompt/profile versions.
+      rates, warning reasons, tokens, cost, latency, and active model/prompt/profile versions.
 - [ ] Remove the compatibility projection only after no downstream query reads the legacy
-  derived columns.
+      derived columns.
 
 Done when extract → normalize → geocode → embed → match succeeds on a pilot source and
 downstream code reads only `research_pois_current` plus versioned enrichments.
@@ -1194,9 +1215,9 @@ downstream code reads only `research_pois_current` plus versioned enrichments.
 - [ ] Add canonical-build fingerprints and `canonical_poi_builds`.
 - [ ] Run synthesis only after match/consolidation, never after every attached row.
 - [ ] Use one canonical cluster per request with candidate ids and reviewed few-shot
-  examples separate from research normalization examples.
+      examples separate from research normalization examples.
 - [ ] Deterministically validate all selected fields; descriptions may be generated only
-  from cited normalized facts.
+      from cited normalized facts.
 - [ ] Preserve complete per-field provenance and all event occurrences.
 
 Done when unchanged canonical builds make zero LLM calls and multi-source completeness
@@ -1211,10 +1232,10 @@ improves without new URLs/ids or match-membership changes.
 - [ ] Re-run existing garden sources for regression.
 - [ ] Run art-fair/biennial slices for mixed date/location behavior.
 - [ ] For every pilot, capture before/after report, inspect every severe warning plus a
-  stratified sample, run match golden tests, and prove zero-call unchanged reruns.
+      stratified sample, run match golden tests, and prove zero-call unchanged reruns.
 - [ ] Expand the golden corpus to 400–600 before broad activation.
 - [ ] Activate only after all release gates pass. Keep the old projection for one rollout
-  cycle; any destructive recluster remains a separately approved operation.
+      cycle; any destructive recluster remains a separately approved operation.
 
 ## 17. Expected file changes
 
@@ -1261,10 +1282,10 @@ Evaluation and docs:
 
 - `lib/db-map/data/normalization-golden.json`
 - `lib/db-map/scripts/ingest/normalize/golden.ts`
-- `docs/poi-ingestion.md`
-- `docs/poi-research/capture-spec.md`
+- `poi-ingestion.md`
+- `poi-research/capture-spec.md`
 - `lib/db-map/README.md`
-- relevant folder/source guides under `docs/poi/`
+- relevant folder/source guides under `poi/`
 
 ## 18. Final acceptance
 

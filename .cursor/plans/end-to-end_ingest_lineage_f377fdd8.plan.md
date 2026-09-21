@@ -27,7 +27,7 @@ todos:
     content: Add read-only admin lineage page + API routes in apps/map
     status: pending
   - id: reingest
-    content: Wipe research/canonical data (keep taxonomy, centroids, geocode cache) and re-ingest all docs/poi sources; verify
+    content: Wipe research/canonical data (keep taxonomy, centroids, geocode cache) and re-ingest all poi sources; verify
     status: pending
   - id: docs
     content: Update lib/db-map AGENTS.md and README with new doctrine and commands
@@ -66,7 +66,7 @@ Key gaps found:
 - Legacy `ingest:extract` path skips `research_ingest_runs`/`research_source_file_versions` lineage.
 - `clean.ts` works one record at a time and rebuilds/deletes canonicals based only on `canonical_poi_id` counts; it never consults memberships, redirects, or build inputs.
 - **Record identity is broken for id-less sources.** The generic extractor keys records as `source_record_id ?? id ?? source_url` ([extractors/generic.ts](lib/db-map/scripts/ingest/extractors/generic.ts) lines 57-58). Files like `artfairslist.json` share one homepage `source_url` across all records, so every record upserts the same `(source_id, source_record_id)` row — data is silently overwritten, downstream sees one row, and orphaned canonicals get hidden. `synthSourceRecordId()` in [hash.ts](lib/db-map/scripts/ingest/hash.ts) was built for this but is never called. There is also no duplicate-key detection at extract time, so collisions are invisible.
-- Survey of all 234 files in `docs/poi/` (~150k records): `name` is ~100% present; city/coords/dates vary by source family; API feeds carry natural ids (`mbid`, `slug`, `wikidata_qid`, `artsy_id`, `detail_url`); scraped directories mostly don't. Same name+city with different dates is common and intentional (per-edition sources like `maker_faire.json`, `festival_alarm_festivals.json`), while other sources are one-row-per-series (`biennial_foundation.json`) — so whether dates belong in identity is per-source, not global. The `docs/poi-research/capture-spec.md` referenced everywhere does not exist in the repo.
+- Survey of all 234 files in `poi/` (~150k records): `name` is ~100% present; city/coords/dates vary by source family; API feeds carry natural ids (`mbid`, `slug`, `wikidata_qid`, `artsy_id`, `detail_url`); scraped directories mostly don't. Same name+city with different dates is common and intentional (per-edition sources like `maker_faire.json`, `festival_alarm_festivals.json`), while other sources are one-row-per-series (`biennial_foundation.json`) — so whether dates belong in identity is per-source, not global. The `poi-research/capture-spec.md` referenced everywhere does not exist in the repo.
 
 ## 0. Record identity: stable `source_record_id` for every record
 
@@ -77,10 +77,11 @@ This comes first because everything else (lineage, trace, clean, re-ingest) keys
 1. **Explicit id:** `source_record_id`, else a natural id field. Extend the current `id`-only fallback to known natural ids: `slug`, `mbid`, `wikidata_qid`/`wikidata_id`, `artsy_id`, `ra_event_id`. Sources in [sources.ts](lib/db-map/scripts/ingest/sources.ts) may pin the field explicitly (`identity: { field: "mbid" }`).
 2. **Per-record unique URL:** `detail_url`, or `source_url`/`url` — but only when unique within the file (see collision guard below). Never use a URL that repeats across records as identity.
 3. **Synthetic semantic key (the fix for artfairslist-class files):** deterministic hash of required stable fields via the existing `synthSourceRecordId()`, extended to:
-   - `sourceSlug | name | locality | [edition]`
-   - `locality` = city+region+country when present, else rounded coordinates (~3 decimals), else address string. Hostels (no city field) fall to coords; craft-show scrapes fall to city.
-   - `edition` = `start_date` (year at minimum), included only when the source registry marks `identity: { editioned: true }` (per-edition sources like `maker_faire`); omitted for series sources (`biennial_foundation`). Per-edition research rows are correct — matching/consolidation merges editions into one canonical and occurrences model the dates.
-   - Full-record hashing is deliberately rejected: any property change would mint a new identity and break re-ingest idempotency. Name+locality(+edition) survives value tweaks; if a name or city genuinely changes, the old row retires via snapshot mode and the new row re-matches to the same canonical — acceptable and traceable.
+
+- `sourceSlug | name | locality | [edition]`
+- `locality` = city+region+country when present, else rounded coordinates (~3 decimals), else address string. Hostels (no city field) fall to coords; craft-show scrapes fall to city.
+- `edition` = `start_date` (year at minimum), included only when the source registry marks `identity: { editioned: true }` (per-edition sources like `maker_faire`); omitted for series sources (`biennial_foundation`). Per-edition research rows are correct — matching/consolidation merges editions into one canonical and occurrences model the dates.
+- Full-record hashing is deliberately rejected: any property change would mint a new identity and break re-ingest idempotency. Name+locality(+edition) survives value tweaks; if a name or city genuinely changes, the old row retires via snapshot mode and the new row re-matches to the same canonical — acceptable and traceable.
 
 ### Collision guard at extract (no more silent overwrites)
 
@@ -101,7 +102,7 @@ In [orchestrator.ts](lib/db-map/scripts/ingest/orchestrator.ts) `extractFile`, t
 
 ### Capture spec
 
-- Write the missing `docs/poi-research/capture-spec.md` documenting: required fields, the identity ladder, when to supply `source_record_id`, per-edition vs per-series sources, and `website` vs `source_url` roles. It is referenced by three AGENTS/docs files but doesn't exist.
+- Write the missing `poi-research/capture-spec.md` documenting: required fields, the identity ladder, when to supply `source_record_id`, per-edition vs per-series sources, and `website` vs `source_url` roles. It is referenced by three AGENTS/docs files but doesn't exist.
 
 ### Clean/trace implications
 
@@ -171,7 +172,7 @@ Scope rule: never touch shared data — `research_geocode_cache`, `research_sour
 Per your choice, no backfill. After schema + code changes land:
 
 1. Truncate all `research_*` and `canonical_poi*` data tables (keep `canonical_categories`, `geo_centroids`; optionally keep `research_geocode_cache` to save geocoding quota — recommended).
-2. Re-run `ingest:taxonomy:seed`, then `ingest:run` for each source file under `docs/poi/` with its category.
+2. Re-run `ingest:taxonomy:seed`, then `ingest:run` for each source file under `poi/` with its category.
 3. Run `ingest:verify` and `ingest:report` to confirm complete lineage and expected counts.
 
 ## Docs

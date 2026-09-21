@@ -8,18 +8,18 @@ Every POI must conform to the `NewPoi` interface (defined in `lib/db-map/sql/poi
 
 ```typescript
 interface NewPoi {
-  name: string;            // required - display name
-  category: string;        // required - e.g. "Park", "Flying Site", "Restaurant"
-  lng: number;             // required - longitude (-180 to 180)
-  lat: number;             // required - latitude (-90 to 90)
-  description?: string;    // optional - longer text about the place
-  address?: string;        // optional - human-readable address
-  website?: string;        // optional - URL
-  hours?: string;          // optional - opening hours as free text
-  photo_url?: string;      // optional - URL to a photo
+  name: string; // required - display name
+  category: string; // required - e.g. "Park", "Flying Site", "Restaurant"
+  lng: number; // required - longitude (-180 to 180)
+  lat: number; // required - latitude (-90 to 90)
+  description?: string; // optional - longer text about the place
+  address?: string; // optional - human-readable address
+  website?: string; // optional - URL
+  hours?: string; // optional - opening hours as free text
+  photo_url?: string; // optional - URL to a photo
   // Event POIs only (festivals, etc.) — permanent POIs leave these unset:
-  starts_at?: string;      // optional - event start, ISO 8601 (also accepts `start_date`)
-  ends_at?: string;        // optional - event end,   ISO 8601 (also accepts `end_date`)
+  starts_at?: string; // optional - event start, ISO 8601 (also accepts `start_date`)
+  ends_at?: string; // optional - event end,   ISO 8601 (also accepts `end_date`)
   date_precision?: string; // optional - 'datetime' | 'day' | 'month' | 'year'
 }
 ```
@@ -39,16 +39,16 @@ Use this when you have a `.kml` file exported from Google Maps "My Maps", Google
 pnpm db:import:kml path/to/file.kml --category "Flying Site"
 
 # Or from the lib/db-map directory:
-pnpm db:import:kml ../../docs/poi-usa/ushpa-sites.kml --category "Flying Site"
+pnpm db:import:kml ../../poi-usa/ushpa-sites.kml --category "Flying Site"
 ```
 
 ### Options
 
-| Flag | Description |
-|------|-------------|
+| Flag                | Description                                                    |
+| ------------------- | -------------------------------------------------------------- |
 | `--category <name>` | Override category for all POIs (default: uses KML folder name) |
-| `--replace` | Delete all existing POIs before importing |
-| `--dry-run` | Parse and preview without writing to the database |
+| `--replace`         | Delete all existing POIs before importing                      |
+| `--dry-run`         | Parse and preview without writing to the database              |
 
 ### How it works
 
@@ -62,13 +62,13 @@ pnpm db:import:kml ../../docs/poi-usa/ushpa-sites.kml --category "Flying Site"
 
 ```bash
 # Preview what will be imported:
-pnpm db:import:kml docs/poi-usa/ushpa-sites.kml --category "Flying Site" --dry-run
+pnpm db:import:kml poi-usa/ushpa-sites.kml --category "Flying Site" --dry-run
 
 # Import, appending to existing data:
-pnpm db:import:kml docs/poi-usa/ushpa-sites.kml --category "Flying Site"
+pnpm db:import:kml poi-usa/ushpa-sites.kml --category "Flying Site"
 
 # Import, replacing all existing POIs:
-pnpm db:import:kml docs/poi-usa/ushpa-sites.kml --category "Flying Site" --replace
+pnpm db:import:kml poi-usa/ushpa-sites.kml --category "Flying Site" --replace
 ```
 
 ---
@@ -97,7 +97,7 @@ The file must be a JSON array of `NewPoi` objects:
     "name": "Blanchard Mountain",
     "category": "Flying Site",
     "lng": -122.4125,
-    "lat": 48.5850,
+    "lat": 48.585,
     "description": "Ridge soaring site. South-facing launch. Best in spring/summer thermals.",
     "address": "Burlington, WA"
   }
@@ -132,16 +132,16 @@ Here's a prompt template you can give an AI agent:
 
 ---
 
-> Read the document at `docs/my-notes.txt`. It contains a list of places with descriptions.
+> Read the document at `my-notes.txt`. It contains a list of places with descriptions.
 >
 > Convert each place into a JSON object matching this exact TypeScript schema:
 >
 > ```typescript
 > interface NewPoi {
->   name: string;        // required
->   category: string;    // required (pick the best fit from: Park, Historic Site, Museum, Viewpoint, Restaurant, Shop, Cafe, Beach, Trail, Flying Site)
->   lng: number;         // required, longitude
->   lat: number;         // required, latitude
+>   name: string; // required
+>   category: string; // required (pick the best fit from: Park, Historic Site, Museum, Viewpoint, Restaurant, Shop, Cafe, Beach, Trail, Flying Site)
+>   lng: number; // required, longitude
+>   lat: number; // required, latitude
 >   description?: string;
 >   address?: string;
 >   website?: string;
@@ -152,12 +152,12 @@ Here's a prompt template you can give an AI agent:
 >
 > If coordinates aren't in the text, look them up based on the place name and address.
 >
-> Write the full array to `docs/import-data/my-import.json`.
+> Write the full array to `import-data/my-import.json`.
 >
-> Then run: `pnpm db:import:json docs/import-data/my-import.json --dry-run`
+> Then run: `pnpm db:import:json import-data/my-import.json --dry-run`
 >
 > If all items share the same category, you can omit `category` from the JSON and use the flag instead:
-> `pnpm db:import:json docs/import-data/my-import.json --category "Flying Site" --dry-run`
+> `pnpm db:import:json import-data/my-import.json --category "Flying Site" --dry-run`
 >
 > If the dry-run looks correct, run without `--dry-run` to save to the database.
 
@@ -168,7 +168,7 @@ Here's a prompt template you can give an AI agent:
 - **Category consistency**: Give the agent a list of existing categories to choose from so your data stays filterable. Current categories in use: `Park`, `Historic Site`, `Museum`, `Viewpoint`, `Restaurant`, `Shop`, `Cafe`, `Beach`, `Trail`.
 - **Coordinates**: If your source text doesn't include lat/lng, the AI can look them up by place name. Tell it to be precise (6 decimal places).
 - **Validation**: The import script validates every entry. If coordinates are missing or names are empty, those entries are skipped with a clear error message. Always use `--dry-run` first.
-- **Incremental imports**: By default, new POIs are *appended* (no `--replace`). You can safely import multiple batches without losing existing data.
+- **Incremental imports**: By default, new POIs are _appended_ (no `--replace`). You can safely import multiple batches without losing existing data.
 - **Deduplication**: The import scripts do not deduplicate by name. If you import the same file twice, you'll get duplicate entries. Use `--replace` if you need a clean slate.
 
 ---
@@ -182,7 +182,13 @@ import { getDb, insertPois } from "@lib/db-map";
 import type { NewPoi } from "@lib/db-map";
 
 const pois: NewPoi[] = [
-  { name: "My Place", category: "Park", lng: -122.4, lat: 37.8, description: "A nice park" },
+  {
+    name: "My Place",
+    category: "Park",
+    lng: -122.4,
+    lat: 37.8,
+    description: "A nice park",
+  },
 ];
 
 const count = await insertPois(getDb(), pois);

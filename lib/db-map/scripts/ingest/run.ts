@@ -2,7 +2,7 @@
  * File-first POI ingestion orchestrator.
  *
  * Usage:
- *   pnpm --filter @lib/db-map ingest:run <docs/poi/...json|jsonl|csv> --category <slug> [options]
+ *   pnpm --filter @lib/db-map ingest:run <poi/...json|jsonl|csv> --category <slug> [options]
  *
  * --category is required on every run. Category is never inferred from path or raw data.
  */
@@ -35,7 +35,7 @@ function stage(value: string, flag: string): IngestStage {
 function usageError(message: string): never {
   console.error(message);
   console.error(
-    "Usage: ingest:run <docs/poi/...json|jsonl|csv> --category <slug> [options]",
+    "Usage: ingest:run <poi/...json|jsonl|csv> --category <slug> [options]",
   );
   console.error(`Known categories: ${listCategorySlugs().join(", ")}`);
   process.exit(1);

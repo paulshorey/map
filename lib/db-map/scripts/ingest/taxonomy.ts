@@ -28,7 +28,7 @@ export const TAXONOMY: CategorySeed[] = [
   { slug: "beach", display_name: "Beach", sort_order: 80 },
   { slug: "trail", display_name: "Trail", sort_order: 90 },
 
-  // ── Events (temporal) — one top-level category per docs/poi folder ──
+  // ── Events (temporal) — one top-level category per poi folder ──
   {
     slug: "music_festival",
     display_name: "Music Festival",
@@ -77,7 +77,9 @@ export const TAXONOMY: CategorySeed[] = [
   },
 ];
 
-export const VALID_CATEGORY_SLUGS = new Set(TAXONOMY.map((category) => category.slug));
+export const VALID_CATEGORY_SLUGS = new Set(
+  TAXONOMY.map((category) => category.slug),
+);
 
 export function listCategorySlugs(): string[] {
   return [...VALID_CATEGORY_SLUGS].sort();
@@ -89,6 +91,10 @@ export function formatCategoryUsageError(prefix: string): string {
 
 export function assertValidCategory(slug: string): void {
   if (!VALID_CATEGORY_SLUGS.has(slug)) {
-    throw new Error(formatCategoryUsageError(`Unknown category "${slug}" — not in taxonomy.ts.`));
+    throw new Error(
+      formatCategoryUsageError(
+        `Unknown category "${slug}" — not in taxonomy.ts.`,
+      ),
+    );
   }
 }

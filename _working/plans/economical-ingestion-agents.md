@@ -21,7 +21,7 @@ Build:
   compact escalation and mocked delivery. Verify model selection with an actual cheap subagent.
 
 Research (2026-09-20): official OpenAI subagents, AGENTS.md, scheduled-task, model and app-server
-documentation. See `docs/ingestion-agents.md` for sources, compatibility and operating instructions.
+documentation. See `ingestion-agents.md` for sources, compatibility and operating instructions.
 
 Implemented and validated:
 

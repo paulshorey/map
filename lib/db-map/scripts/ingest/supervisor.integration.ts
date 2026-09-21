@@ -61,7 +61,7 @@ try {
   const initial = await inspectControl(db);
   assert.equal(initial.quiescent, true);
   assert.equal(initial.maintenance.maintenance, false);
-  dir = await mkdtemp(resolve(REPO_ROOT, "docs/poi/supervisor-test-"));
+  dir = await mkdtemp(resolve(REPO_ROOT, "poi/supervisor-test-"));
   const file = resolve(dir, slug + ".json");
   await writeFile(
     file,

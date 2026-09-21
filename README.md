@@ -95,14 +95,14 @@ Open [http://localhost:5000](http://localhost:5000).
 You usually launch full imports manually. AI agents share ownership of every stage and may
 stop/resume your runs, migrate schema, and repair experimental data as needed. They normally
 validate fixes with short runs. Before changing a running pipeline, use the shared
-[process-control workflow](docs/poi-ingestion.md#process-control-and-maintenance) to enter
+[process-control workflow](poi-ingestion.md#process-control-and-maintenance) to enter
 maintenance and confirm shutdown. `pnpm --filter @lib/db-map ingest:control list --json`
 shows worker evidence and maintenance state.
 
-Raw source files live in `docs/poi/`. The pipeline preserves source records and their history
+Raw source files live in `poi/`. The pipeline preserves source records and their history
 in `research_*`, then merges them into the `canonical_*` POIs shown on the map.
 
-Run these commands from the repository root. Replace `<file>` with a path under `docs/poi/`
+Run these commands from the repository root. Replace `<file>` with a path under `poi/`
 and `<category>` with a slug from the [taxonomy](lib/db-map/scripts/ingest/taxonomy.ts).
 Category must be explicit; it is never inferred from the file or its records.
 
@@ -146,9 +146,9 @@ blocked records, and data quality still need review.
 Global consolidation is a separate, explicit choice: add `--consolidate` to a full file run.
 It cannot be combined with `--record` or `--limit`. Do not use `--recluster` to resume.
 
-The [ingestion runbook](docs/poi-ingestion.md) owns command semantics, failure investigation,
+The [ingestion runbook](poi-ingestion.md) owns command semantics, failure investigation,
 category completeness, cleanup, and reprocessing. New source data should follow the
-[capture spec](docs/poi-research/capture-spec.md).
+[capture spec](poi-research/capture-spec.md).
 
 ### Ingestion dashboard and file inventory
 
@@ -313,7 +313,7 @@ The frontend auth hooks (`useAuth`, `useEntitlements`, `usePremiumKey`) already 
 
 Agents use a cheap runner and a detached supervisor; ordinary code checks health hourly and
 keeps logs without spending model tokens. The expensive agent returns only to decide after a
-terminal event. See [agent operations](docs/ingestion-agents.md) for commands and notification
+terminal event. See [agent operations](ingestion-agents.md) for commands and notification
 setup. Automatic wake-up requires a verified local Codex connection on every operator host. This
 development Mac uses the official standalone Codex managed daemon and task queue. Manual foreground
 `ingest:run` remains available.

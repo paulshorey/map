@@ -2,7 +2,7 @@
 
 > Status: proposed architecture and implementation checklist.
 >
-> Scope: one developer command takes a registered JSON/JSONL/CSV file under `docs/poi/`
+> Scope: one developer command takes a registered JSON/JSONL/CSV file under `poi/`
 > through structural extraction, immutable research observation, hybrid deterministic +
 > DeepSeek normalization, geocoding, embedding, matching, consolidation, and stable
 > canonical build.
@@ -16,7 +16,7 @@ The primary command is file-first:
 
 ```bash
 pnpm --filter @lib/db-map ingest:run \
-  docs/poi/music-festivals/directories/musicfestivalwizard_festivals.json \
+  poi/music-festivals/directories/musicfestivalwizard_festivals.json \
   --category music_festival
 ```
 
@@ -25,13 +25,13 @@ The developer supplies the source file and canonical category. The command:
 1. resolves the file to exactly one registered source (or an inferred source slug for generic files);
 2. uses the supplied `--category` slug for all writes — category is never inferred;
 3. validates the source profile, taxonomy, extractor, and required credentials;
-3. computes the file and pipeline fingerprints;
-4. resumes a compatible incomplete run or creates a new run;
-5. skips artifacts already complete for the same input/version;
-6. processes missing or stale work in stage order;
-7. records every success, rejection, retry, failure, and active artifact in PostgreSQL;
-8. prints progress, budgets, failures, and the exact resume command;
-9. ends with a reconciliation report scoped to this file/run.
+4. computes the file and pipeline fingerprints;
+5. resumes a compatible incomplete run or creates a new run;
+6. skips artifacts already complete for the same input/version;
+7. processes missing or stale work in stage order;
+8. records every success, rejection, retry, failure, and active artifact in PostgreSQL;
+9. prints progress, budgets, failures, and the exact resume command;
+10. ends with a reconciliation report scoped to this file/run.
 
 Useful modes:
 
@@ -105,7 +105,7 @@ Each source definition must declare the files it owns:
   files: [
     {
       pattern:
-        "docs/poi/music-festivals/directories/musicfestivalwizard_festivals.json",
+        "poi/music-festivals/directories/musicfestivalwizard_festivals.json",
       category: "music_festival",
       mode: "snapshot",
       format: "json",
@@ -132,7 +132,7 @@ Required file metadata:
 
 Given one file path:
 
-1. Resolve it to an absolute path and require it to remain under `docs/poi/`.
+1. Resolve it to an absolute path and require it to remain under `poi/`.
 2. Normalize to a repo-relative logical path.
 3. Match registered file patterns.
 4. Fail before writes if zero or multiple source definitions match.
@@ -691,18 +691,18 @@ configuration at startup.
 ### O0 — Source/file resolver
 
 - [ ] Extend `sources.ts` types with file patterns, category, mode, format, extractor
-  version, expected wrapper/count, and normalization profile.
+      version, expected wrapper/count, and normalization profile.
 - [ ] Add `source-file.ts` to canonicalize/validate paths and resolve exactly one source.
 - [ ] Register the first pilot files.
-- [ ] Add resolver tests for valid, unknown, ambiguous, outside-`docs/poi`, wrong extension,
-  and count-anomaly cases.
+- [ ] Add resolver tests for valid, unknown, ambiguous, outside-`poi`, wrong extension,
+      and count-anomaly cases.
 
 Done when the file-only command resolves source/category without writes.
 
 ### O1 — Run/file schema
 
 - [ ] Add source-file, file-version, ingest-run, run-record, pipeline-job, membership,
-  canonical-build, and redirect schema.
+      canonical-build, and redirect schema.
 - [ ] Add constraints, indexes, leases, statuses, and active pointers.
 - [ ] Run `cd lib/db-map && pnpm db:sync`.
 - [ ] Add SQL assertions for uniqueness, lease claims, artifact linkage, and redirects.
@@ -814,11 +814,11 @@ work or loss of prior active artifacts.
 
 ### O11 — Documentation and rollout
 
-- [ ] Replace the command/stage/operator sections in `docs/poi-ingestion.md`.
+- [ ] Replace the command/stage/operator sections in `poi-ingestion.md`.
 - [ ] Update capture spec and source registration instructions.
 - [ ] Update package README and folder guides.
 - [ ] Pilot one small carnival source, one festival source, one campground source, and one
-  existing garden source.
+      existing garden source.
 - [ ] Capture before/after reports, costs, failures, idempotent reruns, and canonical diffs.
 
 Done when a developer unfamiliar with the internals can import a registered file, interrupt
@@ -860,16 +860,16 @@ Schema/generated:
 
 Docs:
 
-- `docs/poi-ingestion.md`
-- `docs/poi-research/capture-spec.md`
+- `poi-ingestion.md`
+- `poi-research/capture-spec.md`
 - `lib/db-map/README.md`
-- relevant `docs/poi/**/README.md` and `AGENTS.md`
+- relevant `poi/**/README.md` and `AGENTS.md`
 
 ## 21. Final acceptance
 
 The orchestration work is complete when:
 
-1. A registered JSON/JSONL/CSV file under `docs/poi/` can be imported with one file-only
+1. A registered JSON/JSONL/CSV file under `poi/` can be imported with one file-only
    command.
 2. Unchanged file + unchanged pipeline is a database-confirmed no-op.
 3. Changed stage logic automatically reprocesses only stale artifacts.

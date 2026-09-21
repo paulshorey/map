@@ -73,7 +73,7 @@ export async function discoverFiles(
       files.push(item);
     }
   }
-  await walk(resolve(root, "docs/poi"));
+  await walk(resolve(root, "poi"));
   return files.sort((a, b) => a.path.localeCompare(b.path));
 }
 

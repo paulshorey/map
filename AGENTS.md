@@ -1,15 +1,25 @@
-# POI Map — agent instructions
+# POI Map
 
-Interactive POI map monorepo. Apps live in `apps/`; shared libraries live in `lib/`.
+Interactive POI map.
+
+- Public user-facing app is like Google Maps, Yelp, Zillow, ParaglidingMap, Campgrounds Search, and other typical apps that render many locations on a map, let the user search and filter the results on the map.
+- Hard part is the backend and administration - gathering data. To add POIs (points of interests) to this map, we need to develop and maintain a system to ingest raw source data files (.json or .csv data dumps), normalize the raw data into our standard format, filter for quality and completeness, aggregate by number of sources, and add value like geo code location, clearer description, and category.
+
+# Development
+
+This is a monorepo. Apps live in `apps/`; shared libraries live in `lib/`.
+
+- ./working directory contains project management tasks, specs, plans, and notes.
+- ./data folder contains finished documentation
 
 ## Read the right guide
 
 - [README.md](README.md): human setup and commands for manually running full ingestion.
-- [Ingestion runbook](docs/poi-ingestion.md): shared reference for stage behavior,
+- [Ingestion runbook](poi-ingestion.md): shared reference for stage behavior,
   command limits, category completeness, evidence, and troubleshooting. Read it before
   developing, debugging, or running ingestion.
 - [Database guide](lib/db-map/AGENTS.md): database and ingestion implementation rules.
-- [Source data guide](docs/AGENTS.md): capture format and source file conventions.
+- [Source data guide](AGENTS.md): capture format and source file conventions.
 - Read the applicable folder `AGENTS.md` before editing there. App guides start at
   `apps/AGENTS.md` and `apps/map/AGENTS.md`, with narrower guides under `apps/map/src/`.
 
@@ -52,7 +62,7 @@ task. The human/agent split is about typical execution duration, not code or pro
 
 ## Economical long-run orchestration
 
-Read [agent ingestion operations](docs/ingestion-agents.md) for the interface, handoff template,
+Read [agent ingestion operations](ingestion-agents.md) for the interface, handoff template,
 notification setup, and recovery limits. The following model rules narrow the execution preference
 above; operational ownership does not authorize wasting expensive model time.
 

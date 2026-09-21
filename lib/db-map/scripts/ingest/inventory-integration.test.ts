@@ -14,7 +14,7 @@ import {
 import { refreshInventory } from "../../lib/ingestion/inventory-scan.js";
 const db = getDb();
 const slug = "inventory_test_" + randomUUID().replaceAll("-", "");
-const dir = await mkdtemp(resolve(REPO_ROOT, "docs/poi/inventory-test-"));
+const dir = await mkdtemp(resolve(REPO_ROOT, "poi/inventory-test-"));
 const file = resolve(dir, slug + ".json");
 const logical = relative(REPO_ROOT, file);
 let inventoryId: string | undefined, sourceId: string | undefined;

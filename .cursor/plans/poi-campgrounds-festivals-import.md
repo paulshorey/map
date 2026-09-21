@@ -2,8 +2,8 @@
 
 > Companion to `.cursor/plans/poi-ingestion-unfinished-work.md` (Workstream D). Concrete
 > per-source files, commands, and gotchas for the next two categories. Everything here uses
-> the standard staged pipeline; see `docs/poi-ingestion.md` for stage semantics and
-> `docs/poi-research/capture-spec.md` for the raw-file shape the generic extractor reads.
+> the standard staged pipeline; see `poi-ingestion.md` for stage semantics and
+> `poi-research/capture-spec.md` for the raw-file shape the generic extractor reads.
 
 ## Pre-flight (once per session)
 
@@ -28,7 +28,7 @@ Always dry-run extract with `--limit 5` first and eyeball the preview JSON: id s
 name, coordinates, website vs source_url.
 
 Note: `ingest:extract` resolves relative file paths against `lib/db-map/`, so pass
-absolute paths (e.g. `/workspace/docs/poi/...`) or paths relative to that package.
+absolute paths (e.g. `/workspace/poi/...`) or paths relative to that package.
 
 ---
 
@@ -39,7 +39,7 @@ each later source mostly enriches/merges into the earlier ones.
 
 ### 1. `ridb` — RIDB federal facilities (trust 90) — custom extractor needed
 
-- File: `docs/poi/rv_campgrounds_data/ridb/facilities.csv` (~6k facilities).
+- File: `poi/rv_campgrounds_data/ridb/facilities.csv` (~6k facilities).
 - **Never ingest** `campsites_rv_hookup.csv` / campsite-level files as POIs — 122k
   individual campsite pads would flood the map. If campsite data is wanted later,
   aggregate it into per-facility attributes (hookup counts) in the extractor.
@@ -52,7 +52,7 @@ each later source mostly enriches/merges into the earlier ones.
 
 ### 2. `uscampgrounds` — uscampgrounds.info (trust 55) — generic extractor works
 
-- File: `docs/poi/rv_campgrounds_data/uscampgrounds/all_campgrounds_combined.csv` (13k).
+- File: `poi/rv_campgrounds_data/uscampgrounds/all_campgrounds_combined.csv` (13k).
 - Columns `lon`/`lat`/`name`/`phone`/`region` map automatically; `code` is NOT globally
   unique on its own — verify `(code)` uniqueness first; if duplicated, add a tiny custom
   extractor keyed on `code + state` (or pre-process the CSV adding `source_record_id`).
@@ -64,7 +64,7 @@ each later source mostly enriches/merges into the earlier ones.
 
 ### 3. `thedyrt` — The Dyrt (trust 50) — generic extractor works
 
-- File: `docs/poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv` (43k RV-relevant).
+- File: `poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv` (43k RV-relevant).
 - `id` column is The Dyrt's numeric id (stable), `lat`/`lon` present, `website` is the
   campground's own site (correct for `website`), rich RV attribute columns
   (electric_hookups, big_rig_friendly, max_vehicle_length_ft…) flow into attributes
@@ -74,7 +74,7 @@ each later source mostly enriches/merges into the earlier ones.
 
 ### 4. `osm_camp` — OpenStreetMap caravan sites (trust 70) — small custom extractor
 
-- File: `docs/poi/rv_campgrounds_data/osm/caravan_sites.csv` (36k caravan_site + camp_site).
+- File: `poi/rv_campgrounds_data/osm/caravan_sites.csv` (36k caravan_site + camp_site).
 - Needs a custom extractor for one reason: `source_record_id` must be `"{osm_type}/{osm_id}"`
   (same convention as the garden `osm` extractor) so cross-source strong-ID matching works,
   and `all_tags` JSON should be parsed into attributes.
@@ -97,7 +97,7 @@ centroids, which `rebuildCanonicalPoi` currently hides.
 
 ### 1. `resident_advisor` — RA.co (trust 70) — needs unwrap (custom or pre-process)
 
-- File: `docs/poi/music-festivals/apis/resident_advisor_festivals.json` (3.5k).
+- File: `poi/music-festivals/apis/resident_advisor_festivals.json` (3.5k).
 - Wrapper object `{ source, url, ..., festivals: [...] }` → either a 20-line custom
   extractor or a one-off `jq '.festivals'` to a spec-conformant file.
 - Per record: `ra_event_id` = stable id, ISO `start_date`/`end_date`, `venue` + `city` +
@@ -106,7 +106,7 @@ centroids, which `rebuildCanonicalPoi` currently hides.
 
 ### 2. `musicfestivalwizard` — MFW (trust 65) — generic extractor works (verified)
 
-- File: `docs/poi/music-festivals/directories/musicfestivalwizard_festivals.json` (10.8k).
+- File: `poi/music-festivals/directories/musicfestivalwizard_festivals.json` (10.8k).
 - `url` becomes the stable id + source_url automatically; `start_date`/`end_date` are
   `YYYYMMDD`, which the deterministic date parser already handles (no LLM cost).
 - Names embed edition years ("110 Above Festival 2026") — this is the main test case for
@@ -144,7 +144,7 @@ writing extractors.
 
 ## Carnivals / art fairs backlog note
 
-`docs/poi/carnival/` already has two implemented extractors (`global_carnivalist`,
+`poi/carnival/` already has two implemented extractors (`global_carnivalist`,
 `rough_guides`). The strongest unimported files there:
 `wikidata_carnivals.json` (851 rows, top-level array, `wikidata_id` strong IDs — near
 spec-conformant) and `fecc_carnivalcities_events.json` (wrapper object but has lat/lon +
@@ -157,4 +157,4 @@ ISO dates). Same playbook applies.
 1. `ingest:report --source <slug>` — check pending=0, not-ready counts explained.
 2. Spot-check 5 canonicals in the app (dense region + detail drawer).
 3. Re-run the full sequence once — every stage should report ~0 new work (idempotency).
-4. Record counts + anomalies in `docs/poi-ingestion-validation.md`.
+4. Record counts + anomalies in `poi-ingestion-validation.md`.

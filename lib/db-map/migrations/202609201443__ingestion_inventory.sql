@@ -1,7 +1,7 @@
 -- Discovery is independent of import. Never delete source evidence during inventory scans.
 CREATE TABLE research_ingest_inventory (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  logical_path text NOT NULL UNIQUE CHECK (logical_path LIKE 'docs/poi/%'),
+  logical_path text NOT NULL UNIQUE CHECK (logical_path LIKE 'poi/%'),
   format text NOT NULL CHECK (format IN ('json','jsonl','csv','kml','kmz')),
   file_sha256 text,
   byte_size bigint,

@@ -2,7 +2,7 @@
  * Remove selected file records and every POI-scoped artifact derived from them.
  *
  * Usage:
- *   pnpm --filter @lib/db-map ingest:clean <docs/poi/...json|jsonl|csv> --category <slug> [--limit N] [--dry-run]
+ *   pnpm --filter @lib/db-map ingest:clean <poi/...json|jsonl|csv> --category <slug> [--limit N] [--dry-run]
  */
 import type { Pool, PoolClient } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
@@ -34,7 +34,7 @@ interface SelectedRecordGroup {
 function usageError(message: string): never {
   console.error(message);
   console.error(
-    "Usage: ingest:clean <docs/poi/...json|jsonl|csv> [--limit N] [--dry-run]",
+    "Usage: ingest:clean <poi/...json|jsonl|csv> [--limit N] [--dry-run]",
   );
   process.exit(1);
 }
@@ -48,7 +48,8 @@ function parseArgs(argv: string[]): CleanOptions {
     const arg = argv[i];
     const value = () => {
       const next = argv[++i];
-      if (!next || next.startsWith("--")) throw new Error(`Missing value for ${arg}`);
+      if (!next || next.startsWith("--"))
+        throw new Error(`Missing value for ${arg}`);
       return next;
     };
     if (arg === "--category") opts.category = value();
@@ -56,7 +57,10 @@ function parseArgs(argv: string[]): CleanOptions {
     else if (arg === "--dry-run") opts.dryRun = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
-  if (opts.limit !== undefined && (!Number.isSafeInteger(opts.limit) || opts.limit < 0)) {
+  if (
+    opts.limit !== undefined &&
+    (!Number.isSafeInteger(opts.limit) || opts.limit < 0)
+  ) {
     throw new Error(`Invalid --limit: ${opts.limit}`);
   }
   return opts;
@@ -68,11 +72,17 @@ function label(record: Pick<RawRecord, "source_record_id" | "name">): string {
 
 function groupLabel(group: SelectedRecordGroup): string {
   const first = group.records[0]!;
-  const coalesced = group.records.length > 1 ? `; ${group.records.length} input records share this id` : "";
+  const coalesced =
+    group.records.length > 1
+      ? `; ${group.records.length} input records share this id`
+      : "";
   return `${label(first)}${coalesced}`;
 }
 
-async function deletePipelineJobs(client: PoolClient, poiId: string): Promise<number> {
+async function deletePipelineJobs(
+  client: PoolClient,
+  poiId: string,
+): Promise<number> {
   const { rowCount } = await client.query(
     `WITH observations AS (
        SELECT id FROM research_poi_observations WHERE research_poi_id = $1
@@ -116,7 +126,11 @@ async function cleanRecord(
   const client = await db.connect();
   try {
     await client.query("BEGIN");
-    const { rows } = await client.query<{ id: string; canonical_poi_id: string | null; origin: "research" | "manual" }>(
+    const { rows } = await client.query<{
+      id: string;
+      canonical_poi_id: string | null;
+      origin: "research" | "manual";
+    }>(
       `SELECT rp.id, rp.canonical_poi_id, cp.origin
        FROM research_pois rp
        LEFT JOIN canonical_pois cp ON cp.id = rp.canonical_poi_id
@@ -131,10 +145,18 @@ async function cleanRecord(
     }
 
     if (poi.canonical_poi_id) {
-      await client.query(`SELECT id FROM canonical_pois WHERE id = $1 FOR UPDATE`, [poi.canonical_poi_id]);
+      await client.query(
+        `SELECT id FROM canonical_pois WHERE id = $1 FOR UPDATE`,
+        [poi.canonical_poi_id],
+      );
     }
     let jobs = await deletePipelineJobs(client, poi.id);
-    const runRecords = await deleteRunRecords(client, poi.id, sourceId, sourceRecordId);
+    const runRecords = await deleteRunRecords(
+      client,
+      poi.id,
+      sourceId,
+      sourceRecordId,
+    );
     await client.query(`DELETE FROM research_pois WHERE id = $1`, [poi.id]);
 
     let canonical: CleanResult["canonical"] = "none";
@@ -143,7 +165,10 @@ async function cleanRecord(
         `SELECT count(*)::text AS count FROM research_canonical_memberships WHERE canonical_poi_id = $1 AND active`,
         [poi.canonical_poi_id],
       );
-      if (Number(remainingRows[0]?.count ?? 0) === 0 && poi.origin === "research") {
+      if (
+        Number(remainingRows[0]?.count ?? 0) === 0 &&
+        poi.origin === "research"
+      ) {
         // A canonical with no research rows is entirely derived from the item(s) just removed.
         // Its categories, occurrences, builds, redirects, and consolidation decisions cascade.
         const canonicalJobs = await client.query(
@@ -152,13 +177,18 @@ async function cleanRecord(
           [poi.canonical_poi_id],
         );
         jobs += canonicalJobs.rowCount ?? 0;
-        await client.query(`DELETE FROM canonical_pois WHERE id = $1`, [poi.canonical_poi_id]);
+        await client.query(`DELETE FROM canonical_pois WHERE id = $1`, [
+          poi.canonical_poi_id,
+        ]);
         canonical = "deleted";
         // PostgreSQL cascade deletes the rest of the POI-scoped graph.
       } else if (Number(remainingRows[0]?.count ?? 0) > 0) {
         // Historical builds and consolidation verdicts can name the removed research row.
         // Rebuild the surviving canonical from its remaining source rows only.
-        await client.query(`DELETE FROM canonical_poi_builds WHERE canonical_poi_id = $1`, [poi.canonical_poi_id]);
+        await client.query(
+          `DELETE FROM canonical_poi_builds WHERE canonical_poi_id = $1`,
+          [poi.canonical_poi_id],
+        );
         await client.query(
           `DELETE FROM research_consolidation_decisions
            WHERE canonical_a = $1 OR canonical_b = $1`,
@@ -170,10 +200,15 @@ async function cleanRecord(
           [poi.canonical_poi_id],
         );
         jobs += canonicalJobs.rowCount ?? 0;
-        await rebuildCanonicalPoi(client, poi.canonical_poi_id, { noLlm: true });
+        await rebuildCanonicalPoi(client, poi.canonical_poi_id, {
+          noLlm: true,
+        });
         canonical = "rebuilt";
       } else {
-        await client.query(`UPDATE canonical_pois SET status = 'hidden', updated_at = now() WHERE id = $1`, [poi.canonical_poi_id]);
+        await client.query(
+          `UPDATE canonical_pois SET status = 'hidden', updated_at = now() WHERE id = $1`,
+          [poi.canonical_poi_id],
+        );
       }
     }
 
@@ -198,7 +233,9 @@ async function main(): Promise<void> {
       `file: ${resolved.logicalPath}`,
       `source: ${resolved.source.meta.slug}`,
       `registered category: ${resolved.file.category || "none"}`,
-      opts.category ? `ignored category argument: ${opts.category}` : "category filter: none",
+      opts.category
+        ? `ignored category argument: ${opts.category}`
+        : "category filter: none",
       `limit: ${opts.limit ?? "all"}`,
       opts.dryRun ? "dry-run: no database writes" : "mode: delete",
     ].join("\n"),
@@ -212,7 +249,9 @@ async function main(): Promise<void> {
     seen++;
     if (!record.source_record_id) {
       rejected++;
-      console.log(`clean skipped (missing source_record_id)${record.name ? ` \"${record.name.replace(/\"/g, "'")}\"` : ""}`);
+      console.log(
+        `clean skipped (missing source_record_id)${record.name ? ` \"${record.name.replace(/\"/g, "'")}\"` : ""}`,
+      );
       continue;
     }
     // research_pois is unique by (source_id, source_record_id). A bad extractor may
@@ -220,10 +259,17 @@ async function main(): Promise<void> {
     // input item in the group, then purge that shared row and all of its lineage once.
     const group = selectedBySourceId.get(record.source_record_id);
     if (group) group.records.push(record);
-    else selectedBySourceId.set(record.source_record_id, { sourceRecordId: record.source_record_id, records: [record] });
+    else
+      selectedBySourceId.set(record.source_record_id, {
+        sourceRecordId: record.source_record_id,
+        records: [record],
+      });
   }
   const selected = [...selectedBySourceId.values()];
-  const duplicateInputs = selected.reduce((count, group) => count + group.records.length - 1, 0);
+  const duplicateInputs = selected.reduce(
+    (count, group) => count + group.records.length - 1,
+    0,
+  );
 
   if (opts.dryRun) {
     for (const [index, group] of selected.entries()) {
@@ -238,10 +284,15 @@ async function main(): Promise<void> {
 
   const db = getDb();
   try {
-    const source = await db.query<{ id: string }>(`SELECT id FROM research_sources WHERE slug = $1`, [resolved.source.meta.slug]);
+    const source = await db.query<{ id: string }>(
+      `SELECT id FROM research_sources WHERE slug = $1`,
+      [resolved.source.meta.slug],
+    );
     const sourceId = source.rows[0]?.id;
     if (!sourceId) {
-      console.log(`Clean: source ${resolved.source.meta.slug} has no database rows; nothing to delete.`);
+      console.log(
+        `Clean: source ${resolved.source.meta.slug} has no database rows; nothing to delete.`,
+      );
       return;
     }
 
@@ -263,14 +314,17 @@ async function main(): Promise<void> {
       deleted++;
       if (result.canonical === "deleted") canonicalsDeleted++;
       if (result.canonical === "rebuilt") canonicalsRebuilt++;
-      console.log(`clean deleted #${index + 1} ${groupLabel(group)} (canonical=${result.canonical})`);
+      console.log(
+        `clean deleted #${index + 1} ${groupLabel(group)} (canonical=${result.canonical})`,
+      );
     }
     console.log(
       `Clean: seen=${seen} inputRecords=${seen - rejected} uniqueSourceIds=${selected.length} ` +
         `duplicateInputs=${duplicateInputs} deleted=${deleted} missing=${missing} rejected=${rejected} ` +
         `runRecords=${runRecords} jobs=${jobs} canonicalsDeleted=${canonicalsDeleted} canonicalsRebuilt=${canonicalsRebuilt}`,
     );
-    if (await verifyLineage(db)) throw new Error("Lineage verification failed after cleanup");
+    if (await verifyLineage(db))
+      throw new Error("Lineage verification failed after cleanup");
   } finally {
     await db.end();
   }

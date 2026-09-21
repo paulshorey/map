@@ -2,12 +2,12 @@
 
 Database-first package consumed by the app and import scripts. Follow the
 [root agent workflow](../../AGENTS.md); use the [package README](README.md) for layout and
-schema commands. Read the [ingestion runbook](../../docs/poi-ingestion.md) before ingestion
+schema commands. Read the [ingestion runbook](../../poi-ingestion.md) before ingestion
 work. It owns command semantics, limits, completion criteria, and troubleshooting.
 
 ## Agent execution cost
 
-Follow the root model/delegation rules and [agent operations](../../docs/ingestion-agents.md).
+Follow the root model/delegation rules and [agent operations](../../ingestion-agents.md).
 Full ingestion belongs to the explicit cheap runner; the expensive engineer only runs short,
 time-limited smoke selections. Do not add model calls to progress/heartbeat/health loops.
 `supervise.ts` owns detached jobs and terminal evidence; `supervisor-process.ts` owns live child
@@ -111,4 +111,4 @@ rerunning the full job. When a control is missing or misleading, document the cu
 and fix it as part of the relevant development task.
 
 Direct KML/JSON importers are for small curated fixtures; real source data belongs in the
-staged pipeline. Source capture conventions live in [docs/AGENTS.md](../../docs/AGENTS.md).
+staged pipeline. Source capture conventions live in [AGENTS.md](../../AGENTS.md).

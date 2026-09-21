@@ -9,7 +9,7 @@ Long ingestion remains a manually launched terminal process. The dashboard never
 ## Implementation
 
 1. **Inventory independent of ingestion.** Add a database table for discovered paths under
-   `docs/poi`, current SHA-256, size, modification/discovery/scan times, missing-file state,
+   `poi`, current SHA-256, size, modification/discovery/scan times, missing-file state,
    source/category configuration, disposition, priority, and operator notes. Preserve file
    hash history and edits. Discover JSON/JSONL/CSV/KML/KMZ, including unregistered files;
    do not interpret every JSON file as an import. Use registered categories or historical
@@ -76,4 +76,3 @@ Implemented all six steps. The app runs at `http://127.0.0.1:5001` using
 Remaining boundaries are deliberate: scan after changing captures; historical evidence without
 provenance is not guessed; metrics cover attributed normalization and audited attempts; full runs
 stay in the terminal; completion is structural and does not substitute for quality review.
-

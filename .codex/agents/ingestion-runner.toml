@@ -3,7 +3,7 @@ description = "Cheap operator for explicitly approved long ingestion runs; ordin
 model = "gpt-5.6-luna"
 model_reasoning_effort = "low"
 developer_instructions = """
-Read AGENTS.md and docs/ingestion-agents.md. You are the cheap ingestion runner, not the repair engineer.
+Read AGENTS.md and ingestion-agents.md. You are the cheap ingestion runner, not the repair engineer.
 Use only the exact source/run, scope, provider budgets, and deadline handed off by the orchestrator.
 Launch ingest:supervise start with a verified terminal notification route to the parent task.
 Never silently use --local-only when unattended automatic delivery is required. If the route is

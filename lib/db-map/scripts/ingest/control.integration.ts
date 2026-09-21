@@ -58,7 +58,7 @@ try {
   );
   await changeMaintenance(db, false, actor, undefined, ownedToken);
   ownedToken = undefined;
-  dir = await mkdtemp(resolve(REPO_ROOT, "docs/poi/control-test-"));
+  dir = await mkdtemp(resolve(REPO_ROOT, "poi/control-test-"));
   const file = resolve(dir, slug + ".json");
   await writeFile(
     file,

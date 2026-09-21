@@ -60,7 +60,7 @@ export interface SourceDefinition {
 }
 
 export interface SourceFileDefinition {
-  /** Repo-relative exact path or `*` wildcard pattern under docs/poi/. */
+  /** Repo-relative exact path or `*` wildcard pattern under poi/. */
   pattern: string;
   /**
    * Expected category for this file in the source registry. Runtime ingestion always uses

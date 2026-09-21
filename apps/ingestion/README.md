@@ -1,6 +1,6 @@
 # Ingestion dashboard
 
-A local operations app for the source files in `docs/poi`. Uses the existing shell's
+A local operations app for the source files in `poi`. Uses the existing shell's
 `DB_MAP_URL`; no `.env` file or browser-visible database credentials.
 
 ```bash
@@ -62,7 +62,7 @@ last scan; live database evidence is refreshed separately.
 
 ```bash
 pnpm --filter @lib/db-map ingest:inventory --json
-pnpm --filter @lib/db-map ingest:inventory --file docs/poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv --json
+pnpm --filter @lib/db-map ingest:inventory --file poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv --json
 pnpm --filter @lib/db-map ingest:test-inventory
 pnpm --filter @lib/db-map ingest:test-inventory:integration
 pnpm --filter @app/ingestion check-types
@@ -72,4 +72,4 @@ pnpm --filter @app/ingestion test
 The integration test writes two isolated non-POI fixture records, scans the checkout, and removes
 its own fixtures. It calls no providers. Provider metrics in the UI cover attributed normalization
 requests; legacy calls and matching/fusion costs are not included. There is no scheduler or alert
-delivery while the app is closed. See the [shared runbook](../../docs/poi-ingestion.md).
+delivery while the app is closed. See the [shared runbook](../../poi-ingestion.md).

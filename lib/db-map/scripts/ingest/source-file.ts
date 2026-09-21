@@ -6,13 +6,14 @@ import { listSourceDefinitions } from "./sources.js";
 import type { SourceDefinition, SourceFileDefinition } from "./types.js";
 
 export const REPO_ROOT = resolve(import.meta.dirname, "../../../..");
-const POI_ROOT = resolve(REPO_ROOT, "docs/poi");
+const POI_ROOT = resolve(REPO_ROOT, "poi");
 
 export interface ResolvedSourceFile {
   absolutePath: string;
   logicalPath: string;
   source: SourceDefinition;
-  file: Required<Pick<SourceFileDefinition, "pattern" | "category">> & SourceFileDefinition;
+  file: Required<Pick<SourceFileDefinition, "pattern" | "category">> &
+    SourceFileDefinition;
   format: "json" | "jsonl" | "csv";
   mode: "snapshot" | "incremental";
   extractorVersion: string;
@@ -34,19 +35,34 @@ function extensionFormat(path: string): "json" | "jsonl" | "csv" {
   if (lower.endsWith(".jsonl")) return "jsonl";
   if (lower.endsWith(".json")) return "json";
   if (lower.endsWith(".csv")) return "csv";
-  throw new Error(`Unsupported source file: ${path} (expected .json, .jsonl, or .csv)`);
+  throw new Error(
+    `Unsupported source file: ${path} (expected .json, .jsonl, or .csv)`,
+  );
 }
 
 export function normalizationProfileForCategory(category: string): string {
-  if (["music_festival", "carnival", "art_fair", "art_parade"].includes(category)) return "event";
+  if (
+    ["music_festival", "carnival", "art_fair", "art_parade"].includes(category)
+  )
+    return "event";
   if (category === "campground") return "campground";
-  if (category === "botanical_garden" || category === "arboretum") return "garden";
+  if (category === "botanical_garden" || category === "arboretum")
+    return "garden";
   return "place";
 }
 
-function inferredSource(logicalPath: string, category?: string): SourceDefinition {
+function inferredSource(
+  logicalPath: string,
+  category?: string,
+): SourceDefinition {
   const filename = basename(logicalPath).replace(/\.(jsonl|json|csv)$/i, "");
-  const genericNames = new Set(["facilities", "events", "records", "data", "places"]);
+  const genericNames = new Set([
+    "facilities",
+    "events",
+    "records",
+    "data",
+    "places",
+  ]);
   const parent = basename(dirname(logicalPath));
   const seed = genericNames.has(filename.toLowerCase()) ? parent : filename;
   const slug = seed
@@ -59,7 +75,9 @@ function inferredSource(logicalPath: string, category?: string): SourceDefinitio
     meta: { slug, name: slug.replace(/_/g, " "), trust: 50 },
     // Cleanup needs source resolution but does not use a category. Ingestion always
     // supplies one, so its normalizer profile remains category-driven.
-    normalizationProfile: category ? normalizationProfileForCategory(category) : "place",
+    normalizationProfile: category
+      ? normalizationProfileForCategory(category)
+      : "place",
   };
 }
 
@@ -81,18 +99,26 @@ export async function resolveSourceFile(
   }
 
   const info = await stat(absolutePath);
-  if (!info.isFile()) throw new Error(`Source path is not a file: ${absolutePath}`);
+  if (!info.isFile())
+    throw new Error(`Source path is not a file: ${absolutePath}`);
 
   const logicalPath = normalizePath(relative(REPO_ROOT, absolutePath));
-  const matches: Array<{ source: SourceDefinition; file: SourceFileDefinition }> = [];
+  const matches: Array<{
+    source: SourceDefinition;
+    file: SourceFileDefinition;
+  }> = [];
   for (const source of listSourceDefinitions()) {
     for (const file of source.files ?? []) {
-      if (patternRegex(file.pattern).test(logicalPath)) matches.push({ source, file });
+      if (patternRegex(file.pattern).test(logicalPath))
+        matches.push({ source, file });
     }
   }
   if (matches.length === 0) {
     const source = inferredSource(logicalPath, category);
-    const file: SourceFileDefinition = { pattern: logicalPath, category: category ?? "" };
+    const file: SourceFileDefinition = {
+      pattern: logicalPath,
+      category: category ?? "",
+    };
     return {
       absolutePath,
       logicalPath,
@@ -123,7 +149,8 @@ export async function resolveSourceFile(
     source: {
       ...match.source,
       normalizationProfile:
-        match.source.normalizationProfile ?? normalizationProfileForCategory(category ?? match.file.category),
+        match.source.normalizationProfile ??
+        normalizationProfileForCategory(category ?? match.file.category),
     },
     // Ingestion intentionally lets its required CLI category define the run. File
     // maintenance commands can omit it and use the registered category for display.

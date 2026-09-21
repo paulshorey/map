@@ -14,7 +14,7 @@ for (let i = 0; i < args.length; i++) {
   else if (args[i] === "--file" && args[i + 1]) file = args[++i];
   else
     throw new Error(
-      "Usage: ingest:inventory [--refresh] [--json] [--file docs/poi/...]",
+      "Usage: ingest:inventory [--refresh] [--json] [--file poi/...]",
     );
 }
 const db = getDb();

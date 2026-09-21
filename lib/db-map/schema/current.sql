@@ -335,7 +335,7 @@ CREATE TABLE public.research_ingest_inventory (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT research_ingest_inventory_disposition_check CHECK ((disposition = ANY (ARRAY['needs_review'::text, 'import'::text, 'alternate'::text, 'supporting'::text, 'ignored'::text]))),
     CONSTRAINT research_ingest_inventory_format_check CHECK ((format = ANY (ARRAY['json'::text, 'jsonl'::text, 'csv'::text, 'kml'::text, 'kmz'::text]))),
-    CONSTRAINT research_ingest_inventory_logical_path_check CHECK ((logical_path ~~ 'docs/poi/%'::text)),
+    CONSTRAINT research_ingest_inventory_logical_path_check CHECK ((logical_path ~~ 'poi/%'::text)),
     CONSTRAINT research_ingest_inventory_priority_check CHECK (((priority >= 0) AND (priority <= 3)))
 );
 

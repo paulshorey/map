@@ -12,7 +12,7 @@ import { getNormalizationProfile } from "./normalize/profiles.js";
 import { Execution, lockSource } from "./execution.js";
 const db = getDb();
 const slug = "queue_test_" + randomUUID().replaceAll("-", "");
-const dir = await mkdtemp(resolve(REPO_ROOT, "docs/poi/queue-test-"));
+const dir = await mkdtemp(resolve(REPO_ROOT, "poi/queue-test-"));
 const file = resolve(dir, slug + ".json");
 const opts = {
   file,

@@ -2,7 +2,7 @@
 
 > Status: living follow-up plan. Tracks only unfinished POI ingestion work that still
 > matters. Updated 2026-07-09 after a code review of the implemented pipeline against the
-> real source data in `docs/poi/`.
+> real source data in `poi/`.
 >
 > Deliberately excluded (reviewed and reaffirmed): deferred canonical rebuilds and
 > deterministic batch passes. The row-at-a-time matcher is simpler, safer, resumable, and
@@ -32,7 +32,7 @@ Implemented (in addition to the previously documented baseline):
   4 s).
 - **Generic capture-spec extractor** — sources registered in `sources.ts` without a custom
   extractor fall back to a generic extractor for files following
-  `docs/poi-research/capture-spec.md`. New conformant sources need only a metadata entry.
+  `poi-research/capture-spec.md`. New conformant sources need only a metadata entry.
 
 Still unfinished:
 
@@ -114,7 +114,7 @@ staged path for curated data.
 3. Direct canonical writes stay available but are documented as fixture-only.
 
 Acceptance: curated JSON/KML flows through `research_pois` with provenance;
-`lib/db-map/IMPORTING.md` and `docs/AGENTS.md` describe the staged path as primary.
+`lib/db-map/IMPORTING.md` and `AGENTS.md` describe the staged path as primary.
 
 ---
 
@@ -143,7 +143,7 @@ Options:
 2. Keep the rule and accept that festivals require venue-level coordinates (Viberate/
    Ticketmaster coords + RA venue geocoding may cover enough).
 
-Whichever is chosen, record it in `docs/poi-ingestion.md`.
+Whichever is chosen, record it in `poi-ingestion.md`.
 
 Acceptance:
 
@@ -166,7 +166,7 @@ Unchanged. Create a repeatable validation record for gardens + campgrounds + fes
    field provenance populated, not-ready rows understood, event rows dated.
 4. Re-run identical commands; confirm counts unchanged (idempotency).
 5. Inspect dense map regions and detail drawers in the app.
-6. Save findings in `docs/poi-ingestion-validation.md`.
+6. Save findings in `poi-ingestion-validation.md`.
 
 ---
 
@@ -188,7 +188,7 @@ drawer still renders event status.
 6. Staged legacy importer path (C).
 7. Event date filter UI (F).
 8. Remaining extractors by priority (D), including carnival/art-fair backlog in
-   `docs/poi/carnival/` and `docs/poi/art-fairs/`.
+   `poi/carnival/` and `poi/art-fairs/`.
 
 Reasoning:
 

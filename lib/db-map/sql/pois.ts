@@ -51,13 +51,15 @@ async function resolveCategoryId(db: Pool, category: string): Promise<string> {
   );
   if (found.rows[0]) return found.rows[0].id as string;
 
-  throw new Error(`Unknown POI category "${category}". Add it to taxonomy.ts and run ingest:taxonomy:seed first.`);
+  throw new Error(
+    `Unknown POI category "${category}". Add it to taxonomy.ts and run ingest:taxonomy:seed first.`,
+  );
 }
 
 /**
  * Direct insert of canonical POIs (used by seed + legacy JSON/KML imports).
  * Inserts the place row and links its primary category. The research → canonical
- * conflation pipeline (see docs/poi-ingestion.md) is the path for de-duplicated bulk ingestion;
+ * conflation pipeline (see poi-ingestion.md) is the path for de-duplicated bulk ingestion;
  * this helper is for seeding and small curated imports.
  */
 export async function insertPois(
