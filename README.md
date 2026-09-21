@@ -73,6 +73,32 @@ pnpm dev
 
 Open [http://localhost:5000](http://localhost:5000).
 
+### Railway development and deployment
+
+Railway Infrastructure as Code lives in [`.railway/railway.ts`](.railway/railway.ts).
+The repository pins both the `railway/iac` TypeScript SDK and Railway CLI, so humans,
+local agents, cloud agents, and CI evaluate the same configuration.
+
+For a first local setup:
+
+```bash
+pnpm install
+pnpm railway:login
+pnpm railway:link:dev
+pnpm railway:status
+pnpm railway:config:plan
+```
+
+The plan is read-only. Use `pnpm railway:config:apply` only after reviewing it.
+Cloud agents should receive a `RAILWAY_TOKEN` project token through their secret
+store and must not write credentials into the repository.
+
+Pull requests that change `.railway/` receive a pinned Railway plan. Merging applies
+that exact reviewed plan to `World/dev`; drift or a changed `.railway/` tree causes
+the apply to fail. Railway PR Environments clone `dev`, deploy only affected services,
+and include supported bot-authored PRs. See the [Railway runbook](.railway/README.md)
+for setup, agent rules, CI behavior, preview limitations, and recovery steps.
+
 ### Environment Variables
 
 | Variable                | Default                                                 | Description                                                                        |

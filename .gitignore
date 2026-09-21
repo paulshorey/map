@@ -19,6 +19,9 @@ out
 # Environment files
 .env
 .env.local
+.railway/config.json
+.railway/config-*.json
+railway-plan.json
 .env.*.local
 
 

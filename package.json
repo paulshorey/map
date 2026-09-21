@@ -16,9 +16,17 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "dev:ingestion": "pnpm --filter @app/ingestion start"
+    "dev:ingestion": "pnpm --filter @app/ingestion start",
+    "railway:login": "railway login",
+    "railway:link:dev": "railway link --project d25b93f2-bea9-4f05-a6c0-4a045e8b18ac --environment 01e37c22-5804-4b63-80a3-5d00255951e4",
+    "railway:status": "railway status --json",
+    "railway:config:check": "tsc --noEmit --strict --skipLibCheck --target es2022 --module nodenext --moduleResolution nodenext .railway/railway.ts",
+    "railway:config:export": "railway config pull --json",
+    "railway:config:plan": "railway config plan --file .railway/railway.ts",
+    "railway:config:apply": "railway config apply --file .railway/railway.ts"
   },
   "devDependencies": {
+    "@railway/cli": "5.59.0",
     "prettier": "^3.6.2",
     "railway": "3.11.0",
     "turbo": "^2.5.5",

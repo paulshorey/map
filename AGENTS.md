@@ -12,6 +12,40 @@ This is a monorepo. Apps live in `apps/`; shared libraries live in `lib/`.
 - ./working directory contains project management tasks, specs, plans, and notes. You own this folder. Please add, edit, and rearrange the files as you edit the codebase. Keep this project management status and progress up to date.
 - ./data folder contains raw POI data from multiple sources - it is unfinished, needs to be processed. This data is committed to the repository, with the intention of being normalized, analyzed, aggregated, converted to our custom data format, and saved to our database to be displayed on the map in the user-facing app. Please help to keep any documentation files and notes (such as AGENTS.md) up to date, to describe the raw files and what needs to be finished.
 
+## Railway development and deployment
+
+Railway Infrastructure as Code is owned by `.railway/railway.ts`; the full human and
+agent workflow is in `.railway/README.md`. The TypeScript file is evaluated by the
+Railway CLI and official `railwayapp/config` GitHub Action. It is not read during an
+ordinary source deployment, and the deprecated dashboard **Railway Config File** field
+must stay unset.
+
+- Run `pnpm install` before Railway work. The repository pins `@railway/cli` and
+  `railway`, and pnpm is allowed to run only the CLI's required binary installer in
+  addition to the existing approved build dependencies.
+- Validate every IaC edit with `pnpm railway:config:check` and
+  `pnpm railway:config:plan`. A plan is read-only. Confirm it targets project `World`
+  and environment `dev`, contains no unexpected deletes, and preserves live variables.
+- Local humans and interactive agents authenticate with `pnpm railway:login`, then run
+  `pnpm railway:link:dev`. Cloud agents and CI use an injected `RAILWAY_TOKEN` scoped to
+  `dev`; never print, commit, copy into prompts, or persist that token in project files.
+- Use `pnpm railway:config:export` to inspect the live graph without replacing the
+  authored file. Never run `railway config pull --force` over a dirty or reviewed
+  `.railway/railway.ts`; if a full import is necessary, preserve the current file and
+  reconcile every resource and `preserve()` variable before planning.
+- Do not clear dashboard build/deploy values after IaC is applied. They are the live
+  state rendered from the authoring file. Change the TypeScript definition and apply it.
+- Normal changes go through a pull request. The official action posts a pinned plan and
+  merge applies that exact artifact. Do not apply a competing dashboard or CLI change
+  while a plan is awaiting merge; Railway rejects stale plans on environment drift.
+- Direct `pnpm railway:config:apply` is for initial bootstrap or an explicitly requested
+  recovery. Review the fresh plan, apply, run the plan again until it reports no changes,
+  then verify the deployment and `/api/health`.
+- Railway PR Environments inherit `dev`. Focused and bot PR environments are enabled.
+  Source changes receive ephemeral previews; IaC changes are planned against `dev` and
+  take effect after merge, so a preview created before the IaC apply retains its cloned
+  configuration unless it is synced or recreated.
+
 # Ingesting new POI data
 
 Raw source POI data will be ingested by a CLI script. It is a long-running process. Stop and report back if it encounters a problem so we can troubleshoot and fix or improve the process.
