@@ -12,7 +12,7 @@ Main POI Map application — Next.js 15 web app with Capacitor shells for iOS an
 | `ios/`, `android/` | Native Capacitor projects (generated/synced, edit sparingly) |
 | `next.config.ts` | Next.js config; static export for mobile builds |
 | `capacitor.config.ts` | App id, webDir (`out`), native plugin settings |
-| `railway.json` | Railway build/deploy config and healthcheck |
+| `.railway/railway.ts` | Root-level Railway infrastructure config and healthcheck |
 
 ## Commands
 
@@ -45,7 +45,7 @@ Mobile apps call a **remote** backend via `NEXT_PUBLIC_API_URL` (see `src/lib/co
 
 ## Deployment (Railway)
 
-`railway.json` watches `apps/map/**`, `lib/db-map/**`, and workspace config. Build runs `pnpm --filter ./apps/map build`; start runs `next start`. Healthcheck: `/api/health`.
+The root `.railway/railway.ts` watches `apps/map/**`, `lib/db-map/**`, and workspace config. Build runs `pnpm --filter ./apps/map build`; start runs `next start`. Healthcheck: `/api/health`.
 
 Required runtime env vars on the server:
 
