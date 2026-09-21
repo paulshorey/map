@@ -1,18 +1,29 @@
 # POI Map
 
-Interactive POI map.
+Interactive POI map - letting the user search and filter points of interest on a world map.
 
-- Public user-facing app is like Google Maps, Yelp, Zillow, ParaglidingMap, Campgrounds Search, and other typical apps that render many locations on a map, let the user search and filter the results on the map.
-- Hard part is the backend and administration - gathering data. To add POIs (points of interests) to this map, we need to develop and maintain a system to ingest raw source data files (.json or .csv data dumps), normalize the raw data into our standard format, filter for quality and completeness, aggregate by number of sources, and add value like geo code location, clearer description, and category.
+- Public user-facing app is like Google Maps, Yelp, Zillow, ParaglidingMap, Campgrounds Search, and other typical apps that render many locations on a map - let the user search and filter the results on the map.
+- Hard part is collecting and maintaining POI data. To add POIs (points of interests) to this map, we need to develop and maintain a system to ingest raw source data files (.json or .csv data dumps), normalize the raw data into our standard format, filter for quality and completeness, aggregate by number of sources, and add value like geo code location, clearer description, and category.
 
 # Development
 
 This is a monorepo. Apps live in `apps/`; shared libraries live in `lib/`.
 
-- ./working directory contains project management tasks, specs, plans, and notes.
-- ./data folder contains finished documentation
+- ./working directory contains project management tasks, specs, plans, and notes. You own this folder. Please add, edit, and rearrange the files as you edit the codebase. Keep this project management status and progress up to date.
+- ./data folder contains raw POI data from multiple sources - it is unfinished, needs to be processed. This data is committed to the repository, with the intention of being normalized, analyzed, aggregated, converted to our custom data format, and saved to our database to be displayed on the map in the user-facing app. Please help to keep any documentation files and notes (such as AGENTS.md) up to date, to describe the raw files and what needs to be finished.
 
-## Read the right guide
+# Ingesting new POI data
+
+Raw source POI data will be ingested by a CLI script. It is a long-running process. Stop and report back if it encounters a problem so we can troubleshoot and fix or improve the process.
+
+1. Smart AI model (Terra) should orchestrate sub-agents to run the scripts, decide on success or failure of each step, decide to start from the beginning or resume a process if it previously ended prematurely. Communicate on the status and health of the process. Recommend next steps - to make code improvements, to fix data, to start over, how to resume data collection at the last spot where it previously failed.
+2. Cheap AI model (Luna) should run the script, monitor progress, and report back success or failure details and logs.
+
+You may also be an advanced AI model (Sol or Astra) that makes development decisions, owns and edits this codebase, and works with the human developer to improve this process. You may run the CLI scripts, but alway limit to just a short subset of records, only for testing and troubleshooting. Real long-running ingestion scripts should be run by cheaper AI agents.
+
+Refer back to your prompt to understand if you are the orchestrator or the runner. Act according to your role.
+
+## Processing source data
 
 - [README.md](README.md): human setup and commands for manually running full ingestion.
 - [Ingestion runbook](poi-ingestion.md): shared reference for stage behavior,
@@ -159,3 +170,8 @@ changes together. See the database guide for details.
 Destructive reclustering or resets are authorized when necessary to the requested repair,
 but are not resume shortcuts. Preserve diagnostic evidence first, document why retained
 artifacts cannot be repaired, and use the runbook's cleanup procedure.
+
+## Research and report
+
+If something went wrong, stop and report back. Include all info, data, and logs.
+If unsure about something, research, search the web, find latest techniques and best practices.
