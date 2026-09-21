@@ -6,8 +6,33 @@ import {
   parseSupervisorArgs,
   terminalOutcome,
   dispatchJob,
+  budgetedResume,
 } from "./supervise.js";
 import { createJob, jobPath, atomicJson } from "./supervisor-state.js";
+
+test("terminal resume subtracts exact execution usage and never resets an exhausted budget", () => {
+  const run = randomUUID();
+  assert.equal(
+    budgetedResume(
+      run,
+      { maxLlmRequests: 31816, maxCostUsd: 9.967241 },
+      { requests: 46, estimated_cost_usd: 0.006764 },
+    ),
+    `pnpm --filter @lib/db-map ingest:run --resume ${run} --max-llm-requests 31770 --max-cost-usd 9.960477`,
+  );
+  assert.equal(
+    budgetedResume(
+      run,
+      { maxLlmRequests: 1, maxCostUsd: 0.01 },
+      { requests: 2, estimated_cost_usd: 0.02 },
+    ),
+    `pnpm --filter @lib/db-map ingest:run --resume ${run} --max-llm-requests 0 --max-cost-usd 0`,
+  );
+  assert.equal(
+    budgetedResume(run, {}, { requests: 1, estimated_cost_usd: 0 }),
+    `pnpm --filter @lib/db-map ingest:run --resume ${run}`,
+  );
+});
 
 test("expensive smoke cannot resume or expand cohort/deadline", () => {
   for (const args of [

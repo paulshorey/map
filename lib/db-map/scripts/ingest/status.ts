@@ -312,6 +312,11 @@ async function main() {
         console.log(
           `Execution ${e.id}: ${e.status}, ${e.host}:${e.pid}${e.heartbeat_stale ? " — STALE HEARTBEAT" : ""}`,
         );
+      const recovery = r.counters?.providerRecovery;
+      if (recovery && recovery.executionId === result.executions[0]?.id)
+        console.log(
+          `Provider recovery: ${recovery.state}; ${recovery.stage} ${recovery.target}; retries=${recovery.retry}; execution retries=${recovery.executionRetries}${recovery.retryAt ? `; retry at ${recovery.retryAt}` : ""}${recovery.reason ? `; ${recovery.reason}` : ""}`,
+        );
       console.log("Stage progress (latest outcome per target):");
       for (const a of result.attempts)
         console.log(`  ${a.stage}: ${a.status}=${a.targets}`);

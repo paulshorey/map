@@ -163,7 +163,13 @@ async function evidence(job: Job) {
     const r = (
       await db.query(
         `SELECT r.id,r.status,r.current_stage,r.stop_reason,left(r.fatal_error,1200) AS fatal_error,
-    r.verified_at,e.status AS execution_status,e.heartbeat_at,
+    r.verified_at,e.status AS execution_status,e.heartbeat_at,e.options AS execution_options,
+    CASE WHEN r.counters->'providerRecovery'->>'executionId'=e.id::text
+      THEN r.counters->'providerRecovery' ELSE NULL END AS provider_recovery,
+    (SELECT jsonb_build_object('requests',count(*),'estimated_cost_usd',COALESCE(sum(q.estimated_cost_usd),0),
+      'unknown_cost_requests',count(*) FILTER (WHERE q.estimated_cost_usd IS NULL))
+      FROM research_normalization_requests q JOIN research_ingest_attempts a ON a.id=q.ingest_attempt_id
+      WHERE a.execution_id=e.id) AS normalization_usage,
     extract(epoch FROM now()-e.heartbeat_at)::float AS heartbeat_age_seconds,
     (SELECT count(*)::int FROM research_ingest_run_items WHERE run_id=r.id) AS scope_records,
     (SELECT max(greatest(started_at,finished_at)) FROM research_ingest_attempts WHERE execution_id=e.id) AS last_progress_at
@@ -176,6 +182,7 @@ async function evidence(job: Job) {
     const attempts = (
       await db.query(
         `SELECT stage,target_key,status,left(error->>'message',1200) AS error,
+    error->'status' AS http_status,error->'retryable' AS retryable,error->'retryAfterMs' AS retry_after_ms,
     output->>'reason' AS reason,started_at,finished_at FROM research_ingest_attempts
     WHERE execution_id=$1 ORDER BY greatest(started_at,finished_at) DESC LIMIT 3`,
         [job.execution_id],
@@ -186,6 +193,26 @@ async function evidence(job: Job) {
     await db.query("ROLLBACK").catch(() => undefined);
     db.release();
   }
+}
+
+/** CLI budgets are per execution; a suggested resume must subtract the pinned execution's usage. */
+export function budgetedResume(
+  runId: string,
+  options: { maxLlmRequests?: number; maxCostUsd?: number },
+  usage: { requests: number; estimated_cost_usd: number },
+) {
+  let command = `pnpm --filter @lib/db-map ingest:run --resume ${runId}`;
+  if (options.maxLlmRequests !== undefined)
+    command += ` --max-llm-requests ${Math.max(0, options.maxLlmRequests - usage.requests)}`;
+  if (options.maxCostUsd !== undefined) {
+    // Round down, never round the remaining allowance up.
+    const remaining = Math.max(
+      0,
+      Math.floor((options.maxCostUsd - usage.estimated_cost_usd) * 1e9) / 1e9,
+    );
+    command += ` --max-cost-usd ${remaining}`;
+  }
+  return command;
 }
 
 export function terminalOutcome(
@@ -447,9 +474,14 @@ async function worker(id: string) {
     log: jobPath(id, "worker.log"),
     error_tail:
       child.code === 0 ? undefined : await tail(jobPath(id, "worker.log")),
-    resume: job.run_id
-      ? `pnpm --filter @lib/db-map ingest:run --resume ${job.run_id}`
-      : null,
+    resume:
+      job.run_id && dbEvidence
+        ? budgetedResume(
+            job.run_id,
+            dbEvidence.execution_options,
+            dbEvidence.normalization_usage,
+          )
+        : null,
   };
   await atomicJson(jobPath(id, "result.json"), job.result);
   await saveJob(job);

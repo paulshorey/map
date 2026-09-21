@@ -127,6 +127,21 @@ it or that the resulting model turn completed.
 
 ## Evidence, stops, and recovery
 
+Managed normalization handles bounded transient provider recovery inside the existing worker;
+see [the runbook](poi-ingestion.md#transient-normalization-provider-recovery) for limits and evidence.
+A live cooldown with a current heartbeat is expected. Leave it to ordinary code; do not wake
+an agent, stop it merely for a 429, or launch a second worker. Smoke deadlines still win.
+After a terminal `provider_recovery_exhausted` callback, inspect the exact attempt/status,
+deduplicate the event ID, and report the exhausted bound. Do not cycle full resumes to work
+around persistent provider failure. Diagnose availability/configuration before another launch.
+
+Terminal evidence now includes normalization request count, recorded estimated cost and
+unknown-cost count for the pinned execution, plus recovery state. The suggested `resume`
+preserves the remaining normalization limits. Subtract any subsequent smoke/repair spending
+from the same approved task budget too. Missing evidence or unknown cost requires review;
+never interpret it as zero. A retry-policy-only change does not invalidate completed artifacts.
+No provider retry allows the runner or supervisor to relaunch a terminated ingestion process.
+
 Each job has a private ignored directory `lib/db-map/.ingest-jobs/<uuid>/`:
 
 - `job.json`: immutable launch scope plus process IDs, host, pinned run/execution IDs and status.

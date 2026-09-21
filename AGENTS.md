@@ -68,7 +68,9 @@ above; operational ownership does not authorize wasting expensive model time.
   approved scope, budgets and deadline. Ordinary code owns waiting and hourly health checks.
   Neither agent should poll, stream logs, run sleep/wait loops, or create an expensive recurring
   automation to stay alive. Return the launch receipt, then **end the turn**. No healthy status
-  report should invoke a model. No automatic ingestion retry, scope expansion, or backlog drain.
+  report should invoke a model. No automatic ingestion relaunch, scope expansion, or backlog drain.
+  Bounded in-process provider recovery is owned by ordinary pipeline code; see the runbook's
+  transient normalization provider recovery section. A healthy cooldown does not need an agent.
 - Only a terminal result/error should start a new expensive decision turn. Keep the handoff and
   report compact (about 150 words); retain raw logs locally. Check the stable event ID to avoid
   handling duplicate notifications. Verified database completion, not exit zero alone, is success.
@@ -78,6 +80,10 @@ above; operational ownership does not authorize wasting expensive model time.
   Local-only detached operation is for humans or a separately verified notification integration.
 - Token-efficient supervision does not limit ingestion provider bills. Preserve explicit provider
   budgets. Preserve maintenance, process identity, evidence and resume rules below.
+- On terminal provider-recovery exhaustion, inspect its recorded bound and provider error;
+  do not repeatedly delegate resumes against an unresolved outage. Carry forward the exact
+  execution's remaining budgets (including failed/repair requests and diagnostic spending),
+  review unknown costs, and preserve the originally approved scope and total deadline.
 
 ## Stop before changing a running pipeline
 

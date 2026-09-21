@@ -9,8 +9,10 @@ export class LlmError extends Error {
     message: string,
     readonly retryable = false,
     readonly status?: number,
+    readonly retryAfterMs?: number,
   ) {
     super(message);
+    this.name = "LlmError";
   }
 }
 
@@ -52,7 +54,18 @@ export interface ChatResult {
   latencyMs: number;
 }
 
-const sleep = (ms: number) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
+const sleep = (ms: number) =>
+  new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
+
+export function retryAfterMs(value: string | null): number | undefined {
+  if (!value?.trim()) return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds))
+    return seconds >= 0 ? Math.round(seconds * 1_000) : undefined;
+  const at = Date.parse(value);
+  if (!Number.isNaN(at)) return Math.max(0, at - Date.now());
+  return undefined;
+}
 
 function messagesFor(opts: ChatOptions): ChatMessage[] {
   if (opts.messages?.length) return opts.messages;
@@ -68,12 +81,18 @@ function messagesFor(opts: ChatOptions): ChatMessage[] {
 /** OpenAI-compatible DeepInfra completion with bounded retry and telemetry. */
 export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
   const { model, baseUrl, apiKey } = ingestConfig.llm;
+  // Configuration failures are not transient network failures.
+  const authorization = `Bearer ${apiKey()}`;
+  const messages = messagesFor(opts);
   const retries = opts.retries ?? 2;
   let lastError: LlmError | undefined;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), opts.timeoutMs ?? 180_000);
+    const timeout = setTimeout(
+      () => controller.abort(),
+      opts.timeoutMs ?? 180_000,
+    );
     const started = Date.now();
     try {
       const res = await fetch(`${baseUrl}/chat/completions`, {
@@ -81,14 +100,16 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
         signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey()}`,
+          Authorization: authorization,
         },
         body: JSON.stringify({
           model,
           temperature: 0,
           max_tokens: opts.maxTokens ?? 1024,
-          messages: messagesFor(opts),
-          ...(opts.responseFormat ? { response_format: opts.responseFormat } : {}),
+          messages,
+          ...(opts.responseFormat
+            ? { response_format: opts.responseFormat }
+            : {}),
           thinking: { type: "disabled" },
         }),
       });
@@ -96,7 +117,10 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
       const raw = await res.text();
       let body: {
         model?: string;
-        choices?: { message?: { content?: string }; finish_reason?: string | null }[];
+        choices?: {
+          message?: { content?: string };
+          finish_reason?: string | null;
+        }[];
         usage?: {
           prompt_tokens?: number;
           completion_tokens?: number;
@@ -109,7 +133,12 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
       try {
         body = JSON.parse(raw) as typeof body;
       } catch {
-        throw new LlmError(`Invalid JSON response (status ${res.status})`, res.status >= 500, res.status);
+        throw new LlmError(
+          `Invalid JSON response (status ${res.status})`,
+          res.status === 429 || res.status >= 500,
+          res.status,
+          retryAfterMs(res.headers.get("retry-after")),
+        );
       }
 
       if (!res.ok) {
@@ -118,6 +147,7 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
           body.error?.message ?? `Unexpected status ${res.status}`,
           retryable,
           res.status,
+          retryAfterMs(res.headers.get("retry-after")),
         );
       }
 
@@ -137,7 +167,8 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
         finishReason,
         usage: {
           promptTokens: body.usage?.prompt_tokens ?? null,
-          cachedTokens: body.usage?.prompt_tokens_details?.cached_tokens ?? null,
+          cachedTokens:
+            body.usage?.prompt_tokens_details?.cached_tokens ?? null,
           completionTokens: body.usage?.completion_tokens ?? null,
           totalTokens: body.usage?.total_tokens ?? null,
           estimatedCost: body.usage?.estimated_cost ?? null,
@@ -156,7 +187,18 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
             );
       lastError = normalized;
       if (!normalized.retryable || attempt === retries) throw normalized;
-      await sleep(Math.min(10_000, 500 * 2 ** attempt + Math.floor(Math.random() * 250)));
+      // A long provider cooldown needs managed recovery; never retry earlier than requested.
+      if (
+        normalized.retryAfterMs !== undefined &&
+        normalized.retryAfterMs > 60_000
+      )
+        throw normalized;
+      const backoffMs =
+        normalized.retryAfterMs ??
+        (normalized.status === 429
+          ? 2_000 * 2 ** attempt
+          : 500 * 2 ** attempt) + Math.floor(Math.random() * 250);
+      await sleep(Math.min(60_000, backoffMs));
     } finally {
       clearTimeout(timeout);
     }

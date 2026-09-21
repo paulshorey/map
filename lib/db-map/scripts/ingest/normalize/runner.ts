@@ -318,7 +318,7 @@ async function callNormalizer(
     ...fewShotMessages(profileId),
     { role: "user", content: JSON.stringify(packet) },
   ];
-  const requestId = await insertRequest(db, row, inputHash, profileVersion, {
+  let requestId = await insertRequest(db, row, inputHash, profileVersion, {
     messages,
   });
   let result: ChatResult | null = null;
@@ -326,6 +326,7 @@ async function callNormalizer(
   try {
     try {
       result = await completeChat({
+        retries: currentAttempt() ? 0 : undefined,
         messages,
         maxTokens: 1800,
         responseFormat: {
@@ -339,7 +340,14 @@ async function callNormalizer(
       });
     } catch (error) {
       if (!(error instanceof LlmError) || error.status !== 400) throw error;
+      // The compatibility fallback is another HTTP request and must retain its own budget/audit row.
+      await finishRequest(db, requestId, null, undefined, error);
+      requestId = await insertRequest(db, row, inputHash, profileVersion, {
+        messages,
+        response_format: { type: "json_object" },
+      });
       result = await completeChat({
+        retries: currentAttempt() ? 0 : undefined,
         messages,
         maxTokens: 1800,
         responseFormat: { type: "json_object" },
@@ -375,6 +383,7 @@ async function callNormalizer(
     let repairParsed: unknown;
     try {
       repairResult = await completeChat({
+        retries: currentAttempt() ? 0 : undefined,
         messages: repairMessages,
         maxTokens: 1800,
         responseFormat: {

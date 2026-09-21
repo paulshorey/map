@@ -43,6 +43,7 @@
     "ingest:match": "tsx scripts/ingest/match.ts",
     "ingest:report": "tsx scripts/ingest/report.ts",
     "ingest:test-recovery": "tsx scripts/ingest/recovery.test.ts",
+    "ingest:test-provider-recovery": "tsx --test scripts/ingest/provider-recovery.test.ts",
     "ingest:pause": "tsx scripts/ingest/pause.ts",
     "ingest:status": "tsx scripts/ingest/status.ts",
     "ingest:match:golden": "tsx scripts/ingest/match/golden.ts",

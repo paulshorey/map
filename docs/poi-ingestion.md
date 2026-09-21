@@ -274,6 +274,46 @@ restart all previously running jobs. Report final gate state and which runs rema
 
 ## Pausing and crash recovery
 
+### Transient normalization provider recovery
+
+Managed normalization automatically retries the **same record**, within the same execution,
+for HTTP 429/5xx, network errors and request timeouts. Ordinary code owns the cooldown; it does
+not invoke an agent, restart ingestion, expand the frozen cohort, or advance downstream early.
+Other stages retain their existing error policy. Authentication/configuration errors, invalid
+model output, and database errors do not enter this recovery loop.
+
+The default allows five additional attempts per record, with delays of 30, 60, 120, 240 and
+300 seconds plus up to one second of jitter. `Retry-After` (seconds or HTTP date) is a minimum,
+even for a non-JSON 429/5xx response. No retry starts after the record's 15-minute recovery
+window; an in-flight record can finish afterward, subject to existing 180-second timeouts per
+HTTP call (including format fallback/repair). The window bounds retry scheduling, not a hard kill.
+A requested delay that cannot fit ends recovery rather than retrying early. At most 100
+retries are scheduled across an execution. Exhaustion fails with stop reason
+`provider_recovery_exhausted`; successful checkpoints remain resumable.
+
+Each managed retry appends a new stage attempt and rechecks the execution's normalization
+budgets. Hidden HTTP retries are disabled for managed normalization. Failed requests, repair
+requests and JSON-format fallbacks all count as request rows. Existing per-record repair and
+fallback calls can still exceed a threshold within a record; these are not universal hard
+billing limits. A response lost in transit may have unknown cost and may be billed twice on
+retry. Unknown cost is not proof of zero spend.
+
+During cooldown the source/admission locks and five-second heartbeat remain active. Pause,
+maintenance and signal requests end the wait within one second of being observed (remote
+requests first need a heartbeat); no new provider attempt starts afterward. The smoke
+supervisor's original deadline still applies, so a smoke interrupted during recovery is
+incomplete, not successful. Use mocked failure injection to test long cooldowns without
+provider spend: `pnpm --filter @lib/db-map ingest:test-provider-recovery`.
+
+`ingest:status` prints the current execution's recovery state. JSON includes
+`run.counters.providerRecovery` (target, retry time, counts and last state); the local journal
+retains every recovery event, and stage attempts retain HTTP status, retryability and
+Retry-After. Terminal supervisor evidence includes recovery state and normalization usage
+joined to the exact execution ID. Its suggested resume subtracts recorded usage from that
+execution's limits; zero remains zero. Unknown costs still require review. Do not substitute
+a bare resume command, which can restore the original run's budgets, or reset a supervisor
+deadline without considering the approved total runtime.
+
 ```bash
 pnpm --filter @lib/db-map ingest:pause --run <uuid>
 pnpm --filter @lib/db-map ingest:control stop --run <uuid> --wait-seconds 30

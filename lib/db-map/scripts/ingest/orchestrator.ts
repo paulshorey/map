@@ -1309,6 +1309,11 @@ export async function runOrchestration(
             );
           },
         );
+        if (result.status === "paused") {
+          finalStatus = "paused";
+          reason = ex.stopReason || `${stage}:paused`;
+          return;
+        }
         if (["waiting_budget", "blocked"].includes(result.status)) {
           finalStatus =
             result.status === "waiting_budget" ? "waiting_budget" : "partial";
@@ -1415,7 +1420,10 @@ export async function runOrchestration(
     );
   } catch (error) {
     finalStatus = "failed";
-    reason = "stage_error";
+    reason =
+      (error as { code?: string })?.code === "provider_recovery_exhausted"
+        ? "provider_recovery_exhausted"
+        : "stage_error";
     await ex.finish("failed", reason, error);
     throw error;
   } finally {

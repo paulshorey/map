@@ -4,6 +4,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { hostname } from "node:os";
 import type { Pool, PoolClient } from "pg";
 import { admitWorker } from "../../sql/ingestion-control.js";
+import { ProviderRecovery } from "./provider-recovery.js";
 
 export type Outcome =
   | "succeeded"
@@ -27,6 +28,17 @@ export const errorDetails = (error: unknown) => ({
   message: error instanceof Error ? error.message : String(error),
   stack: error instanceof Error ? error.stack : undefined,
   code: (error as { code?: string })?.code,
+  status: (error as { status?: number })?.status,
+  retryable: (error as { retryable?: boolean })?.retryable,
+  retryAfterMs: (error as { retryAfterMs?: number })?.retryAfterMs,
+  reason: (error as { reason?: string })?.reason,
+  cause:
+    error instanceof Error && error.cause instanceof Error
+      ? {
+          message: error.cause.message,
+          status: (error.cause as { status?: number }).status,
+        }
+      : undefined,
 });
 
 /** Session lock is held for the entire invocation, including provider calls. */
@@ -77,6 +89,7 @@ export class Execution {
     readonly runId: string,
     readonly id: string,
     private lock: PoolClient,
+    private readonly providerRecovery = new ProviderRecovery(),
   ) {
     const directory = fileURLToPath(
       new URL("../../.ingest-logs/", import.meta.url),
@@ -225,6 +238,46 @@ export class Execution {
   }
 
   async attempt(
+    stage: string,
+    target: string,
+    input: Record<string, unknown>,
+    fn: () => Promise<AttemptResult>,
+    reuse = true,
+    canReuse?: (result: AttemptResult) => Promise<boolean>,
+  ): Promise<AttemptResult> {
+    const attempt = () =>
+      this.attemptOnce(stage, target, input, fn, reuse, canReuse);
+    if (stage !== "normalize") return attempt();
+    return this.providerRecovery.run({
+      attempt,
+      stopped: () => {
+        this.check();
+        return this.stopped;
+      },
+      paused: () => ({ status: "paused", reason: this.stopReason }),
+      resultStatus: (result) => result.status,
+      event: async (event) => {
+        const details = {
+          ...event,
+          stage,
+          target,
+          executionId: this.id,
+          at: new Date().toISOString(),
+        };
+        this.journal("provider_recovery", details);
+        await this.db.query(
+          `UPDATE research_ingest_runs SET counters=jsonb_set(COALESCE(counters,'{}'::jsonb),
+            '{providerRecovery}',$2::jsonb) WHERE id=$1`,
+          [this.runId, JSON.stringify(details)],
+        );
+        console.log(
+          `provider recovery ${event.state}: ${stage} ${target}; retry=${event.retry}; execution_retries=${event.executionRetries}${event.retryAt ? `; retry_at=${event.retryAt}` : ""}${event.reason ? `; reason=${event.reason}` : ""}`,
+        );
+      },
+    });
+  }
+
+  private async attemptOnce(
     stage: string,
     target: string,
     input: Record<string, unknown>,
