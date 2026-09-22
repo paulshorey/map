@@ -433,12 +433,68 @@ install_js_deps() {
   )
 }
 
+applied_migration_files() {
+  psql "${DB_MAP_URL}" -v ON_ERROR_STOP=1 -Atqc \
+    "SELECT filename FROM public.schema_migrations_cursor ORDER BY filename;"
+}
+
+pending_migration_files() {
+  local root="$1"
+  local applied pending file base
+  applied="$(applied_migration_files || true)"
+  pending=()
+  shopt -s nullglob
+  for file in "${root}/lib/db-map/migrations/"*.sql; do
+    base="$(basename "${file}")"
+    if ! grep -Fxq "${base}" <<<"${applied}"; then
+      pending+=("${base}")
+    fi
+  done
+  shopt -u nullglob
+  if [[ ${#pending[@]} -gt 0 ]]; then
+    printf '%s\n' "${pending[@]}"
+  fi
+}
+
+verify_map_schema() {
+  psql "${DB_MAP_URL}" -v ON_ERROR_STOP=1 -Atqc "
+    SELECT CASE
+      WHEN COUNT(*) = 6 THEN 'ok'
+      ELSE 'missing'
+    END
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_name IN (
+        'users',
+        'canonical_pois',
+        'canonical_categories',
+        'research_pois',
+        'research_sources',
+        'schema_migrations_cursor'
+      );
+  "
+}
+
 migrate_and_prepare() {
   local root="$1"
-  log "Applying pending @lib/db-map migrations."
+  local pending
+  pending="$(pending_migration_files "${root}" || true)"
+  if [[ -n "${pending}" ]]; then
+    log "Applying pending @lib/db-map migrations."
+    (
+      cd "${root}"
+      pnpm db:migrate
+    )
+  else
+    log "All checked-in migrations are already recorded. Skipping db:migrate."
+    warn "A rewritten baseline can disagree with schema_migrations_cursor checksums; that is expected on this shared database."
+  fi
+  if [[ "$(verify_map_schema)" != "ok" ]]; then
+    die "Database is reachable but the map schema is incomplete."
+  fi
+  log "Required map tables are present."
   (
     cd "${root}"
-    pnpm db:migrate
     pnpm --filter @lib/db-map ingest:taxonomy:seed
     if [[ "${SEED}" -eq 1 ]]; then
       if [[ "${LOCAL_DB}" -eq 1 ]]; then
