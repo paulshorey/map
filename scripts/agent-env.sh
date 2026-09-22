@@ -393,7 +393,10 @@ SQL
 }
 
 maybe_provision_database() {
-  if [[ -z "${DB_MAP_URL:-}" && "${LOCAL_DB}" -eq 1 ]]; then
+  if [[ "${LOCAL_DB}" -eq 1 ]]; then
+    if [[ -n "${DB_MAP_URL:-}" ]]; then
+      log "Using an isolated local database because --local-db was requested."
+    fi
     start_local_postgres
     return 0
   fi

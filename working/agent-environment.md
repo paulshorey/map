@@ -59,6 +59,11 @@ Isolated fallback when the shared database cannot be reached:
 bash scripts/agent-env.sh setup --local-db
 ```
 
+`--local-db` deliberately overrides an injected `DB_MAP_URL`. Use it on cloud
+hosts whose HTTP/HTTPS egress proxy cannot carry PostgreSQL TCP traffic. The
+remote value is not printed or used, and the generated agent environment points
+at the isolated local database.
+
 `--seed` is refused against a remote URL. Combine it with `--local-db` only.
 
 `setup` applies only unrecorded migration filenames. The shared database already
