@@ -327,7 +327,10 @@ ensure_pgdg_repo() {
     | as_root gpg --dearmor --yes -o /etc/apt/keyrings/pgdg.gpg
   printf 'deb [signed-by=/etc/apt/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt %s-pgdg main\n' \
     "${VERSION_CODENAME}" | as_root tee "${list}" >/dev/null
-  as_root apt-get update -o Dir::Etc::sourcelist="${list}" -o Dir::Etc::sourceparts="-"
+  # Refresh every configured source. A fresh cloud image can have empty distro
+  # indexes; updating only PGDG then makes dependencies such as locales appear
+  # unavailable even though the Ubuntu source is configured.
+  as_root apt-get update
 }
 
 ensure_postgres_client() {
@@ -363,7 +366,8 @@ ensure_postgres_client() {
 start_local_postgres() {
   have apt-get || die "--local-db currently supports Debian/Ubuntu agent VMs."
   ensure_pgdg_repo || true
-  as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql postgresql-contrib
+  as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    postgresql-16 postgresql-contrib-16
   if have pg_lsclusters; then
     local cluster
     cluster="$(pg_lsclusters --no-header | awk 'NR==1 {print $1, $2}')"
