@@ -107,6 +107,9 @@ Configure these as **environment variables that survive into the agent phase**
 The host must allow outbound network to the database host during agent work.
 `--local-db` provisions isolated PostgreSQL 16+ with `pg_trgm` when a remote URL
 is not available. Do not seed sample POIs into the shared remote database.
+`setup` applies only unrecorded migration filenames. The shared database already
+has the current files; a rewritten baseline checksum is skipped after the
+required tables are verified.
 
 See the [agent environment notes](working/agent-environment.md) for Codex/Claude
 setup fields, maintenance, and checks.

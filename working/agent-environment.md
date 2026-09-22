@@ -61,6 +61,11 @@ bash scripts/agent-env.sh setup --local-db
 
 `--seed` is refused against a remote URL. Combine it with `--local-db` only.
 
+`setup` applies only unrecorded migration filenames. The shared database already
+has the current files applied; the rewritten baseline checksum does not match
+`schema_migrations_cursor`. The script skips remigrating in that case and
+checks that the required map tables exist.
+
 ## After setup
 
 ```bash
