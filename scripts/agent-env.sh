@@ -426,11 +426,40 @@ install_js_deps() {
   (
     cd "${root}"
     if [[ -f pnpm-lock.yaml ]]; then
-      pnpm install --frozen-lockfile
+      if ! pnpm install --frozen-lockfile; then
+        warn "The normal install failed; retrying approved build dependencies with the Railway CLI proxy fallback."
+        pnpm install --frozen-lockfile --ignore-scripts
+        pnpm rebuild esbuild sharp
+        install_railway_cli_binary
+      fi
     else
       pnpm install
     fi
   )
+}
+
+install_railway_cli_binary() {
+  local package_json version package_dir target archive_url archive
+  package_json="$(node -p "require.resolve('@railway/cli/package.json')")"
+  version="$(node -p "require('${package_json}').version")"
+  package_dir="$(dirname "${package_json}")"
+
+  case "$(uname -m)" in
+    x86_64) target="x86_64-unknown-linux-musl" ;;
+    aarch64|arm64) target="aarch64-unknown-linux-musl" ;;
+    *) die "Unsupported Linux architecture for Railway CLI: $(uname -m)" ;;
+  esac
+
+  archive_url="https://github.com/railwayapp/cli/releases/download/v${version}/railway-v${version}-${target}.tar.gz"
+  archive="$(mktemp)"
+  trap 'rm -f "${archive}"' RETURN
+  log "Installing pinned Railway CLI ${version} through the host HTTP proxy."
+  curl --fail --location --silent --show-error --retry 3 --retry-all-errors \
+    --output "${archive}" "${archive_url}"
+  mkdir -p "${package_dir}/bin"
+  tar -xzf "${archive}" -C "${package_dir}/bin"
+  chmod +x "${package_dir}/bin/railway"
+  "${package_dir}/bin/railway" --version
 }
 
 applied_migration_files() {

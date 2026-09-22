@@ -79,5 +79,11 @@ Do not launch full ingestion from an expensive model. Follow root `AGENTS.md`.
 
 ## Implementation
 
+- The JavaScript install normally runs the frozen pnpm install. If Railway
+  CLI's binary downloader fails behind a cloud host's HTTP proxy, the bootstrap
+  repeats the install without lifecycle scripts, rebuilds the approved
+  `esbuild` and `sharp` packages, and downloads the exact CLI version pinned
+  in `package.json` with proxy-aware `curl`. It verifies
+  `railway --version`; do not replace it with an unpinned global CLI install.
 - [scripts/agent-env.sh](../scripts/agent-env.sh) — install, persist env, migrate, build, run
 - [scripts/sql-check-postgres-client-version.sh](../scripts/sql-check-postgres-client-version.sh) — `pg_dump` must match the server major (currently 18)
