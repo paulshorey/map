@@ -24,7 +24,12 @@
     "railway:config:check": "tsc --noEmit --strict --skipLibCheck --target es2022 --module nodenext --moduleResolution nodenext .railway/railway.ts",
     "railway:config:export": "railway config pull --json",
     "railway:config:plan": "railway config plan --file .railway/railway.ts",
-    "railway:config:apply": "railway config apply --file .railway/railway.ts"
+    "railway:config:apply": "railway config apply --file .railway/railway.ts",
+    "agent:env": "bash scripts/agent-env.sh",
+    "agent:env:setup": "bash scripts/agent-env.sh setup",
+    "agent:env:check": "bash scripts/agent-env.sh check",
+    "agent:env:start": "bash scripts/agent-env.sh start",
+    "agent:env:stop": "bash scripts/agent-env.sh stop"
   },
   "devDependencies": {
     "@railway/cli": "5.59.0",

@@ -1,0 +1,692 @@
+#!/usr/bin/env bash
+# Portable bootstrap for a cloud AI-agent VM that needs this repo, the map
+# database, and the ability to build and run the apps.
+#
+# Designed for Codex Cloud, Claude Code Cloud, Cursor Cloud, and similar hosts.
+# The host must inject secrets as environment variables (never commit them).
+# Setup-only secrets (Codex) are copied into ~/.config/poi-map/agent.env so later
+# agent shells can use the database. Values are never printed.
+#
+# Usage (after the repository is checked out):
+#   bash scripts/agent-env.sh              # same as setup
+#   bash scripts/agent-env.sh setup
+#   bash scripts/agent-env.sh maintenance
+#   bash scripts/agent-env.sh start
+#   bash scripts/agent-env.sh stop
+#   bash scripts/agent-env.sh check
+#
+# Flags / env:
+#   --local-db / AGENT_ENV_LOCAL_DB=1   provision localhost PostgreSQL if needed
+#   --seed / AGENT_ENV_SEED=1           also seed sample map POIs (local DB only)
+#   --skip-build / AGENT_ENV_SKIP_BUILD=1
+#   --with-ingestion                    start the local ingestion dashboard too
+#   AGENT_ENV_REPO                      override repository root
+
+set -euo pipefail
+
+PNPM_VERSION="10.28.1"
+NODE_MAJOR_MIN=20
+NODE_MAJOR_PREFERRED=22
+DEFAULT_LOCAL_DB_URL="postgresql://poi_map:poi_map@127.0.0.1:5432/poi_map"
+MAP_PORT="${PORT:-5000}"
+INGESTION_PORT="${INGESTION_DASHBOARD_PORT:-5001}"
+CONFIG_DIR="${XDG_CONFIG_HOME:-${HOME}/.config}/poi-map"
+ENV_FILE="${CONFIG_DIR}/agent.env"
+STATE_DIR="${XDG_STATE_HOME:-${HOME}/.local/state}/poi-map"
+MAP_PID_FILE="${STATE_DIR}/map.pid"
+INGESTION_PID_FILE="${STATE_DIR}/ingestion.pid"
+MAP_LOG="${STATE_DIR}/map.log"
+INGESTION_LOG="${STATE_DIR}/ingestion.log"
+BASHRC_MARK="# poi-map agent-env"
+
+LOCAL_DB=0
+SEED=0
+SKIP_BUILD=0
+WITH_INGESTION=0
+COMMAND="setup"
+
+log() { printf '[agent-env] %s\n' "$*"; }
+warn() { printf '[agent-env] warn: %s\n' "$*" >&2; }
+die() { printf '[agent-env] error: %s\n' "$*" >&2; exit 1; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+as_root() {
+  if [[ "${EUID}" -eq 0 ]]; then
+    "$@"
+  elif have sudo; then
+    sudo "$@"
+  else
+    die "Need root or sudo to install: $*"
+  fi
+}
+
+as_root_env() {
+  if [[ "${EUID}" -eq 0 ]]; then
+    env "$@"
+  elif have sudo; then
+    sudo -E "$@"
+  else
+    die "Need root or sudo to install: $*"
+  fi
+}
+
+as_postgres() {
+  if have sudo; then
+    sudo -u postgres "$@"
+  elif [[ "${EUID}" -eq 0 ]] && have runuser; then
+    runuser -u postgres -- "$@"
+  else
+    die "Need sudo to run PostgreSQL admin commands."
+  fi
+}
+
+node_major() {
+  node -p "process.versions.node.split('.')[0]"
+}
+
+repo_root() {
+  local here git_root
+  if [[ -n "${AGENT_ENV_REPO:-}" ]]; then
+    cd "${AGENT_ENV_REPO}" && pwd
+    return
+  fi
+  if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+    here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    if [[ -f "${here}/package.json" && -f "${here}/pnpm-workspace.yaml" ]]; then
+      printf '%s\n' "${here}"
+      return
+    fi
+  fi
+  if git_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+    printf '%s\n' "${git_root}"
+    return
+  fi
+  if [[ -f package.json && -f pnpm-workspace.yaml ]]; then
+    pwd
+    return
+  fi
+  die "Cannot find the repository root. Set AGENT_ENV_REPO or run from the checkout."
+}
+
+usage() {
+  sed -n '2,28p' "${BASH_SOURCE[0]}"
+}
+
+parse_args() {
+  local arg
+  if [[ "${AGENT_ENV_LOCAL_DB:-}" == "1" ]]; then LOCAL_DB=1; fi
+  if [[ "${AGENT_ENV_SEED:-}" == "1" ]]; then SEED=1; fi
+  if [[ "${AGENT_ENV_SKIP_BUILD:-}" == "1" ]]; then SKIP_BUILD=1; fi
+  if [[ "${AGENT_ENV_WITH_INGESTION:-}" == "1" ]]; then WITH_INGESTION=1; fi
+
+  if [[ $# -gt 0 && "$1" != -* ]]; then
+    COMMAND="$1"
+    shift
+  fi
+
+  while [[ $# -gt 0 ]]; do
+    arg="$1"
+    case "${arg}" in
+      --local-db) LOCAL_DB=1 ;;
+      --seed) SEED=1 ;;
+      --skip-build) SKIP_BUILD=1 ;;
+      --with-ingestion) WITH_INGESTION=1 ;;
+      -h|--help) COMMAND="help" ;;
+      *) die "Unknown argument: ${arg}" ;;
+    esac
+    shift
+  done
+}
+
+ensure_dirs() {
+  mkdir -p "${CONFIG_DIR}" "${STATE_DIR}"
+  chmod 700 "${CONFIG_DIR}" "${STATE_DIR}"
+}
+
+persist_shell_hook() {
+  local hook_file="${CONFIG_DIR}/shell-hook.sh"
+  cat > "${hook_file}" <<EOF
+${BASHRC_MARK}
+if [ -f "${ENV_FILE}" ]; then
+  set -a
+  . "${ENV_FILE}"
+  set +a
+fi
+EOF
+  chmod 644 "${hook_file}"
+
+  local rc
+  for rc in "${HOME}/.bashrc" "${HOME}/.profile"; do
+    if [[ ! -e "${rc}" ]]; then
+      touch "${rc}"
+    fi
+    if ! grep -Fq "${BASHRC_MARK}" "${rc}"; then
+      {
+        printf '\n'
+        printf '%s\n' "${BASHRC_MARK}"
+        printf '. %q\n' "${hook_file}"
+      } >> "${rc}"
+    fi
+  done
+}
+
+persist_env_value() {
+  local key="$1"
+  local value="${!key:-}"
+  if [[ -z "${value}" ]]; then
+    return 0
+  fi
+  printf 'export %s=%q\n' "${key}" "${value}"
+}
+
+persist_runtime_env() {
+  ensure_dirs
+  local tmp
+  tmp="$(mktemp "${CONFIG_DIR}/agent.env.XXXXXX")"
+  {
+    printf '# Generated by scripts/agent-env.sh. Do not commit.\n'
+    persist_env_value DB_MAP_URL
+    persist_env_value LOCATIONIQ_API_KEY
+    persist_env_value JINA_API_KEY
+    persist_env_value DEEPINFRA_API_KEY
+    persist_env_value THUNDERFOREST_API_KEY
+    persist_env_value RAILWAY_TOKEN
+    persist_env_value NEXT_PUBLIC_API_URL
+    persist_env_value GEOCODER_PROVIDER
+    persist_env_value EMBEDDINGS_PROVIDER
+    persist_env_value EMBEDDINGS_MODEL
+    persist_env_value EMBEDDINGS_DIM
+    persist_env_value LLM_PROVIDER
+    persist_env_value LLM_MODEL
+    printf 'export GEOCODER_PROVIDER="${GEOCODER_PROVIDER:-locationiq}"\n'
+    printf 'export EMBEDDINGS_PROVIDER="${EMBEDDINGS_PROVIDER:-jina}"\n'
+    printf 'export EMBEDDINGS_MODEL="${EMBEDDINGS_MODEL:-jina-embeddings-v3}"\n'
+    printf 'export EMBEDDINGS_DIM="${EMBEDDINGS_DIM:-384}"\n'
+    printf 'export LLM_PROVIDER="${LLM_PROVIDER:-deepinfra}"\n'
+    printf 'export LLM_MODEL="${LLM_MODEL:-deepseek-ai/DeepSeek-V4-Flash}"\n'
+  } > "${tmp}"
+  chmod 600 "${tmp}"
+  mv "${tmp}" "${ENV_FILE}"
+  persist_shell_hook
+  log "Persisted agent environment to ${ENV_FILE} (mode 600)."
+}
+
+load_runtime_env() {
+  if [[ -f "${ENV_FILE}" ]]; then
+    set -a
+    # shellcheck disable=SC1090
+    . "${ENV_FILE}"
+    set +a
+  fi
+}
+
+describe_db_target() {
+  if [[ -z "${DB_MAP_URL:-}" ]]; then
+    printf 'unset\n'
+    return 0
+  fi
+  if have python3; then
+    python3 - <<'PY'
+import os
+from urllib.parse import urlparse
+parsed = urlparse(os.environ["DB_MAP_URL"])
+host = parsed.hostname or "unknown-host"
+port = parsed.port or 5432
+db = (parsed.path or "/").lstrip("/") or "postgres"
+print(f"{host}:{port}/{db}")
+PY
+    return 0
+  fi
+  node -e 'const u=new URL(process.env.DB_MAP_URL); const port=u.port||"5432"; const db=(u.pathname||"/").replace(/^\//,"")||"postgres"; console.log(`${u.hostname}:${port}/${db}`)'
+}
+
+ensure_apt_tools() {
+  if ! have apt-get; then
+    return 0
+  fi
+  local missing=()
+  local pkg
+  for pkg in ca-certificates curl git gnupg lsb-release; do
+    if ! dpkg -s "${pkg}" >/dev/null 2>&1; then
+      missing+=("${pkg}")
+    fi
+  done
+  if [[ ${#missing[@]} -eq 0 ]]; then
+    return 0
+  fi
+  log "Installing apt packages: ${missing[*]}"
+  as_root apt-get update -y
+  as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing[@]}"
+}
+
+ensure_node() {
+  if have node && [[ "$(node_major)" -ge "${NODE_MAJOR_MIN}" ]]; then
+    log "Node $(node -v) is usable."
+    return 0
+  fi
+
+  if [[ -s "${HOME}/.nvm/nvm.sh" ]]; then
+    # shellcheck disable=SC1091
+    . "${HOME}/.nvm/nvm.sh"
+    nvm install "${NODE_MAJOR_PREFERRED}"
+    nvm use "${NODE_MAJOR_PREFERRED}"
+    log "Node $(node -v) via nvm."
+    return 0
+  fi
+
+  if have brew; then
+    brew install "node@${NODE_MAJOR_PREFERRED}"
+    log "Node $(node -v) via Homebrew."
+    return 0
+  fi
+
+  if have apt-get; then
+    log "Installing Node ${NODE_MAJOR_PREFERRED} from NodeSource."
+    curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR_PREFERRED}.x" | as_root_env bash -
+    as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+    log "Node $(node -v)."
+    return 0
+  fi
+
+  die "Node.js ${NODE_MAJOR_MIN}+ is required. Install Node ${NODE_MAJOR_PREFERRED} and retry."
+}
+
+ensure_pnpm() {
+  if have pnpm; then
+    local current
+    current="$(pnpm -v)"
+    if [[ "${current}" == "${PNPM_VERSION}" ]]; then
+      log "pnpm ${current} is pinned."
+      return 0
+    fi
+    warn "pnpm ${current} found; activating ${PNPM_VERSION}."
+  fi
+
+  if have corepack; then
+    corepack enable >/dev/null
+    corepack prepare "pnpm@${PNPM_VERSION}" --activate
+  elif have npm; then
+    npm install -g "pnpm@${PNPM_VERSION}"
+  else
+    die "Need corepack or npm to install pnpm ${PNPM_VERSION}."
+  fi
+  log "pnpm $(pnpm -v)."
+}
+
+ensure_pgdg_repo() {
+  [[ -f /etc/os-release ]] || return 1
+  # shellcheck disable=SC1091
+  . /etc/os-release
+  local list="/etc/apt/sources.list.d/pgdg.list"
+  if [[ -f "${list}" ]]; then
+    return 0
+  fi
+  as_root install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+    | as_root gpg --dearmor --yes -o /etc/apt/keyrings/pgdg.gpg
+  printf 'deb [signed-by=/etc/apt/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt %s-pgdg main\n' \
+    "${VERSION_CODENAME}" | as_root tee "${list}" >/dev/null
+  as_root apt-get update -o Dir::Etc::sourcelist="${list}" -o Dir::Etc::sourceparts="-"
+}
+
+ensure_postgres_client() {
+  local major="${1:-}"
+  if have psql && have pg_dump; then
+    if [[ -z "${major}" ]]; then
+      log "PostgreSQL client $(psql --version | awk '{print $3}')."
+      return 0
+    fi
+    local current
+    current="$(pg_dump --version | sed -E 's/.* ([0-9]+).*/\1/')"
+    if [[ "${current}" == "${major}" || -x "/usr/lib/postgresql/${major}/bin/pg_dump" ]]; then
+      log "PostgreSQL ${major} client tools are available."
+      return 0
+    fi
+  fi
+
+  if have brew; then
+    brew install "postgresql@${major:-16}"
+    return 0
+  fi
+
+  if have apt-get; then
+    ensure_pgdg_repo || true
+    as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      "postgresql-client-${major:-16}"
+    return 0
+  fi
+
+  die "Install psql and pg_dump matching PostgreSQL ${major:-16}+."
+}
+
+start_local_postgres() {
+  have apt-get || die "--local-db currently supports Debian/Ubuntu agent VMs."
+  ensure_pgdg_repo || true
+  as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql postgresql-contrib
+  if have pg_lsclusters; then
+    local cluster
+    cluster="$(pg_lsclusters --no-header | awk 'NR==1 {print $1, $2}')"
+    if [[ -n "${cluster}" ]]; then
+      # shellcheck disable=SC2086
+      as_root pg_ctlcluster ${cluster} start || true
+    fi
+  elif have service; then
+    as_root service postgresql start || true
+  fi
+
+  as_postgres psql -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'poi_map') THEN
+    CREATE ROLE poi_map LOGIN PASSWORD 'poi_map';
+  END IF;
+END
+$$;
+SQL
+  if ! as_postgres psql -Atqc "SELECT 1 FROM pg_database WHERE datname = 'poi_map'" | grep -q 1; then
+    as_postgres createdb -O poi_map poi_map
+  fi
+  as_postgres psql -d poi_map -v ON_ERROR_STOP=1 -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;'
+  export DB_MAP_URL="${DEFAULT_LOCAL_DB_URL}"
+  log "Local PostgreSQL is ready at $(describe_db_target)."
+}
+
+maybe_provision_database() {
+  if [[ -z "${DB_MAP_URL:-}" && "${LOCAL_DB}" -eq 1 ]]; then
+    start_local_postgres
+    return 0
+  fi
+  if [[ -z "${DB_MAP_URL:-}" ]]; then
+    die "DB_MAP_URL is unset. Inject it as a host environment variable (not a setup-only secret unless you persist it), or rerun with --local-db."
+  fi
+}
+
+verify_database() {
+  [[ -n "${DB_MAP_URL:-}" ]] || die "DB_MAP_URL is required."
+  local target server
+  target="$(describe_db_target)"
+  log "Checking database ${target} (credentials hidden)."
+  if ! server="$(psql "${DB_MAP_URL}" -v ON_ERROR_STOP=1 -Atqc "SHOW server_version;" 2>/dev/null)"; then
+    die "Cannot connect to ${target}. Enable agent network access to that host, or use --local-db."
+  fi
+  local major="${server%%.*}"
+  ensure_postgres_client "${major}"
+  local ext
+  ext="$(psql "${DB_MAP_URL}" -v ON_ERROR_STOP=1 -Atqc "SELECT extname FROM pg_extension WHERE extname = 'pg_trgm';")"
+  if [[ "${ext}" != "pg_trgm" ]]; then
+    warn "pg_trgm is not installed on ${target}; migrations may add it."
+  fi
+  log "Database server ${server} accepted the connection."
+}
+
+install_js_deps() {
+  local root="$1"
+  log "Installing JavaScript dependencies with pnpm ${PNPM_VERSION}."
+  (
+    cd "${root}"
+    if [[ -f pnpm-lock.yaml ]]; then
+      pnpm install --frozen-lockfile
+    else
+      pnpm install
+    fi
+  )
+}
+
+applied_migration_files() {
+  psql "${DB_MAP_URL}" -v ON_ERROR_STOP=1 -Atqc \
+    "SELECT filename FROM public.schema_migrations_cursor ORDER BY filename;"
+}
+
+pending_migration_files() {
+  local root="$1"
+  local applied pending file base
+  applied="$(applied_migration_files || true)"
+  pending=()
+  shopt -s nullglob
+  for file in "${root}/lib/db-map/migrations/"*.sql; do
+    base="$(basename "${file}")"
+    if ! grep -Fxq "${base}" <<<"${applied}"; then
+      pending+=("${base}")
+    fi
+  done
+  shopt -u nullglob
+  if [[ ${#pending[@]} -gt 0 ]]; then
+    printf '%s\n' "${pending[@]}"
+  fi
+}
+
+verify_map_schema() {
+  psql "${DB_MAP_URL}" -v ON_ERROR_STOP=1 -Atqc "
+    SELECT CASE
+      WHEN COUNT(*) = 6 THEN 'ok'
+      ELSE 'missing'
+    END
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_name IN (
+        'users',
+        'canonical_pois',
+        'canonical_categories',
+        'research_pois',
+        'research_sources',
+        'schema_migrations_cursor'
+      );
+  "
+}
+
+migrate_and_prepare() {
+  local root="$1"
+  local pending
+  pending="$(pending_migration_files "${root}" || true)"
+  if [[ -n "${pending}" ]]; then
+    log "Applying pending @lib/db-map migrations."
+    (
+      cd "${root}"
+      pnpm db:migrate
+    )
+  else
+    log "All checked-in migrations are already recorded. Skipping db:migrate."
+    warn "A rewritten baseline can disagree with schema_migrations_cursor checksums; that is expected on this shared database."
+  fi
+  if [[ "$(verify_map_schema)" != "ok" ]]; then
+    die "Database is reachable but the map schema is incomplete."
+  fi
+  log "Required map tables are present."
+  (
+    cd "${root}"
+    pnpm --filter @lib/db-map ingest:taxonomy:seed
+    if [[ "${SEED}" -eq 1 ]]; then
+      if [[ "${LOCAL_DB}" -eq 1 ]]; then
+        log "Seeding sample map POIs into the local database."
+        pnpm db:seed
+      else
+        warn "Refusing --seed against a remote/shared DB_MAP_URL. Use --local-db if you need fixtures."
+      fi
+    fi
+  )
+}
+
+build_workspace() {
+  local root="$1"
+  if [[ "${SKIP_BUILD}" -eq 1 ]]; then
+    log "Skipping production build."
+    return 0
+  fi
+  log "Building the map app (contract check + Next.js)."
+  (
+    cd "${root}"
+    pnpm --filter ./apps/map build
+  )
+}
+
+pid_is_alive() {
+  local pid_file="$1"
+  [[ -f "${pid_file}" ]] || return 1
+  local pid
+  pid="$(cat "${pid_file}")"
+  [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null
+}
+
+start_background() {
+  local name="$1"
+  local pid_file="$2"
+  local log_file="$3"
+  shift 3
+  if pid_is_alive "${pid_file}"; then
+    log "${name} already running (pid $(cat "${pid_file}"))."
+    return 0
+  fi
+  ensure_dirs
+  nohup "$@" >"${log_file}" 2>&1 &
+  local pid=$!
+  printf '%s\n' "${pid}" > "${pid_file}"
+  sleep 1
+  if ! kill -0 "${pid}" 2>/dev/null; then
+    die "${name} exited immediately. See ${log_file}."
+  fi
+  log "${name} started (pid ${pid}, log ${log_file})."
+}
+
+wait_for_http() {
+  local url="$1"
+  local attempts="${2:-40}"
+  local i
+  for ((i = 1; i <= attempts; i++)); do
+    if curl -fsS --max-time 2 "${url}" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 0.5
+  done
+  return 1
+}
+
+cmd_setup() {
+  local root
+  root="$(repo_root)"
+  log "Repository: ${root}"
+  ensure_dirs
+  ensure_apt_tools
+  ensure_node
+  ensure_pnpm
+  ensure_postgres_client
+  load_runtime_env
+  maybe_provision_database
+  persist_runtime_env
+  load_runtime_env
+  verify_database
+  install_js_deps "${root}"
+  migrate_and_prepare "${root}"
+  build_workspace "${root}"
+  log "Setup complete. Map: pnpm dev (http://127.0.0.1:${MAP_PORT}). Ingestion dashboard: pnpm dev:ingestion (http://127.0.0.1:${INGESTION_PORT})."
+  log "Use: bash scripts/agent-env.sh start   to launch those servers."
+}
+
+cmd_maintenance() {
+  SKIP_BUILD=1
+  cmd_setup
+}
+
+cmd_start() {
+  local root
+  root="$(repo_root)"
+  load_runtime_env
+  [[ -n "${DB_MAP_URL:-}" ]] || die "DB_MAP_URL is required before start."
+  if [[ ! -d "${root}/node_modules" ]]; then
+    die "Dependencies are missing. Run: bash scripts/agent-env.sh setup"
+  fi
+  start_background "map" "${MAP_PID_FILE}" "${MAP_LOG}" \
+    pnpm --dir "${root}" --filter map dev
+  if wait_for_http "http://127.0.0.1:${MAP_PORT}/api/health"; then
+    log "Map health ok at http://127.0.0.1:${MAP_PORT}/api/health"
+  else
+    warn "Map started but /api/health is not ready yet. See ${MAP_LOG}."
+  fi
+  if [[ "${WITH_INGESTION}" -eq 1 ]]; then
+    start_background "ingestion" "${INGESTION_PID_FILE}" "${INGESTION_LOG}" \
+      pnpm --dir "${root}" --filter @app/ingestion start
+    if wait_for_http "http://127.0.0.1:${INGESTION_PORT}/"; then
+      log "Ingestion dashboard at http://127.0.0.1:${INGESTION_PORT}"
+    else
+      warn "Ingestion dashboard is not ready yet. See ${INGESTION_LOG}."
+    fi
+  fi
+}
+
+stop_pid_file() {
+  local name="$1"
+  local pid_file="$2"
+  if ! [[ -f "${pid_file}" ]]; then
+    return 0
+  fi
+  local pid
+  pid="$(cat "${pid_file}")"
+  if [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null; then
+    kill "${pid}" 2>/dev/null || true
+    local i
+    for ((i = 1; i <= 20; i++)); do
+      if ! kill -0 "${pid}" 2>/dev/null; then
+        break
+      fi
+      sleep 0.25
+    done
+    if kill -0 "${pid}" 2>/dev/null; then
+      warn "${name} pid ${pid} did not exit after SIGTERM."
+    else
+      log "Stopped ${name} (pid ${pid})."
+    fi
+  fi
+  rm -f "${pid_file}"
+}
+
+cmd_stop() {
+  stop_pid_file "map" "${MAP_PID_FILE}"
+  stop_pid_file "ingestion" "${INGESTION_PID_FILE}"
+}
+
+cmd_check() {
+  local root
+  root="$(repo_root)"
+  load_runtime_env
+  log "Repository: ${root}"
+  have node && log "node $(node -v)" || die "node is missing"
+  [[ "$(node_major)" -ge "${NODE_MAJOR_MIN}" ]] || die "Node $(node -v) is older than ${NODE_MAJOR_MIN}"
+  have pnpm && log "pnpm $(pnpm -v)" || die "pnpm is missing"
+  have psql && log "$(psql --version)" || die "psql is missing"
+  have pg_dump && log "$(pg_dump --version)" || die "pg_dump is missing"
+  if [[ -z "${DB_MAP_URL:-}" ]]; then
+    die "DB_MAP_URL is unset in this shell. Configure it on the host, or rerun setup so ${ENV_FILE} is sourced."
+  fi
+  log "DB_MAP_URL target: $(describe_db_target)"
+  verify_database
+  (
+    cd "${root}"
+    bash "${root}/scripts/sql-check-postgres-client-version.sh" DB_MAP_URL "@lib/db-map" --print-env \
+      >/dev/null
+  )
+  log "Postgres client matches the server major version."
+  if [[ -d "${root}/node_modules" ]]; then
+    log "Workspace node_modules present."
+  else
+    warn "Workspace node_modules missing; run setup."
+  fi
+  local tables
+  tables="$(psql "${DB_MAP_URL}" -v ON_ERROR_STOP=1 -Atqc "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public';")"
+  log "Public tables: ${tables}"
+  log "Check passed."
+}
+
+main() {
+  parse_args "$@"
+  case "${COMMAND}" in
+    setup|install|bootstrap) cmd_setup ;;
+    maintenance|refresh) cmd_maintenance ;;
+    start|run) cmd_start ;;
+    stop) cmd_stop ;;
+    check|status) cmd_check ;;
+    help|-h|--help) usage ;;
+    *) die "Unknown command: ${COMMAND}. Try: setup | maintenance | start | stop | check" ;;
+  esac
+}
+
+main "$@"
