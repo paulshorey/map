@@ -61,6 +61,26 @@ as_root() {
   fi
 }
 
+run_apt_quiet() {
+  local apt_log apt_pid
+  apt_log="$(mktemp)"
+  as_root env DEBIAN_FRONTEND=noninteractive apt-get -qq -o Dpkg::Use-Pty=0 \
+    "$@" >"${apt_log}" 2>&1 &
+  apt_pid=$!
+  while kill -0 "${apt_pid}" 2>/dev/null; do
+    sleep 20
+    if kill -0 "${apt_pid}" 2>/dev/null; then
+      log "apt-get $1 is still running."
+    fi
+  done
+  if ! wait "${apt_pid}"; then
+    cat "${apt_log}" >&2
+    rm -f "${apt_log}"
+    return 1
+  fi
+  rm -f "${apt_log}"
+}
+
 as_root_env() {
   if [[ "${EUID}" -eq 0 ]]; then
     env "$@"
@@ -256,8 +276,8 @@ ensure_apt_tools() {
     return 0
   fi
   log "Installing apt packages: ${missing[*]}"
-  as_root apt-get update -y
-  as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing[@]}"
+  run_apt_quiet update -y
+  run_apt_quiet install -y "${missing[@]}"
 }
 
 ensure_node() {
@@ -284,7 +304,7 @@ ensure_node() {
   if have apt-get; then
     log "Installing Node ${NODE_MAJOR_PREFERRED} from NodeSource."
     curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR_PREFERRED}.x" | as_root_env bash -
-    as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+    run_apt_quiet install -y nodejs
     log "Node $(node -v)."
     return 0
   fi
@@ -330,7 +350,7 @@ ensure_pgdg_repo() {
   # Refresh every configured source. A fresh cloud image can have empty distro
   # indexes; updating only PGDG then makes dependencies such as locales appear
   # unavailable even though the Ubuntu source is configured.
-  as_root apt-get update
+  run_apt_quiet update
 }
 
 ensure_postgres_client() {
@@ -355,7 +375,7 @@ ensure_postgres_client() {
 
   if have apt-get; then
     ensure_pgdg_repo || true
-    as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    run_apt_quiet install -y \
       "postgresql-client-${major:-16}"
     return 0
   fi
@@ -366,7 +386,7 @@ ensure_postgres_client() {
 start_local_postgres() {
   have apt-get || die "--local-db currently supports Debian/Ubuntu agent VMs."
   ensure_pgdg_repo || true
-  as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  run_apt_quiet install -y \
     postgresql-16 postgresql-contrib-16
   if have pg_lsclusters; then
     local cluster
