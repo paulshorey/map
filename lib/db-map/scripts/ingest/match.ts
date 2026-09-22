@@ -36,7 +36,7 @@ import { bboxAround, haversineMeters } from "./match/geo.js";
 import { extractStrongIds } from "./match/ids.js";
 import { adjudicateMatch } from "./match/llm.js";
 import { scoreCandidate, type CandidateScore } from "./match/score.js";
-import { LlmError } from "./providers/deepinfra.js";
+import { LlmError } from "./providers/llm.js";
 
 const ADVISORY_LOCK_ID = 0x5018a;
 const MATCHER_VERSION = "matcher-v1";

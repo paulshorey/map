@@ -34,10 +34,16 @@ export const ingestConfig = {
     apiKey: () => env("JINA_API_KEY"),
   },
   llm: {
-    provider: envOptional("LLM_PROVIDER", "deepinfra"),
-    model: envOptional("LLM_MODEL", "deepseek-ai/DeepSeek-V4-Flash"),
-    baseUrl: "https://api.deepinfra.com/v1/openai",
-    apiKey: () => env("DEEPINFRA_API_KEY"),
+    provider: envOptional("LLM_PROVIDER", "fireworks"),
+    model: envOptional(
+      "LLM_MODEL",
+      "accounts/fireworks/models/deepseek-v4p1-flash",
+    ),
+    baseUrl: envOptional(
+      "LLM_BASE_URL",
+      "https://api.fireworks.ai/inference/v1",
+    ),
+    apiKey: () => env("FIREWORKS_API_KEY"),
   },
   match: {
     tHigh: envNumber("INGEST_MATCH_T_HIGH", 0.85),

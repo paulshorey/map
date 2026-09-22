@@ -9,7 +9,7 @@ import {
   LlmError,
   type ChatMessage,
   type ChatResult,
-} from "../providers/deepinfra.js";
+} from "../providers/llm.js";
 import { getSourceDefinition } from "../sources.js";
 import {
   EXAMPLES_VERSION,
@@ -239,7 +239,7 @@ async function insertRequest(
        id, research_poi_id, observation_id, input_hash,
        prompt_version, schema_version, profile_version, examples_version,
        provider, requested_model, status, request_json, repaired_from_id, attempt, run_id, ingest_attempt_id
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'deepinfra',$9,'started',$10::jsonb,$11,$12,$13,$14)`,
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'started',$11::jsonb,$12,$13,$14,$15)`,
     [
       id,
       row.id,
@@ -249,6 +249,7 @@ async function insertRequest(
       SCHEMA_VERSION,
       profileVersion,
       EXAMPLES_VERSION,
+      ingestConfig.llm.provider,
       ingestConfig.llm.model,
       JSON.stringify(requestJson),
       repairedFromId ?? null,

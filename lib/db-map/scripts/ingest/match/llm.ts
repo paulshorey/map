@@ -1,4 +1,4 @@
-import { chat } from "../providers/deepinfra.js";
+import { chat } from "../providers/llm.js";
 
 const MATCH_SYSTEM_PROMPT =
   "You are a POI deduplication judge. Reply only with valid JSON shaped like {\"same_place\":true|false,\"reason\":\"one concise sentence\"}. Decide whether the records describe the same real-world place, visitor complex, or contained feature cluster; nearby same-category places and same distinctive names are strong evidence, but adjacent independent businesses or venues can remain different.";
