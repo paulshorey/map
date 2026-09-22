@@ -19,6 +19,7 @@
     "dev:ingestion": "pnpm --filter @app/ingestion start",
     "railway:login": "railway login",
     "railway:link:dev": "railway link --project d25b93f2-bea9-4f05-a6c0-4a045e8b18ac --environment 01e37c22-5804-4b63-80a3-5d00255951e4",
+    "railway:link:production": "railway link --project d25b93f2-bea9-4f05-a6c0-4a045e8b18ac --environment a77c64bc-8e82-46b7-8634-7b72453ebfd8",
     "railway:status": "railway status --json",
     "railway:config:check": "tsc --noEmit --strict --skipLibCheck --target es2022 --module nodenext --moduleResolution nodenext .railway/railway.ts",
     "railway:config:export": "railway config pull --json",

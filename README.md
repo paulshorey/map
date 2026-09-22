@@ -89,6 +89,11 @@ pnpm railway:status
 pnpm railway:config:plan
 ```
 
+Use `pnpm railway:link:production` instead when working against production. Always
+read `pnpm railway:status` before a plan or apply. Dev deploys `apps/map` from `main`;
+production deploys `map` from `prod` with the same build, start, watch, and health
+settings.
+
 The plan is read-only. Use `pnpm railway:config:apply` only after reviewing it.
 Cloud agents should receive a `RAILWAY_TOKEN` project token through their secret
 store and must not write credentials into the repository.
@@ -97,7 +102,9 @@ Pull requests that change `.railway/` receive a pinned Railway plan. Merging app
 that exact reviewed plan to `World/dev`; drift or a changed `.railway/` tree causes
 the apply to fail. Railway PR Environments clone `dev`, deploy only affected services,
 and include supported bot-authored PRs. See the [Railway runbook](.railway/README.md)
-for setup, agent rules, CI behavior, preview limitations, and recovery steps.
+for setup, production operations, agent rules, CI behavior, preview limitations, and
+recovery steps. Agents should follow the repository's
+[Railway IaC skill](.agents/skills/railway-iac/SKILL.md).
 
 ### Environment Variables
 

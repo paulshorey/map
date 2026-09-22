@@ -1,9 +1,16 @@
 # Railway Infrastructure as Code
 
-[`railway.ts`](railway.ts) is the source of truth for project **World**, environment
-**dev**, and service **apps/map**. It owns the GitHub source, Railpack commands,
-watch paths, healthcheck, and the names of variables whose values remain stored in
-Railway with `preserve()`.
+[`railway.ts`](railway.ts) is the source of truth for the map deployments in project
+**World**. It owns the GitHub source, Railpack commands, watch paths, healthcheck, and
+the names of variables whose values remain stored in Railway with `preserve()`.
+
+| Environment  | Service    | Git branch | Environment ID                         |
+| ------------ | ---------- | ---------- | -------------------------------------- |
+| `dev`        | `apps/map` | `main`     | `01e37c22-5804-4b63-80a3-5d00255951e4` |
+| `production` | `map`      | `prod`     | `a77c64bc-8e82-46b7-8634-7b72453ebfd8` |
+
+The definition uses `ctx.isEnvironment("production")` for the service name and
+branch. All other declared behavior is shared.
 
 Railway Infrastructure as Code (IaC) is applied configuration. Railway does not
 load this TypeScript file as part of an ordinary GitHub deployment. The Railway CLI
@@ -45,9 +52,16 @@ pnpm railway:link:dev
 pnpm railway:status
 ```
 
-Before planning, confirm status identifies project `World` and environment `dev`.
-The link command uses fixed IDs so similarly named projects cannot be selected by
-mistake.
+For production work, replace the link step with:
+
+```bash
+pnpm railway:link:production
+```
+
+Before planning, confirm status identifies project `World` and the intended
+environment. The link commands use fixed IDs so similarly named projects cannot be
+selected by mistake. Linking changes the local target for subsequent export, plan,
+apply, and service commands.
 
 Inspect the live graph without overwriting the authoring file:
 
@@ -84,9 +98,11 @@ Normal IaC changes use the pull-request workflow below.
 ## Cloud agents
 
 Cloud agents cannot complete an interactive browser login. Give an authorized agent
-a Railway project token scoped to `dev` as the secret environment variable
-`RAILWAY_TOKEN`. A project token selects its project and environment, so the agent
-can run the check, export, and plan commands without `railway link`.
+a Railway project token scoped to the one intended environment as the secret
+environment variable `RAILWAY_TOKEN`. A project token selects its project and
+environment, so the agent can run the check, export, and plan commands without
+`railway link`. Use separate credentials for dev and production; never reuse an
+environment token to imply a different target.
 
 Never place a token in `.env`, source files, command output, prompts, issue comments,
 or artifacts. An agent may plan without changing Railway. It should apply only for an
@@ -115,9 +131,11 @@ fork workflows. The Railway GitHub App and `id-token: write` let plans post unde
 Railway identity; the action falls back to `github-actions` if that identity is not
 available.
 
-CI requires a Railway project token for `dev` stored as the GitHub Actions repository
-secret `RAILWAY_TOKEN`. Rotate the project token and replace the GitHub secret together.
-Never reuse a personal account token.
+CI currently targets only `dev`. It requires a Railway project token for `dev` stored
+as the GitHub Actions repository secret `RAILWAY_TOKEN`. Rotate the project token and
+replace the GitHub secret together. Never reuse a personal account token. Production
+plans and applies are manual until a separately scoped production workflow and secret
+are deliberately added.
 
 The first workflow merge cannot apply itself because no workflow on the default branch
 created its pinned artifact. Bootstrap once with a reviewed local
@@ -150,15 +168,22 @@ only to Railway's supported bot identities.
 
 ## Live service contract
 
-| Setting            | IaC value                        |
-| ------------------ | -------------------------------- |
-| Source             | `paulshorey/map`, branch `main`  |
-| Root directory     | unset; build from monorepo root  |
-| Builder            | Railpack                         |
-| Build              | `pnpm --filter ./apps/map build` |
-| Start              | `pnpm --filter ./apps/map start` |
-| Healthcheck        | `/api/health`, 30 seconds        |
-| Preserved variable | `DB_MAP_URL`                     |
+| Setting            | Dev                                   | Production                            |
+| ------------------ | ------------------------------------- | ------------------------------------- |
+| Service            | `apps/map`                            | `map`                                 |
+| Source             | `paulshorey/map`, branch `main`       | `paulshorey/map`, branch `prod`       |
+| Root directory     | unset; build from monorepo root       | unset; build from monorepo root       |
+| Builder            | Railpack                              | Railpack                              |
+| Build              | `pnpm --filter ./apps/map build`      | `pnpm --filter ./apps/map build`      |
+| Start              | `pnpm --filter ./apps/map start`      | `pnpm --filter ./apps/map start`      |
+| Watch paths        | app, shared libs, workspace manifests | app, shared libs, workspace manifests |
+| Healthcheck        | `/api/health`, 30 seconds             | `/api/health`, 30 seconds             |
+| Preserved variable | `DB_MAP_URL`                          | `DB_MAP_URL`                          |
+
+Health endpoints:
+
+- dev: `https://appsmap-dev-cb30.up.railway.app/api/health`
+- production: `https://map-production-5966.up.railway.app/api/health`
 
 The app start script binds to Railway's `PORT`. Generated Railway domains and platform
 defaults are omitted from the authoring file as recommended by Railway's importer.

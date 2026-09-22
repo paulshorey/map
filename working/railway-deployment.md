@@ -36,3 +36,24 @@ secret `RAILWAY_TOKEN`; inspect the live graph; plan and apply the initial IaC s
 then confirm a second plan is clean. These steps intentionally await authorization at
 the OAuth/token grant because they create broad CLI access and a persistent CI
 credential.
+
+## Production repair
+
+Target: World / production / map. The source was already connected to `prod`, but the
+service had no monorepo build or start override, so deployment
+`58d73e26-7419-45a9-8f49-de24a9a8b85b` failed during Railpack preparation with
+`No start command detected`.
+
+Applied the shared build/start commands, six watch paths, `/api/health`, and a
+30-second healthcheck timeout through the Railway dashboard. This was an authorized
+recovery bootstrap while CLI OAuth and the production project token remain unset.
+Deployment `259383e0-e7d6-4790-bf63-54cd32a90eec` was started from `prod`.
+It reached Active/Online, and both the Railway domain and `festivals.earth` returned
+HTTP 200 with `{"status":"ok"}` from `/api/health`. Deploy logs show the filtered
+workspace start script, Next.js bound to port 8080, and readiness in 325 ms.
+
+Updated `railway.ts` to select service `apps/map` / branch `main` in dev and service
+`map` / branch `prod` in production. Added the fixed-ID production link command and
+repository skill `.agents/skills/railway-iac/SKILL.md`. Reconcile both live
+environments with reviewed CLI plans after the corresponding environment-scoped
+credentials are available.
