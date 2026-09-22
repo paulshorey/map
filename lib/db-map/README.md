@@ -90,5 +90,7 @@ Source files and research notes live under `poi/`. Folder-specific instructions 
 - The app should use query helpers in `sql/`, not ad hoc SQL.
 - App builds fail if generated contracts drift.
 - `pg_dump` used by schema snapshotting must match the server major version.
+  `scripts/sql-check-postgres-client-version.sh` selects the matching client
+  binaries. Cloud agent hosts should run `bash scripts/agent-env.sh setup`.
 - Before launch, baseline-style migrations may still be rewritten for a greenfield DB. After
   launch, migrations should be append-only.

@@ -73,6 +73,44 @@ pnpm dev
 
 Open [http://localhost:5000](http://localhost:5000).
 
+### Cloud AI agent environment
+
+Use [scripts/agent-env.sh](scripts/agent-env.sh) as the setup/start script in another
+cloud agent host (Codex Cloud, Claude Code Cloud, and similar). After the repository
+is checked out, the host should run:
+
+```bash
+bash scripts/agent-env.sh setup
+```
+
+That installs Node/pnpm and a matching `psql`/`pg_dump`, persists injected secrets
+into `~/.config/poi-map/agent.env` (mode 600, never committed), verifies `DB_MAP_URL`
+without printing it, applies migrations, seeds the code-owned taxonomy, and builds
+`apps/map`. To launch the map afterward:
+
+```bash
+bash scripts/agent-env.sh start
+```
+
+Configure these as **environment variables that survive into the agent phase**
+(not setup-only secrets unless the script is allowed to persist them):
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `DB_MAP_URL` | yes, unless `--local-db` | Shared PostgreSQL (same database this Cursor environment uses) |
+| `LOCATIONIQ_API_KEY` | ingestion | Geocoding |
+| `JINA_API_KEY` | ingestion | Embeddings |
+| `DEEPINFRA_API_KEY` | ingestion | Normalization / match LLM |
+| `RAILWAY_TOKEN` | Railway IaC only | Project token scoped to `dev` |
+| `THUNDERFOREST_API_KEY` | optional | Premium tiles |
+
+The host must allow outbound network to the database host during agent work.
+`--local-db` provisions isolated PostgreSQL 16+ with `pg_trgm` when a remote URL
+is not available. Do not seed sample POIs into the shared remote database.
+
+See the [agent environment notes](working/agent-environment.md) for Codex/Claude
+setup fields, maintenance, and checks.
+
 ### Railway development and deployment
 
 Railway Infrastructure as Code lives in [`.railway/railway.ts`](.railway/railway.ts).

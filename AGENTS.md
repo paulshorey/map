@@ -201,6 +201,12 @@ runtime/schema edits. Report final maintenance state, stopped runs, and exact re
 Environment variables are already provided by the shell. Do not create or load `.env` files;
 `.env.example` is a reference only. Use `DB_MAP_URL` without printing credentials.
 
+For a new cloud AI-agent VM in another service, run
+[scripts/agent-env.sh](scripts/agent-env.sh) after checkout (`setup`, then `start`
+if that host should keep the map running). The script may persist injected secrets
+into `~/.config/poi-map/agent.env` so later shells can reach the database; never
+copy that file into the repository. See [working/agent-environment.md](working/agent-environment.md).
+
 The remote database is available for development reads and writes and is backed up. Follow
 the execution budgets above. After schema changes, run
 `pnpm --filter @lib/db-map db:sync` and include the migration, `schema/`, and `generated/`
