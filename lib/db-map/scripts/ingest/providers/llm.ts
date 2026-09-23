@@ -1,6 +1,10 @@
 /**
- * DeepInfra chat client (OpenAI-compatible API). Used for prose-date conversion
- * (M5 data-quality contract) and M8 match adjudication / description fusion.
+ * OpenAI-compatible chat client for Fireworks AI. Used for prose-date
+ * conversion (M5 data-quality contract), hybrid normalization, and M8 match
+ * adjudication / description fusion.
+ *
+ * Endpoint: POST {baseUrl}/chat/completions
+ * Docs: https://docs.fireworks.ai/guides/querying-text-models
  */
 import { ingestConfig } from "../config.js";
 
@@ -54,6 +58,18 @@ export interface ChatResult {
   latencyMs: number;
 }
 
+/**
+ * Fireworks serverless list prices for DeepSeek V4.1 Flash
+ * (https://fireworks.ai/models/deepseek-ai/deepseek-v4p1-flash):
+ * $0.22 / $0.007 / $0.66 per 1M tokens (input / cached input / output).
+ * Used only when the API omits `usage.estimated_cost`.
+ */
+const FIREWORKS_USD_PER_MTOK = {
+  input: 0.22,
+  cachedInput: 0.007,
+  output: 0.66,
+} as const;
+
 const sleep = (ms: number) =>
   new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
 
@@ -78,7 +94,66 @@ function messagesFor(opts: ChatOptions): ChatMessage[] {
   ];
 }
 
-/** OpenAI-compatible DeepInfra completion with bounded retry and telemetry. */
+function providerErrorMessage(
+  body: {
+    error?: { message?: string } | string;
+    message?: string;
+    detail?: unknown;
+  },
+  status: number,
+): string {
+  if (typeof body.error === "string" && body.error.trim()) return body.error;
+  if (
+    typeof body.error === "object" &&
+    typeof body.error.message === "string" &&
+    body.error.message.trim()
+  ) {
+    return body.error.message;
+  }
+  if (typeof body.message === "string" && body.message.trim()) {
+    return body.message;
+  }
+  if (typeof body.detail === "string" && body.detail.trim()) return body.detail;
+  if (Array.isArray(body.detail) && body.detail.length > 0) {
+    return body.detail
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (
+          item &&
+          typeof item === "object" &&
+          "msg" in item &&
+          typeof item.msg === "string"
+        ) {
+          return item.msg;
+        }
+        return JSON.stringify(item);
+      })
+      .join("; ");
+  }
+  return `Unexpected status ${status}`;
+}
+
+function estimateCostUsd(usage: {
+  estimated_cost?: number;
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  prompt_tokens_details?: { cached_tokens?: number };
+}): number | null {
+  if (typeof usage.estimated_cost === "number") return usage.estimated_cost;
+  const prompt = usage.prompt_tokens;
+  const completion = usage.completion_tokens;
+  if (prompt == null || completion == null) return null;
+  const cached = usage.prompt_tokens_details?.cached_tokens ?? 0;
+  const uncached = Math.max(0, prompt - cached);
+  return (
+    (uncached * FIREWORKS_USD_PER_MTOK.input +
+      cached * FIREWORKS_USD_PER_MTOK.cachedInput +
+      completion * FIREWORKS_USD_PER_MTOK.output) /
+    1_000_000
+  );
+}
+
+/** OpenAI-compatible Fireworks completion with bounded retry and telemetry. */
 export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
   const { model, baseUrl, apiKey } = ingestConfig.llm;
   // Configuration failures are not transient network failures.
@@ -110,6 +185,9 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
           ...(opts.responseFormat
             ? { response_format: opts.responseFormat }
             : {}),
+          // DeepSeek V4.x defaults to thinking on Fireworks; disable to keep
+          // completions short and parseable. Same shape as Anthropic-compatible
+          // `thinking` and equivalent to `reasoning_effort: "none"`.
           thinking: { type: "disabled" },
         }),
       });
@@ -128,7 +206,9 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
           estimated_cost?: number;
           prompt_tokens_details?: { cached_tokens?: number };
         };
-        error?: { message?: string };
+        error?: { message?: string } | string;
+        message?: string;
+        detail?: unknown;
       };
       try {
         body = JSON.parse(raw) as typeof body;
@@ -144,7 +224,7 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
       if (!res.ok) {
         const retryable = res.status === 429 || res.status >= 500;
         throw new LlmError(
-          body.error?.message ?? `Unexpected status ${res.status}`,
+          providerErrorMessage(body, res.status),
           retryable,
           res.status,
           retryAfterMs(res.headers.get("retry-after")),
@@ -171,7 +251,7 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
             body.usage?.prompt_tokens_details?.cached_tokens ?? null,
           completionTokens: body.usage?.completion_tokens ?? null,
           totalTokens: body.usage?.total_tokens ?? null,
-          estimatedCost: body.usage?.estimated_cost ?? null,
+          estimatedCost: body.usage ? estimateCostUsd(body.usage) : null,
         },
         latencyMs: Date.now() - started,
       };
