@@ -2,7 +2,7 @@
  * Remove selected file records and every POI-scoped artifact derived from them.
  *
  * Usage:
- *   pnpm --filter @lib/db-map ingest:clean <poi/...json|jsonl|csv> --category <slug> [--limit N] [--dry-run]
+ *   pnpm --filter @lib/db-map ingest:clean <data/poi/...json|jsonl|csv> --category <slug> [--limit N] [--dry-run]
  */
 import type { Pool, PoolClient } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
@@ -34,7 +34,7 @@ interface SelectedRecordGroup {
 function usageError(message: string): never {
   console.error(message);
   console.error(
-    "Usage: ingest:clean <poi/...json|jsonl|csv> [--limit N] [--dry-run]",
+    "Usage: ingest:clean <data/poi/...json|jsonl|csv> [--limit N] [--dry-run]",
   );
   process.exit(1);
 }

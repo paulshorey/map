@@ -67,7 +67,7 @@ normalizations, geocodes and embeddings preserve provenance. Active
 
 ## Command scope and limits
 
-File paths resolve from the repository root and must be under `docs/poi/`. Categories must
+File paths resolve from the repository root and must be under `data/poi/`. Categories must
 exist in the code-owned taxonomy and are explicit on new runs. Known files use the source
 registry; other flat JSON/JSONL/CSV files use a derived source slug and generic extractor.
 Inspect the printed source. Wrapper/nested formats need extractor configuration. See the
@@ -416,7 +416,7 @@ pnpm --filter @lib/db-map ingest:report --source <source> --category <category>
 pnpm --filter @lib/db-map ingest:verify
 ```
 
-Compare expected files under `docs/poi/` and source research notes with
+Compare expected files under `data/poi/` and source research notes with
 `research_source_files` / `research_source_file_versions`. Unimported files have no database
 rows; a database-only report cannot prove inventory completeness. Distinguish partial
 extraction, intended exclusions, failed/stale normalization, blocked coordinates/embeddings,

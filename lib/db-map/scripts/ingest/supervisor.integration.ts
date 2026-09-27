@@ -7,7 +7,7 @@ import { watch } from "node:fs";
 import { resolve } from "node:path";
 import { getDb, closeDb } from "../../lib/db/postgres.js";
 import { inspectControl } from "./control.js";
-import { REPO_ROOT } from "./source-file.js";
+import { POI_ROOT } from "./source-file.js";
 import { jobPath, loadJob } from "./supervisor-state.js";
 const db = getDb(),
   jobs: string[] = [];
@@ -61,7 +61,7 @@ try {
   const initial = await inspectControl(db);
   assert.equal(initial.quiescent, true);
   assert.equal(initial.maintenance.maintenance, false);
-  dir = await mkdtemp(resolve(REPO_ROOT, "poi/supervisor-test-"));
+  dir = await mkdtemp(resolve(POI_ROOT, "supervisor-test-"));
   const file = resolve(dir, slug + ".json");
   await writeFile(
     file,

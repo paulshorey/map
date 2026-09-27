@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { resolve, relative } from "node:path";
 import { getDb } from "../../lib/db/postgres.js";
-import { REPO_ROOT, hashSourceFile } from "./source-file.js";
+import { POI_ROOT, REPO_ROOT, hashSourceFile } from "./source-file.js";
 import { runOrchestration } from "./orchestrator.js";
 import {
   getInventory,
@@ -14,7 +14,7 @@ import {
 import { refreshInventory } from "../../lib/ingestion/inventory-scan.js";
 const db = getDb();
 const slug = "inventory_test_" + randomUUID().replaceAll("-", "");
-const dir = await mkdtemp(resolve(REPO_ROOT, "poi/inventory-test-"));
+const dir = await mkdtemp(resolve(POI_ROOT, "inventory-test-"));
 const file = resolve(dir, slug + ".json");
 const logical = relative(REPO_ROOT, file);
 let inventoryId: string | undefined, sourceId: string | undefined;

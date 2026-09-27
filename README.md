@@ -173,10 +173,10 @@ validate fixes with short runs. Before changing a running pipeline, use the shar
 maintenance and confirm shutdown. `pnpm --filter @lib/db-map ingest:control list --json`
 shows worker evidence and maintenance state.
 
-Raw source files live in `poi/`. The pipeline preserves source records and their history
+Raw source files live in `data/poi/`. The pipeline preserves source records and their history
 in `research_*`, then merges them into the `canonical_*` POIs shown on the map.
 
-Run these commands from the repository root. Replace `<file>` with a path under `poi/`
+Run these commands from the repository root. Replace `<file>` with a path under `data/poi/`
 and `<category>` with a slug from the [taxonomy](lib/db-map/scripts/ingest/taxonomy.ts).
 Category must be explicit; it is never inferred from the file or its records.
 

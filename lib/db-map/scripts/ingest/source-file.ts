@@ -6,7 +6,8 @@ import { listSourceDefinitions } from "./sources.js";
 import type { SourceDefinition, SourceFileDefinition } from "./types.js";
 
 export const REPO_ROOT = resolve(import.meta.dirname, "../../../..");
-const POI_ROOT = resolve(REPO_ROOT, "poi");
+export const POI_RELATIVE_PATH = "data/poi";
+export const POI_ROOT = resolve(REPO_ROOT, POI_RELATIVE_PATH);
 
 export interface ResolvedSourceFile {
   absolutePath: string;
