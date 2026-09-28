@@ -914,6 +914,9 @@ export async function runOrchestration(
     opts = {
       ...previous.options,
       ...overrides,
+      // Run options retain the original input path for audit. The source-file row
+      // follows a capture when its repository location changes.
+      file: previous.logical_path,
       stopAfter: supplied.stopAfter,
       resume: previous.id,
       dryRun: supplied.dryRun,

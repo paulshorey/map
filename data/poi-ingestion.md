@@ -104,8 +104,12 @@ work, use the exact UUID printed by that process:
 pnpm --filter @lib/db-map ingest:run --resume <uuid>
 ```
 
-Resume preserves the original cohort, options and successful checkpoints. It selects unfinished
-stage items in PostgreSQL instead of visiting each completed item in application code. This is
+Resume preserves the original cohort, options and successful checkpoints. For a capture moved
+within the repository, it reads the current path from that run's source-file identity while
+retaining the originally submitted path in historical run options. A path-only move must
+reconcile the inventory and source-file identities before resume; a new file path alone starts
+a separate file history. Resume selects unfinished stage items in PostgreSQL instead of
+visiting each completed item in application code. This is
 per-record completion, not a highest-ID cursor: earlier failed or invalidated items remain eligible
 when later items have already completed. Source IDs need not be numeric or sequential.
 

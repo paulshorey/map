@@ -63,7 +63,23 @@ try {
   assert.equal(full.verified, 2);
   assert.equal(full.excluded, 2);
   // A retry/resume cannot double-count the same source record.
+  // Keep the historical run options intact while resolving the file through its
+  // current source-file identity after a repository path migration.
+  const legacyPath = logical.replace(/^data\//, "docs/");
+  await db.query(
+    "UPDATE research_ingest_runs SET options=jsonb_set(options,'{file}',to_jsonb($2::text)) WHERE id=$1",
+    [full.latest_run!.id, legacyPath],
+  );
   await runOrchestration(db, { ...opts, resume: full.latest_run!.id });
+  assert.equal(
+    (
+      await db.query(
+        "SELECT options->>'file' AS file FROM research_ingest_runs WHERE id=$1",
+        [full.latest_run!.id],
+      )
+    ).rows[0].file,
+    legacyPath,
+  );
   assert.equal((await find()).records, 2);
   // Previously verified output becomes stale, so saved run success cannot certify it.
   await db.query(
