@@ -62,7 +62,7 @@ last scan; live database evidence is refreshed separately.
 
 ```bash
 pnpm --filter @lib/db-map ingest:inventory --json
-pnpm --filter @lib/db-map ingest:inventory --file poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv --json
+pnpm --filter @lib/db-map ingest:inventory --file data/poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv --json
 pnpm --filter @lib/db-map ingest:test-inventory
 pnpm --filter @lib/db-map ingest:test-inventory:integration
 pnpm --filter @app/ingestion check-types

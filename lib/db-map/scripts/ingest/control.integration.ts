@@ -14,7 +14,7 @@ import {
 import { inspectControl, waitForStop } from "./control.js";
 import { Execution, lockSource } from "./execution.js";
 import { runOrchestration } from "./orchestrator.js";
-import { REPO_ROOT } from "./source-file.js";
+import { POI_ROOT } from "./source-file.js";
 
 const db = getDb();
 const actor = "control-integration-test";
@@ -58,7 +58,7 @@ try {
   );
   await changeMaintenance(db, false, actor, undefined, ownedToken);
   ownedToken = undefined;
-  dir = await mkdtemp(resolve(REPO_ROOT, "poi/control-test-"));
+  dir = await mkdtemp(resolve(POI_ROOT, "control-test-"));
   const file = resolve(dir, slug + ".json");
   await writeFile(
     file,

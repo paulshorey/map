@@ -9,11 +9,11 @@ import { getDb } from "../../lib/db/postgres.js";
 import { Execution, lockSource } from "./execution.js";
 import { runOrchestration } from "./orchestrator.js";
 import { inspectRun, parseStatusArgs } from "./status.js";
+import { POI_ROOT } from "./source-file.js";
 
 const db = getDb();
 const slug = `recovery_test_${randomUUID().replaceAll("-", "")}`;
-const root = resolve(fileURLToPath(new URL("../../../../", import.meta.url)));
-const dir = await mkdtemp(resolve(root, "poi/recovery-test-"));
+const dir = await mkdtemp(resolve(POI_ROOT, "recovery-test-"));
 const file = resolve(dir, `${slug}.json`);
 let sourceId: string | undefined;
 let open: Execution | undefined;

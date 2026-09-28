@@ -4,6 +4,7 @@ import { readdir, stat } from "node:fs/promises";
 import { extname, resolve, relative } from "node:path";
 import type { Pool } from "pg";
 import {
+  POI_RELATIVE_PATH,
   REPO_ROOT,
   resolveSourceFile,
 } from "../../scripts/ingest/source-file.js";
@@ -73,7 +74,7 @@ export async function discoverFiles(
       files.push(item);
     }
   }
-  await walk(resolve(root, "poi"));
+  await walk(resolve(root, POI_RELATIVE_PATH));
   return files.sort((a, b) => a.path.localeCompare(b.path));
 }
 

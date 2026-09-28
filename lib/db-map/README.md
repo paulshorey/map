@@ -82,7 +82,7 @@ workers and close admission before runtime/schema edits.
 
 ## Source Data
 
-Source files and research notes live under `poi/`. Folder-specific instructions live in
+Source files and research notes live under `data/poi/`. Folder-specific instructions live in
 `AGENTS.md`.
 
 ## Notes

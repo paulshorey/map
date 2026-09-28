@@ -67,7 +67,7 @@ normalizations, geocodes and embeddings preserve provenance. Active
 
 ## Command scope and limits
 
-File paths resolve from the repository root and must be under `docs/poi/`. Categories must
+File paths resolve from the repository root and must be under `data/poi/`. Categories must
 exist in the code-owned taxonomy and are explicit on new runs. Known files use the source
 registry; other flat JSON/JSONL/CSV files use a derived source slug and generic extractor.
 Inspect the printed source. Wrapper/nested formats need extractor configuration. See the
@@ -104,8 +104,12 @@ work, use the exact UUID printed by that process:
 pnpm --filter @lib/db-map ingest:run --resume <uuid>
 ```
 
-Resume preserves the original cohort, options and successful checkpoints. It selects unfinished
-stage items in PostgreSQL instead of visiting each completed item in application code. This is
+Resume preserves the original cohort, options and successful checkpoints. For a capture moved
+within the repository, it reads the current path from that run's source-file identity while
+retaining the originally submitted path in historical run options. A path-only move must
+reconcile the inventory and source-file identities before resume; a new file path alone starts
+a separate file history. Resume selects unfinished stage items in PostgreSQL instead of
+visiting each completed item in application code. This is
 per-record completion, not a highest-ID cursor: earlier failed or invalidated items remain eligible
 when later items have already completed. Source IDs need not be numeric or sequential.
 
@@ -416,7 +420,7 @@ pnpm --filter @lib/db-map ingest:report --source <source> --category <category>
 pnpm --filter @lib/db-map ingest:verify
 ```
 
-Compare expected files under `docs/poi/` and source research notes with
+Compare expected files under `data/poi/` and source research notes with
 `research_source_files` / `research_source_file_versions`. Unimported files have no database
 rows; a database-only report cannot prove inventory completeness. Distinguish partial
 extraction, intended exclusions, failed/stale normalization, blocked coordinates/embeddings,

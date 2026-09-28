@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { resolve, relative } from "node:path";
 import { getDb } from "../../lib/db/postgres.js";
-import { REPO_ROOT, hashSourceFile } from "./source-file.js";
+import { POI_ROOT, REPO_ROOT, hashSourceFile } from "./source-file.js";
 import { runOrchestration } from "./orchestrator.js";
 import {
   getInventory,
@@ -14,7 +14,7 @@ import {
 import { refreshInventory } from "../../lib/ingestion/inventory-scan.js";
 const db = getDb();
 const slug = "inventory_test_" + randomUUID().replaceAll("-", "");
-const dir = await mkdtemp(resolve(REPO_ROOT, "poi/inventory-test-"));
+const dir = await mkdtemp(resolve(POI_ROOT, "inventory-test-"));
 const file = resolve(dir, slug + ".json");
 const logical = relative(REPO_ROOT, file);
 let inventoryId: string | undefined, sourceId: string | undefined;
@@ -63,7 +63,23 @@ try {
   assert.equal(full.verified, 2);
   assert.equal(full.excluded, 2);
   // A retry/resume cannot double-count the same source record.
+  // Keep the historical run options intact while resolving the file through its
+  // current source-file identity after a repository path migration.
+  const legacyPath = logical.replace(/^data\//, "docs/");
+  await db.query(
+    "UPDATE research_ingest_runs SET options=jsonb_set(options,'{file}',to_jsonb($2::text)) WHERE id=$1",
+    [full.latest_run!.id, legacyPath],
+  );
   await runOrchestration(db, { ...opts, resume: full.latest_run!.id });
+  assert.equal(
+    (
+      await db.query(
+        "SELECT options->>'file' AS file FROM research_ingest_runs WHERE id=$1",
+        [full.latest_run!.id],
+      )
+    ).rows[0].file,
+    legacyPath,
+  );
   assert.equal((await find()).records, 2);
   // Previously verified output becomes stale, so saved run success cannot certify it.
   await db.query(

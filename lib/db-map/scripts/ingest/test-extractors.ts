@@ -12,11 +12,9 @@ import { wikipediaUsExtractor } from "./extractors/wikipedia-us.js";
 import { wikipediaIntlExtractor } from "./extractors/wikipedia-intl.js";
 import { gardenologyExtractor } from "./extractors/gardenology.js";
 import type { Extractor } from "./types.js";
+import { POI_ROOT } from "./source-file.js";
 
-const ROOT = resolve(
-  import.meta.dirname,
-  "../../../../poi/botanical_gardens_data",
-);
+const ROOT = resolve(POI_ROOT, "botanical_gardens_data");
 
 const CASES: Array<{ slug: string; file: string; extractor: Extractor }> = [
   { slug: "bgci", file: "bgci_gardens_full.json", extractor: bgciExtractor },
