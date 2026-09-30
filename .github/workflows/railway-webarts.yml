@@ -1,0 +1,58 @@
+name: WebArts infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths: &config_paths
+      - ".railway/webarts.ts"
+      - ".github/workflows/railway-webarts.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+  pull_request:
+    branches: [main]
+    paths: *config_paths
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: webarts-iac-${{ github.base_ref || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  config:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RAILWAY_TOKEN: ${{ secrets.WEBARTS_RAILWAY_TOKEN_DEV }}
+      RAILWAY_PROJECT_ID: c6260c51-8b01-4934-8ccb-9cf32456744c
+      RAILWAY_ENVIRONMENT_ID: 4e7d33aa-1de0-441f-a105-352bbe3b6697
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check IaC types and token
+        run: |
+          test -n "$RAILWAY_TOKEN"
+          pnpm exec tsc --noEmit --strict --skipLibCheck --target es2022 --module nodenext --moduleResolution nodenext .railway/webarts.ts
+      - name: Plan configuration
+        run: pnpm exec railway config plan --file .railway/webarts.ts --out "$RUNNER_TEMP/railway-plan.json"
+      - name: Confirm this is the latest branch commit
+        if: github.event_name != 'pull_request'
+        run: |
+          branch_sha=$(git ls-remote origin "refs/heads/$GITHUB_REF_NAME" | cut -f1)
+          test "$branch_sha" = "$GITHUB_SHA"
+      - name: Apply pinned plan
+        if: github.event_name != 'pull_request'
+        run: pnpm exec railway config apply --plan "$RUNNER_TEMP/railway-plan.json" --yes
+      - name: Verify applied configuration
+        if: github.event_name != 'pull_request'
+        run: pnpm exec railway config plan --file .railway/webarts.ts --detailed-exit-code

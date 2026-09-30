@@ -192,3 +192,39 @@ References: [Railway IaC](https://docs.railway.com/infrastructure-as-code),
 [Railway config CLI](https://docs.railway.com/cli/config),
 [official config action](https://github.com/railwayapp/config), and
 [PR Environments](https://docs.railway.com/guides/preview-deployments-with-pr-environments).
+
+## WebArts deployment
+
+This repository also has a service in the older **WebArts** project
+(`c6260c51-8b01-4934-8ccb-9cf32456744c`). Its configuration lives in
+`webarts.ts`, exports the `map` partial, and owns only `apps/map`. The default
+`railway.ts` and existing `railway-config.yml` workflow continue to target **World**.
+Never use the default authoring file to manage WebArts. Databases, volumes, domains,
+and other repositories in WebArts remain under their existing ownership.
+
+```bash
+source ~/.config/railway/webarts.env
+unset RAILWAY_TOKEN
+export RAILWAY_PROJECT_ID=c6260c51-8b01-4934-8ccb-9cf32456744c
+export RAILWAY_ENVIRONMENT_ID=4e7d33aa-1de0-441f-a105-352bbe3b6697
+pnpm railway:webarts:check
+pnpm railway:webarts:plan
+pnpm railway:webarts:apply
+pnpm exec railway config plan --file .railway/webarts.ts --detailed-exit-code
+```
+
+`.github/workflows/railway-webarts.yml` plans same-repository PRs and applies pinned
+plans on main pushes or manual dispatch using `WEBARTS_RAILWAY_TOKEN_DEV`, scoped
+only to WebArts dev. The workflow checks types and the latest branch head, rejects
+destructive changes, and checks for a clean plan afterward. A concurrent apply from
+another repository can make a saved plan stale; review and rerun it.
+
+New previews inherit dev. Existing WebArts previews need an explicit apply with their
+exact environment ID and `RAILWAY_IAC_BRANCH` set to the current Map preview branch.
+The file rejects missing preview branches and the wrong project. WebArts production
+currently has no Map service; do not apply this file there.
+
+The obsolete `/apps/map/railway.json` reference was cleared in dev and all four
+existing WebArts previews on 2026-09-30. Keep the legacy Config File field empty.
+A normal GitHub build does not evaluate IaC. Check the new deployment and its
+`/api/health` after applying configuration.
