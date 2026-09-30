@@ -6,7 +6,7 @@
  * an LLM fallback converts it — with the year re-derived by structured logic
  * (never trusted from the model): a month already passed this year → next year.
  */
-import { chat, LlmError } from "../providers/deepinfra.js";
+import { chat, LlmError } from "../providers/llm.js";
 
 export type DatePrecision = "day" | "month" | "year";
 

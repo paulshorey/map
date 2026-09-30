@@ -8,7 +8,7 @@ import {
   ProviderRecoveryExhausted,
   type RecoveryEvent,
 } from "./provider-recovery.js";
-import { completeChat, LlmError, retryAfterMs } from "./providers/deepinfra.js";
+import { completeChat, LlmError, retryAfterMs } from "./providers/llm.js";
 
 function fixture() {
   let now = 0;
@@ -274,8 +274,8 @@ test("Retry-After parses seconds/date and rejects invalid values", () => {
 
 test("HTML 429 retains status and cooldown without hidden managed transport retries", async () => {
   const original = globalThis.fetch;
-  const oldKey = process.env.DEEPINFRA_API_KEY;
-  process.env.DEEPINFRA_API_KEY = "fixture";
+  const oldKey = process.env.FIREWORKS_API_KEY;
+  process.env.FIREWORKS_API_KEY = "fixture";
   let calls = 0;
   globalThis.fetch = async () => {
     calls++;
@@ -296,7 +296,58 @@ test("HTML 429 retains status and cooldown without hidden managed transport retr
     assert.equal(calls, 1);
   } finally {
     globalThis.fetch = original;
-    if (oldKey === undefined) delete process.env.DEEPINFRA_API_KEY;
-    else process.env.DEEPINFRA_API_KEY = oldKey;
+    if (oldKey === undefined) delete process.env.FIREWORKS_API_KEY;
+    else process.env.FIREWORKS_API_KEY = oldKey;
+  }
+});
+
+test("completeChat posts to Fireworks with thinking disabled", async () => {
+  const original = globalThis.fetch;
+  const oldKey = process.env.FIREWORKS_API_KEY;
+  process.env.FIREWORKS_API_KEY = "fixture";
+  let request: { url: string; init: RequestInit } | undefined;
+  globalThis.fetch = async (input, init) => {
+    request = { url: String(input), init: init ?? {} };
+    return Response.json({
+      model: "accounts/fireworks/models/deepseek-v4p1-flash",
+      choices: [
+        { message: { content: '{"ok":true}' }, finish_reason: "stop" },
+      ],
+      usage: {
+        prompt_tokens: 100,
+        completion_tokens: 20,
+        total_tokens: 120,
+        prompt_tokens_details: { cached_tokens: 10 },
+      },
+    });
+  };
+  try {
+    const result = await completeChat({
+      system: "fixture",
+      user: "fixture",
+      retries: 0,
+    });
+    assert.ok(request);
+    assert.equal(
+      request.url,
+      "https://api.fireworks.ai/inference/v1/chat/completions",
+    );
+    const body = JSON.parse(String(request.init.body));
+    assert.equal(
+      body.model,
+      "accounts/fireworks/models/deepseek-v4p1-flash",
+    );
+    assert.deepEqual(body.thinking, { type: "disabled" });
+    assert.equal(
+      (request.init.headers as Record<string, string>).Authorization,
+      "Bearer fixture",
+    );
+    assert.equal(result.content, '{"ok":true}');
+    assert.equal(result.usage.cachedTokens, 10);
+    assert.equal(result.usage.estimatedCost, (90 * 0.22 + 10 * 0.007 + 20 * 0.66) / 1_000_000);
+  } finally {
+    globalThis.fetch = original;
+    if (oldKey === undefined) delete process.env.FIREWORKS_API_KEY;
+    else process.env.FIREWORKS_API_KEY = oldKey;
   }
 });

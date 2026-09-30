@@ -1,6 +1,6 @@
 import { currentAttempt } from "./execution.js";
 import type { PoolClient } from "pg";
-import { chat } from "./providers/deepinfra.js";
+import { chat } from "./providers/llm.js";
 import { getSourceDefinition } from "./sources.js";
 import { isWithinProximityBox, proximityDegFor } from "./match/anchors.js";
 import { nameSimilarity, normalizeComparable } from "./match/text.js";
