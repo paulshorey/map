@@ -29,10 +29,14 @@
     "agent:env:setup": "bash scripts/agent-env.sh setup",
     "agent:env:check": "bash scripts/agent-env.sh check",
     "agent:env:start": "bash scripts/agent-env.sh start",
-    "agent:env:stop": "bash scripts/agent-env.sh stop"
+    "agent:env:stop": "bash scripts/agent-env.sh stop",
+    "railway:webarts:check": "tsc --noEmit --strict --skipLibCheck --target es2022 --module nodenext --moduleResolution nodenext .railway/webarts.ts",
+    "railway:webarts:plan": "railway config plan --file .railway/webarts.ts",
+    "railway:webarts:apply": "railway config apply --file .railway/webarts.ts"
   },
   "devDependencies": {
     "@railway/cli": "5.59.0",
+    "@types/node": "^22.20.4",
     "prettier": "^3.6.2",
     "railway": "3.11.0",
     "turbo": "^2.5.5",
