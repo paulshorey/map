@@ -33,6 +33,15 @@ one Fireworks request, $0.0041511 estimated cost, no unknown cost, caps absent a
 this test did not claim whole-file completion or exercise new downstream provider calls.
 The emitted/stored continuation includes `--unlimited`. Maintenance is off after validation.
 
+OpenClaw launched the original full continuation at `2026-10-06T14:18:21.868Z`
+(09:18 CDT), native handle `glow-seaslug`, job `86a59d26-16b6-4fc5-ab03-191e818212d4`,
+execution `57354060-311c-43a0-97e7-c4347d028688`. Its durable native job has `--unlimited`
+and `timeout_seconds: null`. Startup control evidence shows one running normalize worker,
+a fresh heartbeat and the Dyrt source lock, with maintenance off. Owner
+`agent:main:dashboard:0ac26162-4c5c-429f-a2a7-0f3fa93c8eb3` retains its verified completion
+transport. This is a running full import, not completion; later truth belongs to database
+history and OpenClaw's private action/terminal ledger. Do not start a second worker.
+
 The following sections are historical evidence, not current spending/admission policy.
 
 # POI import automation audit — 2026-10-05
