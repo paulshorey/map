@@ -91,25 +91,40 @@ The local OpenClaw coordinator can own the cheap-runner role directly. Its confi
 launcher live in `/Users/pshorey/git/openclaw`; read that checkout's coordinator procedure.
 Use `ingest:supervise watch`, which stays in the foreground, prints one launch receipt and one
 terminal JSON event, writes the same durable job/result/log files, and never starts a model or
-Codex callback. OpenClaw's background exec owns this foreground command and wakes its owning
-conversation on exit. Node owns hourly health checks and the 1–168-hour deadline.
+Codex callback. OpenClaw's background exec owns this foreground command. Node owns hourly
+health checks and the 1–168-hour deadline. The local OpenClaw wrapper delivers a compact
+terminal result to the exact owning dashboard conversation through its supported targeted
+`system event --mode now` interface, after the supervisor saves durable result evidence.
+This is a separately verified terminal notification integration: OpenClaw 2026.9.5 can defer
+its ordinary native exec-exit event until the next hourly heartbeat. The callback makes no
+model call while the import is healthy and does not detach the supervisor or start a server.
+See [the local wrapper's procedure](/Users/pshorey/git/openclaw/README.md) for its ownership,
+completion receipt, preflight and delivery checks.
 
 1. Refresh inventory after checkout/file changes; read `ingest:queue --json` and control state.
    The queue is a recommendation, not admission or evidence that an outage was repaired.
 2. Review unclassified files before setting category/disposition. Resolve supporting files,
    alternate exports, empty captures, wrapper keys, event editions and campsite-versus-facility
    granularity. See [capture folder guidance](poi/README.md). No progress state belongs in Git.
-3. Verify `tools.exec.notifyOnExit` is enabled and the `process` tool is available. Verify an
-   actual harmless background command's completion in the owning conversation before the first
-   unattended import. Repeat after a Gateway restart or configuration change. Config availability
-   alone does not prove delivery. Missing completion is a blocker, not permission to use local-only.
+3. Verify the `process` tool and notification configuration, then exercise the wrapper's
+   harmless terminal-callback preflight in the actual owning internal dashboard conversation.
+   Confirm an automatic continuation after the initiating turn ends, with the correct owner,
+   event ID and saved terminal evidence; record the verified integration receipt. Repeat after
+   a Gateway restart or notification configuration change. Config availability, a queued native
+   event or a manually forced follow-up alone does not prove delivery. Missing completion is a
+   blocker, not permission to use local-only or run a model polling loop.
 4. Record the exact file/category or resume UUID, budgets, overall deadline and native process
    handle in OpenClaw's private ledger. Launch one source using its `scripts/run-map-import.sh`
    in native `exec` with `background=true` and `timeoutSeconds=0` (Node enforces the deadline).
    Do not use `nohup`, shell `&`, or a Codex implementation wrapper. End the agent turn.
 5. Reconcile terminal events by stable `event_id`, job/result file, pinned run/execution and
-   database inventory. Only `succeeded` plus `verified_at` and full-file `complete` permit
-   advancing. Samples, suffix verification, exclusions and data quality remain separate.
+   database inventory. Only `succeeded` plus `verified_at`, inventory `coverage="complete"`
+   and queue `action="complete"` for the exact file permit advancing. Raw
+   `ingestion_files.status="complete"` and `extraction_complete=true` prove extraction,
+   not downstream completion. Samples, suffix verification, exclusions and quality remain separate.
+   The delayed native exit event may arrive after the terminal callback; deduplicate it using
+   the same saved job/event evidence rather than treating it as another import. An unconfirmed
+   callback leaves the durable result for reconciliation and blocks automatic queue advancement.
 6. On failure, stop that file's automatic retries, preserve evidence, and delegate a precise
    repair through OpenClaw's connected Codex CLI wrapper. Codex handles maintenance and bounded
    smoke validation. Other files may proceed only after the engineer confirms a source-specific

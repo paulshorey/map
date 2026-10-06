@@ -81,3 +81,86 @@ authorization, unknown-spend review and native-completion evidence remain separa
 Bounded read-only error evidence: `/tmp/deepinfra-error-audit.json`;
 full-run snapshot: `/tmp/deepinfra-full-run-status.json`;
 successful sample snapshot: `/tmp/deepinfra-successful-smoke-status.json`.
+
+## Fireworks merge and readiness follow-up — 2026-10-06 UTC
+
+PR #30 merged into main as `20ac0c84067db26b49aaa00e3d83a69ed016cf78`. Fireworks
+DeepSeek V4.1 Flash now uses bounded thinking by default. A new one-record normalization
+smoke for source record `17196` succeeded in about 11 seconds, with one Fireworks request
+and $0.0038394 estimated cost, zero unknown cost. A second new one-record smoke reused
+that normalization, embedded with Jina, matched automatically, published Pioneer Pass
+Campground, and passed report/lineage verification. Published run
+`9a89aa13-2f8d-427b-b498-522d74e497c7` verified at `2026-10-06T04:27:45.618Z`.
+Full provider and artifact IDs are in [the Fireworks report](fireworks-provider.md).
+
+The Dyrt coverage is still partial: 43,272 extracted, 11,505 with active normalization
+(including 57 excluded), now 3 linked/published/verified. 31,767 still lack active
+normalization. The full continuation remains `4dda8606-9c20-4275-bae6-c14cdea9e38c`,
+with retained interrupted attempts and unknown prior costs. Its fresh resume dry-run
+accepts current file/hash and pipeline versions. Complete normalization/retries, coordinate
+resolution, embedding, matching, canonical builds, publication and whole-file verification
+remain necessary. The sample's source coordinates avoided the geocoder API and automatic
+matching avoided model-based disambiguation/fusion.
+
+Refreshed queue: 247 captures, 1 inspect, 2 verify, 40 start, 200 review, 4 supporting/blocked,
+0 complete. PostgreSQL inventory and managed run history already supply durable machine
+status; adding another progress JSON among raw captures would duplicate that source of truth.
+No full import was launched. Maintenance was reopened after merge and is off.
+
+OpenClaw hardening now checks required shell credentials before exec, explicit finite
+budgets, visible native ownership, current Gateway lifetime and witnessed completion
+receipts. Arbitrary zero normalization/geocoder budgets do not imply provider-free work;
+only explicit new report/verify suffixes qualify for the credential exemption. Matching,
+fusion and embedding need separate allowances. Unknown cost and the original overall
+execution deadline must be resolved before resuming the paid backlog.
+
+Harmless native completion tests exposed routing prerequisites. Source review showed
+`heartbeat.isolatedSession=true` uses a separate heartbeat context and `target="none"`
+removes completion output from the prompt. Both settings were corrected to false/owner,
+respectively; external channels remain disabled. The CLI test harness also persisted
+a non-delivery conversation; the final integration uses normal internal dashboard chat.
+Scheduled passes still create dated visible dashboard conversations.
+The early tests are retained as unverified completion evidence. The wrapper rejects isolated
+routing and disabled completion delivery. Source review identified the remaining timing gate:
+ordinary native exec events can defer until the next one-hour heartbeat. The wrapper now
+delivers one targeted wake-now terminal callback after durable supervisor result evidence.
+This is a separately verified notification integration, while the supervisor remains
+foreground-owned by native OpenClaw exec. Callback failure or ambiguity blocks advancement;
+startup/journal errors produce a distinct blocker event without inventing a database run.
+
+A real, 45-second bounded Codex CLI handoff test passed through OpenClaw's configured wrapper.
+It read map instructions, confirmed shell DB/Fireworks credentials as booleans, and returned
+DELEGATION_READY without edits or ingestion. Private log:
+`/Users/pshorey/git/openclaw/runtime/coordinator/logs/map-codex-preflight-wrapper.log`.
+
+## Final OpenClaw acceptance evidence
+
+- Harmless callback preflight in owner
+  `agent:main:dashboard:52858321-cc92-43f0-bd80-43c3abbf4963` passed on the existing
+  Gateway lifetime. Transcript audit verified a distinct automatic callback turn after
+  the launch turn ended, with the exact marker and no additional human input. Initial
+  turn `6399efc5-25c1-42df-a46c-cbda55496943`; automatic turn
+  `b4db2b2a-4801-476d-a4a3-3fdfc7aab71a`. The initial model made one unnecessary
+  history read containing no completion; it was not used as proof. Instructions now make
+  native launch the last tool call before ending the turn.
+- A second acceptance test used the production wrapper through native OpenClaw exec,
+  handle `delta-nexus`, for a NEW one-record report/verify suffix with all three budgets
+  zero. Job `cc2133c5-b19d-4a25-a835-e939ec3acd52`, run
+  `02b922cc-9948-4da3-8ff7-bc0e6f6ee6c1`, execution
+  `cdb49d2e-8554-4c99-a09c-cd023d83b63a` succeeded and verified at
+  `2026-10-06T04:57:17.405Z`. Extraction reused existing data; no provider work occurred.
+  The launch turn ended immediately, and the exact `ingestion:JOB:terminal` callback
+  started a separate automatic owning turn. Whole-file coverage remains incomplete.
+- Production callback acceptance and result identities are preserved privately under
+  `runtime/coordinator/logs/map-import-runner/aaa384ec-9e4c-48e5-84fb-b19169f80531/`.
+  Owner/Gateway-specific proof and transcript audit are under
+  `runtime/coordinator/state/map-native-completion.json` and
+  `map-terminal-callback-proof.json`. A new owner or Gateway restart requires fresh proof.
+- Final OpenClaw regression checks: 43 wrapper tests and 8 environment tests passed;
+  Bash syntax, Python compilation and Git whitespace checks passed. Reviewed templates
+  were deployed and OpenClaw config validated without a Gateway restart. No extra AI
+  monitoring schedule was introduced; ordinary code owns waiting and health checks.
+- The paid full run remains paused pending the recorded aggregate allowance, prior
+  unknown-cost review and original total deadline. The bot can review files, reconcile
+  status and delegate code repairs while these decisions remain pending. No full backlog
+  import was launched during validation.
