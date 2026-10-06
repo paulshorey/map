@@ -95,14 +95,14 @@ bash scripts/agent-env.sh start
 Configure these as **environment variables that survive into the agent phase**
 (not setup-only secrets unless the script is allowed to persist them):
 
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `DB_MAP_URL` | yes, unless `--local-db` | Shared PostgreSQL (same database this Cursor environment uses) |
-| `LOCATIONIQ_API_KEY` | ingestion | Geocoding |
-| `JINA_API_KEY` | ingestion | Embeddings |
-| `DEEPINFRA_API_KEY` | ingestion | Normalization / match LLM |
-| `RAILWAY_TOKEN` | Railway IaC only | Project token scoped to `dev` |
-| `THUNDERFOREST_API_KEY` | optional | Premium tiles |
+| Variable                | Required                 | Purpose                                                        |
+| ----------------------- | ------------------------ | -------------------------------------------------------------- |
+| `DB_MAP_URL`            | yes, unless `--local-db` | Shared PostgreSQL (same database this Cursor environment uses) |
+| `LOCATIONIQ_API_KEY`    | ingestion                | Geocoding                                                      |
+| `JINA_API_KEY`          | ingestion                | Embeddings                                                     |
+| `DEEPINFRA_API_KEY`     | ingestion                | Normalization / match LLM                                      |
+| `RAILWAY_TOKEN`         | Railway IaC only         | Project token scoped to `dev`                                  |
+| `THUNDERFOREST_API_KEY` | optional                 | Premium tiles                                                  |
 
 The host must allow outbound network to the database host during agent work.
 `--local-db` provisions isolated PostgreSQL 16+ with `pg_trgm` when a remote URL
@@ -169,7 +169,7 @@ recovery steps. Agents should follow the repository's
 You usually launch full imports manually. AI agents share ownership of every stage and may
 stop/resume your runs, migrate schema, and repair experimental data as needed. They normally
 validate fixes with short runs. Before changing a running pipeline, use the shared
-[process-control workflow](poi-ingestion.md#process-control-and-maintenance) to enter
+[process-control workflow](data/poi-ingestion.md#process-control-and-maintenance) to enter
 maintenance and confirm shutdown. `pnpm --filter @lib/db-map ingest:control list --json`
 shows worker evidence and maintenance state.
 
@@ -220,9 +220,9 @@ blocked records, and data quality still need review.
 Global consolidation is a separate, explicit choice: add `--consolidate` to a full file run.
 It cannot be combined with `--record` or `--limit`. Do not use `--recluster` to resume.
 
-The [ingestion runbook](poi-ingestion.md) owns command semantics, failure investigation,
+The [ingestion runbook](data/poi-ingestion.md) owns command semantics, failure investigation,
 category completeness, cleanup, and reprocessing. New source data should follow the
-[capture spec](poi-research/capture-spec.md).
+[capture spec](data/poi-research/capture-spec.md).
 
 ### Ingestion dashboard and file inventory
 
@@ -387,7 +387,14 @@ The frontend auth hooks (`useAuth`, `useEntitlements`, `usePremiumKey`) already 
 
 Agents use a cheap runner and a detached supervisor; ordinary code checks health hourly and
 keeps logs without spending model tokens. The expensive agent returns only to decide after a
-terminal event. See [agent operations](ingestion-agents.md) for commands and notification
+terminal event. See [agent operations](data/ingestion-agents.md) for commands and notification
 setup. Automatic wake-up requires a verified local Codex connection on every operator host. This
 development Mac uses the official standalone Codex managed daemon and task queue. Manual foreground
 `ingest:run` remains available.
+
+The local OpenClaw coordinator uses `ingest:queue --json` and the
+[native runner](data/ingestion-agents.md#native-openclaw-runner). Its `ingest:supervise watch`
+process stays under OpenClaw background exec, with native terminal completion events and explicit
+provider budgets. This path does not invoke Codex while waiting; code blockers go to Codex for
+repair. The existing dashboard and audited `ingest:inventory --edit-file` share classification
+state with the queue; no second mutable status file is needed among captures.

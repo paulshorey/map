@@ -16,7 +16,17 @@ export async function traceResearchRecord(
        'memberships', COALESCE((SELECT jsonb_agg(to_jsonb(m) ORDER BY m.assigned_at DESC) FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id), '[]'::jsonb),
        'ingest_attempts', COALESCE((SELECT jsonb_agg(to_jsonb(a) ORDER BY a.started_at DESC) FROM research_ingest_attempts a WHERE a.research_poi_id=rp.id), '[]'::jsonb),
        'normalization_requests', COALESCE((SELECT jsonb_agg(to_jsonb(q) ORDER BY q.created_at DESC) FROM research_normalization_requests q WHERE q.research_poi_id=rp.id), '[]'::jsonb),
-       'run_records', COALESCE((SELECT jsonb_agg(to_jsonb(rr) ORDER BY rr.source_ordinal) FROM research_ingest_run_records rr WHERE rr.research_poi_id=rp.id OR (rr.source_record_id=rp.source_record_id AND rr.source_file_version_id IN (SELECT id FROM research_source_file_versions WHERE source_file_id IN (SELECT id FROM research_source_files WHERE source_id=rp.source_id))), '[]'::jsonb)
+       'run_records', COALESCE((
+         SELECT jsonb_agg(to_jsonb(rr) ORDER BY rr.source_ordinal)
+         FROM research_ingest_run_records rr
+         WHERE rr.research_poi_id=rp.id OR (
+           rr.source_record_id=rp.source_record_id AND EXISTS (
+             SELECT 1 FROM research_source_file_versions v
+             JOIN research_source_files f ON f.id=v.source_file_id
+             WHERE v.id=rr.source_file_version_id AND f.source_id=rp.source_id
+           )
+         )
+       ), '[]'::jsonb)
      ) AS trace
      FROM research_pois rp JOIN research_sources rs ON rs.id=rp.source_id
      WHERE rs.slug=$1 AND rp.source_record_id=$2`,

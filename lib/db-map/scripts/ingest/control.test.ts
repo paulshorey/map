@@ -36,6 +36,7 @@ test("process discovery ignores shell text/read-only controls and finds writable
 107 1 node scripts/import-kml.ts fixture.kml
 108 1 node scripts/ingest/inventory.ts --json
 109 1 node scripts/ingest/supervise.ts worker --job abc
+110 1 node scripts/ingest/queue.ts --json
 `),
     [
       { pid: 101, ppid: 1, script: "ingest/run" },

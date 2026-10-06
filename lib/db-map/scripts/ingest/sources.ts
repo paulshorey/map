@@ -10,6 +10,10 @@ import { gardenologyExtractor } from "./extractors/gardenology.js";
 import { globalCarnivalistExtractor } from "./extractors/global-carnivalist.js";
 import { roughGuidesExtractor } from "./extractors/rough-guides.js";
 import { artFairsListExtractor } from "./extractors/artfairslist.js";
+import {
+  ridbFacilitiesExtractor,
+  osmCampgroundsExtractor,
+} from "./extractors/campgrounds.js";
 import type { SourceDefinition } from "./types.js";
 
 const GARDEN_SOURCES: SourceDefinition[] = [
@@ -44,7 +48,8 @@ const GARDEN_SOURCES: SourceDefinition[] = [
     extractor: wikidataExtractor,
     files: [
       {
-        pattern: "data/poi/botanical_gardens_data/wikidata_botanical_gardens.json",
+        pattern:
+          "data/poi/botanical_gardens_data/wikidata_botanical_gardens.json",
         category: "botanical_garden",
       },
     ],
@@ -157,14 +162,16 @@ const GARDEN_SOURCES: SourceDefinition[] = [
   },
 ];
 
-/** Campground sources — metadata registered; extractors land in a follow-up. */
+/** Campground captures preserve source-specific natural IDs and column mappings. */
 const CAMPGROUND_SOURCES: SourceDefinition[] = [
   {
     meta: { slug: "ridb", name: "RIDB", trust: 90 },
+    extractor: ridbFacilitiesExtractor,
     files: [
       {
         pattern: "data/poi/rv_campgrounds_data/ridb/facilities.csv",
         category: "campground",
+        extractorVersion: "2",
       },
     ],
     normalizationProfile: "campground",
@@ -181,10 +188,12 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
   },
   {
     meta: { slug: "osm_camp", name: "OpenStreetMap Campgrounds", trust: 70 },
+    extractor: osmCampgroundsExtractor,
     files: [
       {
         pattern: "data/poi/rv_campgrounds_data/osm/caravan_sites.csv",
         category: "campground",
+        extractorVersion: "2",
       },
     ],
     normalizationProfile: "campground",
@@ -202,7 +211,7 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
   },
 ];
 
-/** Festival sources — metadata registered; extractors land in a follow-up. */
+/** Festival sources use generic captures or an explicit record-array wrapper. */
 const FESTIVAL_SOURCES: SourceDefinition[] = [
   {
     meta: { slug: "musicbrainz", name: "MusicBrainz", trust: 85 },
@@ -218,7 +227,8 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "ticketmaster", name: "Ticketmaster", trust: 75 },
     files: [
       {
-        pattern: "data/poi/music-festivals/apis/ticketmaster_festivals_full.json",
+        pattern:
+          "data/poi/music-festivals/apis/ticketmaster_festivals_full.json",
         category: "music_festival",
         wrapperPath: "events",
       },
@@ -229,7 +239,8 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "resident_advisor", name: "Resident Advisor", trust: 70 },
     files: [
       {
-        pattern: "data/poi/music-festivals/apis/resident_advisor_festivals.json",
+        pattern:
+          "data/poi/music-festivals/apis/resident_advisor_festivals.json",
         category: "music_festival",
         wrapperPath: "festivals",
       },
@@ -291,6 +302,8 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
       {
         pattern: "data/poi/music-festivals/apis/songkick_festivals.json",
         category: "music_festival",
+        wrapperPath: "festivals",
+        extractorVersion: "2",
       },
       {
         pattern:
@@ -304,7 +317,8 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "festivism", name: "Festivism", trust: 60 },
     files: [
       {
-        pattern: "data/poi/music-festivals/directories/festivism_festivals.json",
+        pattern:
+          "data/poi/music-festivals/directories/festivism_festivals.json",
         category: "music_festival",
       },
     ],
@@ -314,8 +328,11 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "festivalatlas", name: "Festival Atlas", trust: 60 },
     files: [
       {
-        pattern: "data/poi/music-festivals/directories/festivalatlas_festivals.json",
+        pattern:
+          "data/poi/music-festivals/directories/festivalatlas_festivals.json",
         category: "music_festival",
+        wrapperPath: "festivals",
+        extractorVersion: "2",
       },
     ],
     normalizationProfile: "event",
@@ -334,7 +351,10 @@ const CARNIVAL_SOURCES: SourceDefinition[] = [
     },
     extractor: globalCarnivalistExtractor,
     files: [
-      { pattern: "data/poi/carnival/global_carnivalist.json", category: "carnival" },
+      {
+        pattern: "data/poi/carnival/global_carnivalist.json",
+        category: "carnival",
+      },
     ],
     normalizationProfile: "event",
   },
@@ -384,7 +404,10 @@ const GENERIC_SMOKE_SOURCES: SourceDefinition[] = [
   {
     meta: { slug: "california_hostels", name: "California Hostels", trust: 60 },
     files: [
-      { pattern: "data/poi/hostels/california-hostels.json", category: "hostel" },
+      {
+        pattern: "data/poi/hostels/california-hostels.json",
+        category: "hostel",
+      },
     ],
     normalizationProfile: "place",
   },

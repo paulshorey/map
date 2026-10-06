@@ -65,11 +65,11 @@ Refer back to your prompt to understand if you are the orchestrator or the runne
 ## Processing source data
 
 - [README.md](README.md): human setup and commands for manually running full ingestion.
-- [Ingestion runbook](poi-ingestion.md): shared reference for stage behavior,
+- [Ingestion runbook](data/poi-ingestion.md): shared reference for stage behavior,
   command limits, category completeness, evidence, and troubleshooting. Read it before
   developing, debugging, or running ingestion.
 - [Database guide](lib/db-map/AGENTS.md): database and ingestion implementation rules.
-- [Source data guide](AGENTS.md): capture format and source file conventions.
+- [Source data guide](data/AGENTS.md): capture format and source file conventions.
 - Read the applicable folder `AGENTS.md` before editing there. App guides start at
   `apps/AGENTS.md` and `apps/map/AGENTS.md`, with narrower guides under `apps/map/src/`.
 
@@ -112,7 +112,7 @@ task. The human/agent split is about typical execution duration, not code or pro
 
 ## Economical long-run orchestration
 
-Read [agent ingestion operations](ingestion-agents.md) for the interface, handoff template,
+Read [agent ingestion operations](data/ingestion-agents.md) for the interface, handoff template,
 notification setup, and recovery limits. The following model rules narrow the execution preference
 above; operational ownership does not authorize wasting expensive model time.
 
@@ -131,6 +131,13 @@ above; operational ownership does not authorize wasting expensive model time.
   report should invoke a model. No automatic ingestion relaunch, scope expansion, or backlog drain.
   Bounded in-process provider recovery is owned by ordinary pipeline code; see the runbook's
   transient normalization provider recovery section. A healthy cooldown does not need an agent.
+- The local OpenClaw coordinator may act as the cheap runner using `ingest:supervise watch`
+  through its native background exec and verified completion event. It follows
+  [the native runner procedure](data/ingestion-agents.md#native-openclaw-runner).
+  This is a foreground process owned by OpenClaw, with model-free supervision; never route
+  full imports through an expensive Codex CLI turn or silently use detached local-only mode.
+  OpenClaw may advance the explicitly authorized file backlog after verified completion;
+  failure, unknown spending, exhausted budgets and missing notification evidence require a decision.
 - Only a terminal result/error should start a new expensive decision turn. Keep the handoff and
   report compact (about 150 words); retain raw logs locally. Check the stable event ID to avoid
   handling duplicate notifications. Verified database completion, not exit zero alone, is success.

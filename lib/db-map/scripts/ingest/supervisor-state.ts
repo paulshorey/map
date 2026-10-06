@@ -9,7 +9,7 @@ export const JOBS = fileURLToPath(
 export const UUID = /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 export interface Job {
   id: string;
-  mode: "runner" | "smoke";
+  mode: "runner" | "smoke" | "native";
   argv: string[];
   host: string;
   supervisor_pid?: number;
@@ -17,7 +17,7 @@ export interface Job {
   run_id?: string;
   execution_id?: string;
   parent_thread?: string;
-  runner_model: "gpt-5.6-luna";
+  runner_model: "gpt-5.6-luna" | "external";
   started_at: string;
   status: "queued" | "running" | "finished";
   timeout_seconds: number;

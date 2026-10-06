@@ -92,6 +92,20 @@ SELECT i.*,
     WHERE f.logical_path=i.logical_path
     ORDER BY COALESCE(e.started_at,r.started_at,r.created_at) DESC,r.id DESC LIMIT 1
   ) x) AS latest_run,
+  (SELECT to_jsonb(x) FROM (
+    SELECT r.id,r.managed,r.status,r.current_stage,r.options,r.category_slug,r.pipeline_versions,
+      r.stop_requested,r.stop_reason,r.fatal_error,r.verified_at,r.created_at,
+      COALESCE(e.heartbeat_at,r.heartbeat_at) AS heartbeat_at,v.file_sha256,v.extractor_version
+    FROM current_versions v JOIN research_ingest_runs r ON r.source_file_version_id=v.id
+    LEFT JOIN LATERAL (SELECT e.started_at,e.heartbeat_at FROM research_ingest_executions e
+      WHERE e.run_id=r.id ORDER BY e.started_at DESC LIMIT 1) e ON true
+    WHERE v.inventory_id=i.id AND r.managed AND r.category_slug=i.category_slug
+      AND r.pipeline_versions=$1::jsonb AND r.status NOT IN ('succeeded','cancelled')
+      AND r.options->>'limit' IS NULL AND r.options->>'record' IS NULL
+      AND COALESCE((r.options->>'shadow')::boolean,false)=false
+      AND COALESCE((r.options->>'retryFailed')::boolean,false)=false
+    ORDER BY COALESCE(e.started_at,r.started_at,r.created_at) DESC,r.id DESC LIMIT 1
+  ) x) AS continuation_run,
   (SELECT max(a.finished_at) FROM research_source_files f JOIN research_source_file_versions v ON v.source_file_id=f.id
     JOIN research_ingest_runs r ON r.source_file_version_id=v.id JOIN research_ingest_attempts a ON a.run_id=r.id
     WHERE f.logical_path=i.logical_path AND a.status IN ('succeeded','reused','skipped')) AS last_commit_at
@@ -99,6 +113,7 @@ FROM research_ingest_inventory i LEFT JOIN counts c ON c.inventory_id=i.id
 ORDER BY i.priority DESC,i.logical_path`;
 
 export interface InventoryFile extends Evidence {
+  continuation_run: Evidence["latest_run"];
   id: string;
   logical_path: string;
   source_slug: string | null;
@@ -135,16 +150,17 @@ export async function getInventory(db: Pool) {
         ["json", "jsonl", "csv"].includes(file.format)
           ? `${commandPrefix} ${shellQuote(file.logical_path)} --category ${shellQuote(file.category_slug)}`
           : null;
-      const r = file.latest_run;
+      // A later smoke selection must not hide unfinished full-file work.
+      const r = file.continuation_run ?? file.latest_run;
       const resume =
         r &&
         r.file_sha256 === file.file_sha256 &&
         r.extractor_version === file.extractor_version &&
         r.category_slug === file.category_slug &&
-        (!r.managed ||
-          Object.entries(PIPELINE_VERSIONS).every(
-            ([k, v]) => r.pipeline_versions[k] === v,
-          )) &&
+        r.managed &&
+        Object.entries(PIPELINE_VERSIONS).every(
+          ([k, v]) => r.pipeline_versions[k] === v,
+        ) &&
         start &&
         !["succeeded", "cancelled"].includes(r.status)
           ? `${commandPrefix} --resume ${r.id}`
@@ -152,6 +168,7 @@ export async function getInventory(db: Pool) {
       return {
         ...file,
         ...assessment,
+        resume_run: resume ? r : null,
         commands: {
           start,
           resume,
@@ -159,8 +176,8 @@ export async function getInventory(db: Pool) {
             start && file.ready === file.records && file.extraction_complete
               ? `${start} --from report`
               : null,
-          status: r
-            ? `pnpm --filter @lib/db-map ingest:status --run ${r.id} --json`
+          status: file.latest_run
+            ? `pnpm --filter @lib/db-map ingest:status --run ${file.latest_run.id} --json`
             : null,
         },
       };

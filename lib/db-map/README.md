@@ -36,7 +36,7 @@ POI data has two layers:
   for provenance, re-ingestion, matching, and debugging.
 - `canonical_*` tables store the de-duplicated POIs served to the map app.
 
-See the [ingestion runbook's data model](../../poi-ingestion.md#model) for tables,
+See the [ingestion runbook's data model](../../data/poi-ingestion.md#durable-state) for tables,
 artifact history, memberships, and canonical builds.
 
 The database intentionally avoids PostGIS and pgvector. Coordinates are plain `lng`/`lat`
@@ -71,13 +71,13 @@ pnpm --filter @lib/db-map db:migration:new -- short_description
 ## POI Ingestion
 
 Use the [root README](../../README.md#poi-ingestion) for manual full runs and the
-[ingestion runbook](../../poi-ingestion.md) for the command reference, bounded stage
+[ingestion runbook](../../data/poi-ingestion.md) for the command reference, bounded stage
 recipes, category assessment, record tracing, cleanup, and troubleshooting.
 
 Agent development and execution responsibilities are in [AGENTS.md](AGENTS.md) and the
 [root agent guide](../../AGENTS.md). Long-running stages remain within the agent's
 operational scope; humans usually launch full workloads after bounded validation. Use the shared
-[process-control workflow](../../poi-ingestion.md#process-control-and-maintenance) to stop
+[process-control workflow](../../data/poi-ingestion.md#process-control-and-maintenance) to stop
 workers and close admission before runtime/schema edits.
 
 ## Source Data

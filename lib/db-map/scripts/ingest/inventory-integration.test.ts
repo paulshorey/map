@@ -12,6 +12,7 @@ import {
   getInventoryDetail,
 } from "../../sql/ingestion-inventory.js";
 import { refreshInventory } from "../../lib/ingestion/inventory-scan.js";
+import { traceResearchRecord } from "../../sql/lineage.js";
 const db = getDb();
 const slug = "inventory_test_" + randomUUID().replaceAll("-", "");
 const dir = await mkdtemp(resolve(POI_ROOT, "inventory-test-"));
@@ -56,12 +57,29 @@ try {
   assert.equal(sample.coverage, "partial");
   assert.equal(sample.verified, 1);
   assert.equal(sample.total, null);
+  await runOrchestration(db, { ...opts, stopAfter: "normalize" });
+  const unfinishedFull = (await find()).latest_run!.id;
+  await runOrchestration(db, { ...opts, limit: 1, stopAfter: "normalize" });
+  const laterSmoke = await find();
+  assert.equal(laterSmoke.latest_run!.options.limit, 1);
+  assert.equal(laterSmoke.resume_run!.id, unfinishedFull);
+  assert.match(laterSmoke.commands.resume!, new RegExp(unfinishedFull));
   await runOrchestration(db, opts);
   const full = await find();
   assert.equal(full.coverage, "complete");
   assert.equal(full.records, 2);
   assert.equal(full.verified, 2);
   assert.equal(full.excluded, 2);
+  const trace = (await traceResearchRecord(db, slug, "a")) as {
+    research: { source_record_id: string };
+    observations: unknown[];
+    normalizations: unknown[];
+    run_records: unknown[];
+  };
+  assert.equal(trace.research.source_record_id, "a");
+  assert.ok(trace.observations.length > 0);
+  assert.ok(trace.normalizations.length > 0);
+  assert.ok(trace.run_records.length > 0);
   // A retry/resume cannot double-count the same source record.
   // Keep the historical run options intact while resolving the file through its
   // current source-file identity after a repository path migration.

@@ -41,16 +41,16 @@ Three distinct questions need distinct evidence:
 
 ## Durable state
 
-| Object                            | Meaning                                                                                                                                          |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `research_ingest_runs`            | Logical task: source, category, file version/hash, options, pipeline versions, current stage, stop reason, verification time.                    |
-| `research_ingest_executions`      | One process invocation of a run: host, PID, options, start/finish, five-second heartbeat, outcome and error. A resume creates another execution. |
-| `research_ingest_control` / `research_ingest_control_events` | Persistent maintenance gate, ownership token/reason, and append-only operator actions. |
-| `research_ingest_run_items`       | Fixed source-record IDs and observation IDs selected after extraction; resume never expands a sample.                                            |
-| `research_ingest_attempts`        | One attempt at a stage/target: execution, input IDs, output IDs, timing, structured error. Retries append rows; old errors remain.               |
-| `research_ingest_run_records`     | Extraction ordinals, identities, payload hashes and outcomes. The original file is the replayable extraction input.                              |
-| `research_normalization_requests` | Provider request/response, tokens, cost and latency, linked to exact run and attempt for managed work.                                           |
-| `research_pipeline_jobs`          | Older mutable normalization job state. Useful diagnostic evidence, but not the execution history or managed resume authority.                    |
+| Object                                                       | Meaning                                                                                                                                          |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `research_ingest_runs`                                       | Logical task: source, category, file version/hash, options, pipeline versions, current stage, stop reason, verification time.                    |
+| `research_ingest_executions`                                 | One process invocation of a run: host, PID, options, start/finish, five-second heartbeat, outcome and error. A resume creates another execution. |
+| `research_ingest_control` / `research_ingest_control_events` | Persistent maintenance gate, ownership token/reason, and append-only operator actions.                                                           |
+| `research_ingest_run_items`                                  | Fixed source-record IDs and observation IDs selected after extraction; resume never expands a sample.                                            |
+| `research_ingest_attempts`                                   | One attempt at a stage/target: execution, input IDs, output IDs, timing, structured error. Retries append rows; old errors remain.               |
+| `research_ingest_run_records`                                | Extraction ordinals, identities, payload hashes and outcomes. The original file is the replayable extraction input.                              |
+| `research_normalization_requests`                            | Provider request/response, tokens, cost and latency, linked to exact run and attempt for managed work.                                           |
+| `research_pipeline_jobs`                                     | Older mutable normalization job state. Useful diagnostic evidence, but not the execution history or managed resume authority.                    |
 
 Attempts are inserted as `running` before work. They finish as `succeeded`, `reused`,
 `skipped`, `failed`, `blocked`, `waiting_budget`, or `paused`. When a replacement worker
@@ -73,22 +73,22 @@ registry; other flat JSON/JSONL/CSV files use a derived source slug and generic 
 Inspect the printed source. Wrapper/nested formats need extractor configuration. See the
 [capture spec](poi-research/capture-spec.md) before adding sources.
 
-| Control                                    | Behavior                                                                                                                                                                              |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--limit N`                                | Positive integer; caps extraction selection and freezes at most N records for every record stage. Not a time limit; hashing/parsing can still scan a large file.                      |
-| `--record ID`                              | Exact **source record ID**, not research UUID; defaults to a one-record limit. Useful for a failure late in a file.                                                                   |
-| `--stop-after STAGE`                       | Pause after extract, normalize, geocode, embed, match, canonical, consolidate, or report. Verify is the final stage. Exit code 2 indicates deliberate incomplete work.                |
-| `--resume UUID`                            | Same managed run/cohort; new execution. Preserves original options; clears the old stop point. Only a new stop point, dry-run, and provider budgets may be supplied.                  |
-| `--from STAGE`                             | New run starting record-stage processing at that stage; extraction and scope selection still happen. Skipped prerequisites must already exist. Prefer resume for failures.            |
-| `--dry-run`                                | Resolve/hash file and print effective options, without writes/provider calls. Does not parse/validate all rows or simulate the pipeline.                                              |
-| `--reprocess normalize`                    | New run with a stable run-specific normalization generation; recomputes once, then resumes using that generation's cached result.                                                     |
-| `--reprocess extract` / `all`              | Replay extraction; `all` also forces normalization. Other forced stage values are rejected. Downstream work follows invalidation/readiness, not a blanket reset.                      |
-| `--retry-failed`                           | Freeze records currently in failed/stale normalization state. It is a new repair selection, not a substitute for resuming the failed run.                                             |
-| `--shadow`                                 | Evaluate normalization without activating its output; pause after normalization. Original shadow option persists on resume.                                                           |
-| `--no-llm`                                 | Deterministic normalization, matching and descriptions. Does not disable geocoder or embedding calls. Degraded output does not validate the LLM path.                                 |
+| Control                                    | Behavior                                                                                                                                                                                                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--limit N`                                | Positive integer; caps extraction selection and freezes at most N records for every record stage. Not a time limit; hashing/parsing can still scan a large file.                                                                                 |
+| `--record ID`                              | Exact **source record ID**, not research UUID; defaults to a one-record limit. Useful for a failure late in a file.                                                                                                                              |
+| `--stop-after STAGE`                       | Pause after extract, normalize, geocode, embed, match, canonical, consolidate, or report. Verify is the final stage. Exit code 2 indicates deliberate incomplete work.                                                                           |
+| `--resume UUID`                            | Same managed run/cohort; new execution. Preserves original options; clears the old stop point. Only a new stop point, dry-run, and provider budgets may be supplied.                                                                             |
+| `--from STAGE`                             | New run starting record-stage processing at that stage; extraction and scope selection still happen. Skipped prerequisites must already exist. Prefer resume for failures.                                                                       |
+| `--dry-run`                                | Resolve/hash file and print effective options, without writes/provider calls. Does not parse/validate all rows or simulate the pipeline.                                                                                                         |
+| `--reprocess normalize`                    | New run with a stable run-specific normalization generation; recomputes once, then resumes using that generation's cached result.                                                                                                                |
+| `--reprocess extract` / `all`              | Replay extraction; `all` also forces normalization. Other forced stage values are rejected. Downstream work follows invalidation/readiness, not a blanket reset.                                                                                 |
+| `--retry-failed`                           | Freeze records currently in failed/stale normalization state. It is a new repair selection, not a substitute for resuming the failed run.                                                                                                        |
+| `--shadow`                                 | Evaluate normalization without activating its output; pause after normalization. Original shadow option persists on resume.                                                                                                                      |
+| `--no-llm`                                 | Deterministic normalization, matching and descriptions. Does not disable geocoder or embedding calls. Degraded output does not validate the LLM path.                                                                                            |
 | `--max-llm-requests N`, `--max-cost-usd N` | Normalization budgets per execution, checked between records. Cached/deterministic results remain usable at zero budget. Repair/fallback within a record may exceed the threshold. Not a hard monetary cap and not a budget for matching/fusion. |
-| `--geocode-limit N`                        | Geocoder calls per execution (default 4500); cache hits do not consume it. No shared daily-quota enforcement.                                                                         |
-| `--consolidate`                            | Explicit global canonical sweep, with audited pair adjudications and merge groups. Incompatible with limited/record runs. Usually a manually launched long job; agents may operate it when required by the task. |
+| `--geocode-limit N`                        | Geocoder calls per execution (default 4500); cache hits do not consume it. No shared daily-quota enforcement.                                                                                                                                    |
+| `--consolidate`                            | Explicit global canonical sweep, with audited pair adjudications and merge groups. Incompatible with limited/record runs. Usually a manually launched long job; agents may operate it when required by the task.                                 |
 
 A paused/blocked/budget-limited run exits 2 (pnpm prints its nonzero-exit banner); failure
 exits 1; successful verified work exits 0. An empty selection is `partial`, not success.
@@ -411,6 +411,33 @@ The inventory tables are `research_ingest_inventory`, `research_ingest_inventory
 and `research_ingest_inventory_edits`. Current progress is computed, never hand-edited. File
 hash state reflects the last scan of this checkout; database progress refreshes independently.
 Full histories remain in PostgreSQL; dashboard drill-downs show bounded recent samples.
+
+### Bot queue and classification
+
+`pnpm --silent --filter @lib/db-map ingest:queue --json` returns a compact, versioned snapshot
+with admission evidence, action counts, `next`, and per-file actions/argument arrays. It calls
+no providers and launches no work. Maintenance or uncertain process evidence suppresses `next`.
+Resolve an `inspect` action using its pinned status command; unfinished full-file work takes
+precedence over a later smoke selection. A sample resume never appears as full-file continuation.
+The queue keeps review/exclusion, progress and execution separate. Fresh inventory is required
+after changes; worker locks and file/pipeline/input checks still arbitrate actual admission.
+
+Bots can make the same audited, optimistic classification edits as the dashboard:
+
+```sh
+pnpm --silent --filter @lib/db-map ingest:inventory --file data/poi/example.json --json
+pnpm --silent --filter @lib/db-map ingest:inventory --file data/poi/example.json --edit-file /absolute/edit.json --json
+```
+
+The edit object contains `category_slug` (or null), `disposition`, `priority` (0–3), `notes`,
+and the exact `expected_updated_at` from the fresh file snapshot. Exclusions require a reason.
+Conflicting edits fail; reread and reconcile rather than overwriting. Scans preserve these
+operator fields and batch metadata writes to avoid a database round trip per capture.
+Do not maintain a second mutable status file in `data/poi`; database evidence is authoritative.
+
+The [native OpenClaw procedure](ingestion-agents.md#native-openclaw-runner) owns event-based
+execution and repair handoff. `ingest:status --json` exposes exact per-execution normalization
+usage for preserving budgets, including failed requests and costs that are still unknown.
 
 ## Assessing category completeness
 
