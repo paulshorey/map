@@ -42,7 +42,14 @@ For ingestion work, also inject:
 
 - `LOCATIONIQ_API_KEY`
 - `JINA_API_KEY`
-- `DEEPINFRA_API_KEY`
+- `FIREWORKS_API_KEY`
+
+The default LLM is Fireworks DeepSeek V4.1 Flash with bounded thinking. Remove old
+`LLM_PROVIDER=deepinfra`, `LLM_MODEL`, and DeepInfra `LLM_BASE_URL` overrides from the
+host's injected/persisted configuration when switching. The setup script preserves
+explicit overrides; it cannot safely guess which existing values should be replaced.
+Provider behavior and token/cost limits are documented in the
+[ingestion runbook](../data/poi-ingestion.md#fireworks-deepseek-configuration).
 
 Optional:
 
