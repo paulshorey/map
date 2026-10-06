@@ -4,6 +4,7 @@ import { readdir, stat } from "node:fs/promises";
 import { extname, resolve, relative } from "node:path";
 import type { Pool } from "pg";
 import {
+  POI_RELATIVE_PATH,
   REPO_ROOT,
   resolveSourceFile,
 } from "../../scripts/ingest/source-file.js";
@@ -73,7 +74,7 @@ export async function discoverFiles(
       files.push(item);
     }
   }
-  await walk(resolve(root, "poi"));
+  await walk(resolve(root, POI_RELATIVE_PATH));
   return files.sort((a, b) => a.path.localeCompare(b.path));
 }
 
@@ -89,43 +90,36 @@ export async function refreshInventory(db: Pool, root = REPO_ROOT) {
     const files = await discoverFiles(root);
     await client.query("BEGIN");
     await client.query("SET LOCAL statement_timeout='15s'");
-    for (const file of files) {
-      const history = (
-        await client.query(
-          `SELECT f.category_slug,s.slug FROM research_source_files f
-        JOIN research_sources s ON s.id=f.source_id WHERE f.logical_path=$1 ORDER BY f.last_seen_at DESC LIMIT 1`,
-          [file.path],
-        )
-      ).rows[0];
-      const { rows } = await client.query(
-        `INSERT INTO research_ingest_inventory
+    // One metadata batch instead of three remote round trips per capture. Conflict
+    // updates intentionally omit operator-owned category, disposition, notes and priority.
+    await client.query(
+      `WITH captured AS (
+        SELECT * FROM jsonb_to_recordset($1::jsonb) AS x(
+          path text,format text,sha256 text,size bigint,modified timestamptz,
+          source text,category text,extractor text,error text)
+      ) INSERT INTO research_ingest_inventory
         (logical_path,format,file_sha256,byte_size,modified_at,source_slug,category_slug,extractor_version,disposition,scan_error)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+        SELECT x.path,x.format,x.sha256,x.size,x.modified,COALESCE(x.source,h.slug),
+          COALESCE(h.category_slug,x.category),x.extractor,
+          CASE WHEN h.slug IS NOT NULL OR x.category IS NOT NULL THEN 'import' ELSE 'needs_review' END,x.error
+        FROM captured x LEFT JOIN LATERAL (
+          SELECT f.category_slug,s.slug FROM research_source_files f
+          JOIN research_sources s ON s.id=f.source_id WHERE f.logical_path=x.path
+          ORDER BY f.last_seen_at DESC LIMIT 1
+        ) h ON true
         ON CONFLICT(logical_path) DO UPDATE SET format=EXCLUDED.format,file_sha256=EXCLUDED.file_sha256,
           byte_size=EXCLUDED.byte_size,modified_at=EXCLUDED.modified_at,
           source_slug=EXCLUDED.source_slug,extractor_version=EXCLUDED.extractor_version,
-          last_seen_at=now(),scanned_at=now(),missing_at=NULL,scan_error=EXCLUDED.scan_error
-        RETURNING id`,
-        [
-          file.path,
-          file.format,
-          file.sha256,
-          file.size,
-          file.modified,
-          file.source ?? history?.slug ?? null,
-          history?.category_slug ?? file.category,
-          file.extractor,
-          history || file.category ? "import" : "needs_review",
-          file.error,
-        ],
-      );
-      if (file.sha256)
-        await client.query(
-          `INSERT INTO research_ingest_inventory_versions(inventory_id,file_sha256,byte_size)
-        VALUES($1,$2,$3) ON CONFLICT(inventory_id,file_sha256) DO UPDATE SET last_seen_at=now()`,
-          [rows[0].id, file.sha256, file.size],
-        );
-    }
+          last_seen_at=now(),scanned_at=now(),missing_at=NULL,scan_error=EXCLUDED.scan_error`,
+      [JSON.stringify(files)],
+    );
+    await client.query(
+      `INSERT INTO research_ingest_inventory_versions(inventory_id,file_sha256,byte_size)
+       SELECT id,file_sha256,byte_size FROM research_ingest_inventory
+       WHERE logical_path=ANY($1::text[]) AND file_sha256 IS NOT NULL
+       ON CONFLICT(inventory_id,file_sha256) DO UPDATE SET last_seen_at=now()`,
+      [files.map((f) => f.path)],
+    );
     const missing = await client.query(
       `UPDATE research_ingest_inventory SET missing_at=COALESCE(missing_at,now()),scanned_at=now()
       WHERE NOT(logical_path=ANY($1::text[]))`,

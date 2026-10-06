@@ -1,4 +1,4 @@
-# docs/
+# data/
 
 Research notes, POI source files, ingestion references, and staged import data. Not loaded by the app at runtime — used by humans and import scripts.
 
@@ -24,7 +24,7 @@ The [agent operations guide](ingestion-agents.md) owns cheap-runner delegation, 
 monitoring, notification prerequisites, and local supervisor recovery. Root AGENTS.md owns the
 model policy; link to it instead of duplicating model/budget instructions in source folders.
 
-## POI sources (`poi/`)
+## POI sources (`data/poi/`)
 
 Organize by category folder. Typical contents:
 
@@ -48,7 +48,7 @@ Validated `NewPoi[]` files staged before database import. AI agents should write
 ## Research notes
 
 Exploratory docs for source discovery and future data sources. Keep implementation guidance
-in `docs/poi-ingestion.md` or package READMEs instead of plan files.
+in `data/poi-ingestion.md` or package READMEs instead of plan files.
 
 ## Conventions
 

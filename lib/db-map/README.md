@@ -36,7 +36,7 @@ POI data has two layers:
   for provenance, re-ingestion, matching, and debugging.
 - `canonical_*` tables store the de-duplicated POIs served to the map app.
 
-See the [ingestion runbook's data model](../../poi-ingestion.md#model) for tables,
+See the [ingestion runbook's data model](../../data/poi-ingestion.md#durable-state) for tables,
 artifact history, memberships, and canonical builds.
 
 The database intentionally avoids PostGIS and pgvector. Coordinates are plain `lng`/`lat`
@@ -71,18 +71,18 @@ pnpm --filter @lib/db-map db:migration:new -- short_description
 ## POI Ingestion
 
 Use the [root README](../../README.md#poi-ingestion) for manual full runs and the
-[ingestion runbook](../../poi-ingestion.md) for the command reference, bounded stage
+[ingestion runbook](../../data/poi-ingestion.md) for the command reference, bounded stage
 recipes, category assessment, record tracing, cleanup, and troubleshooting.
 
 Agent development and execution responsibilities are in [AGENTS.md](AGENTS.md) and the
 [root agent guide](../../AGENTS.md). Long-running stages remain within the agent's
 operational scope; humans usually launch full workloads after bounded validation. Use the shared
-[process-control workflow](../../poi-ingestion.md#process-control-and-maintenance) to stop
+[process-control workflow](../../data/poi-ingestion.md#process-control-and-maintenance) to stop
 workers and close admission before runtime/schema edits.
 
 ## Source Data
 
-Source files and research notes live under `poi/`. Folder-specific instructions live in
+Source files and research notes live under `data/poi/`. Folder-specific instructions live in
 `AGENTS.md`.
 
 ## Notes
@@ -90,5 +90,7 @@ Source files and research notes live under `poi/`. Folder-specific instructions 
 - The app should use query helpers in `sql/`, not ad hoc SQL.
 - App builds fail if generated contracts drift.
 - `pg_dump` used by schema snapshotting must match the server major version.
+  `scripts/sql-check-postgres-client-version.sh` selects the matching client
+  binaries. Cloud agent hosts should run `bash scripts/agent-env.sh setup`.
 - Before launch, baseline-style migrations may still be rewritten for a greenfield DB. After
   launch, migrations should be append-only.

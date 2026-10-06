@@ -6,62 +6,59 @@ disable-model-invocation: true
 
 # Dev Environment Setup
 
+Prefer the portable bootstrap:
+
+```bash
+bash scripts/agent-env.sh setup
+bash scripts/agent-env.sh check
+bash scripts/agent-env.sh start    # map on :5000
+```
+
+Do not create repository `.env` files. Inject `DB_MAP_URL` in the shell or let
+`scripts/agent-env.sh` persist host-provided values to `~/.config/poi-map/agent.env`.
+
 ## Prerequisites
 
-- Node.js >=20 and pnpm 10+ (pre-installed)
-- PostgreSQL 16 server (pre-installed)
-- postgresql-client-18 from PGDG apt repo (pre-installed, provides `/usr/lib/postgresql/18/bin/pg_dump`)
+- Node.js >=20 (22 preferred) and pnpm 10.28.1
+- `psql` / `pg_dump` matching the PostgreSQL server major (shared DB is 18)
+- `pg_trgm` on the target database
 
-## Start PostgreSQL
+## Shared remote database (default)
+
+`DB_MAP_URL` is already in the shell on Cursor Cloud. Use it without printing
+credentials. The bootstrap applies pending migrations and seeds taxonomy only.
+
+## Isolated local database
 
 ```bash
-sudo pg_ctlcluster 16 main start
+bash scripts/agent-env.sh setup --local-db --seed
 ```
 
-## Install dependencies
+This installs PostgreSQL, creates `poi_map`, enables `pg_trgm`, and seeds sample
+POIs. Do not seed the shared remote database.
+
+## Manual pieces (already handled by the script)
 
 ```bash
-pnpm install
-```
-
-`pnpm-workspace.yaml` has `onlyBuiltDependencies` for `esbuild` and `sharp` — no interactive approval needed.
-
-## Database setup
-
-```bash
-sudo -u postgres createdb poi_map
-# Set DB_MAP_URL to the connection string from .env.example
-echo "DB_MAP_URL=<connection-string>" > apps/map/.env
+pnpm install --frozen-lockfile
 pnpm db:migrate
-pnpm db:seed          # 54 sample POIs
+pnpm --filter @lib/db-map ingest:taxonomy:seed
+pnpm --filter ./apps/map build
+pnpm dev                    # http://127.0.0.1:5000
 ```
 
-See `.env.example` for the default `DB_MAP_URL` value. It **must** go in `apps/map/.env` — turbo runs Next.js with CWD `apps/map/`, so a root `.env` won't be loaded.
-
-## Dev server
+Schema snapshots:
 
 ```bash
-pnpm dev              # http://localhost:3000
+pnpm --filter @lib/db-map db:schema:snapshot
 ```
 
-## Common commands
-
-| Task | Command |
-|------|---------|
-| Migrations | `pnpm db:migrate` |
-| Seed data | `pnpm db:seed` |
-| Lint | `pnpm lint` |
-| Type check | `pnpm verify` |
-| Schema snapshot | `DB_MAP_URL=... pnpm --filter @lib/db-map db:schema:snapshot` |
-
-## Known lint/type issues
-
-- `pnpm lint` flags `next-env.d.ts` (auto-generated) — pre-existing, not a code bug.
-- `tsc --noEmit` in `apps/map` reports strictness warnings — doesn't block runtime.
+`snapshot-schema.sh` uses `scripts/sql-check-postgres-client-version.sh` so
+`pg_dump` matches the server.
 
 ## Reinstalling PGDG client tools
 
-If `postgresql-client-18` is missing:
+If `postgresql-client-18` is missing on Ubuntu:
 
 ```bash
 sudo install -m 0755 -d /etc/apt/keyrings

@@ -7,7 +7,7 @@ import { watch } from "node:fs";
 import { resolve } from "node:path";
 import { getDb, closeDb } from "../../lib/db/postgres.js";
 import { inspectControl } from "./control.js";
-import { REPO_ROOT } from "./source-file.js";
+import { POI_ROOT } from "./source-file.js";
 import { jobPath, loadJob } from "./supervisor-state.js";
 const db = getDb(),
   jobs: string[] = [];
@@ -32,7 +32,16 @@ async function cli(args: string[]) {
     child.once("exit", res);
   });
   assert.ok(stdout.trim(), stderr);
-  return { code, data: JSON.parse(stdout) };
+  return {
+    code,
+    data:
+      args[0] === "watch"
+        ? stdout
+            .trim()
+            .split("\n")
+            .map((line) => JSON.parse(line))
+        : JSON.parse(stdout),
+  };
 }
 async function result(id: string) {
   return new Promise<any>((resolveResult, reject) => {
@@ -61,7 +70,7 @@ try {
   const initial = await inspectControl(db);
   assert.equal(initial.quiescent, true);
   assert.equal(initial.maintenance.maintenance, false);
-  dir = await mkdtemp(resolve(REPO_ROOT, "poi/supervisor-test-"));
+  dir = await mkdtemp(resolve(POI_ROOT, "supervisor-test-"));
   const file = resolve(dir, slug + ".json");
   await writeFile(
     file,
@@ -125,8 +134,33 @@ try {
     JSON.stringify(second),
   );
   assert.equal((await loadJob(first.job_id)).status, "finished");
+  const native = await cli([
+    "watch",
+    "--max-hours",
+    "1",
+    "--",
+    "--resume",
+    first.run_id,
+    "--stop-after",
+    "report",
+    "--max-llm-requests",
+    "0",
+    "--max-cost-usd",
+    "0",
+    "--geocode-limit",
+    "0",
+  ]);
+  const [receipt, terminal] = native.data;
+  jobs.push(receipt.job_id);
+  assert.equal(receipt.notification, "native_exec_completion");
+  assert.equal(terminal.run_id, first.run_id);
+  assert.equal(terminal.evidence.scope_records, 1);
+  assert.equal(terminal.probe_error, undefined);
+  assert.equal((await loadJob(receipt.job_id)).runner_model, "external");
+  assert.equal((await loadJob(receipt.job_id)).parent_thread, undefined);
+  await assert.rejects(readFile(jobPath(receipt.job_id, "summary.claim")));
   console.log(
-    "PASS: one-record smoke, IPC run/execution identity, detached bounded-cohort resume, durable terminal evidence; no providers/models/callbacks",
+    "PASS: one-record smoke, IPC identity, detached/native bounded-cohort resumes, durable terminal evidence; no providers/models/callbacks",
   );
 } finally {
   const state = await inspectControl(db);

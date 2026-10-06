@@ -85,6 +85,48 @@ Humans may use `start --local-only -- <run arguments>` to obtain detached proces
 results without an automatic agent callback. This mode is **not** an unattended agent workflow.
 For normal manual foreground operation, the existing `ingest:run` commands remain supported.
 
+## Native OpenClaw runner
+
+The local OpenClaw coordinator can own the cheap-runner role directly. Its configuration and
+launcher live in `/Users/pshorey/git/openclaw`; read that checkout's coordinator procedure.
+Use `ingest:supervise watch`, which stays in the foreground, prints one launch receipt and one
+terminal JSON event, writes the same durable job/result/log files, and never starts a model or
+Codex callback. OpenClaw's background exec owns this foreground command and wakes its owning
+conversation on exit. Node owns hourly health checks and the 1–168-hour deadline.
+
+1. Refresh inventory after checkout/file changes; read `ingest:queue --json` and control state.
+   The queue is a recommendation, not admission or evidence that an outage was repaired.
+2. Review unclassified files before setting category/disposition. Resolve supporting files,
+   alternate exports, empty captures, wrapper keys, event editions and campsite-versus-facility
+   granularity. See [capture folder guidance](poi/README.md). No progress state belongs in Git.
+3. Verify `tools.exec.notifyOnExit` is enabled and the `process` tool is available. Verify an
+   actual harmless background command's completion in the owning conversation before the first
+   unattended import. Repeat after a Gateway restart or configuration change. Config availability
+   alone does not prove delivery. Missing completion is a blocker, not permission to use local-only.
+4. Record the exact file/category or resume UUID, budgets, overall deadline and native process
+   handle in OpenClaw's private ledger. Launch one source using its `scripts/run-map-import.sh`
+   in native `exec` with `background=true` and `timeoutSeconds=0` (Node enforces the deadline).
+   Do not use `nohup`, shell `&`, or a Codex implementation wrapper. End the agent turn.
+5. Reconcile terminal events by stable `event_id`, job/result file, pinned run/execution and
+   database inventory. Only `succeeded` plus `verified_at` and full-file `complete` permit
+   advancing. Samples, suffix verification, exclusions and data quality remain separate.
+6. On failure, stop that file's automatic retries, preserve evidence, and delegate a precise
+   repair through OpenClaw's connected Codex CLI wrapper. Codex handles maintenance and bounded
+   smoke validation. Other files may proceed only after the engineer confirms a source-specific
+   blocker; budget/outage/schema/global-lineage blockers stop provider work across the queue.
+
+`watch` requires `--max-llm-requests`, `--max-cost-usd` and `--geocode-limit`. Consolidation is
+excluded. A resume retains a potentially large original cohort. Subtract prior usage and
+diagnostics from the original allowance: `ingest:status --json` includes
+`executions[].normalization_usage`, including failures and unknown costs. Supervisor results
+carry pinned usage and a budget-subtracted resume. Unknown costs require review. Normalization
+thresholds do not cap embedding/matching/fusion bills; record separate provider authorization.
+Never reset an exhausted allowance by starting another file or invocation.
+
+Native handles live in Gateway memory and are lost on restart. Recover using PostgreSQL,
+local job files and verified process/lock evidence, never by replaying a launch command.
+The machine must remain awake. The queue does not auto-retry or drain files by itself.
+
 ## Notification setup and delivery limits
 
 This Mac has the official standalone Codex installation at

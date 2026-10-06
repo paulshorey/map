@@ -15,7 +15,8 @@ This is a monorepo. Apps live in `apps/`; shared libraries live in `lib/`.
 ## Railway development and deployment
 
 Railway Infrastructure as Code is owned by `.railway/railway.ts`; the full human and
-agent workflow is in `.railway/README.md`. The TypeScript file is evaluated by the
+agent workflow is in `.railway/README.md`, and the reusable agent procedure is in
+`.agents/skills/railway-iac/SKILL.md`. The TypeScript file is evaluated by the
 Railway CLI and official `railwayapp/config` GitHub Action. It is not read during an
 ordinary source deployment, and the deprecated dashboard **Railway Config File** field
 must stay unset.
@@ -24,11 +25,12 @@ must stay unset.
   `railway`, and pnpm is allowed to run only the CLI's required binary installer in
   addition to the existing approved build dependencies.
 - Validate every IaC edit with `pnpm railway:config:check` and
-  `pnpm railway:config:plan`. A plan is read-only. Confirm it targets project `World`
-  and environment `dev`, contains no unexpected deletes, and preserves live variables.
+  `pnpm railway:config:plan`. A plan is read-only. Confirm it targets project `World`,
+  the intended environment, contains no unexpected deletes, and preserves live variables.
 - Local humans and interactive agents authenticate with `pnpm railway:login`, then run
-  `pnpm railway:link:dev`. Cloud agents and CI use an injected `RAILWAY_TOKEN` scoped to
-  `dev`; never print, commit, copy into prompts, or persist that token in project files.
+  `pnpm railway:link:dev` or `pnpm railway:link:production`. Cloud agents and CI use an
+  injected `RAILWAY_TOKEN` scoped to exactly one environment; never print, commit, copy
+  into prompts, or persist that token in project files.
 - Use `pnpm railway:config:export` to inspect the live graph without replacing the
   authored file. Never run `railway config pull --force` over a dirty or reviewed
   `.railway/railway.ts`; if a full import is necessary, preserve the current file and
@@ -41,6 +43,9 @@ must stay unset.
 - Direct `pnpm railway:config:apply` is for initial bootstrap or an explicitly requested
   recovery. Review the fresh plan, apply, run the plan again until it reports no changes,
   then verify the deployment and `/api/health`.
+- The dev service is `apps/map` from `main`; the production service is `map` from `prod`.
+  Keep shared build/deploy behavior identical and express these environment differences
+  through `ctx.isEnvironment("production")` in the IaC definition.
 - Railway PR Environments inherit `dev`. Focused and bot PR environments are enabled.
   Source changes receive ephemeral previews; IaC changes are planned against `dev` and
   take effect after merge, so a preview created before the IaC apply retains its cloned
@@ -60,11 +65,11 @@ Refer back to your prompt to understand if you are the orchestrator or the runne
 ## Processing source data
 
 - [README.md](README.md): human setup and commands for manually running full ingestion.
-- [Ingestion runbook](poi-ingestion.md): shared reference for stage behavior,
+- [Ingestion runbook](data/poi-ingestion.md): shared reference for stage behavior,
   command limits, category completeness, evidence, and troubleshooting. Read it before
   developing, debugging, or running ingestion.
 - [Database guide](lib/db-map/AGENTS.md): database and ingestion implementation rules.
-- [Source data guide](AGENTS.md): capture format and source file conventions.
+- [Source data guide](data/AGENTS.md): capture format and source file conventions.
 - Read the applicable folder `AGENTS.md` before editing there. App guides start at
   `apps/AGENTS.md` and `apps/map/AGENTS.md`, with narrower guides under `apps/map/src/`.
 
@@ -107,7 +112,7 @@ task. The human/agent split is about typical execution duration, not code or pro
 
 ## Economical long-run orchestration
 
-Read [agent ingestion operations](ingestion-agents.md) for the interface, handoff template,
+Read [agent ingestion operations](data/ingestion-agents.md) for the interface, handoff template,
 notification setup, and recovery limits. The following model rules narrow the execution preference
 above; operational ownership does not authorize wasting expensive model time.
 
@@ -126,6 +131,13 @@ above; operational ownership does not authorize wasting expensive model time.
   report should invoke a model. No automatic ingestion relaunch, scope expansion, or backlog drain.
   Bounded in-process provider recovery is owned by ordinary pipeline code; see the runbook's
   transient normalization provider recovery section. A healthy cooldown does not need an agent.
+- The local OpenClaw coordinator may act as the cheap runner using `ingest:supervise watch`
+  through its native background exec and verified completion event. It follows
+  [the native runner procedure](data/ingestion-agents.md#native-openclaw-runner).
+  This is a foreground process owned by OpenClaw, with model-free supervision; never route
+  full imports through an expensive Codex CLI turn or silently use detached local-only mode.
+  OpenClaw may advance the explicitly authorized file backlog after verified completion;
+  failure, unknown spending, exhausted budgets and missing notification evidence require a decision.
 - Only a terminal result/error should start a new expensive decision turn. Keep the handoff and
   report compact (about 150 words); retain raw logs locally. Check the stable event ID to avoid
   handling duplicate notifications. Verified database completion, not exit zero alone, is success.
@@ -195,6 +207,12 @@ runtime/schema edits. Report final maintenance state, stopped runs, and exact re
 
 Environment variables are already provided by the shell. Do not create or load `.env` files;
 `.env.example` is a reference only. Use `DB_MAP_URL` without printing credentials.
+
+For a new cloud AI-agent VM in another service, run
+[scripts/agent-env.sh](scripts/agent-env.sh) after checkout (`setup`, then `start`
+if that host should keep the map running). The script may persist injected secrets
+into `~/.config/poi-map/agent.env` so later shells can reach the database; never
+copy that file into the repository. See [working/agent-environment.md](working/agent-environment.md).
 
 The remote database is available for development reads and writes and is backed up. Follow
 the execution budgets above. After schema changes, run

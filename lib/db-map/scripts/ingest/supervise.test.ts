@@ -110,6 +110,31 @@ test("exit zero is insufficient proof of success", () => {
     "needs_attention",
   );
 });
+test("native watch requires explicit budgets and never accepts detached callback flags", () => {
+  const args = [
+    "--resume",
+    randomUUID(),
+    "--max-llm-requests",
+    "5",
+    "--max-cost-usd",
+    "0.1",
+    "--geocode-limit",
+    "0",
+  ];
+  assert.equal(
+    parseSupervisorArgs(["watch", "--max-hours", "1", "--", ...args]).command,
+    "watch",
+  );
+  for (const bad of [
+    ["watch", "--", "file"],
+    ["watch", "--local-only", "--", ...args],
+    ["watch", "--notify-thread", randomUUID(), "--", ...args],
+    ["watch", "--", ...args, "--max-cost-usd", "10"],
+    ["watch", "--", ...args, "--consolidate"],
+    ["watch", "--", ...args.slice(0, -1), "-1"],
+  ])
+    assert.throws(() => parseSupervisorArgs(bad));
+});
 test("healthy job cannot dispatch any model event", async () => {
   const id = randomUUID();
   await createJob({

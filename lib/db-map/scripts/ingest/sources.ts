@@ -10,6 +10,10 @@ import { gardenologyExtractor } from "./extractors/gardenology.js";
 import { globalCarnivalistExtractor } from "./extractors/global-carnivalist.js";
 import { roughGuidesExtractor } from "./extractors/rough-guides.js";
 import { artFairsListExtractor } from "./extractors/artfairslist.js";
+import {
+  ridbFacilitiesExtractor,
+  osmCampgroundsExtractor,
+} from "./extractors/campgrounds.js";
 import type { SourceDefinition } from "./types.js";
 
 const GARDEN_SOURCES: SourceDefinition[] = [
@@ -26,7 +30,7 @@ const GARDEN_SOURCES: SourceDefinition[] = [
     extractor: bgciExtractor,
     files: [
       {
-        pattern: "poi/botanical_gardens_data/bgci_gardens_full.json",
+        pattern: "data/poi/botanical_gardens_data/bgci_gardens_full.json",
         category: "botanical_garden",
       },
     ],
@@ -44,7 +48,8 @@ const GARDEN_SOURCES: SourceDefinition[] = [
     extractor: wikidataExtractor,
     files: [
       {
-        pattern: "poi/botanical_gardens_data/wikidata_botanical_gardens.json",
+        pattern:
+          "data/poi/botanical_gardens_data/wikidata_botanical_gardens.json",
         category: "botanical_garden",
       },
     ],
@@ -62,7 +67,7 @@ const GARDEN_SOURCES: SourceDefinition[] = [
     extractor: osmExtractor,
     files: [
       {
-        pattern: "poi/botanical_gardens_data/osm_botanical_gardens.csv",
+        pattern: "data/poi/botanical_gardens_data/osm_botanical_gardens.csv",
         category: "botanical_garden",
       },
     ],
@@ -79,7 +84,7 @@ const GARDEN_SOURCES: SourceDefinition[] = [
     extractor: arbnetExtractor,
     files: [
       {
-        pattern: "poi/botanical_gardens_data/arbnet_morton_register.json",
+        pattern: "data/poi/botanical_gardens_data/arbnet_morton_register.json",
         category: "arboretum",
       },
     ],
@@ -96,7 +101,7 @@ const GARDEN_SOURCES: SourceDefinition[] = [
     extractor: iabgExtractor,
     files: [
       {
-        pattern: "poi/botanical_gardens_data/iabg_checklist_gardens.json",
+        pattern: "data/poi/botanical_gardens_data/iabg_checklist_gardens.json",
         category: "botanical_garden",
       },
     ],
@@ -114,7 +119,7 @@ const GARDEN_SOURCES: SourceDefinition[] = [
     extractor: wikipediaUsExtractor,
     files: [
       {
-        pattern: "poi/botanical_gardens_data/wikipedia_us_gardens.json",
+        pattern: "data/poi/botanical_gardens_data/wikipedia_us_gardens.json",
         category: "botanical_garden",
       },
     ],
@@ -132,7 +137,7 @@ const GARDEN_SOURCES: SourceDefinition[] = [
     extractor: wikipediaIntlExtractor,
     files: [
       {
-        pattern: "poi/botanical_gardens_data/wikipedia_intl_gardens.json",
+        pattern: "data/poi/botanical_gardens_data/wikipedia_intl_gardens.json",
         category: "botanical_garden",
       },
     ],
@@ -149,7 +154,7 @@ const GARDEN_SOURCES: SourceDefinition[] = [
     extractor: gardenologyExtractor,
     files: [
       {
-        pattern: "poi/botanical_gardens_data/gardenology_us_gardens.json",
+        pattern: "data/poi/botanical_gardens_data/gardenology_us_gardens.json",
         category: "botanical_garden",
       },
     ],
@@ -157,14 +162,16 @@ const GARDEN_SOURCES: SourceDefinition[] = [
   },
 ];
 
-/** Campground sources — metadata registered; extractors land in a follow-up. */
+/** Campground captures preserve source-specific natural IDs and column mappings. */
 const CAMPGROUND_SOURCES: SourceDefinition[] = [
   {
     meta: { slug: "ridb", name: "RIDB", trust: 90 },
+    extractor: ridbFacilitiesExtractor,
     files: [
       {
-        pattern: "poi/rv_campgrounds_data/ridb/facilities.csv",
+        pattern: "data/poi/rv_campgrounds_data/ridb/facilities.csv",
         category: "campground",
+        extractorVersion: "2",
       },
     ],
     normalizationProfile: "campground",
@@ -173,7 +180,7 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
     meta: { slug: "thedyrt", name: "The Dyrt", trust: 50 },
     files: [
       {
-        pattern: "poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv",
+        pattern: "data/poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv",
         category: "campground",
       },
     ],
@@ -181,10 +188,12 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
   },
   {
     meta: { slug: "osm_camp", name: "OpenStreetMap Campgrounds", trust: 70 },
+    extractor: osmCampgroundsExtractor,
     files: [
       {
-        pattern: "poi/rv_campgrounds_data/osm/caravan_sites.csv",
+        pattern: "data/poi/rv_campgrounds_data/osm/caravan_sites.csv",
         category: "campground",
+        extractorVersion: "2",
       },
     ],
     normalizationProfile: "campground",
@@ -194,7 +203,7 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
     files: [
       {
         pattern:
-          "poi/rv_campgrounds_data/uscampgrounds/all_campgrounds_combined.csv",
+          "data/poi/rv_campgrounds_data/uscampgrounds/all_campgrounds_combined.csv",
         category: "campground",
       },
     ],
@@ -202,13 +211,13 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
   },
 ];
 
-/** Festival sources — metadata registered; extractors land in a follow-up. */
+/** Festival sources use generic captures or an explicit record-array wrapper. */
 const FESTIVAL_SOURCES: SourceDefinition[] = [
   {
     meta: { slug: "musicbrainz", name: "MusicBrainz", trust: 85 },
     files: [
       {
-        pattern: "poi/music-festivals/apis/musicbrainz_festivals_*.json",
+        pattern: "data/poi/music-festivals/apis/musicbrainz_festivals_*.json",
         category: "music_festival",
       },
     ],
@@ -218,7 +227,8 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "ticketmaster", name: "Ticketmaster", trust: 75 },
     files: [
       {
-        pattern: "poi/music-festivals/apis/ticketmaster_festivals_full.json",
+        pattern:
+          "data/poi/music-festivals/apis/ticketmaster_festivals_full.json",
         category: "music_festival",
         wrapperPath: "events",
       },
@@ -229,7 +239,8 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "resident_advisor", name: "Resident Advisor", trust: 70 },
     files: [
       {
-        pattern: "poi/music-festivals/apis/resident_advisor_festivals.json",
+        pattern:
+          "data/poi/music-festivals/apis/resident_advisor_festivals.json",
         category: "music_festival",
         wrapperPath: "festivals",
       },
@@ -245,7 +256,7 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     files: [
       {
         pattern:
-          "poi/music-festivals/directories/musicfestivalwizard_festivals.json",
+          "data/poi/music-festivals/directories/musicfestivalwizard_festivals.json",
         category: "music_festival",
       },
     ],
@@ -259,7 +270,7 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     },
     files: [
       {
-        pattern: "poi/music-festivals/apis/edm_dance_directory.json",
+        pattern: "data/poi/music-festivals/apis/edm_dance_directory.json",
         category: "music_festival",
       },
     ],
@@ -269,7 +280,7 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "jambase", name: "JamBase", trust: 75 },
     files: [
       {
-        pattern: "poi/music-festivals/apis/jambase_festivals.json",
+        pattern: "data/poi/music-festivals/apis/jambase_festivals.json",
         category: "music_festival",
       },
     ],
@@ -279,7 +290,7 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "viberate", name: "Viberate", trust: 70 },
     files: [
       {
-        pattern: "poi/music-festivals/apis/viberate_festivals.json",
+        pattern: "data/poi/music-festivals/apis/viberate_festivals.json",
         category: "music_festival",
       },
     ],
@@ -289,12 +300,14 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "songkick", name: "Songkick", trust: 70 },
     files: [
       {
-        pattern: "poi/music-festivals/apis/songkick_festivals.json",
+        pattern: "data/poi/music-festivals/apis/songkick_festivals.json",
         category: "music_festival",
+        wrapperPath: "festivals",
+        extractorVersion: "2",
       },
       {
         pattern:
-          "poi/music-festivals/directories/songkick_browse_festivals.json",
+          "data/poi/music-festivals/directories/songkick_browse_festivals.json",
         category: "music_festival",
       },
     ],
@@ -304,7 +317,8 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "festivism", name: "Festivism", trust: 60 },
     files: [
       {
-        pattern: "poi/music-festivals/directories/festivism_festivals.json",
+        pattern:
+          "data/poi/music-festivals/directories/festivism_festivals.json",
         category: "music_festival",
       },
     ],
@@ -314,15 +328,18 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
     meta: { slug: "festivalatlas", name: "Festival Atlas", trust: 60 },
     files: [
       {
-        pattern: "poi/music-festivals/directories/festivalatlas_festivals.json",
+        pattern:
+          "data/poi/music-festivals/directories/festivalatlas_festivals.json",
         category: "music_festival",
+        wrapperPath: "festivals",
+        extractorVersion: "2",
       },
     ],
     normalizationProfile: "event",
   },
 ];
 
-/** Carnival sources (poi/carnival/). */
+/** Carnival sources (data/poi/carnival/). */
 const CARNIVAL_SOURCES: SourceDefinition[] = [
   {
     meta: {
@@ -334,7 +351,10 @@ const CARNIVAL_SOURCES: SourceDefinition[] = [
     },
     extractor: globalCarnivalistExtractor,
     files: [
-      { pattern: "poi/carnival/global_carnivalist.json", category: "carnival" },
+      {
+        pattern: "data/poi/carnival/global_carnivalist.json",
+        category: "carnival",
+      },
     ],
     normalizationProfile: "event",
   },
@@ -349,7 +369,7 @@ const CARNIVAL_SOURCES: SourceDefinition[] = [
     extractor: roughGuidesExtractor,
     files: [
       {
-        pattern: "poi/carnival/rough_guides_carnivals.json",
+        pattern: "data/poi/carnival/rough_guides_carnivals.json",
         category: "carnival",
       },
     ],
@@ -364,7 +384,7 @@ const GENERIC_SMOKE_SOURCES: SourceDefinition[] = [
     extractor: artFairsListExtractor,
     files: [
       {
-        pattern: "poi/art-fairs/craft-shows/artfairslist.json",
+        pattern: "data/poi/art-fairs/craft-shows/artfairslist.json",
         category: "art_fair",
       },
     ],
@@ -375,7 +395,7 @@ const GENERIC_SMOKE_SOURCES: SourceDefinition[] = [
     identity: { editioned: true },
     files: [
       {
-        pattern: "poi/art-parades/street-arts/aurillac_festival.json",
+        pattern: "data/poi/art-parades/street-arts/aurillac_festival.json",
         category: "art_parade",
       },
     ],
@@ -384,7 +404,10 @@ const GENERIC_SMOKE_SOURCES: SourceDefinition[] = [
   {
     meta: { slug: "california_hostels", name: "California Hostels", trust: 60 },
     files: [
-      { pattern: "poi/hostels/california-hostels.json", category: "hostel" },
+      {
+        pattern: "data/poi/hostels/california-hostels.json",
+        category: "hostel",
+      },
     ],
     normalizationProfile: "place",
   },

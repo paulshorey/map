@@ -49,6 +49,8 @@ The root `.railway/railway.ts` is the source of truth for the service source, bu
 start, watch paths, preserved variables, and healthcheck. Apply it through the pinned
 Railway CLI or the `railwayapp/config` PR workflow. Dashboard fields show the applied
 state and should not be independently edited or cleared. See [Railway setup](../../.railway/README.md).
+Dev uses service `apps/map` on `main`; production uses service `map` on `prod`. The
+IaC definition selects both the service name and branch from the target environment.
 Keep the repository root as the build context for workspace dependencies. Healthcheck:
 `/api/health`.
 

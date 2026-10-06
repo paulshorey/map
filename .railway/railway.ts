@@ -1,8 +1,12 @@
 import { defineRailway, preserve, project, service } from "railway/iac";
 
 export default defineRailway((ctx) => {
-  const map = service("apps/map", {
-    source: { repo: "paulshorey/map", branch: "main" },
+  const production = ctx.isEnvironment("production");
+  const map = service(production ? "map" : "apps/map", {
+    source: {
+      repo: "paulshorey/map",
+      branch: production ? "prod" : "main",
+    },
     build: {
       builder: "RAILPACK",
       buildCommand: "pnpm --filter ./apps/map build",

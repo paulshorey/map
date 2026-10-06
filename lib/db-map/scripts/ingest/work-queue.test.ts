@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { resolve } from "node:path";
 import { getDb } from "../../lib/db/postgres.js";
-import { REPO_ROOT } from "./source-file.js";
+import { POI_ROOT } from "./source-file.js";
 import { runOrchestration } from "./orchestrator.js";
 import { pendingStageItems, prepareStageQueue } from "./work-queue.js";
 import { findReusableNormalizations } from "./normalize/runner.js";
@@ -12,7 +12,7 @@ import { getNormalizationProfile } from "./normalize/profiles.js";
 import { Execution, lockSource } from "./execution.js";
 const db = getDb();
 const slug = "queue_test_" + randomUUID().replaceAll("-", "");
-const dir = await mkdtemp(resolve(REPO_ROOT, "poi/queue-test-"));
+const dir = await mkdtemp(resolve(POI_ROOT, "queue-test-"));
 const file = resolve(dir, slug + ".json");
 const opts = {
   file,
