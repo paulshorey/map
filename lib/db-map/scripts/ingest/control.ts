@@ -4,6 +4,7 @@ import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
+import { isLocalHost } from "./host-identity.js";
 import {
   changeMaintenance,
   controlState,
@@ -102,7 +103,7 @@ export function parseControlArgs(argv: string[]) {
 }
 
 export function localPidState(host: string, pid: number) {
-  if (host !== hostname()) return "remote_unknown";
+  if (!isLocalHost(host)) return "remote_unknown";
   try {
     process.kill(pid, 0);
     return "present_identity_unverified";
@@ -111,6 +112,23 @@ export function localPidState(host: string, pid: number) {
       ? "absent"
       : "unknown";
   }
+}
+
+export function canReconcile(
+  snapshot: {
+    quiescent: boolean;
+    workers: {
+      execution_id: string;
+      local_process: ReturnType<typeof localPidState>;
+    }[];
+  },
+  executionId: string,
+) {
+  return (
+    snapshot.quiescent &&
+    snapshot.workers.find((w) => w.execution_id === executionId)
+      ?.local_process === "absent"
+  );
 }
 
 /** Candidate discovery only: never use command text or a stored PID as kill authorization. */
@@ -263,10 +281,7 @@ async function main() {
       );
     if (opts.command === "reconcile") {
       const snapshot = await inspectControl(db);
-      const worker = snapshot.workers.find(
-        (w) => w.execution_id === opts.execution,
-      );
-      if (!snapshot.quiescent || !worker || worker.local_process !== "absent")
+      if (!canReconcile(snapshot, opts.execution!))
         throw new Error(
           "Reconcile requires quiescence and a recorded local worker whose PID is absent; remote/unknown/live PIDs are not eligible",
         );
