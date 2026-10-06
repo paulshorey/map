@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { randomUUID } from "node:crypto";
+import { hostname } from "node:os";
 import { rm, access } from "node:fs/promises";
 import {
   parseSupervisorArgs,
@@ -8,7 +9,37 @@ import {
   dispatchJob,
   budgetedResume,
 } from "./supervise.js";
-import { createJob, jobPath, atomicJson } from "./supervisor-state.js";
+import {
+  createJob,
+  jobPath,
+  atomicJson,
+  listJobs,
+} from "./supervisor-state.js";
+
+test("supervisor status checks local mDNS job PIDs", async () => {
+  const id = randomUUID();
+  await createJob({
+    id,
+    mode: "native",
+    argv: [],
+    host: `${hostname().replace(/\.local$/i, "")}.local`,
+    supervisor_pid: process.pid,
+    child_pid: 2147483647,
+    runner_model: "external",
+    started_at: new Date().toISOString(),
+    status: "running",
+    timeout_seconds: null,
+    health_interval_seconds: 3600,
+    health_checks: 0,
+  });
+  try {
+    const job = (await listJobs()).find((entry) => entry.id === id);
+    assert.equal(job?.supervisor_present, true);
+    assert.equal(job?.child_present, false);
+  } finally {
+    await rm(jobPath(id, ""), { recursive: true, force: true });
+  }
+});
 
 test("terminal resume subtracts exact execution usage and never resets an exhausted budget", () => {
   const run = randomUUID();

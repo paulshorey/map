@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile, rename, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
-import { hostname } from "node:os";
+import { isLocalHost } from "./host-identity.js";
 
 export const JOBS = fileURLToPath(
   new URL("../../.ingest-jobs/", import.meta.url),
@@ -63,11 +63,11 @@ export async function listJobs() {
   const jobs = [];
   for (const id of entries.filter((id) => UUID.test(id))) {
     const job = await loadJob(id);
+    const local = isLocalHost(job.host);
     jobs.push({
       ...job,
-      supervisor_present:
-        job.host === hostname() ? pidPresent(job.supervisor_pid) : null,
-      child_present: job.host === hostname() ? pidPresent(job.child_pid) : null,
+      supervisor_present: local ? pidPresent(job.supervisor_pid) : null,
+      child_present: local ? pidPresent(job.child_pid) : null,
     });
   }
   return jobs.sort((a, b) => b.started_at.localeCompare(a.started_at));
