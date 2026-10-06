@@ -100,7 +100,7 @@ Configure these as **environment variables that survive into the agent phase**
 | `DB_MAP_URL`            | yes, unless `--local-db` | Shared PostgreSQL (same database this Cursor environment uses) |
 | `LOCATIONIQ_API_KEY`    | ingestion                | Geocoding                                                      |
 | `JINA_API_KEY`          | ingestion                | Embeddings                                                     |
-| `DEEPINFRA_API_KEY`     | ingestion                | Normalization / match LLM                                      |
+| `FIREWORKS_API_KEY`     | ingestion                | DeepSeek V4.1 Flash thinking for normalization / match LLM       |
 | `RAILWAY_TOKEN`         | Railway IaC only         | Project token scoped to `dev`                                  |
 | `THUNDERFOREST_API_KEY` | optional                 | Premium tiles                                                  |
 

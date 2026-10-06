@@ -301,7 +301,7 @@ test("HTML 429 retains status and cooldown without hidden managed transport retr
   }
 });
 
-test("completeChat posts to Fireworks with thinking disabled", async () => {
+test("completeChat posts to Fireworks with bounded high thinking and current pricing", async () => {
   const original = globalThis.fetch;
   const oldKey = process.env.FIREWORKS_API_KEY;
   process.env.FIREWORKS_API_KEY = "fixture";
@@ -310,9 +310,7 @@ test("completeChat posts to Fireworks with thinking disabled", async () => {
     request = { url: String(input), init: init ?? {} };
     return Response.json({
       model: "accounts/fireworks/models/deepseek-v4p1-flash",
-      choices: [
-        { message: { content: '{"ok":true}' }, finish_reason: "stop" },
-      ],
+      choices: [{ message: { content: '{"ok":true}' }, finish_reason: "stop" }],
       usage: {
         prompt_tokens: 100,
         completion_tokens: 20,
@@ -333,18 +331,21 @@ test("completeChat posts to Fireworks with thinking disabled", async () => {
       "https://api.fireworks.ai/inference/v1/chat/completions",
     );
     const body = JSON.parse(String(request.init.body));
-    assert.equal(
-      body.model,
-      "accounts/fireworks/models/deepseek-v4p1-flash",
-    );
-    assert.deepEqual(body.thinking, { type: "disabled" });
+    assert.equal(body.model, "accounts/fireworks/models/deepseek-v4p1-flash");
+    assert.equal(body.reasoning_effort, 2048);
+    assert.equal(body.max_tokens, 3072);
+    assert.equal(body.service_tier, "default");
+    assert.equal(body.thinking, undefined);
     assert.equal(
       (request.init.headers as Record<string, string>).Authorization,
       "Bearer fixture",
     );
     assert.equal(result.content, '{"ok":true}');
     assert.equal(result.usage.cachedTokens, 10);
-    assert.equal(result.usage.estimatedCost, (90 * 0.22 + 10 * 0.007 + 20 * 0.66) / 1_000_000);
+    assert.equal(
+      result.usage.estimatedCost,
+      (90 * 0.3 + 10 * 0.006 + 20 * 1.2) / 1_000_000,
+    );
   } finally {
     globalThis.fetch = original;
     if (oldKey === undefined) delete process.env.FIREWORKS_API_KEY;

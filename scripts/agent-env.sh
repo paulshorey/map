@@ -209,7 +209,7 @@ persist_runtime_env() {
     persist_env_value DB_MAP_URL
     persist_env_value LOCATIONIQ_API_KEY
     persist_env_value JINA_API_KEY
-    persist_env_value DEEPINFRA_API_KEY
+    persist_env_value FIREWORKS_API_KEY
     persist_env_value THUNDERFOREST_API_KEY
     persist_env_value RAILWAY_TOKEN
     persist_env_value NEXT_PUBLIC_API_URL
@@ -219,12 +219,16 @@ persist_runtime_env() {
     persist_env_value EMBEDDINGS_DIM
     persist_env_value LLM_PROVIDER
     persist_env_value LLM_MODEL
+    persist_env_value LLM_BASE_URL
+    persist_env_value LLM_THINKING_BUDGET_TOKENS
     printf 'export GEOCODER_PROVIDER="${GEOCODER_PROVIDER:-locationiq}"\n'
     printf 'export EMBEDDINGS_PROVIDER="${EMBEDDINGS_PROVIDER:-jina}"\n'
     printf 'export EMBEDDINGS_MODEL="${EMBEDDINGS_MODEL:-jina-embeddings-v3}"\n'
     printf 'export EMBEDDINGS_DIM="${EMBEDDINGS_DIM:-384}"\n'
-    printf 'export LLM_PROVIDER="${LLM_PROVIDER:-deepinfra}"\n'
-    printf 'export LLM_MODEL="${LLM_MODEL:-deepseek-ai/DeepSeek-V4-Flash}"\n'
+    printf 'export LLM_PROVIDER="${LLM_PROVIDER:-fireworks}"\n'
+    printf 'export LLM_MODEL="${LLM_MODEL:-accounts/fireworks/models/deepseek-v4p1-flash}"\n'
+    printf 'export LLM_BASE_URL="${LLM_BASE_URL:-https://api.fireworks.ai/inference/v1}"\n'
+    printf 'export LLM_THINKING_BUDGET_TOKENS="${LLM_THINKING_BUDGET_TOKENS:-2048}"\n'
   } > "${tmp}"
   chmod 600 "${tmp}"
   mv "${tmp}" "${ENV_FILE}"

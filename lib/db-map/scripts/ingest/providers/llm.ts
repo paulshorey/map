@@ -14,6 +14,7 @@ export class LlmError extends Error {
     readonly retryable = false,
     readonly status?: number,
     readonly retryAfterMs?: number,
+    readonly result?: ChatResult,
   ) {
     super(message);
     this.name = "LlmError";
@@ -38,6 +39,7 @@ export interface ChatOptions {
   system?: string;
   user?: string;
   messages?: ChatMessage[];
+  /** Final-answer allowance; the thinking allowance is added to the wire max_tokens. */
   maxTokens?: number;
   responseFormat?: JsonSchemaResponseFormat | { type: "json_object" };
   timeoutMs?: number;
@@ -60,15 +62,69 @@ export interface ChatResult {
 
 /**
  * Fireworks serverless list prices for DeepSeek V4.1 Flash
- * (https://fireworks.ai/models/deepseek-ai/deepseek-v4p1-flash):
- * $0.22 / $0.007 / $0.66 per 1M tokens (input / cached input / output).
+ * (https://docs.fireworks.ai/serverless/pricing, checked 2026-10-05):
+ * $0.30 / $0.006 / $1.20 per 1M tokens (input / cached input / output).
  * Used only when the API omits `usage.estimated_cost`.
  */
 const FIREWORKS_USD_PER_MTOK = {
-  input: 0.22,
-  cachedInput: 0.007,
-  output: 0.66,
+  input: 0.3,
+  cachedInput: 0.006,
+  output: 1.2,
 } as const;
+
+/** Non-secret settings shared by the request journal and normalization cache identity. */
+export function chatRequestSettings(maxTokens = 1024) {
+  const { provider, model, baseUrl, thinkingBudgetTokens } = ingestConfig.llm;
+  if (
+    provider !== "fireworks" ||
+    baseUrl !== "https://api.fireworks.ai/inference/v1"
+  ) {
+    throw new LlmError(
+      "Set LLM_PROVIDER=fireworks and LLM_BASE_URL=https://api.fireworks.ai/inference/v1; remove stale DeepInfra overrides",
+    );
+  }
+  if (!model.startsWith("accounts/")) {
+    throw new LlmError(
+      "LLM_MODEL must use a Fireworks resource ID (accounts/...); remove stale DeepInfra model overrides",
+    );
+  }
+  if (
+    !Number.isSafeInteger(maxTokens) ||
+    maxTokens <= 0 ||
+    !Number.isSafeInteger(maxTokens + thinkingBudgetTokens)
+  ) {
+    throw new LlmError(
+      "maxTokens must be a positive safe integer with room for the thinking budget",
+    );
+  }
+  return {
+    model,
+    temperature: 0,
+    // V4.1 integers >= 1024 select high thinking AND enforce a thinking-token cap.
+    // Do not also send `thinking`: Fireworks rejects both controls together.
+    reasoning_effort: thinkingBudgetTokens,
+    max_tokens: maxTokens + thinkingBudgetTokens,
+    service_tier: "default" as const,
+    context_length_exceeded_behavior: "error" as const,
+  };
+}
+
+export function buildChatRequest(opts: ChatOptions) {
+  return {
+    ...chatRequestSettings(opts.maxTokens),
+    messages: messagesFor(opts),
+    ...(opts.responseFormat ? { response_format: opts.responseFormat } : {}),
+  };
+}
+
+export function isUnsupportedResponseFormat(error: unknown): boolean {
+  return (
+    error instanceof LlmError &&
+    (error.status === 400 || error.status === 422) &&
+    /json_schema|response_format/i.test(error.message) &&
+    /not supported|unsupported/i.test(error.message)
+  );
+}
 
 const sleep = (ms: number) =>
   new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
@@ -96,7 +152,7 @@ function messagesFor(opts: ChatOptions): ChatMessage[] {
 
 function providerErrorMessage(
   body: {
-    error?: { message?: string } | string;
+    error?: { message?: string } | string | null;
     message?: string;
     detail?: unknown;
   },
@@ -104,6 +160,7 @@ function providerErrorMessage(
 ): string {
   if (typeof body.error === "string" && body.error.trim()) return body.error;
   if (
+    body.error !== null &&
     typeof body.error === "object" &&
     typeof body.error.message === "string" &&
     body.error.message.trim()
@@ -133,18 +190,37 @@ function providerErrorMessage(
   return `Unexpected status ${status}`;
 }
 
-function estimateCostUsd(usage: {
+interface ProviderUsage {
   estimated_cost?: number;
   prompt_tokens?: number;
   completion_tokens?: number;
   prompt_tokens_details?: { cached_tokens?: number };
-}): number | null {
-  if (typeof usage.estimated_cost === "number") return usage.estimated_cost;
+  total_tokens?: number;
+}
+
+function validTokens(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+}
+
+function tokenCount(value: unknown): number | null {
+  return validTokens(value) ? value : null;
+}
+
+function estimateCostUsd(usage: ProviderUsage, model: string): number | null {
+  if (
+    typeof usage.estimated_cost === "number" &&
+    Number.isFinite(usage.estimated_cost) &&
+    usage.estimated_cost >= 0
+  )
+    return usage.estimated_cost;
+  // Never apply this model's rates to an override, router, or dedicated deployment.
+  if (model !== "accounts/fireworks/models/deepseek-v4p1-flash") return null;
   const prompt = usage.prompt_tokens;
   const completion = usage.completion_tokens;
-  if (prompt == null || completion == null) return null;
+  if (!validTokens(prompt) || !validTokens(completion)) return null;
   const cached = usage.prompt_tokens_details?.cached_tokens ?? 0;
-  const uncached = Math.max(0, prompt - cached);
+  if (!validTokens(cached) || cached > prompt) return null;
+  const uncached = prompt - cached;
   return (
     (uncached * FIREWORKS_USD_PER_MTOK.input +
       cached * FIREWORKS_USD_PER_MTOK.cachedInput +
@@ -157,8 +233,8 @@ function estimateCostUsd(usage: {
 export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
   const { model, baseUrl, apiKey } = ingestConfig.llm;
   // Configuration failures are not transient network failures.
+  const request = buildChatRequest(opts);
   const authorization = `Bearer ${apiKey()}`;
-  const messages = messagesFor(opts);
   const retries = opts.retries ?? 2;
   let lastError: LlmError | undefined;
 
@@ -177,19 +253,7 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
           "Content-Type": "application/json",
           Authorization: authorization,
         },
-        body: JSON.stringify({
-          model,
-          temperature: 0,
-          max_tokens: opts.maxTokens ?? 1024,
-          messages,
-          ...(opts.responseFormat
-            ? { response_format: opts.responseFormat }
-            : {}),
-          // DeepSeek V4.x defaults to thinking on Fireworks; disable to keep
-          // completions short and parseable. Same shape as Anthropic-compatible
-          // `thinking` and equivalent to `reasoning_effort: "none"`.
-          thinking: { type: "disabled" },
-        }),
+        body: JSON.stringify(request),
       });
 
       const raw = await res.text();
@@ -199,14 +263,8 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
           message?: { content?: string };
           finish_reason?: string | null;
         }[];
-        usage?: {
-          prompt_tokens?: number;
-          completion_tokens?: number;
-          total_tokens?: number;
-          estimated_cost?: number;
-          prompt_tokens_details?: { cached_tokens?: number };
-        };
-        error?: { message?: string } | string;
+        usage?: ProviderUsage;
+        error?: { message?: string } | string | null;
         message?: string;
         detail?: unknown;
       };
@@ -218,6 +276,14 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
           res.status === 429 || res.status >= 500,
           res.status,
           retryAfterMs(res.headers.get("retry-after")),
+        );
+      }
+
+      if (!body || typeof body !== "object" || Array.isArray(body)) {
+        throw new LlmError(
+          `Invalid response object (status ${res.status})`,
+          res.status === 429 || res.status >= 500,
+          res.status,
         );
       }
 
@@ -234,27 +300,43 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
       const choice = body.choices?.[0];
       const content = choice?.message?.content;
       const finishReason = choice?.finish_reason ?? null;
-      if (typeof content !== "string" || content.length === 0) {
-        throw new LlmError("Empty completion", true);
-      }
-      if (finishReason === "length") {
-        throw new LlmError("Completion truncated by max_tokens", true);
-      }
-
-      return {
-        content,
+      const result: ChatResult = {
+        content: typeof content === "string" ? content : "",
         model: body.model ?? model,
         finishReason,
         usage: {
-          promptTokens: body.usage?.prompt_tokens ?? null,
-          cachedTokens:
-            body.usage?.prompt_tokens_details?.cached_tokens ?? null,
-          completionTokens: body.usage?.completion_tokens ?? null,
-          totalTokens: body.usage?.total_tokens ?? null,
-          estimatedCost: body.usage ? estimateCostUsd(body.usage) : null,
+          promptTokens: tokenCount(body.usage?.prompt_tokens),
+          cachedTokens: tokenCount(
+            body.usage?.prompt_tokens_details?.cached_tokens,
+          ),
+          completionTokens: tokenCount(body.usage?.completion_tokens),
+          totalTokens: tokenCount(body.usage?.total_tokens),
+          // completion_tokens already includes thinking: do not bill it twice.
+          estimatedCost: body.usage
+            ? estimateCostUsd(body.usage, body.model ?? model)
+            : null,
         },
         latencyMs: Date.now() - started,
       };
+      if (finishReason === "length") {
+        throw new LlmError(
+          "Completion truncated by max_tokens; review output/thinking allowance before retrying",
+          false,
+          undefined,
+          undefined,
+          result,
+        );
+      }
+      if (!result.content.trim()) {
+        throw new LlmError(
+          "Empty final completion",
+          false,
+          undefined,
+          undefined,
+          result,
+        );
+      }
+      return result;
     } catch (error) {
       const normalized =
         error instanceof LlmError
