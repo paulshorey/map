@@ -51,3 +51,33 @@ Validation and final operational state are appended after checks. No backlog imp
 - Provider-free live integrations passed on rerun: supervisor 18.34 seconds, inventory/lineage 39.41 seconds. Cleanup completed and control confirmed no remaining workers/locks. Logs: `/tmp/poi-supervisor-integration-retry.log`, `/tmp/poi-inventory-integration.log`.
 - Final refreshed queue: 247 captures; 1 inspect, 2 verify, 40 start, 200 review, 4 supporting/blocked, 0 complete. The Dyrt continuation is the original full run even though the latest run is the bounded smoke. Source and global lineage checks pass; full-run dry-run remains compatible. Control unit tests: 2 passed.
 - Final maintenance state: off; no workers or locks remain. The read-only queue admits recommendations and selects inspection of the original full The Dyrt run. Existing full and smoke runs remain deliberately paused. No full ingestion was stopped/restarted during this setup; only isolated test fixtures were cleaned up.
+
+## Provider follow-up — 2026-10-05
+
+Read-only DeepInfra account/service inspection and exact full-run error queries do not
+support a current authentication or funding blockage. Account details and credentials are
+not stored here. No payment, account setting, provider configuration or ingestion launch
+was changed. Provider availability is currently demonstrated by the earlier managed smoke,
+not guaranteed for the duration of a full import.
+
+The pinned full run has two failed requests with `Model busy, retry later` on September 20,
+two `Network error: fetch failed` requests on September 22, and one request left `started`
+at interruption. Historical attempt errors lack HTTP status/code, so the exact wire response
+cannot be reconstructed. DeepInfra's [chat documentation](https://docs.deepinfra.com/chat/overview)
+identifies the busy message as an overload rejection; its
+[rate-limit guide](https://docs.deepinfra.com/account/rate-limits) notes busy-model 429s can
+occur below the account concurrency limit. The current client leaves service tier unset
+(standard) and does not request fail-fast behavior. The live
+[status page](https://status.deepinfra.com/) reports the API and DeepSeek-V4-Flash operational.
+
+The recorded `providerRecovery` state reports exhaustion at `record_deadline` for record
+`17195`; record `17196` was later reconciled as interrupted after process absence and source
+lock release. These facts do not establish the process's termination cause. Earlier
+record-ID validation failures are separate model-output errors with repair requests, not
+account-access errors. Preserve the existing full run and request history; payment changes
+are not an evidence-based remedy for the recorded busy/network failures. Aggregate provider
+authorization, unknown-spend review and native-completion evidence remain separate decisions.
+
+Bounded read-only error evidence: `/tmp/deepinfra-error-audit.json`;
+full-run snapshot: `/tmp/deepinfra-full-run-status.json`;
+successful sample snapshot: `/tmp/deepinfra-successful-smoke-status.json`.
