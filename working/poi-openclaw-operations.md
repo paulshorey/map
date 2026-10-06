@@ -133,7 +133,7 @@ It read map instructions, confirmed shell DB/Fireworks credentials as booleans, 
 DELEGATION_READY without edits or ingestion. Private log:
 `/Users/pshorey/git/openclaw/runtime/coordinator/logs/map-codex-preflight-wrapper.log`.
 
-## Final OpenClaw acceptance evidence
+## Historical single-callback acceptance evidence (superseded below)
 
 - Harmless callback preflight in owner
   `agent:main:dashboard:52858321-cc92-43f0-bd80-43c3abbf4963` passed on the existing
@@ -164,3 +164,118 @@ DELEGATION_READY without edits or ingestion. Private log:
   unknown-cost review and original total deadline. The bot can review files, reconcile
   status and delegate code repairs while these decisions remain pending. No full backlog
   import was launched during validation.
+
+## Heartbeat dispatch correction — 2026-10-06
+
+The 00:14 CDT heartbeat identified two eligible provider-free verifications but deferred its
+own harmless notification preflight to an unspecified future owner. Earlier acceptance proved
+the runner/callback mechanism, not autonomous heartbeat action selection. The operating
+procedure now requires a concrete independent action when eligible work exists: read queue
+items past the blocked paid entry, save action intent, establish the current owner's preflight,
+and launch the selected verification on its automatic callback. Unchanged deferred PRs and
+the pending paid allowance do not stall provider-free verification or bounded source review.
+
+Dispatch intent is private `state/map-import-action.json`; in-flight ownership is reconciled
+before another hourly conversation selects work. The injected coordinator instructions were
+also shortened below OpenClaw's installed 20,000-character default. Detailed execution rules
+are deployed as required on-demand `MAP-IMPORTS.md`, retaining budget/recovery/receipt checks.
+The scheduler prompt was hot-reloaded without a Gateway restart. Acceptance outcomes follow.
+
+The acceptance owner is the actual 00:14 heartbeat conversation
+`agent:main:dashboard:0ac26162-4c5c-429f-a2a7-0f3fa93c8eb3`. It selected Aurillac,
+saved intent, launched one harmless preflight, and ended the turn. A concurrent scheduled
+heartbeat then slept/polled for its callback; the Gateway reported `cron-in-progress`.
+Codex stopped that specific overlapping turn `6f520ea4-ccc6-4fb0-8f3c-4601672e4443`
+and strengthened both child reconciliation and launcher event handling to end immediately
+when another owner's callback is queued. No ingestion worker or Gateway was stopped.
+An attempted abort of the launcher's later reconciliation turn found it already ended.
+
+The original owner automatically continued in run
+`21d4294c-38c4-4f56-b4d1-f4b70eb4ac45`, read its exact preflight/callback evidence,
+recorded witnessed proof, corrected a future timestamp rejected by admission, and launched
+Aurillac's provider-free whole-file report/verify. Job
+`747a51f1-3edd-4f72-9c9e-ff53d168c332`, DB run
+`3e5f9d16-cd39-4baa-b15d-f41512e71f02`, execution
+`71a8661e-d4cb-4dc3-a3a7-322b8280fadb` succeeded. Ordinary processing took about
+seven seconds, no provider work, terminal callback accepted. Private transcript, action
+intent and wrapper evidence remain in the OpenClaw workspace. Final coverage follows.
+
+The first result did not chain automatically. Read-only session metadata showed that the
+heartbeat-based callback changed `delivery.kind` to `none`; the subsequent accepted terminal
+event produced a silent heartbeat rather than an owning decision turn. Earlier tests used a
+new manual chat before each callback and therefore missed this transition. Their evidence is
+retained as historical single-callback proof, not current admission proof.
+
+An attempted transport correction sent supported Gateway `chat.send` to the exact dashboard owner,
+with `deliver=false`, an explicit `INTERNAL_MAP_TERMINAL_EVENT` sender label, no external
+destination and a UUIDv5 idempotency key derived from the stable terminal event ID. It
+requires the actual acknowledgement's matching run UUID and `started`/`in_flight` status;
+exit zero, legacy `ok`, unknown status, timeout or mismatched identity remain blockers.
+Claims prohibit automatic retries. Legacy native/system-event receipts could not admit imports.
+The actual spawned-owner native preflight then exposed a separate restriction: inherited
+`OPENCLAW_SUBAGENT_EXEC=1` intentionally rejects CLI `chat.send`. Preflight
+`map-terminal-preflight:9ee1e425-c4fa-4c37-a544-be3767ef73a5`, native handle
+`nova-tidepool` / PID `12861`, failed delivery before any California-hostels job was
+created. The wrapper stopped with a private failed receipt, and intent was marked blocked.
+This restriction was preserved rather than bypassed.
+
+Installed Gateway source and the official [system CLI documentation](https://docs.openclaw.ai/cli/system)
+confirm targeted system events as the asynchronous completion interface. Structured exec
+events enter an output-masking prompt branch; a generic internal marker is retained as a
+System line. The revised payload therefore begins `INTERNAL_MAP_TERMINAL_EVENT` and uses
+the supported targeted `system event --mode now` command. The owning heartbeat prompt
+handles that marker before launcher classification. Its proof kind is
+`internal_system_event`; both failed chat-transport and legacy structured-event proof are
+invalid. Wake acceptance is `{ok:true}`, not a model run ID or transport idempotency.
+Local claims and stable event reconciliation prevent automatic duplicate decisions.
+The installed classifier confirmed the old prefix is an exec event and the generic marker
+is not. Chained live acceptance passed; exact evidence follows.
+
+## Verified chained continuation and final state — 2026-10-06 UTC
+
+One manual engineering recovery turn `418e407c-cf56-4a27-9fed-48f4058e77da`
+launched harmless native preflight `marine-breeze` / PID `30252`, then ended. Preflight
+`map-terminal-preflight:b9d2c265-4f10-4023-9efa-3f18487e1a52` completed at
+`2026-10-06T07:08:55.796484Z`; its generic targeted callback was accepted. An independent
+automatic turn `02c70697-e32e-4f23-a69d-1110f444396a` read exact evidence, recorded
+`internal_system_event` proof, passed admission and launched California hostels through
+the production wrapper, native handle `mild-meadow` / PID `33104`. That turn ended
+immediately. No manual message occurred between either automatic callback.
+
+California-hostels job `d3c59ce8-6117-4c7b-859d-a0d69a818a81`, run
+`a725b72f-0974-4000-a778-b772b411d873`, execution
+`4656c604-5fea-4d92-b7b6-2c93900befad` succeeded and verified at
+`2026-10-06T07:09:46.583Z`. Whole-file report/verify reused existing extraction, used
+zero provider requests/cost and completed in about eight seconds. Its exact terminal event
+`ingestion:d3c59ce8-6117-4c7b-859d-a0d69a818a81:terminal` started independent
+automatic turn `7028f367-ae14-4468-b307-8f8276560f1a`. That turn checked canonical
+job/result, pinned DB success/verification, inventory and queue, updated private state and
+ended. This proves automatic preflight-to-import-to-terminal reconciliation despite the
+previous heartbeat route transition. It does not prove a long paid backlog run.
+
+Final database inventory: Aurillac 6/6 and California hostels 52/52 are linked, published and
+verified, each with `coverage=complete` and queue `action=complete`. All 58 records retain
+degraded deterministic-fallback normalization flags; structural verification does not
+resolve that quality review. No new normalization/embedding/matching/fusion work occurred
+in these suffix verifications. The original full Dyrt run remains paused and partial.
+
+Final queue over 247 captures: 1 inspect / 0 verify / 40 start / 200 review / 4 supporting
+or blocked / 2 complete. Control at `2026-10-06T07:10:55.571Z`: maintenance off,
+quiescent, no workers, source/admission locks or local ingestion scripts. No paid import
+was launched; MAP-IMPORT-BUDGET, prior unknown-cost review and original deadline remain
+pending. These decisions no longer block independent provider-free source review.
+
+OpenClaw main `ad73260` contains dispatch, generic callback and bootstrap-context fixes.
+All five templates are deployed; the heartbeat prompt matches the hot-reloaded config.
+Gateway PID/start remain unchanged, external channels stay disabled, no extra monitoring
+automation was created. 47 wrapper tests and 8 environment tests passed; Bash syntax,
+Python compilation, Git whitespace and OpenClaw config checks passed. Prior state/index
+snapshots and callback failures were archived privately; the current ledger/index now
+state current proof/coverage rather than stale single-callback readiness.
+
+Private proof and audit:
+`/Users/pshorey/git/openclaw/runtime/coordinator/state/map-generic-chain-audit.json`,
+`map-generic-chain-transcript.json`, `map-generic-chain-final-history.json`, and
+`map-terminal-callback-proof-0ac26162-internal.json`. Canonical job/result/raw logs remain
+in map's ignored job directories. The next independent bot action is bounded source
+classification; technical blockers delegate through the already-validated Codex wrapper.

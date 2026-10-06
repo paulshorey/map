@@ -93,11 +93,16 @@ Use `ingest:supervise watch`, which stays in the foreground, prints one launch r
 terminal JSON event, writes the same durable job/result/log files, and never starts a model or
 Codex callback. OpenClaw's background exec owns this foreground command. Node owns hourly
 health checks and the 1–168-hour deadline. The local OpenClaw wrapper delivers a compact
-terminal result to the exact owning dashboard conversation through its supported targeted
-`system event --mode now` interface, after the supervisor saves durable result evidence.
-This is a separately verified terminal notification integration: OpenClaw 2026.9.5 can defer
-its ordinary native exec-exit event until the next hourly heartbeat. The callback makes no
-model call while the import is healthy and does not detach the supervisor or start a server.
+terminal result to the exact owning dashboard conversation through supported targeted
+`system event --session-key OWNER --mode now`, after the supervisor saves durable evidence.
+Its generic payload begins `INTERNAL_MAP_TERMINAL_EVENT`, identifies the local wrapper and
+carries the exact stable event ID. The owning prompt handles this marker before heartbeat
+launch logic. Native exec ownership remains intact; waiting makes no model calls.
+OpenClaw 2026.9.5 can defer ordinary native exec-exit events until the next hourly heartbeat
+and hide structured `Exec completed (...)` details after delivery resets to `none`. Spawned
+heartbeat sessions also intentionally reject CLI chat sends. Use the supported generic
+completion path; never strip subagent restrictions or patch session storage. Test automatic
+preflight-to-import-to-terminal continuation, not just a single wake after manual input.
 See [the local wrapper's procedure](/Users/pshorey/git/openclaw/README.md) for its ownership,
 completion receipt, preflight and delivery checks.
 
