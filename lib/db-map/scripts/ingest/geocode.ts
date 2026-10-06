@@ -33,7 +33,8 @@ export interface CliOptions {
   runId?: string;
   source?: string;
   limit?: number;
-  geocodeLimit: number;
+  // Undefined means no call cap for managed runs; standalone CLI retains its default.
+  geocodeLimit?: number;
   throttleMs: number;
   dryRun: boolean;
 }
@@ -311,7 +312,10 @@ export async function runGeocode(
     }
 
     // Cache miss → an API call is required.
-    if (stats.apiCalls >= opts.geocodeLimit) {
+    if (
+      opts.geocodeLimit !== undefined &&
+      stats.apiCalls >= opts.geocodeLimit
+    ) {
       stats.budgetHit = true;
       break;
     }

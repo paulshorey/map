@@ -32,6 +32,14 @@ test("terminal resume subtracts exact execution usage and never resets an exhaus
     budgetedResume(run, {}, { requests: 1, estimated_cost_usd: 0 }),
     `pnpm --filter @lib/db-map ingest:run --resume ${run}`,
   );
+  assert.equal(
+    budgetedResume(
+      run,
+      { unlimited: true, maxLlmRequests: 0, maxCostUsd: 0 },
+      { requests: 100, estimated_cost_usd: 20 },
+    ),
+    `pnpm --filter @lib/db-map ingest:run --resume ${run} --unlimited`,
+  );
 });
 
 test("expensive smoke cannot resume or expand cohort/deadline", () => {
@@ -59,7 +67,7 @@ test("expensive smoke cannot resume or expand cohort/deadline", () => {
     45,
   );
 });
-test("long launch requires explicit callback choice and bounded deadline", () => {
+test("long launch requires callback choice; completion deadline is optional", () => {
   assert.throws(() =>
     parseSupervisorArgs(["start", "--", "--resume", randomUUID()]),
   );
@@ -91,6 +99,17 @@ test("long launch requires explicit callback choice and bounded deadline", () =>
       "--",
       "file",
     ]).maxHours,
+    null,
+  );
+  assert.equal(
+    parseSupervisorArgs([
+      "start",
+      "--local-only",
+      "--max-hours",
+      "48",
+      "--",
+      "file",
+    ]).maxHours,
     48,
   );
 });
@@ -110,7 +129,7 @@ test("exit zero is insufficient proof of success", () => {
     "needs_attention",
   );
 });
-test("native watch requires explicit budgets and never accepts detached callback flags", () => {
+test("native watch allows uncapped continuous imports and validates optional limits", () => {
   const args = [
     "--resume",
     randomUUID(),
@@ -125,13 +144,28 @@ test("native watch requires explicit budgets and never accepts detached callback
     parseSupervisorArgs(["watch", "--max-hours", "1", "--", ...args]).command,
     "watch",
   );
+  assert.equal(
+    parseSupervisorArgs([
+      "watch",
+      "--",
+      "--resume",
+      randomUUID(),
+      "--unlimited",
+    ]).maxHours,
+    null,
+  );
+  assert.equal(parseSupervisorArgs(["watch", "--", "file"]).maxHours, null);
+  assert.equal(
+    parseSupervisorArgs(["watch", "--", "file", "--max-cost-usd", "1"]).command,
+    "watch",
+  );
   for (const bad of [
-    ["watch", "--", "file"],
     ["watch", "--local-only", "--", ...args],
     ["watch", "--notify-thread", randomUUID(), "--", ...args],
     ["watch", "--", ...args, "--max-cost-usd", "10"],
     ["watch", "--", ...args, "--consolidate"],
     ["watch", "--", ...args.slice(0, -1), "-1"],
+    ["watch", "--", ...args, "--unlimited"],
   ])
     assert.throws(() => parseSupervisorArgs(bad));
 });

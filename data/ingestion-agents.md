@@ -12,12 +12,14 @@ Codex app-server connection. The existing database checkpoints remain the source
 | ------------------ | -------------------------------------------------------- | ------------------------------------------------------------------- |
 | Smart orchestrator | Inspect, decide, develop, repair, delegate               | Never execute full ingestion; smoke tests expected under 45 seconds |
 | Luna runner        | Launch exact approved command, return job receipt        | Explicit `gpt-5.6-luna`, low reasoning, minimal handoff context     |
-| Node supervisor    | Own child, write logs, hourly health checks, detect exit | Zero AI tokens; 48-hour default deadline, configurable 1–168 hours  |
+| Node supervisor    | Own child, write logs, hourly health checks, detect exit | Zero AI tokens; no full-run completion deadline by default          |
 | Terminal reporter  | One Luna summary attempt, then send evidence to parent   | At most 150 words requested; 60-second process deadline; no retries |
 
 The reporter's word/time limits are not a hard token or dollar cap. Its CLI JSON log retains
 usage evidence. Pipeline normalization/embedding/provider charges are separate from agent
-orchestration charges; set pipeline budgets explicitly. Do not silently upgrade the cheap model.
+orchestration charges. Full backlog imports are authorized without provider caps, unknown-cost
+approval, completion estimates or an overall deadline. Retain usage telemetry for diagnosis.
+Do not silently upgrade the cheap orchestration model.
 
 The orchestrator and runner **end their turns** after setup. Do not keep an expensive turn alive
 with sleep, wait/status loops, streamed logs, Goal mode, or hourly heartbeat automations.
@@ -37,8 +39,8 @@ Supply a small, concrete handoff:
 Repository: /absolute/path/to/map
 Parent task UUID: <actual current orchestrator task ID>
 Task: launch only the following managed ingestion scope through ingest:supervise start.
-Arguments after --: --resume <pinned-run-uuid> --max-llm-requests <budget> --max-cost-usd <budget>
-Deadline: 48 hours. Health checks: hourly ordinary code.
+Arguments after --: --resume <pinned-run-uuid> --unlimited
+Completion deadline: none. Health checks: hourly ordinary code.
 Callback: managed local Codex daemon and the parent task UUID.
 Do not repair, retry, broaden scope, change model, or invoke another full run.
 Return the launch receipt (or callback preflight failure) in <=150 words and end your turn.
@@ -60,10 +62,10 @@ pnpm --silent --filter @lib/db-map ingest:supervise probe --notify-thread "$CODE
 
 # CHEAP RUNNER ONLY: resume the approved scope, detach, and return one launch receipt.
 pnpm --silent --filter @lib/db-map ingest:supervise start \
-  --notify-thread <parent-task-uuid> --max-hours 48 -- \
-  --resume <run-uuid> --max-llm-requests <budget> --max-cost-usd <budget>
+  --notify-thread <parent-task-uuid> -- \
+  --resume <run-uuid> --unlimited
 
-# Expensive agent: small NEW cohort, only when expected to finish within the deadline.
+# Expensive agent: small NEW cohort for development; smoke remains time-limited.
 pnpm --silent --filter @lib/db-map ingest:supervise smoke --timeout-seconds 45 -- \
   <source-file> --category campground --limit 1 --stop-after normalize \
   --max-llm-requests 1 --max-cost-usd 0.10
@@ -92,7 +94,8 @@ launcher live in `/Users/pshorey/git/openclaw`; read that checkout's coordinator
 Use `ingest:supervise watch`, which stays in the foreground, prints one launch receipt and one
 terminal JSON event, writes the same durable job/result/log files, and never starts a model or
 Codex callback. OpenClaw's background exec owns this foreground command. Node owns hourly
-health checks and the 1–168-hour deadline. The local OpenClaw wrapper delivers a compact
+health checks, with no full-run completion deadline. `--max-hours N` is an optional operator
+control. The local OpenClaw wrapper delivers a compact
 terminal result to the exact owning dashboard conversation through supported targeted
 `system event --session-key OWNER --mode now`, after the supervisor saves durable evidence.
 Its generic payload begins `INTERNAL_MAP_TERMINAL_EVENT`, identifies the local wrapper and
@@ -118,9 +121,10 @@ completion receipt, preflight and delivery checks.
    a Gateway restart or notification configuration change. Config availability, a queued native
    event or a manually forced follow-up alone does not prove delivery. Missing completion is a
    blocker, not permission to use local-only or run a model polling loop.
-4. Record the exact file/category or resume UUID, budgets, overall deadline and native process
+4. Record the exact file/category or resume UUID, unlimited execution policy and native process
    handle in OpenClaw's private ledger. Launch one source using its `scripts/run-map-import.sh`
-   in native `exec` with `background=true` and `timeoutSeconds=0` (Node enforces the deadline).
+   in native `exec` with `background=true` and `timeoutSeconds=0`. Omit `--max-hours` and use
+   `--unlimited` for continuous operation, including resumes of historically capped runs.
    Do not use `nohup`, shell `&`, or a Codex implementation wrapper. End the agent turn.
 5. Reconcile terminal events by stable `event_id`, job/result file, pinned run/execution and
    database inventory. Only `succeeded` plus `verified_at`, inventory `coverage="complete"`
@@ -133,19 +137,22 @@ completion receipt, preflight and delivery checks.
 6. On failure, stop that file's automatic retries, preserve evidence, and delegate a precise
    repair through OpenClaw's connected Codex CLI wrapper. Codex handles maintenance and bounded
    smoke validation. Other files may proceed only after the engineer confirms a source-specific
-   blocker; budget/outage/schema/global-lineage blockers stop provider work across the queue.
+   blocker; outage/schema/global-lineage blockers stop provider work across the queue.
 
-`watch` requires `--max-llm-requests`, `--max-cost-usd` and `--geocode-limit`. Consolidation is
-excluded. A resume retains a potentially large original cohort. Subtract prior usage and
-diagnostics from the original allowance: `ingest:status --json` includes
-`executions[].normalization_usage`, including failures and unknown costs. Supervisor results
-carry pinned usage and a budget-subtracted resume. Unknown costs require review. Normalization
-thresholds do not cap embedding/matching/fusion bills; record separate provider authorization.
-Never reset an exhausted allowance by starting another file or invocation.
+`watch` does not require provider limits or a completion deadline. `--unlimited` clears historical
+normalization request/cost and geocoder caps on resume. Consolidation is excluded from the native
+file queue. A resume retains the original record cohort and successful checkpoints. OpenClaw has
+standing authorization for normalization, geocoding, embedding, matching and fusion across all
+intended captures. Unknown costs and diagnostic spending are informative, never approval gates.
+`ingest:status --json` and terminal results retain per-execution usage, including failed requests.
+Optional finite limits remain available when explicitly selected by an operator; do not add them
+to the standing backlog policy. After verified whole-file completion, OpenClaw selects the next
+eligible intended capture immediately and continues until all are complete or explicitly blocked.
 
 Native handles live in Gateway memory and are lost on restart. Recover using PostgreSQL,
 local job files and verified process/lock evidence, never by replaying a launch command.
-The machine must remain awake. The queue does not auto-retry or drain files by itself.
+The machine must remain awake. The queue is metadata; OpenClaw owns file-to-file advancement
+and evidence-based repair/resume decisions.
 
 ## Notification setup and delivery limits
 
@@ -198,10 +205,11 @@ deduplicate the event ID, and report the exhausted bound. Do not cycle full resu
 around persistent provider failure. Diagnose availability/configuration before another launch.
 
 Terminal evidence now includes normalization request count, recorded estimated cost and
-unknown-cost count for the pinned execution, plus recovery state. The suggested `resume`
-preserves the remaining normalization limits. Subtract any subsequent smoke/repair spending
-from the same approved task budget too. Missing evidence or unknown cost requires review;
-never interpret it as zero. A retry-policy-only change does not invalidate completed artifacts.
+unknown-cost count for the pinned execution, plus recovery state. For unrestricted work, the
+suggested `resume` carries `--unlimited`; no spending or overall-deadline review is required.
+Missing identity or completion evidence still needs diagnosis, while unknown cost remains
+telemetry. Optional finite caps apply only to commands that explicitly select them.
+A retry-policy-only change does not invalidate completed artifacts.
 No provider retry allows the runner or supervisor to relaunch a terminated ingestion process.
 
 Each job has a private ignored directory `lib/db-map/.ingest-jobs/<uuid>/`:

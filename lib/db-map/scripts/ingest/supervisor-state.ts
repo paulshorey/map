@@ -20,7 +20,8 @@ export interface Job {
   runner_model: "gpt-5.6-luna" | "external";
   started_at: string;
   status: "queued" | "running" | "finished";
-  timeout_seconds: number;
+  // Null means continuous operation; old finite-deadline job files remain readable.
+  timeout_seconds: number | null;
   health_interval_seconds: number;
   health_checks: number;
   last_health_at?: string;

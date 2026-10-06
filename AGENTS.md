@@ -125,7 +125,8 @@ above; operational ownership does not authorize wasting expensive model time.
   enforces a maximum 60-second deadline plus termination grace. A timed-out test needs diagnosis;
   never repeatedly launch small batches to finish a full import.
 - The cheap runner launches `ingest:supervise start` with a verified parent callback and the exact
-  approved scope, budgets and deadline. Ordinary code owns waiting and hourly health checks.
+  approved scope. Full imports have no required provider caps or overall completion deadline.
+  Use `--unlimited` to clear inherited provider caps on a resume. Ordinary code owns waiting and hourly health checks.
   Neither agent should poll, stream logs, run sleep/wait loops, or create an expensive recurring
   automation to stay alive. Return the launch receipt, then **end the turn**. No healthy status
   report should invoke a model. No automatic ingestion relaunch, scope expansion, or backlog drain.
@@ -136,8 +137,10 @@ above; operational ownership does not authorize wasting expensive model time.
   [the native runner procedure](data/ingestion-agents.md#native-openclaw-runner).
   This is a foreground process owned by OpenClaw, with model-free supervision; never route
   full imports through an expensive Codex CLI turn or silently use detached local-only mode.
-  OpenClaw may advance the explicitly authorized file backlog after verified completion;
-  failure, unknown spending, exhausted budgets and missing notification evidence require a decision.
+  OpenClaw has standing authorization to continue all intended `data/poi` imports, one file at a
+  time, after verified completion. Provider spending and unknown-cost telemetry do not require
+  approval; do not ask for an allowance, ETA or overall deadline. Failures and missing notification
+  evidence require diagnosis, with code/script blockers delegated to the connected Codex engineer.
 - Only a terminal result/error should start a new expensive decision turn. Keep the handoff and
   report compact (about 150 words); retain raw logs locally. Check the stable event ID to avoid
   handling duplicate notifications. Verified database completion, not exit zero alone, is success.
@@ -145,12 +148,14 @@ above; operational ownership does not authorize wasting expensive model time.
   launch receipt is not proof of later wake-up. If unavailable, report that limitation; do not
   silently use `--local-only`, an independent app server, or expensive polling as a substitute.
   Local-only detached operation is for humans or a separately verified notification integration.
-- Token-efficient supervision does not limit ingestion provider bills. Preserve explicit provider
-  budgets. Preserve maintenance, process identity, evidence and resume rules below.
+- Full backlog execution uses uncapped normalization, geocoding, embedding, matching and fusion.
+  Request/cost telemetry remains informative. Optional finite provider limits or full-run deadlines
+  apply only when explicitly selected by an operator; they are not admission requirements.
+  Preserve maintenance, process identity, evidence and resume rules below.
 - On terminal provider-recovery exhaustion, inspect its recorded bound and provider error;
-  do not repeatedly delegate resumes against an unresolved outage. Carry forward the exact
-  execution's remaining budgets (including failed/repair requests and diagnostic spending),
-  review unknown costs, and preserve the originally approved scope and total deadline.
+  do not repeatedly delegate resumes against an unresolved outage. Preserve the original record
+  scope, completed artifacts and diagnostic evidence; resume with `--unlimited` after the cause is
+  repaired. Unknown costs do not block a working provider or require a spending decision.
 
 ## Stop before changing a running pipeline
 

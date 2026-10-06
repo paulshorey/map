@@ -46,6 +46,7 @@ export interface OrchestratorOptions {
   maxLlmRequests?: number;
   maxCostUsd?: number;
   geocodeLimit?: number;
+  unlimited?: boolean;
   resume?: string;
   record?: string;
   consolidate?: boolean;
@@ -137,6 +138,7 @@ function resumeCommand(opts: OrchestratorOptions): string {
     args.push("--max-cost-usd", String(opts.maxCostUsd));
   if (opts.geocodeLimit !== undefined)
     args.push("--geocode-limit", String(opts.geocodeLimit));
+  if (opts.unlimited) args.push("--unlimited");
   if (opts.stopAfter) args.push("--stop-after", opts.stopAfter);
   if (opts.fromStage) args.push("--from", opts.fromStage);
   if (opts.reprocess) args.push("--reprocess", opts.reprocess);
@@ -889,6 +891,39 @@ async function recordState(db: Pool, item: RunItem) {
   return state;
 }
 
+/** Resume changes execution controls only; the original file/record cohort stays frozen. */
+export function resolveResumeOptions(
+  saved: OrchestratorOptions,
+  supplied: OrchestratorOptions,
+  runId: string,
+  logicalPath: string,
+): OrchestratorOptions {
+  const overrides = Object.fromEntries(
+    Object.entries(supplied).filter(
+      ([key, value]) =>
+        ["maxLlmRequests", "maxCostUsd", "geocodeLimit"].includes(key) &&
+        value !== undefined,
+    ),
+  );
+  const opts: OrchestratorOptions = {
+    ...saved,
+    ...overrides,
+    file: logicalPath,
+    stopAfter: supplied.stopAfter,
+    resume: runId,
+    dryRun: supplied.dryRun,
+    unlimited:
+      supplied.unlimited ||
+      (Object.keys(overrides).length === 0 && saved.unlimited),
+  };
+  if (opts.unlimited) {
+    delete opts.maxLlmRequests;
+    delete opts.maxCostUsd;
+    delete opts.geocodeLimit;
+  }
+  return opts;
+}
+
 export async function runOrchestration(
   db: Pool,
   supplied: OrchestratorOptions,
@@ -904,23 +939,13 @@ export async function runOrchestration(
     );
     previous = rows[0];
     if (!previous) throw new Error(`Unknown run ${opts.resume}`);
-    const overrides = Object.fromEntries(
-      Object.entries(supplied).filter(
-        ([k, v]) =>
-          ["maxLlmRequests", "maxCostUsd", "geocodeLimit"].includes(k) &&
-          v !== undefined,
-      ),
+    // The source-file row follows a capture when its repository location changes.
+    opts = resolveResumeOptions(
+      previous.options,
+      supplied,
+      previous.id,
+      previous.logical_path,
     );
-    opts = {
-      ...previous.options,
-      ...overrides,
-      // Run options retain the original input path for audit. The source-file row
-      // follows a capture when its repository location changes.
-      file: previous.logical_path,
-      stopAfter: supplied.stopAfter,
-      resume: previous.id,
-      dryRun: supplied.dryRun,
-    };
     if (
       previous.managed &&
       JSON.stringify(previous.pipeline_versions) !==
@@ -1014,6 +1039,15 @@ export async function runOrchestration(
         ],
       );
     }
+    if (opts.unlimited) {
+      await db.query(
+        "UPDATE research_ingest_runs SET resume_command=$2 WHERE id=$1",
+        [
+          ctx.runId,
+          `pnpm --filter @lib/db-map ingest:run --resume ${ctx.runId} --unlimited`,
+        ],
+      );
+    }
     execution = await Execution.start(db, ctx.runId, opts, lock);
   } catch (error) {
     lock.release(true);
@@ -1025,7 +1059,7 @@ export async function runOrchestration(
   );
   console.log(`Local journal: ${ex.logPath}`);
   console.log(
-    `Resume: pnpm --filter @lib/db-map ingest:run --resume ${ctx.runId}`,
+    `Resume: pnpm --filter @lib/db-map ingest:run --resume ${ctx.runId}${opts.unlimited ? " --unlimited" : ""}`,
   );
   let finalStatus = "succeeded",
     reason = "requested_scope_verified";
@@ -1192,10 +1226,10 @@ export async function runOrchestration(
                 };
               const stats = await runGeocode(db, {
                 recordId: item.research_poi_id!,
-                geocodeLimit: Math.max(
-                  0,
-                  (opts.geocodeLimit ?? 4500) - geocodeCalls,
-                ),
+                geocodeLimit:
+                  opts.geocodeLimit === undefined
+                    ? undefined
+                    : Math.max(0, opts.geocodeLimit - geocodeCalls),
                 throttleMs: 1000,
                 dryRun: false,
               });

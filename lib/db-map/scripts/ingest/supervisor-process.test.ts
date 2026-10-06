@@ -78,6 +78,23 @@ test("graceful timeout", async () => {
   assert.equal(r.stopReason, "wall_clock_limit");
   assert.equal(r.forced, false);
 });
+test("continuous worker has no wall-clock timer and still responds to an operator stop", async () => {
+  let stop!: (reason: string) => void;
+  const result = await run({
+    args: ["-e", "setInterval(()=>{},1000)"],
+    timeoutMs: null,
+    registerStop: (callback) => {
+      stop = callback;
+      return () => {};
+    },
+    onStart: async () => {
+      await sleep(100);
+      stop("operator_stop");
+    },
+  });
+  assert.equal(result.stopReason, "operator_stop");
+  assert.equal(result.forced, false);
+});
 test("forced timeout of ignoring worker", async () => {
   const r = await run({
     args: ["-e", "process.on('SIGTERM',()=>{});setInterval(()=>{},1000)"],

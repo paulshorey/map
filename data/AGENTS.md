@@ -14,7 +14,7 @@ Research notes, POI source files, ingestion references, and staged import data. 
 
 ## Documentation ownership
 
-[Root AGENTS.md](../AGENTS.md) defines agent execution budgets and the development/debugging
+[Root AGENTS.md](../AGENTS.md) defines agent execution policy and the development/debugging
 workflow. The [root README](../README.md#poi-ingestion) contains human full-run instructions.
 The [ingestion runbook](poi-ingestion.md) owns shared pipeline behavior, bounded diagnostics,
 category completeness, and troubleshooting. Read it before changing or running ingestion;
@@ -22,7 +22,7 @@ update it when behavior changes instead of duplicating recipes here or in source
 
 The [agent operations guide](ingestion-agents.md) owns cheap-runner delegation, model-free
 monitoring, notification prerequisites, and local supervisor recovery. Root AGENTS.md owns the
-model policy; link to it instead of duplicating model/budget instructions in source folders.
+model policy; link to it instead of duplicating execution instructions in source folders.
 
 ## POI sources (`data/poi/`)
 

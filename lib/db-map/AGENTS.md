@@ -16,7 +16,7 @@ notification failures durable, delivery conservative, and resume decisions with 
 Never use a persisted PID as signal authorization, auto-relaunch an abandoned job, or report
 terminal delivery as proven without a transport receipt. Tests must mock parent wake-ups.
 `provider-recovery.ts` owns bounded managed normalization cooldowns. Keep failed attempts
-append-only, recheck budgets on each retry, preserve heartbeat/stop responsiveness, and never
+append-only, honor optional operator limits on each retry, preserve heartbeat/stop responsiveness, and never
 retry authentication, validation or database failures as provider throttling. Use mocked
 clocks/providers for failure injection, not paid long-running outage tests.
 

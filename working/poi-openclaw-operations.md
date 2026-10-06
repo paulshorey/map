@@ -1,3 +1,40 @@
+# Continuous ingestion authorization — 2026-10-06
+
+Paul explicitly removed provider budgets, unknown-cost approval and an overall completion
+deadline/ETA from the standing file backlog. This policy supersedes historical allowance
+and deadline requirements in the audit below. All normal provider stages are authorized.
+
+Implemented `ingest:run --unlimited` to clear saved normalization request/cost and geocoder
+caps on resume without changing file identity, the frozen record cohort or successful
+checkpoints. Managed geocoding has no implicit 4500-call cap. Full supervisor jobs persist
+`timeout_seconds: null` and install no wall-clock termination timer unless an operator
+explicitly supplies `--max-hours`. Optional finite controls remain available. Smoke tests
+retain their development deadline; maintenance, single-worker locks, checkpoints, provider
+failure recovery, native callback proof and verified database completion still govern operation.
+
+OpenClaw wrapper defaults uncapped launches/resumes to `--unlimited`, omits the full-run
+deadline, and treats unknown costs as telemetry. Deployed coordinator instructions and private
+active/ledger state retire MAP-IMPORT-BUDGET and continue each eligible intended capture after
+whole-file verification. Code/script blockers go to the connected Codex engineer; normal
+waiting/health checks remain model-free. The original Dyrt continuation is:
+
+```sh
+pnpm --filter @lib/db-map ingest:run --resume 4dda8606-9c20-4275-bae6-c14cdea9e38c --unlimited
+```
+
+Fresh dry-run confirms compatible source hash `e361f4608210a6a15876e71285d7d58b174f35c5d596e0958627b50aa31d8356`
+and all three old caps absent. Validation: 20 map supervisor/options/transport tests, 12
+provider-recovery tests, 11 Fireworks provider tests, 57 OpenClaw wrapper tests, 8 environment
+tests, database TypeScript/contracts, deployment and OpenClaw config checks passed. Live smoke: source record `33855` (Hidden Valley RV and Golf Park), NEW run
+`6b523299-8066-4076-bf51-b01eeb6c8632`, execution `29bbdda2-d420-48b0-bc69-902a07a1745a`,
+job `e4dd1185-b2ef-40e2-b052-a4fe62fa0d9a`. Normalization succeeded in 26.553 seconds,
+one Fireworks request, $0.0041511 estimated cost, no unknown cost, caps absent and
+`unlimited: true` in durable execution options. The run intentionally paused after normalize;
+this test did not claim whole-file completion or exercise new downstream provider calls.
+The emitted/stored continuation includes `--unlimited`. Maintenance is off after validation.
+
+The following sections are historical evidence, not current spending/admission policy.
+
 # POI import automation audit — 2026-10-05
 
 Scope: inspect `data/poi`, diagnose the latest attempted import, improve bot operation,

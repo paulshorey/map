@@ -24,9 +24,9 @@ const PACKAGE = fileURLToPath(new URL("../../", import.meta.url));
 const SELF = fileURLToPath(import.meta.url);
 const RUN = fileURLToPath(new URL("./run.ts", import.meta.url));
 const HOUR = 3600;
-const USAGE = `ingest:supervise start --notify-thread <uuid> [--max-hours 48] -- <ingest:run arguments>
-ingest:supervise start --local-only [--max-hours 48] -- <ingest:run arguments>
-ingest:supervise watch [--max-hours 48] -- <ingest:run arguments with explicit provider budgets>
+const USAGE = `ingest:supervise start --notify-thread <uuid> [--max-hours N] -- <ingest:run arguments>
+ingest:supervise start --local-only [--max-hours N] -- <ingest:run arguments>
+ingest:supervise watch [--max-hours N] -- <ingest:run arguments>
 ingest:supervise smoke [--timeout-seconds 45] -- <ingest:run arguments with --limit 1..5 or --record>
 ingest:supervise probe --notify-thread <uuid>
 ingest:supervise list
@@ -37,6 +37,8 @@ a human or separately verified native runner notification path; no automatic par
 Health checks are hourly ordinary code; no hourly model invocation. Results/logs are durable.
 watch stays in the foreground for an external runner's native background-exec completion event.
 The external runner must verify its notification path; watch never invokes a model or callback.
+Full runs have no completion deadline by default. Use --unlimited to clear saved provider limits
+on a resume. Provider limits and --max-hours are optional operator controls.
 smoke stops after its deadline, then force-kills its owned process group after 10s grace.`;
 
 export function parseSupervisorArgs(argv: string[]) {
@@ -65,7 +67,7 @@ export function parseSupervisorArgs(argv: string[]) {
     parent: "",
     localOnly: false,
     timeout: 45,
-    maxHours: 48,
+    maxHours: null as number | null,
   };
   const seen = new Set<string>();
   while (args.length) {
@@ -92,11 +94,12 @@ export function parseSupervisorArgs(argv: string[]) {
   if (!Number.isInteger(opts.timeout) || opts.timeout < 1 || opts.timeout > 60)
     throw new Error("Smoke timeout must be 1..60 seconds");
   if (
-    !Number.isInteger(opts.maxHours) ||
-    opts.maxHours < 1 ||
-    opts.maxHours > 168
+    opts.maxHours !== null &&
+    (!Number.isInteger(opts.maxHours) ||
+      opts.maxHours < 1 ||
+      opts.maxHours > 168)
   )
-    throw new Error("Long-run deadline must be 1..168 hours");
+    throw new Error("Optional long-run deadline must be 1..168 hours");
   if (opts.parent && !UUID.test(opts.parent))
     throw new Error("Parent task UUID required");
   if (
@@ -119,18 +122,25 @@ export function parseSupervisorArgs(argv: string[]) {
       "--geocode-limit",
     ]) {
       const index = opts.runArgs.indexOf(flag);
+      if (index < 0) continue;
       const value = Number(opts.runArgs[index + 1]);
       if (
-        index < 0 ||
         opts.runArgs.filter((a) => a === flag).length !== 1 ||
         !Number.isFinite(value) ||
         value < 0 ||
         (flag !== "--max-cost-usd" && !Number.isSafeInteger(value))
       )
-        throw new Error(
-          `watch requires one explicit nonnegative ${flag} budget`,
-        );
+        throw new Error(`Invalid optional ${flag} limit`);
     }
+    if (
+      opts.runArgs.includes("--unlimited") &&
+      opts.runArgs.some((arg) =>
+        ["--max-llm-requests", "--max-cost-usd", "--geocode-limit"].includes(
+          arg,
+        ),
+      )
+    )
+      throw new Error("--unlimited cannot be combined with provider limits");
     if (opts.runArgs.includes("--consolidate"))
       throw new Error("Global consolidation is outside the native file queue");
   }
@@ -225,13 +235,18 @@ async function evidence(job: Job) {
   }
 }
 
-/** CLI budgets are per execution; a suggested resume must subtract the pinned execution's usage. */
+/** Continuous resumes clear historic caps; explicitly capped executions retain their limits. */
 export function budgetedResume(
   runId: string,
-  options: { maxLlmRequests?: number; maxCostUsd?: number },
+  options: {
+    unlimited?: boolean;
+    maxLlmRequests?: number;
+    maxCostUsd?: number;
+  },
   usage: { requests: number; estimated_cost_usd: number },
 ) {
   let command = `pnpm --filter @lib/db-map ingest:run --resume ${runId}`;
+  if (options.unlimited) return `${command} --unlimited`;
   if (options.maxLlmRequests !== undefined)
     command += ` --max-llm-requests ${Math.max(0, options.maxLlmRequests - usage.requests)}`;
   if (options.maxCostUsd !== undefined) {
@@ -409,7 +424,7 @@ async function worker(id: string) {
     args: ["--import", "tsx", RUN, ...job.argv],
     cwd: PACKAGE,
     log: jobPath(id, "worker.log"),
-    timeoutMs: job.timeout_seconds * 1000,
+    timeoutMs: job.timeout_seconds === null ? null : job.timeout_seconds * 1000,
     graceMs: 10_000,
     healthIntervalMs: job.health_interval_seconds * 1000,
     onStart: async (pid) => {
@@ -561,7 +576,11 @@ async function start(opts: ReturnType<typeof parseSupervisorArgs>) {
     started_at: new Date().toISOString(),
     status: "queued",
     timeout_seconds:
-      opts.command === "smoke" ? opts.timeout : opts.maxHours * HOUR,
+      opts.command === "smoke"
+        ? opts.timeout
+        : opts.maxHours === null
+          ? null
+          : opts.maxHours * HOUR,
     health_interval_seconds: HOUR,
     health_checks: 0,
   };

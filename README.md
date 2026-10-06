@@ -100,7 +100,7 @@ Configure these as **environment variables that survive into the agent phase**
 | `DB_MAP_URL`            | yes, unless `--local-db` | Shared PostgreSQL (same database this Cursor environment uses) |
 | `LOCATIONIQ_API_KEY`    | ingestion                | Geocoding                                                      |
 | `JINA_API_KEY`          | ingestion                | Embeddings                                                     |
-| `FIREWORKS_API_KEY`     | ingestion                | DeepSeek V4.1 Flash thinking for normalization / match LLM       |
+| `FIREWORKS_API_KEY`     | ingestion                | DeepSeek V4.1 Flash thinking for normalization / match LLM     |
 | `RAILWAY_TOKEN`         | Railway IaC only         | Project token scoped to `dev`                                  |
 | `THUNDERFOREST_API_KEY` | optional                 | Premium tiles                                                  |
 
@@ -394,7 +394,9 @@ development Mac uses the official standalone Codex managed daemon and task queue
 
 The local OpenClaw coordinator uses `ingest:queue --json` and the
 [native runner](data/ingestion-agents.md#native-openclaw-runner). Its `ingest:supervise watch`
-process stays under OpenClaw background exec, with native terminal completion events and explicit
-provider budgets. This path does not invoke Codex while waiting; code blockers go to Codex for
+process stays under OpenClaw background exec, with native terminal completion events, uncapped
+provider work and no overall completion deadline. Use `--unlimited` when resuming an older run
+to clear saved request, cost and geocoder caps. OpenClaw continues the intended file backlog
+after each verified completion. This path does not invoke Codex while waiting; code blockers go to Codex for
 repair. The existing dashboard and audited `ingest:inventory --edit-file` share classification
 state with the queue; no second mutable status file is needed among captures.

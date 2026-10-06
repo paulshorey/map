@@ -78,7 +78,7 @@ Inspect the printed source. Wrapper/nested formats need extractor configuration.
 | `--limit N`                                | Positive integer; caps extraction selection and freezes at most N records for every record stage. Not a time limit; hashing/parsing can still scan a large file.                                                                                 |
 | `--record ID`                              | Exact **source record ID**, not research UUID; defaults to a one-record limit. Useful for a failure late in a file.                                                                                                                              |
 | `--stop-after STAGE`                       | Pause after extract, normalize, geocode, embed, match, canonical, consolidate, or report. Verify is the final stage. Exit code 2 indicates deliberate incomplete work.                                                                           |
-| `--resume UUID`                            | Same managed run/cohort; new execution. Preserves original options; clears the old stop point. Only a new stop point, dry-run, and provider budgets may be supplied.                                                                             |
+| `--resume UUID`                            | Same managed run/cohort; new execution. Preserves original options; clears the old stop point. Only a new stop point, dry-run, `--unlimited`, and optional provider limits may be supplied.                                                      |
 | `--from STAGE`                             | New run starting record-stage processing at that stage; extraction and scope selection still happen. Skipped prerequisites must already exist. Prefer resume for failures.                                                                       |
 | `--dry-run`                                | Resolve/hash file and print effective options, without writes/provider calls. Does not parse/validate all rows or simulate the pipeline.                                                                                                         |
 | `--reprocess normalize`                    | New run with a stable run-specific normalization generation; recomputes once, then resumes using that generation's cached result.                                                                                                                |
@@ -87,7 +87,8 @@ Inspect the printed source. Wrapper/nested formats need extractor configuration.
 | `--shadow`                                 | Evaluate normalization without activating its output; pause after normalization. Original shadow option persists on resume.                                                                                                                      |
 | `--no-llm`                                 | Deterministic normalization, matching and descriptions. Does not disable geocoder or embedding calls. Degraded output does not validate the LLM path.                                                                                            |
 | `--max-llm-requests N`, `--max-cost-usd N` | Normalization budgets per execution, checked between records. Cached/deterministic results remain usable at zero budget. Repair/fallback within a record may exceed the threshold. Not a hard monetary cap and not a budget for matching/fusion. |
-| `--geocode-limit N`                        | Geocoder calls per execution (default 4500); cache hits do not consume it. No shared daily-quota enforcement.                                                                                                                                    |
+| `--unlimited`                              | Removes request, cost and geocoder caps, including inherited caps on a resume. Cannot be combined with finite provider limits. Does not change the pinned file/record cohort.                                                                    |
+| `--geocode-limit N`                        | Optional geocoder-call cap per managed execution; cache hits do not consume it. Managed runs have no default cap. Standalone `ingest:geocode` retains its 4500-call default. No shared daily-quota enforcement.                                  |
 | `--consolidate`                            | Explicit global canonical sweep, with audited pair adjudications and merge groups. Incompatible with limited/record runs. Usually a manually launched long job; agents may operate it when required by the task.                                 |
 
 A paused/blocked/budget-limited run exits 2 (pnpm prints its nonzero-exit banner); failure
@@ -120,7 +121,9 @@ reprocess generation. Matching active artifacts are recorded as reused in a bulk
 they are not reactivated, jobs are not re-leased, and canonical output is not rebuilt. Downstream
 ready/excluded records are similarly audited in batches. Missing/stale outputs remain real work.
 Shadow evaluation keeps its regular validation path. Paid provider work stays sequential and
-bounded by the original cohort and budgets.
+bounded by the original record cohort. Provider caps are optional; OpenClaw full imports use
+`--unlimited`. Full `ingest:supervise start`/`watch` jobs have no completion deadline by default;
+`--max-hours N` remains an optional operator control. Development smoke deadlines remain bounded.
 
 Each stage prints `checkpointed`, `reused in batches`, and `need work` counts, with preparation
 time. These summaries also live in `research_ingest_runs.counters.queue`. Successful reuse still
@@ -331,9 +334,9 @@ Run `pnpm --filter @lib/db-map ingest:test-llm` and
 Management account/model reads can verify key validity and model availability without
 inference billing; they do not prove sufficient credits, successful inference, JSON
 quality or end-to-end ingestion. Before unattended imports, validate a new 1–5 record
-managed smoke through the necessary stages with the agreed provider budgets and
-deadline, then update the OpenClaw handoff with the observed result and remaining
-aggregate allowance. Follow [agent operations](ingestion-agents.md) for execution.
+managed smoke through the necessary stages, then update the OpenClaw handoff with the observed
+result. Full imports require no spending allowance, unknown-cost approval, ETA or overall deadline.
+Follow [agent operations](ingestion-agents.md) for execution.
 
 ### Transient normalization provider recovery
 
@@ -353,7 +356,7 @@ retries are scheduled across an execution. Exhaustion fails with stop reason
 `provider_recovery_exhausted`; successful checkpoints remain resumable.
 
 Each managed retry appends a new stage attempt and rechecks the execution's normalization
-budgets. Hidden HTTP retries are disabled for managed normalization. Failed requests, repair
+optional provider limits. Hidden HTTP retries are disabled for managed normalization. Failed requests, repair
 requests and JSON-format fallbacks all count as request rows. Existing per-record repair and
 fallback calls can still exceed a threshold within a record; these are not universal hard
 billing limits. A response lost in transit may have unknown cost and may be billed twice on
@@ -370,15 +373,16 @@ provider spend: `pnpm --filter @lib/db-map ingest:test-provider-recovery`.
 `run.counters.providerRecovery` (target, retry time, counts and last state); the local journal
 retains every recovery event, and stage attempts retain HTTP status, retryability and
 Retry-After. Terminal supervisor evidence includes recovery state and normalization usage
-joined to the exact execution ID. Its suggested resume subtracts recorded usage from that
-execution's limits; zero remains zero. Unknown costs still require review. Do not substitute
-a bare resume command, which can restore the original run's budgets, or reset a supervisor
-deadline without considering the approved total runtime.
+joined to the exact execution ID. Unrestricted executions suggest `--resume UUID --unlimited`,
+which clears historical provider caps while preserving checkpoints. Unknown costs are telemetry,
+not an admission or approval requirement. If an operator explicitly selects finite caps, the
+suggested resume subtracts recorded usage from those optional caps. A bare resume of an old
+capped run retains its original limits; OpenClaw must use `--unlimited` for continuous execution.
 
 ```bash
 pnpm --filter @lib/db-map ingest:pause --run <uuid>
 pnpm --filter @lib/db-map ingest:control stop --run <uuid> --wait-seconds 30
-pnpm --filter @lib/db-map ingest:run --resume <uuid>
+pnpm --filter @lib/db-map ingest:run --resume <uuid> --unlimited
 ```
 
 The first Ctrl-C or SIGTERM requests a stop after the current unit. A remote pause is noticed
@@ -494,7 +498,8 @@ Do not maintain a second mutable status file in `data/poi`; database evidence is
 
 The [native OpenClaw procedure](ingestion-agents.md#native-openclaw-runner) owns event-based
 execution and repair handoff. `ingest:status --json` exposes exact per-execution normalization
-usage for preserving budgets, including failed requests and costs that are still unknown.
+usage for diagnostics, including failed requests and costs that are still unknown. This telemetry
+does not block uncapped imports or require spending approval.
 
 ## Assessing category completeness
 
