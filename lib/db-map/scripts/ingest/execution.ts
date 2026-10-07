@@ -165,8 +165,13 @@ export class Execution {
     }
     const execution = new Execution(db, runId, executionId, lock);
     // Losing this connection means the source lock is gone: never continue writing unlocked.
-    lock.on("error", () => {
-      console.error("Ingestion source lock lost; exiting for recovery");
+    lock.on("error", (error) => {
+      const details = errorDetails(error);
+      execution.journal("source_lock_lost", details);
+      console.error(
+        "Ingestion source lock lost; exiting for recovery",
+        details,
+      );
       process.exit(1);
     });
     execution.timer = setInterval(() => {

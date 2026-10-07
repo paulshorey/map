@@ -272,6 +272,14 @@ maintenance flag cannot fence old code that does not honor it. Prefer managed or
 writable work. Read-only diagnostics remain available during maintenance. Dashboard inventory
 shows the gate's reason; lifecycle commands run in the terminal, without a web shell endpoint.
 
+On macOS, a non-dry-run managed worker holds `caffeinate -i -s -w <worker PID>` while it runs.
+This prevents idle sleep and, on AC power, system sleep that could drop its PostgreSQL session
+and source advisory lock. The assertion ends with the worker. Battery power, lid closure,
+explicit sleep, and network/database outages can still interrupt a connection. If the lock
+client errors, the worker journals the PostgreSQL error and exits immediately; it never
+continues writing without the session lock. Inspect the worker log and local journal, confirm
+process/lock quiescence, then resume the pinned run rather than starting a new cohort.
+
 For implementation changes, keep maintenance on through edits, migrations and static checks.
 Reopen for bounded integration/provider validation only after code is ready; re-enter before
 further edits if validation fails. Resume old runs only when stored file/pipeline versions and
