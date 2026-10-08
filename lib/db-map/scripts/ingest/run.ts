@@ -14,6 +14,7 @@ import {
   type IngestStage,
   type OrchestratorOptions,
 } from "./orchestrator.js";
+import { holdSystemAwake } from "./sleep-inhibitor.js";
 
 const STAGES = new Set<IngestStage>([
   "extract",
@@ -150,11 +151,16 @@ export function parseArgs(argv: string[]): OrchestratorOptions {
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
-  const db = getDb();
+  const releaseAwake = opts.dryRun ? () => {} : await holdSystemAwake();
   try {
-    await runOrchestration(db, opts);
+    const db = getDb();
+    try {
+      await runOrchestration(db, opts);
+    } finally {
+      await db.end();
+    }
   } finally {
-    await db.end();
+    releaseAwake();
   }
 }
 

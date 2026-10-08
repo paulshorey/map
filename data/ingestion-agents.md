@@ -234,7 +234,9 @@ checks and reconciliation before resume. PID presence in `list` is only a hint, 
 Maintenance remains the admission authority; supervisor processes waiting to deliver notifications
 are not ingestion writers. Their actual `run.ts` children are still discovered and registered.
 
-The machine must remain awake and running. A detached process survives a terminal closing, but not
+The machine must remain awake and running. On macOS the worker holds a process-bound sleep
+assertion during a non-dry-run import (see the [runbook](poi-ingestion.md#process-control-and-maintenance)).
+Keep the lid open and a reliable connection; a detached process survives a terminal closing, but not
 a host reboot, app sandbox cleanup, or supervisor SIGKILL. Local job files survive those events;
 inspect them alongside `ingest:control list`, reconcile an absent execution, then delegate a new
 supervised resume. Do not infer success from a finished process or trust a stale manifest. There is
