@@ -6,9 +6,16 @@ export async function holdSystemAwake(): Promise<() => void> {
 
   // -i covers idle sleep on battery; -s also prevents system sleep on AC.
   // -w binds the assertion to this worker PID, even if the worker is killed.
-  const guard = spawn("caffeinate", ["-i", "-s", "-w", String(process.pid)], {
-    stdio: "ignore",
-  });
+  const guard = spawn(
+    "/usr/bin/caffeinate",
+    ["-i", "-s", "-w", String(process.pid)],
+    {
+      // Worker-group SIGTERM/SIGINT must leave this assertion alive while the
+      // current record checkpoints. -w still releases it if the worker dies.
+      detached: true,
+      stdio: "ignore",
+    },
+  );
   await new Promise<void>((resolve, reject) => {
     guard.once("spawn", resolve);
     guard.once("error", reject);

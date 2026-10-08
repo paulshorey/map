@@ -274,7 +274,9 @@ shows the gate's reason; lifecycle commands run in the terminal, without a web s
 
 On macOS, a non-dry-run managed worker holds `caffeinate -i -s -w <worker PID>` while it runs.
 This prevents idle sleep and, on AC power, system sleep that could drop its PostgreSQL session
-and source advisory lock. The assertion ends with the worker. Battery power, lid closure,
+and source advisory lock. The guard has its own process group so supervisor SIGTERM or
+terminal SIGINT leaves the assertion active while the worker finishes its current record.
+Normal cleanup stops the guard; `-w` releases it after abrupt worker death. Battery power, lid closure,
 explicit sleep, and network/database outages can still interrupt a connection. If the lock
 client errors, the worker journals the PostgreSQL error and exits immediately; it never
 continues writing without the session lock. Inspect the worker log and local journal, confirm

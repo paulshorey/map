@@ -43,3 +43,30 @@ Maintenance was exited after static checks. Control reported `maintenance=false`
 
 After PR merge, the coordinator's checkpoint-preserving arguments are
 `--resume 4dda8606-9c20-4275-bae6-c14cdea9e38c --unlimited`.
+
+## PR #35 review — 2026-10-08
+
+Found a graceful-stop regression in the original guard. The supervisor signals the entire
+worker process group, so its SIGTERM also killed `caffeinate`. The guard's exit handler
+then immediately exited the worker before its current record could checkpoint. A
+provider-free fixture using the real supervisor reproduced exit 1 and no checkpoint.
+
+The guard now uses `/usr/bin/caffeinate` in its own process group. Worker-group SIGTERM
+and SIGINT leave it alive during graceful completion, and `-w <worker PID>` still cleans
+up on abrupt worker death. Unexpected guard loss still terminates the worker for recovery.
+
+Regression tests exercise the actual macOS assertions and supervisor: SIGTERM and SIGINT
+complete a simulated in-flight checkpoint while the assertion stays active; explicit guard
+termination exits 1; SIGKILL of the worker releases the assertion. Normal release is also
+checked. These tests use no database mutations, provider calls or ingestion records.
+
+Review validation: all 25 supervisor/transport/options/sleep tests passed on macOS;
+database TypeScript/contracts, root lint, formatting and whitespace checks passed.
+The original Dyrt resume passed a fresh read-only file/hash/version dry-run.
+Maintenance was reopened with this review's token; control confirmed quiescence,
+no workers and no source/admission locks. No ingestion process was stopped or restarted.
+
+The process-group choice follows [Node's detached-child documentation](https://nodejs.org/api/child_process.html#optionsdetached).
+Apple's [caffeinate implementation](https://github.com/apple-oss-distributions/PowerManagement/blob/main/caffeinate/caffeinate.c)
+watches `-w` process exit and releases the assertion. The tests verify both behaviors
+with the installed macOS binary. Prevention across a real long sleep is still untested.
