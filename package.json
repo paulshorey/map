@@ -32,7 +32,10 @@
     "agent:env:stop": "bash scripts/agent-env.sh stop",
     "railway:webarts:check": "tsc --noEmit --strict --skipLibCheck --target es2022 --module nodenext --moduleResolution nodenext .railway/webarts.ts",
     "railway:webarts:plan": "railway config plan --file .railway/webarts.ts",
-    "railway:webarts:apply": "railway config apply --file .railway/webarts.ts"
+    "railway:webarts:apply": "railway config apply --file .railway/webarts.ts",
+    "dev:tailscale": "node scripts/tailscale-dev.mjs start",
+    "dev:tailscale:status": "node scripts/tailscale-dev.mjs status",
+    "dev:tailscale:stop": "node scripts/tailscale-dev.mjs stop"
   },
   "devDependencies": {
     "@railway/cli": "5.59.0",

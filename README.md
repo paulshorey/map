@@ -71,7 +71,7 @@ cd lib/db-map && pnpm db:sync
 pnpm dev
 ```
 
-Open [http://localhost:5000](http://localhost:5000).
+Open [http://localhost:4200](http://localhost:4200).
 
 ### Cloud AI agent environment
 
@@ -285,7 +285,7 @@ pnpm --filter map cap:android   # builds, syncs, opens Android Studio
 ### Live reload during development
 
 1. Start the Next.js dev server: `pnpm dev`
-2. Uncomment the `server.url` block in `capacitor.config.ts` and set your machine's LAN IP (e.g. `http://192.168.1.10:5000`)
+2. Uncomment the `server.url` block in `capacitor.config.ts` and set your machine's LAN IP (e.g. `http://192.168.1.10:4200`)
 3. Run `npx cap run ios` or `npx cap run android`
 
 The native app loads from your dev server instead of the static `out/` bundle.
@@ -400,3 +400,10 @@ to clear saved request, cost and geocoder caps. OpenClaw continues the intended 
 after each verified completion. This path does not invoke Codex while waiting; code blockers go to Codex for
 repair. The existing dashboard and audited `ingest:inventory --edit-file` share classification
 state with the queue; no second mutable status file is needed among captures.
+
+## Private phone access through Tailscale
+
+Run `pnpm dev:tailscale --background` from the repository root.
+Use `pnpm dev:tailscale:status` and `pnpm dev:tailscale:stop` to manage it.
+The shared tool lives in `~/git/tailscale-dev`; this project's setup and address
+are in [the local Tailscale guide](working/local-development-tailscale.md).
