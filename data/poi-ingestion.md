@@ -264,6 +264,10 @@ termination. Never kill all Node/pnpm processes. Reconcile only accepts an absen
 while maintenance is enabled and locks are released; it preserves errors and marks unfinished
 attempts interrupted without claiming to know why the worker exited. Remote/unknown PIDs require
 host inspection; no forced termination or remote process supervision is hidden in this CLI.
+Host identity checks accept case differences and a single `.local` mDNS suffix on the same short
+name, including a trailing DNS dot. Other fully qualified names must match in full; a shared
+first label alone is insufficient evidence that a remote host is local. PID presence still does
+not establish process identity or authorize a signal.
 
 Managed admission covers connected hosts using the updated runtime. Local `ps` discovery also
 flags standalone ingestion/import scripts conservatively, but cannot discover arbitrary wrappers,
