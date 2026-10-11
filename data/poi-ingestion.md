@@ -41,16 +41,16 @@ Three distinct questions need distinct evidence:
 
 ## Durable state
 
-| Object                            | Meaning                                                                                                                                          |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `research_ingest_runs`            | Logical task: source, category, file version/hash, options, pipeline versions, current stage, stop reason, verification time.                    |
-| `research_ingest_executions`      | One process invocation of a run: host, PID, options, start/finish, five-second heartbeat, outcome and error. A resume creates another execution. |
-| `research_ingest_control` / `research_ingest_control_events` | Persistent maintenance gate, ownership token/reason, and append-only operator actions. |
-| `research_ingest_run_items`       | Fixed source-record IDs and observation IDs selected after extraction; resume never expands a sample.                                            |
-| `research_ingest_attempts`        | One attempt at a stage/target: execution, input IDs, output IDs, timing, structured error. Retries append rows; old errors remain.               |
-| `research_ingest_run_records`     | Extraction ordinals, identities, payload hashes and outcomes. The original file is the replayable extraction input.                              |
-| `research_normalization_requests` | Provider request/response, tokens, cost and latency, linked to exact run and attempt for managed work.                                           |
-| `research_pipeline_jobs`          | Older mutable normalization job state. Useful diagnostic evidence, but not the execution history or managed resume authority.                    |
+| Object                                                       | Meaning                                                                                                                                          |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `research_ingest_runs`                                       | Logical task: source, category, file version/hash, options, pipeline versions, current stage, stop reason, verification time.                    |
+| `research_ingest_executions`                                 | One process invocation of a run: host, PID, options, start/finish, five-second heartbeat, outcome and error. A resume creates another execution. |
+| `research_ingest_control` / `research_ingest_control_events` | Persistent maintenance gate, ownership token/reason, and append-only operator actions.                                                           |
+| `research_ingest_run_items`                                  | Fixed source-record IDs and observation IDs selected after extraction; resume never expands a sample.                                            |
+| `research_ingest_attempts`                                   | One attempt at a stage/target: execution, input IDs, output IDs, timing, structured error. Retries append rows; old errors remain.               |
+| `research_ingest_run_records`                                | Extraction ordinals, identities, payload hashes and outcomes. The original file is the replayable extraction input.                              |
+| `research_normalization_requests`                            | Provider request/response, tokens, cost and latency, linked to exact run and attempt for managed work.                                           |
+| `research_pipeline_jobs`                                     | Older mutable normalization job state. Useful diagnostic evidence, but not the execution history or managed resume authority.                    |
 
 Attempts are inserted as `running` before work. They finish as `succeeded`, `reused`,
 `skipped`, `failed`, `blocked`, `waiting_budget`, or `paused`. When a replacement worker
@@ -67,28 +67,29 @@ normalizations, geocodes and embeddings preserve provenance. Active
 
 ## Command scope and limits
 
-File paths resolve from the repository root and must be under `docs/poi/`. Categories must
+File paths resolve from the repository root and must be under `data/poi/`. Categories must
 exist in the code-owned taxonomy and are explicit on new runs. Known files use the source
 registry; other flat JSON/JSONL/CSV files use a derived source slug and generic extractor.
 Inspect the printed source. Wrapper/nested formats need extractor configuration. See the
 [capture spec](poi-research/capture-spec.md) before adding sources.
 
-| Control                                    | Behavior                                                                                                                                                                              |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--limit N`                                | Positive integer; caps extraction selection and freezes at most N records for every record stage. Not a time limit; hashing/parsing can still scan a large file.                      |
-| `--record ID`                              | Exact **source record ID**, not research UUID; defaults to a one-record limit. Useful for a failure late in a file.                                                                   |
-| `--stop-after STAGE`                       | Pause after extract, normalize, geocode, embed, match, canonical, consolidate, or report. Verify is the final stage. Exit code 2 indicates deliberate incomplete work.                |
-| `--resume UUID`                            | Same managed run/cohort; new execution. Preserves original options; clears the old stop point. Only a new stop point, dry-run, and provider budgets may be supplied.                  |
-| `--from STAGE`                             | New run starting record-stage processing at that stage; extraction and scope selection still happen. Skipped prerequisites must already exist. Prefer resume for failures.            |
-| `--dry-run`                                | Resolve/hash file and print effective options, without writes/provider calls. Does not parse/validate all rows or simulate the pipeline.                                              |
-| `--reprocess normalize`                    | New run with a stable run-specific normalization generation; recomputes once, then resumes using that generation's cached result.                                                     |
-| `--reprocess extract` / `all`              | Replay extraction; `all` also forces normalization. Other forced stage values are rejected. Downstream work follows invalidation/readiness, not a blanket reset.                      |
-| `--retry-failed`                           | Freeze records currently in failed/stale normalization state. It is a new repair selection, not a substitute for resuming the failed run.                                             |
-| `--shadow`                                 | Evaluate normalization without activating its output; pause after normalization. Original shadow option persists on resume.                                                           |
-| `--no-llm`                                 | Deterministic normalization, matching and descriptions. Does not disable geocoder or embedding calls. Degraded output does not validate the LLM path.                                 |
+| Control                                    | Behavior                                                                                                                                                                                                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--limit N`                                | Positive integer; caps extraction selection and freezes at most N records for every record stage. Not a time limit; hashing/parsing can still scan a large file.                                                                                 |
+| `--record ID`                              | Exact **source record ID**, not research UUID; defaults to a one-record limit. Useful for a failure late in a file.                                                                                                                              |
+| `--stop-after STAGE`                       | Pause after extract, normalize, geocode, embed, match, canonical, consolidate, or report. Verify is the final stage. Exit code 2 indicates deliberate incomplete work.                                                                           |
+| `--resume UUID`                            | Same managed run/cohort; new execution. Preserves original options; clears the old stop point. Only a new stop point, dry-run, `--unlimited`, and optional provider limits may be supplied.                                                      |
+| `--from STAGE`                             | New run starting record-stage processing at that stage; extraction and scope selection still happen. Skipped prerequisites must already exist. Prefer resume for failures.                                                                       |
+| `--dry-run`                                | Resolve/hash file and print effective options, without writes/provider calls. Does not parse/validate all rows or simulate the pipeline.                                                                                                         |
+| `--reprocess normalize`                    | New run with a stable run-specific normalization generation; recomputes once, then resumes using that generation's cached result.                                                                                                                |
+| `--reprocess extract` / `all`              | Replay extraction; `all` also forces normalization. Other forced stage values are rejected. Downstream work follows invalidation/readiness, not a blanket reset.                                                                                 |
+| `--retry-failed`                           | Freeze records currently in failed/stale normalization state. It is a new repair selection, not a substitute for resuming the failed run.                                                                                                        |
+| `--shadow`                                 | Evaluate normalization without activating its output; pause after normalization. Original shadow option persists on resume.                                                                                                                      |
+| `--no-llm`                                 | Deterministic normalization, matching and descriptions. Does not disable geocoder or embedding calls. Degraded output does not validate the LLM path.                                                                                            |
 | `--max-llm-requests N`, `--max-cost-usd N` | Normalization budgets per execution, checked between records. Cached/deterministic results remain usable at zero budget. Repair/fallback within a record may exceed the threshold. Not a hard monetary cap and not a budget for matching/fusion. |
-| `--geocode-limit N`                        | Geocoder calls per execution (default 4500); cache hits do not consume it. No shared daily-quota enforcement.                                                                         |
-| `--consolidate`                            | Explicit global canonical sweep, with audited pair adjudications and merge groups. Incompatible with limited/record runs. Usually a manually launched long job; agents may operate it when required by the task. |
+| `--unlimited`                              | Removes request, cost and geocoder caps, including inherited caps on a resume. Cannot be combined with finite provider limits. Does not change the pinned file/record cohort.                                                                    |
+| `--geocode-limit N`                        | Optional geocoder-call cap per managed execution; cache hits do not consume it. Managed runs have no default cap. Standalone `ingest:geocode` retains its 4500-call default. No shared daily-quota enforcement.                                  |
+| `--consolidate`                            | Explicit global canonical sweep, with audited pair adjudications and merge groups. Incompatible with limited/record runs. Usually a manually launched long job; agents may operate it when required by the task.                                 |
 
 A paused/blocked/budget-limited run exits 2 (pnpm prints its nonzero-exit banner); failure
 exits 1; successful verified work exits 0. An empty selection is `partial`, not success.
@@ -104,8 +105,12 @@ work, use the exact UUID printed by that process:
 pnpm --filter @lib/db-map ingest:run --resume <uuid>
 ```
 
-Resume preserves the original cohort, options and successful checkpoints. It selects unfinished
-stage items in PostgreSQL instead of visiting each completed item in application code. This is
+Resume preserves the original cohort, options and successful checkpoints. For a capture moved
+within the repository, it reads the current path from that run's source-file identity while
+retaining the originally submitted path in historical run options. A path-only move must
+reconcile the inventory and source-file identities before resume; a new file path alone starts
+a separate file history. Resume selects unfinished stage items in PostgreSQL instead of
+visiting each completed item in application code. This is
 per-record completion, not a highest-ID cursor: earlier failed or invalidated items remain eligible
 when later items have already completed. Source IDs need not be numeric or sequential.
 
@@ -116,7 +121,9 @@ reprocess generation. Matching active artifacts are recorded as reused in a bulk
 they are not reactivated, jobs are not re-leased, and canonical output is not rebuilt. Downstream
 ready/excluded records are similarly audited in batches. Missing/stale outputs remain real work.
 Shadow evaluation keeps its regular validation path. Paid provider work stays sequential and
-bounded by the original cohort and budgets.
+bounded by the original record cohort. Provider caps are optional; OpenClaw full imports use
+`--unlimited`. Full `ingest:supervise start`/`watch` jobs have no completion deadline by default;
+`--max-hours N` remains an optional operator control. Development smoke deadlines remain bounded.
 
 Each stage prints `checkpointed`, `reused in batches`, and `need work` counts, with preparation
 time. These summaries also live in `research_ingest_runs.counters.queue`. Successful reuse still
@@ -257,6 +264,10 @@ termination. Never kill all Node/pnpm processes. Reconcile only accepts an absen
 while maintenance is enabled and locks are released; it preserves errors and marks unfinished
 attempts interrupted without claiming to know why the worker exited. Remote/unknown PIDs require
 host inspection; no forced termination or remote process supervision is hidden in this CLI.
+Host identity checks accept case differences and a single `.local` mDNS suffix on the same short
+name, including a trailing DNS dot. Other fully qualified names must match in full; a shared
+first label alone is insufficient evidence that a remote host is local. PID presence still does
+not establish process identity or authorize a signal.
 
 Managed admission covers connected hosts using the updated runtime. Local `ps` discovery also
 flags standalone ingestion/import scripts conservatively, but cannot discover arbitrary wrappers,
@@ -264,6 +275,16 @@ other checkouts or remote standalone writers reliably. Stop those explicitly on 
 maintenance flag cannot fence old code that does not honor it. Prefer managed orchestration for
 writable work. Read-only diagnostics remain available during maintenance. Dashboard inventory
 shows the gate's reason; lifecycle commands run in the terminal, without a web shell endpoint.
+
+On macOS, a non-dry-run managed worker holds `caffeinate -i -s -w <worker PID>` while it runs.
+This prevents idle sleep and, on AC power, system sleep that could drop its PostgreSQL session
+and source advisory lock. The guard has its own process group so supervisor SIGTERM or
+terminal SIGINT leaves the assertion active while the worker finishes its current record.
+Normal cleanup stops the guard; `-w` releases it after abrupt worker death. Battery power, lid closure,
+explicit sleep, and network/database outages can still interrupt a connection. If the lock
+client errors, the worker journals the PostgreSQL error and exits immediately; it never
+continues writing without the session lock. Inspect the worker log and local journal, confirm
+process/lock quiescence, then resume the pinned run rather than starting a new cohort.
 
 For implementation changes, keep maintenance on through edits, migrations and static checks.
 Reopen for bounded integration/provider validation only after code is ready; re-enter before
@@ -273,6 +294,63 @@ cohort; input/prompt/schema changes may require version bumps and a new run. Do 
 restart all previously running jobs. Report final gate state and which runs remain paused.
 
 ## Pausing and crash recovery
+
+### Fireworks DeepSeek configuration
+
+The shared LLM client defaults to Fireworks serverless
+`accounts/fireworks/models/deepseek-v4p1-flash` at
+`https://api.fireworks.ai/inference/v1`, using shell-injected `FIREWORKS_API_KEY`.
+This covers normalization, prose dates, match adjudication, and description fusion.
+There is no separate thinking model ID. Remove stale DeepInfra `LLM_PROVIDER`,
+`LLM_MODEL`, and `LLM_BASE_URL` overrides when switching; the client rejects an
+inconsistent provider/endpoint before accessing a key or sending a request.
+See [.env.example](../.env.example) for the non-secret configuration catalog.
+
+`LLM_THINKING_BUDGET_TOKENS` defaults to 2048 and must be an integer >= 1024.
+The client sends that integer as `reasoning_effort`; for V4.1 this selects high
+thinking with a hard thinking-token cap. It never also sends `thinking`, because
+Fireworks rejects both controls together. Each call adds this allowance to its
+final-answer allowance to form total `max_tokens`: normalization uses 1800 + 2048
+= 3848; short date answers use 64 + 2048 = 2112. The cap leaves room for a final
+answer but does not guarantee that a model will produce valid or complete JSON.
+These semantics are from the [chat API](https://docs.fireworks.ai/api-reference/post-chatcompletions)
+and [reasoning guide](https://docs.fireworks.ai/guides/reasoning).
+
+Only final `message.content` is parsed/stored; separate reasoning content is not
+added to JSON or retained in the request journal. The supported OpenAI-style
+`json_schema` wrapper is retained; see [structured outputs](https://docs.fireworks.ai/structured-responses/structured-response-formatting).
+A JSON-object fallback only follows an explicit unsupported-format 400/422,
+not authentication, credit, thinking configuration, or invalid-schema errors.
+A `length` finish reason stops without repeating the same inadequate token cap;
+the failed request retains any returned usage/cost. Review the output/thinking
+allowance before resuming instead of treating truncation as a provider outage.
+
+Requests explicitly select the default service tier. The fallback estimate for
+this exact model uses the [standard serverless prices](https://docs.fireworks.ai/serverless/pricing),
+checked 2026-10-05: $0.30 input, $0.006 cached input, and $1.20 output per million
+tokens. Completion tokens include thinking and are counted once. Provider-reported
+cost takes precedence; other model overrides or missing/malformed usage remain
+unknown cost. Recheck rates before authorizing a long import. Per-record repair,
+fallback, lost-response and non-normalization spending still have the limits
+described in the budget table above.
+
+Provider-backed normalization cache identity includes provider, endpoint, model,
+thinking allowance, output allowance and request settings. Changes produce a new
+cache identity for unfinished/newly selected records. Managed resume still preserves
+already completed checkpoints and their original provenance; it does not rewrite
+the entire prior run using a new provider. Use an explicit new reprocessing run
+only when a reviewed quality issue requires that extra work. Deterministic-only
+cache keys retain their existing shape. Normalization request rows record the full
+non-secret request body, including effective thinking and output limits.
+
+Run `pnpm --filter @lib/db-map ingest:test-llm` and
+`pnpm --filter @lib/db-map ingest:test-provider-recovery` for mocked provider checks.
+Management account/model reads can verify key validity and model availability without
+inference billing; they do not prove sufficient credits, successful inference, JSON
+quality or end-to-end ingestion. Before unattended imports, validate a new 1–5 record
+managed smoke through the necessary stages, then update the OpenClaw handoff with the observed
+result. Full imports require no spending allowance, unknown-cost approval, ETA or overall deadline.
+Follow [agent operations](ingestion-agents.md) for execution.
 
 ### Transient normalization provider recovery
 
@@ -292,7 +370,7 @@ retries are scheduled across an execution. Exhaustion fails with stop reason
 `provider_recovery_exhausted`; successful checkpoints remain resumable.
 
 Each managed retry appends a new stage attempt and rechecks the execution's normalization
-budgets. Hidden HTTP retries are disabled for managed normalization. Failed requests, repair
+optional provider limits. Hidden HTTP retries are disabled for managed normalization. Failed requests, repair
 requests and JSON-format fallbacks all count as request rows. Existing per-record repair and
 fallback calls can still exceed a threshold within a record; these are not universal hard
 billing limits. A response lost in transit may have unknown cost and may be billed twice on
@@ -309,15 +387,16 @@ provider spend: `pnpm --filter @lib/db-map ingest:test-provider-recovery`.
 `run.counters.providerRecovery` (target, retry time, counts and last state); the local journal
 retains every recovery event, and stage attempts retain HTTP status, retryability and
 Retry-After. Terminal supervisor evidence includes recovery state and normalization usage
-joined to the exact execution ID. Its suggested resume subtracts recorded usage from that
-execution's limits; zero remains zero. Unknown costs still require review. Do not substitute
-a bare resume command, which can restore the original run's budgets, or reset a supervisor
-deadline without considering the approved total runtime.
+joined to the exact execution ID. Unrestricted executions suggest `--resume UUID --unlimited`,
+which clears historical provider caps while preserving checkpoints. Unknown costs are telemetry,
+not an admission or approval requirement. If an operator explicitly selects finite caps, the
+suggested resume subtracts recorded usage from those optional caps. A bare resume of an old
+capped run retains its original limits; OpenClaw must use `--unlimited` for continuous execution.
 
 ```bash
 pnpm --filter @lib/db-map ingest:pause --run <uuid>
 pnpm --filter @lib/db-map ingest:control stop --run <uuid> --wait-seconds 30
-pnpm --filter @lib/db-map ingest:run --resume <uuid>
+pnpm --filter @lib/db-map ingest:run --resume <uuid> --unlimited
 ```
 
 The first Ctrl-C or SIGTERM requests a stop after the current unit. A remote pause is noticed
@@ -408,6 +487,34 @@ and `research_ingest_inventory_edits`. Current progress is computed, never hand-
 hash state reflects the last scan of this checkout; database progress refreshes independently.
 Full histories remain in PostgreSQL; dashboard drill-downs show bounded recent samples.
 
+### Bot queue and classification
+
+`pnpm --silent --filter @lib/db-map ingest:queue --json` returns a compact, versioned snapshot
+with admission evidence, action counts, `next`, and per-file actions/argument arrays. It calls
+no providers and launches no work. Maintenance or uncertain process evidence suppresses `next`.
+Resolve an `inspect` action using its pinned status command; unfinished full-file work takes
+precedence over a later smoke selection. A sample resume never appears as full-file continuation.
+The queue keeps review/exclusion, progress and execution separate. Fresh inventory is required
+after changes; worker locks and file/pipeline/input checks still arbitrate actual admission.
+
+Bots can make the same audited, optimistic classification edits as the dashboard:
+
+```sh
+pnpm --silent --filter @lib/db-map ingest:inventory --file data/poi/example.json --json
+pnpm --silent --filter @lib/db-map ingest:inventory --file data/poi/example.json --edit-file /absolute/edit.json --json
+```
+
+The edit object contains `category_slug` (or null), `disposition`, `priority` (0–3), `notes`,
+and the exact `expected_updated_at` from the fresh file snapshot. Exclusions require a reason.
+Conflicting edits fail; reread and reconcile rather than overwriting. Scans preserve these
+operator fields and batch metadata writes to avoid a database round trip per capture.
+Do not maintain a second mutable status file in `data/poi`; database evidence is authoritative.
+
+The [native OpenClaw procedure](ingestion-agents.md#native-openclaw-runner) owns event-based
+execution and repair handoff. `ingest:status --json` exposes exact per-execution normalization
+usage for diagnostics, including failed requests and costs that are still unknown. This telemetry
+does not block uncapped imports or require spending approval.
+
 ## Assessing category completeness
 
 ```bash
@@ -416,7 +523,7 @@ pnpm --filter @lib/db-map ingest:report --source <source> --category <category>
 pnpm --filter @lib/db-map ingest:verify
 ```
 
-Compare expected files under `docs/poi/` and source research notes with
+Compare expected files under `data/poi/` and source research notes with
 `research_source_files` / `research_source_file_versions`. Unimported files have no database
 rows; a database-only report cannot prove inventory completeness. Distinguish partial
 extraction, intended exclusions, failed/stale normalization, blocked coordinates/embeddings,

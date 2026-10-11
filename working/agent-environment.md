@@ -42,7 +42,14 @@ For ingestion work, also inject:
 
 - `LOCATIONIQ_API_KEY`
 - `JINA_API_KEY`
-- `DEEPINFRA_API_KEY`
+- `FIREWORKS_API_KEY`
+
+The default LLM is Fireworks DeepSeek V4.1 Flash with bounded thinking. Remove old
+`LLM_PROVIDER=deepinfra`, `LLM_MODEL`, and DeepInfra `LLM_BASE_URL` overrides from the
+host's injected/persisted configuration when switching. The setup script preserves
+explicit overrides; it cannot safely guess which existing values should be replaced.
+Provider behavior and token/cost limits are documented in the
+[ingestion runbook](../data/poi-ingestion.md#fireworks-deepseek-configuration).
 
 Optional:
 
@@ -58,6 +65,11 @@ Isolated fallback when the shared database cannot be reached:
 ```bash
 bash scripts/agent-env.sh setup --local-db
 ```
+
+`--local-db` deliberately overrides an injected `DB_MAP_URL`. Use it on cloud
+hosts whose HTTP/HTTPS egress proxy cannot carry PostgreSQL TCP traffic. The
+remote value is not printed or used, and the generated agent environment points
+at the isolated local database.
 
 `--seed` is refused against a remote URL. Combine it with `--local-db` only.
 
@@ -79,5 +91,11 @@ Do not launch full ingestion from an expensive model. Follow root `AGENTS.md`.
 
 ## Implementation
 
+- The JavaScript install normally runs the frozen pnpm install. If Railway
+  CLI's binary downloader fails behind a cloud host's HTTP proxy, the bootstrap
+  repeats the install without lifecycle scripts, rebuilds the approved
+  `esbuild` and `sharp` packages, and downloads the exact CLI version pinned
+  in `package.json` with proxy-aware `curl`. It verifies
+  `railway --version`; do not replace it with an unpinned global CLI install.
 - [scripts/agent-env.sh](../scripts/agent-env.sh) — install, persist env, migrate, build, run
 - [scripts/sql-check-postgres-client-version.sh](../scripts/sql-check-postgres-client-version.sh) — `pg_dump` must match the server major (currently 18)

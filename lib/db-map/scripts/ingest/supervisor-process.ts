@@ -6,7 +6,7 @@ export interface ProcessOptions {
   args: string[];
   cwd: string;
   log: string;
-  timeoutMs: number;
+  timeoutMs: number | null;
   graceMs: number;
   healthIntervalMs: number;
   health: () => Promise<string | undefined>;
@@ -88,7 +88,10 @@ export async function superviseProcess(opts: ProcessOptions) {
   } catch (error) {
     stop(`stop_registration_failed: ${(error as Error).message}`);
   }
-  const deadline = setTimeout(() => stop("wall_clock_limit"), opts.timeoutMs);
+  const deadline =
+    opts.timeoutMs === null
+      ? undefined
+      : setTimeout(() => stop("wall_clock_limit"), opts.timeoutMs);
   const tick = async () => {
     if (exited) return;
     try {

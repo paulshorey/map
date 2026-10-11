@@ -5,7 +5,7 @@ How to save raw mined/scraped POI data so it flows through the ingestion pipelin
 extractors.
 
 Audience: whoever (human or agent) mines source websites/APIs and saves files under
-`docs/poi/{category}/`. The mining phase usually cannot call an LLM, so this spec asks for
+`data/poi/{category}/`. The mining phase usually cannot call an LLM, so this spec asks for
 **verbatim capture in a consistent envelope** — all interpretation, cleanup, categorization,
 geocoding, and dedup happen later in the pipeline.
 
@@ -95,12 +95,12 @@ extractor to unwrap. If your scraper produces run metadata, put it in a sibling
    articles, or organizations. Capture them if it is hard to filter during mining; the
    normalize/triage stage marks them `is_poi = false` instead of publishing them.
 9. **Keep files raw and committed.** Original downloads (KML/CSV/API dumps) stay in
-   `docs/poi/{category}/` unchanged; write the spec-conformant file next to them when the
+   `data/poi/{category}/` unchanged; write the spec-conformant file next to them when the
    original shape does not conform. Never edit a raw dump in place.
 
 ## Per-folder README
 
-Each `docs/poi/{category}/` folder (or source subfolder) should have a README/AGENTS.md
+Each `data/poi/{category}/` folder (or source subfolder) should have a README/AGENTS.md
 covering, per file:
 
 - source name, homepage, and the exact API/scrape method used
@@ -109,8 +109,8 @@ covering, per file:
 - coordinate coverage (what % of records have lat/lng) and any known quirks
 - which fields are trustworthy vs junk
 
-The existing `docs/poi/rv_campgrounds_data/AGENTS.md` and
-`docs/poi/music-festivals/README.md` are good examples.
+The existing `data/poi/rv_campgrounds_data/AGENTS.md` and
+`data/poi/music-festivals/README.md` are good examples.
 
 ## What happens downstream (why these rules exist)
 

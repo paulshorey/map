@@ -2,14 +2,15 @@ import { currentAttempt } from "../execution.js";
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import { ingestConfig } from "../config.js";
-import { stableHash } from "../hash.js";
 import { rebuildCanonicalPoi } from "../merge.js";
 import {
   completeChat,
+  buildChatRequest,
+  isUnsupportedResponseFormat,
   LlmError,
   type ChatMessage,
   type ChatResult,
-} from "../providers/deepinfra.js";
+} from "../providers/llm.js";
 import { getSourceDefinition } from "../sources.js";
 import {
   EXAMPLES_VERSION,
@@ -28,6 +29,10 @@ import { fewShotMessages } from "./examples.js";
 import { getNormalizationProfile } from "./profiles.js";
 import { NORMALIZATION_SYSTEM_PROMPT } from "./prompt.js";
 import { resolveNormalization, type ResolvedNormalization } from "./resolve.js";
+import {
+  normalizationInputHash,
+  NORMALIZATION_MAX_OUTPUT_TOKENS,
+} from "./cache.js";
 
 export interface NormalizeOptions {
   runId?: string;
@@ -239,7 +244,7 @@ async function insertRequest(
        id, research_poi_id, observation_id, input_hash,
        prompt_version, schema_version, profile_version, examples_version,
        provider, requested_model, status, request_json, repaired_from_id, attempt, run_id, ingest_attempt_id
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'deepinfra',$9,'started',$10::jsonb,$11,$12,$13,$14)`,
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'started',$11::jsonb,$12,$13,$14,$15)`,
     [
       id,
       row.id,
@@ -249,6 +254,7 @@ async function insertRequest(
       SCHEMA_VERSION,
       profileVersion,
       EXAMPLES_VERSION,
+      ingestConfig.llm.provider,
       ingestConfig.llm.model,
       JSON.stringify(requestJson),
       repairedFromId ?? null,
@@ -267,6 +273,7 @@ async function finishRequest(
   parsed: unknown,
   error?: unknown,
 ): Promise<void> {
+  result ??= error instanceof LlmError ? (error.result ?? null) : null;
   await db.query(
     `UPDATE research_normalization_requests SET
        returned_model = $2,
@@ -318,39 +325,51 @@ async function callNormalizer(
     ...fewShotMessages(profileId),
     { role: "user", content: JSON.stringify(packet) },
   ];
-  let requestId = await insertRequest(db, row, inputHash, profileVersion, {
+  const requestOptions = {
     messages,
-  });
+    maxTokens: NORMALIZATION_MAX_OUTPUT_TOKENS,
+    responseFormat: {
+      type: "json_schema" as const,
+      json_schema: {
+        name: "poi_normalization",
+        strict: true,
+        schema: NORMALIZATION_JSON_SCHEMA,
+      },
+    },
+  };
+  let requestId = await insertRequest(
+    db,
+    row,
+    inputHash,
+    profileVersion,
+    buildChatRequest(requestOptions),
+  );
   let result: ChatResult | null = null;
   let parsed: unknown;
   try {
     try {
       result = await completeChat({
         retries: currentAttempt() ? 0 : undefined,
-        messages,
-        maxTokens: 1800,
-        responseFormat: {
-          type: "json_schema",
-          json_schema: {
-            name: "poi_normalization",
-            strict: true,
-            schema: NORMALIZATION_JSON_SCHEMA,
-          },
-        },
+        ...requestOptions,
       });
     } catch (error) {
-      if (!(error instanceof LlmError) || error.status !== 400) throw error;
+      if (!isUnsupportedResponseFormat(error)) throw error;
       // The compatibility fallback is another HTTP request and must retain its own budget/audit row.
       await finishRequest(db, requestId, null, undefined, error);
-      requestId = await insertRequest(db, row, inputHash, profileVersion, {
-        messages,
-        response_format: { type: "json_object" },
-      });
+      const fallbackOptions = {
+        ...requestOptions,
+        responseFormat: { type: "json_object" as const },
+      };
+      requestId = await insertRequest(
+        db,
+        row,
+        inputHash,
+        profileVersion,
+        buildChatRequest(fallbackOptions),
+      );
       result = await completeChat({
         retries: currentAttempt() ? 0 : undefined,
-        messages,
-        maxTokens: 1800,
-        responseFormat: { type: "json_object" },
+        ...fallbackOptions,
       });
     }
     parsed = parseJsonContent(result.content);
@@ -376,7 +395,7 @@ async function callNormalizer(
       row,
       inputHash,
       profileVersion,
-      { messages: repairMessages },
+      buildChatRequest({ ...requestOptions, messages: repairMessages }),
       requestId,
     );
     let repairResult: ChatResult | null = null;
@@ -385,15 +404,8 @@ async function callNormalizer(
       repairResult = await completeChat({
         retries: currentAttempt() ? 0 : undefined,
         messages: repairMessages,
-        maxTokens: 1800,
-        responseFormat: {
-          type: "json_schema",
-          json_schema: {
-            name: "poi_normalization",
-            strict: true,
-            schema: NORMALIZATION_JSON_SCHEMA,
-          },
-        },
+        maxTokens: requestOptions.maxTokens,
+        responseFormat: requestOptions.responseFormat,
       });
       repairParsed = parseJsonContent(repairResult.content);
       const repaired = parseNormalizationOutput(repairParsed, row.id);
@@ -801,18 +813,21 @@ function prepareNormalization(
   const captured = deterministicInput(row);
   const deterministic = buildDeterministicFacts(captured);
   const packet = requestPacket(row, profile.id, deterministic);
-  const inputHash = stableHash({
-    rawContentHash: row.raw_content_hash,
-    packet,
-    normalizerVersion: NORMALIZER_VERSION,
-    promptVersion: PROMPT_VERSION,
-    schemaVersion: SCHEMA_VERSION,
-    profileVersion: profile.version,
-    examplesVersion: EXAMPLES_VERSION,
-    model: ingestConfig.llm.model,
-    llmMode: opts.noLlm ? "deterministic_only" : "deepseek",
-    reprocessGeneration,
-  });
+  const inputHash = normalizationInputHash(
+    {
+      rawContentHash: row.raw_content_hash,
+      packet,
+      normalizerVersion: NORMALIZER_VERSION,
+      promptVersion: PROMPT_VERSION,
+      schemaVersion: SCHEMA_VERSION,
+      profileVersion: profile.version,
+      examplesVersion: EXAMPLES_VERSION,
+      model: ingestConfig.llm.model,
+      llmMode: opts.noLlm ? "deterministic_only" : "deepseek",
+      reprocessGeneration,
+    },
+    opts.noLlm,
+  );
   return { profile, captured, deterministic, packet, inputHash };
 }
 

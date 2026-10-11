@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { randomUUID } from "node:crypto";
+import { hostname } from "node:os";
 import { rm, access } from "node:fs/promises";
 import {
   parseSupervisorArgs,
@@ -8,7 +9,37 @@ import {
   dispatchJob,
   budgetedResume,
 } from "./supervise.js";
-import { createJob, jobPath, atomicJson } from "./supervisor-state.js";
+import {
+  createJob,
+  jobPath,
+  atomicJson,
+  listJobs,
+} from "./supervisor-state.js";
+
+test("supervisor status checks local mDNS job PIDs", async () => {
+  const id = randomUUID();
+  await createJob({
+    id,
+    mode: "native",
+    argv: [],
+    host: `${hostname().replace(/\.local$/i, "")}.local`,
+    supervisor_pid: process.pid,
+    child_pid: 2147483647,
+    runner_model: "external",
+    started_at: new Date().toISOString(),
+    status: "running",
+    timeout_seconds: null,
+    health_interval_seconds: 3600,
+    health_checks: 0,
+  });
+  try {
+    const job = (await listJobs()).find((entry) => entry.id === id);
+    assert.equal(job?.supervisor_present, true);
+    assert.equal(job?.child_present, false);
+  } finally {
+    await rm(jobPath(id, ""), { recursive: true, force: true });
+  }
+});
 
 test("terminal resume subtracts exact execution usage and never resets an exhausted budget", () => {
   const run = randomUUID();
@@ -31,6 +62,14 @@ test("terminal resume subtracts exact execution usage and never resets an exhaus
   assert.equal(
     budgetedResume(run, {}, { requests: 1, estimated_cost_usd: 0 }),
     `pnpm --filter @lib/db-map ingest:run --resume ${run}`,
+  );
+  assert.equal(
+    budgetedResume(
+      run,
+      { unlimited: true, maxLlmRequests: 0, maxCostUsd: 0 },
+      { requests: 100, estimated_cost_usd: 20 },
+    ),
+    `pnpm --filter @lib/db-map ingest:run --resume ${run} --unlimited`,
   );
 });
 
@@ -59,7 +98,7 @@ test("expensive smoke cannot resume or expand cohort/deadline", () => {
     45,
   );
 });
-test("long launch requires explicit callback choice and bounded deadline", () => {
+test("long launch requires callback choice; completion deadline is optional", () => {
   assert.throws(() =>
     parseSupervisorArgs(["start", "--", "--resume", randomUUID()]),
   );
@@ -91,6 +130,17 @@ test("long launch requires explicit callback choice and bounded deadline", () =>
       "--",
       "file",
     ]).maxHours,
+    null,
+  );
+  assert.equal(
+    parseSupervisorArgs([
+      "start",
+      "--local-only",
+      "--max-hours",
+      "48",
+      "--",
+      "file",
+    ]).maxHours,
     48,
   );
 });
@@ -109,6 +159,46 @@ test("exit zero is insufficient proof of success", () => {
     terminalOutcome(null, "wall_clock_limit", "succeeded", new Date()),
     "needs_attention",
   );
+});
+test("native watch allows uncapped continuous imports and validates optional limits", () => {
+  const args = [
+    "--resume",
+    randomUUID(),
+    "--max-llm-requests",
+    "5",
+    "--max-cost-usd",
+    "0.1",
+    "--geocode-limit",
+    "0",
+  ];
+  assert.equal(
+    parseSupervisorArgs(["watch", "--max-hours", "1", "--", ...args]).command,
+    "watch",
+  );
+  assert.equal(
+    parseSupervisorArgs([
+      "watch",
+      "--",
+      "--resume",
+      randomUUID(),
+      "--unlimited",
+    ]).maxHours,
+    null,
+  );
+  assert.equal(parseSupervisorArgs(["watch", "--", "file"]).maxHours, null);
+  assert.equal(
+    parseSupervisorArgs(["watch", "--", "file", "--max-cost-usd", "1"]).command,
+    "watch",
+  );
+  for (const bad of [
+    ["watch", "--local-only", "--", ...args],
+    ["watch", "--notify-thread", randomUUID(), "--", ...args],
+    ["watch", "--", ...args, "--max-cost-usd", "10"],
+    ["watch", "--", ...args, "--consolidate"],
+    ["watch", "--", ...args.slice(0, -1), "-1"],
+    ["watch", "--", ...args, "--unlimited"],
+  ])
+    assert.throws(() => parseSupervisorArgs(bad));
 });
 test("healthy job cannot dispatch any model event", async () => {
   const id = randomUUID();

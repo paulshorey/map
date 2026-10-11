@@ -1,0 +1,4 @@
+interface:
+  display_name: "Railway IaC"
+  short_description: "Plan and configure Railway deployments safely"
+  default_prompt: "Use $railway-iac to configure and validate this Railway deployment."

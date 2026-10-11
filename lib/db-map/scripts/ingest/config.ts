@@ -22,6 +22,28 @@ function envNumber(key: string, fallback: number): number {
   return n;
 }
 
+export function readLlmConfig(variables: NodeJS.ProcessEnv = process.env) {
+  const thinkingBudgetTokens = Number(
+    variables.LLM_THINKING_BUDGET_TOKENS || 2048,
+  );
+  if (
+    !Number.isSafeInteger(thinkingBudgetTokens) ||
+    thinkingBudgetTokens < 1024
+  ) {
+    throw new Error("LLM_THINKING_BUDGET_TOKENS must be an integer >= 1024");
+  }
+  return {
+    provider: variables.LLM_PROVIDER || "fireworks",
+    model:
+      variables.LLM_MODEL || "accounts/fireworks/models/deepseek-v4p1-flash",
+    baseUrl: (
+      variables.LLM_BASE_URL || "https://api.fireworks.ai/inference/v1"
+    ).replace(/\/+$/, ""),
+    thinkingBudgetTokens,
+    apiKey: () => env("FIREWORKS_API_KEY"),
+  };
+}
+
 export const ingestConfig = {
   geocoder: {
     provider: envOptional("GEOCODER_PROVIDER", "locationiq"),
@@ -33,12 +55,7 @@ export const ingestConfig = {
     dim: envNumber("EMBEDDINGS_DIM", 384),
     apiKey: () => env("JINA_API_KEY"),
   },
-  llm: {
-    provider: envOptional("LLM_PROVIDER", "deepinfra"),
-    model: envOptional("LLM_MODEL", "deepseek-ai/DeepSeek-V4-Flash"),
-    baseUrl: "https://api.deepinfra.com/v1/openai",
-    apiKey: () => env("DEEPINFRA_API_KEY"),
-  },
+  llm: readLlmConfig(),
   match: {
     tHigh: envNumber("INGEST_MATCH_T_HIGH", 0.85),
     tLow: envNumber("INGEST_MATCH_T_LOW", 0.55),

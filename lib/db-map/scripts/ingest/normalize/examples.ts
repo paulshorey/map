@@ -1,4 +1,4 @@
-import type { ChatMessage } from "../providers/deepinfra.js";
+import type { ChatMessage } from "../providers/llm.js";
 import type { LlmNormalizationOutput } from "./contracts.js";
 
 interface Example {

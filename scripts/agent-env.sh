@@ -61,6 +61,26 @@ as_root() {
   fi
 }
 
+run_apt_quiet() {
+  local apt_log apt_pid
+  apt_log="$(mktemp)"
+  as_root env DEBIAN_FRONTEND=noninteractive apt-get -qq -o Dpkg::Use-Pty=0 \
+    "$@" >"${apt_log}" 2>&1 &
+  apt_pid=$!
+  while kill -0 "${apt_pid}" 2>/dev/null; do
+    sleep 20
+    if kill -0 "${apt_pid}" 2>/dev/null; then
+      log "apt-get $1 is still running."
+    fi
+  done
+  if ! wait "${apt_pid}"; then
+    cat "${apt_log}" >&2
+    rm -f "${apt_log}"
+    return 1
+  fi
+  rm -f "${apt_log}"
+}
+
 as_root_env() {
   if [[ "${EUID}" -eq 0 ]]; then
     env "$@"
@@ -189,7 +209,7 @@ persist_runtime_env() {
     persist_env_value DB_MAP_URL
     persist_env_value LOCATIONIQ_API_KEY
     persist_env_value JINA_API_KEY
-    persist_env_value DEEPINFRA_API_KEY
+    persist_env_value FIREWORKS_API_KEY
     persist_env_value THUNDERFOREST_API_KEY
     persist_env_value RAILWAY_TOKEN
     persist_env_value NEXT_PUBLIC_API_URL
@@ -199,12 +219,16 @@ persist_runtime_env() {
     persist_env_value EMBEDDINGS_DIM
     persist_env_value LLM_PROVIDER
     persist_env_value LLM_MODEL
+    persist_env_value LLM_BASE_URL
+    persist_env_value LLM_THINKING_BUDGET_TOKENS
     printf 'export GEOCODER_PROVIDER="${GEOCODER_PROVIDER:-locationiq}"\n'
     printf 'export EMBEDDINGS_PROVIDER="${EMBEDDINGS_PROVIDER:-jina}"\n'
     printf 'export EMBEDDINGS_MODEL="${EMBEDDINGS_MODEL:-jina-embeddings-v3}"\n'
     printf 'export EMBEDDINGS_DIM="${EMBEDDINGS_DIM:-384}"\n'
-    printf 'export LLM_PROVIDER="${LLM_PROVIDER:-deepinfra}"\n'
-    printf 'export LLM_MODEL="${LLM_MODEL:-deepseek-ai/DeepSeek-V4-Flash}"\n'
+    printf 'export LLM_PROVIDER="${LLM_PROVIDER:-fireworks}"\n'
+    printf 'export LLM_MODEL="${LLM_MODEL:-accounts/fireworks/models/deepseek-v4p1-flash}"\n'
+    printf 'export LLM_BASE_URL="${LLM_BASE_URL:-https://api.fireworks.ai/inference/v1}"\n'
+    printf 'export LLM_THINKING_BUDGET_TOKENS="${LLM_THINKING_BUDGET_TOKENS:-2048}"\n'
   } > "${tmp}"
   chmod 600 "${tmp}"
   mv "${tmp}" "${ENV_FILE}"
@@ -256,8 +280,8 @@ ensure_apt_tools() {
     return 0
   fi
   log "Installing apt packages: ${missing[*]}"
-  as_root apt-get update -y
-  as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing[@]}"
+  run_apt_quiet update -y
+  run_apt_quiet install -y "${missing[@]}"
 }
 
 ensure_node() {
@@ -284,7 +308,7 @@ ensure_node() {
   if have apt-get; then
     log "Installing Node ${NODE_MAJOR_PREFERRED} from NodeSource."
     curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR_PREFERRED}.x" | as_root_env bash -
-    as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+    run_apt_quiet install -y nodejs
     log "Node $(node -v)."
     return 0
   fi
@@ -327,7 +351,10 @@ ensure_pgdg_repo() {
     | as_root gpg --dearmor --yes -o /etc/apt/keyrings/pgdg.gpg
   printf 'deb [signed-by=/etc/apt/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt %s-pgdg main\n' \
     "${VERSION_CODENAME}" | as_root tee "${list}" >/dev/null
-  as_root apt-get update -o Dir::Etc::sourcelist="${list}" -o Dir::Etc::sourceparts="-"
+  # Refresh every configured source. A fresh cloud image can have empty distro
+  # indexes; updating only PGDG then makes dependencies such as locales appear
+  # unavailable even though the Ubuntu source is configured.
+  run_apt_quiet update
 }
 
 ensure_postgres_client() {
@@ -352,7 +379,7 @@ ensure_postgres_client() {
 
   if have apt-get; then
     ensure_pgdg_repo || true
-    as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    run_apt_quiet install -y \
       "postgresql-client-${major:-16}"
     return 0
   fi
@@ -363,7 +390,8 @@ ensure_postgres_client() {
 start_local_postgres() {
   have apt-get || die "--local-db currently supports Debian/Ubuntu agent VMs."
   ensure_pgdg_repo || true
-  as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql postgresql-contrib
+  run_apt_quiet install -y \
+    postgresql-16 postgresql-contrib-16
   if have pg_lsclusters; then
     local cluster
     cluster="$(pg_lsclusters --no-header | awk 'NR==1 {print $1, $2}')"
@@ -393,7 +421,10 @@ SQL
 }
 
 maybe_provision_database() {
-  if [[ -z "${DB_MAP_URL:-}" && "${LOCAL_DB}" -eq 1 ]]; then
+  if [[ "${LOCAL_DB}" -eq 1 ]]; then
+    if [[ -n "${DB_MAP_URL:-}" ]]; then
+      log "Using an isolated local database because --local-db was requested."
+    fi
     start_local_postgres
     return 0
   fi
@@ -426,11 +457,40 @@ install_js_deps() {
   (
     cd "${root}"
     if [[ -f pnpm-lock.yaml ]]; then
-      pnpm install --frozen-lockfile
+      if ! pnpm install --frozen-lockfile; then
+        warn "The normal install failed; retrying approved build dependencies with the Railway CLI proxy fallback."
+        pnpm install --frozen-lockfile --ignore-scripts
+        pnpm rebuild esbuild sharp
+        install_railway_cli_binary
+      fi
     else
       pnpm install
     fi
   )
+}
+
+install_railway_cli_binary() {
+  local package_json version package_dir target archive_url archive
+  package_json="$(node -p "require.resolve('@railway/cli/package.json')")"
+  version="$(node -p "require('${package_json}').version")"
+  package_dir="$(dirname "${package_json}")"
+
+  case "$(uname -m)" in
+    x86_64) target="x86_64-unknown-linux-musl" ;;
+    aarch64|arm64) target="aarch64-unknown-linux-musl" ;;
+    *) die "Unsupported Linux architecture for Railway CLI: $(uname -m)" ;;
+  esac
+
+  archive_url="https://github.com/railwayapp/cli/releases/download/v${version}/railway-v${version}-${target}.tar.gz"
+  archive="$(mktemp)"
+  trap 'rm -f "${archive}"' RETURN
+  log "Installing pinned Railway CLI ${version} through the host HTTP proxy."
+  curl --fail --location --silent --show-error --retry 3 --retry-all-errors \
+    --output "${archive}" "${archive_url}"
+  mkdir -p "${package_dir}/bin"
+  tar -xzf "${archive}" -C "${package_dir}/bin"
+  chmod +x "${package_dir}/bin/railway"
+  "${package_dir}/bin/railway" --version
 }
 
 applied_migration_files() {

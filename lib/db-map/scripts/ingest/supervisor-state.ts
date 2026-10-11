@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile, rename, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
-import { hostname } from "node:os";
+import { isLocalHost } from "./host-identity.js";
 
 export const JOBS = fileURLToPath(
   new URL("../../.ingest-jobs/", import.meta.url),
@@ -9,7 +9,7 @@ export const JOBS = fileURLToPath(
 export const UUID = /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 export interface Job {
   id: string;
-  mode: "runner" | "smoke";
+  mode: "runner" | "smoke" | "native";
   argv: string[];
   host: string;
   supervisor_pid?: number;
@@ -17,10 +17,11 @@ export interface Job {
   run_id?: string;
   execution_id?: string;
   parent_thread?: string;
-  runner_model: "gpt-5.6-luna";
+  runner_model: "gpt-5.6-luna" | "external";
   started_at: string;
   status: "queued" | "running" | "finished";
-  timeout_seconds: number;
+  // Null means continuous operation; old finite-deadline job files remain readable.
+  timeout_seconds: number | null;
   health_interval_seconds: number;
   health_checks: number;
   last_health_at?: string;
@@ -62,11 +63,11 @@ export async function listJobs() {
   const jobs = [];
   for (const id of entries.filter((id) => UUID.test(id))) {
     const job = await loadJob(id);
+    const local = isLocalHost(job.host);
     jobs.push({
       ...job,
-      supervisor_present:
-        job.host === hostname() ? pidPresent(job.supervisor_pid) : null,
-      child_present: job.host === hostname() ? pidPresent(job.child_pid) : null,
+      supervisor_present: local ? pidPresent(job.supervisor_pid) : null,
+      child_present: local ? pidPresent(job.child_pid) : null,
     });
   }
   return jobs.sort((a, b) => b.started_at.localeCompare(a.started_at));

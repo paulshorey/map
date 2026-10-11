@@ -12,12 +12,14 @@ Codex app-server connection. The existing database checkpoints remain the source
 | ------------------ | -------------------------------------------------------- | ------------------------------------------------------------------- |
 | Smart orchestrator | Inspect, decide, develop, repair, delegate               | Never execute full ingestion; smoke tests expected under 45 seconds |
 | Luna runner        | Launch exact approved command, return job receipt        | Explicit `gpt-5.6-luna`, low reasoning, minimal handoff context     |
-| Node supervisor    | Own child, write logs, hourly health checks, detect exit | Zero AI tokens; 48-hour default deadline, configurable 1–168 hours  |
+| Node supervisor    | Own child, write logs, hourly health checks, detect exit | Zero AI tokens; no full-run completion deadline by default          |
 | Terminal reporter  | One Luna summary attempt, then send evidence to parent   | At most 150 words requested; 60-second process deadline; no retries |
 
 The reporter's word/time limits are not a hard token or dollar cap. Its CLI JSON log retains
 usage evidence. Pipeline normalization/embedding/provider charges are separate from agent
-orchestration charges; set pipeline budgets explicitly. Do not silently upgrade the cheap model.
+orchestration charges. Full backlog imports are authorized without provider caps, unknown-cost
+approval, completion estimates or an overall deadline. Retain usage telemetry for diagnosis.
+Do not silently upgrade the cheap orchestration model.
 
 The orchestrator and runner **end their turns** after setup. Do not keep an expensive turn alive
 with sleep, wait/status loops, streamed logs, Goal mode, or hourly heartbeat automations.
@@ -37,8 +39,8 @@ Supply a small, concrete handoff:
 Repository: /absolute/path/to/map
 Parent task UUID: <actual current orchestrator task ID>
 Task: launch only the following managed ingestion scope through ingest:supervise start.
-Arguments after --: --resume <pinned-run-uuid> --max-llm-requests <budget> --max-cost-usd <budget>
-Deadline: 48 hours. Health checks: hourly ordinary code.
+Arguments after --: --resume <pinned-run-uuid> --unlimited
+Completion deadline: none. Health checks: hourly ordinary code.
 Callback: managed local Codex daemon and the parent task UUID.
 Do not repair, retry, broaden scope, change model, or invoke another full run.
 Return the launch receipt (or callback preflight failure) in <=150 words and end your turn.
@@ -60,10 +62,10 @@ pnpm --silent --filter @lib/db-map ingest:supervise probe --notify-thread "$CODE
 
 # CHEAP RUNNER ONLY: resume the approved scope, detach, and return one launch receipt.
 pnpm --silent --filter @lib/db-map ingest:supervise start \
-  --notify-thread <parent-task-uuid> --max-hours 48 -- \
-  --resume <run-uuid> --max-llm-requests <budget> --max-cost-usd <budget>
+  --notify-thread <parent-task-uuid> -- \
+  --resume <run-uuid> --unlimited
 
-# Expensive agent: small NEW cohort, only when expected to finish within the deadline.
+# Expensive agent: small NEW cohort for development; smoke remains time-limited.
 pnpm --silent --filter @lib/db-map ingest:supervise smoke --timeout-seconds 45 -- \
   <source-file> --category campground --limit 1 --stop-after normalize \
   --max-llm-requests 1 --max-cost-usd 0.10
@@ -84,6 +86,73 @@ do not chain more smoke tests to drain the backlog. Stop-after means a partial r
 Humans may use `start --local-only -- <run arguments>` to obtain detached process control and durable
 results without an automatic agent callback. This mode is **not** an unattended agent workflow.
 For normal manual foreground operation, the existing `ingest:run` commands remain supported.
+
+## Native OpenClaw runner
+
+The local OpenClaw coordinator can own the cheap-runner role directly. Its configuration and
+launcher live in `/Users/pshorey/git/openclaw`; read that checkout's coordinator procedure.
+Use `ingest:supervise watch`, which stays in the foreground, prints one launch receipt and one
+terminal JSON event, writes the same durable job/result/log files, and never starts a model or
+Codex callback. OpenClaw's background exec owns this foreground command. Node owns hourly
+health checks, with no full-run completion deadline. `--max-hours N` is an optional operator
+control. The local OpenClaw wrapper delivers a compact
+terminal result to the exact owning dashboard conversation through supported targeted
+`system event --session-key OWNER --mode now`, after the supervisor saves durable evidence.
+Its generic payload begins `INTERNAL_MAP_TERMINAL_EVENT`, identifies the local wrapper and
+carries the exact stable event ID. The owning prompt handles this marker before heartbeat
+launch logic. Native exec ownership remains intact; waiting makes no model calls.
+OpenClaw 2026.9.5 can defer ordinary native exec-exit events until the next hourly heartbeat
+and hide structured `Exec completed (...)` details after delivery resets to `none`. Spawned
+heartbeat sessions also intentionally reject CLI chat sends. Use the supported generic
+completion path; never strip subagent restrictions or patch session storage. Test automatic
+preflight-to-import-to-terminal continuation, not just a single wake after manual input.
+See [the local wrapper's procedure](/Users/pshorey/git/openclaw/README.md) for its ownership,
+completion receipt, preflight and delivery checks.
+
+1. Refresh inventory after checkout/file changes; read `ingest:queue --json` and control state.
+   The queue is a recommendation, not admission or evidence that an outage was repaired.
+2. Review unclassified files before setting category/disposition. Resolve supporting files,
+   alternate exports, empty captures, wrapper keys, event editions and campsite-versus-facility
+   granularity. See [capture folder guidance](poi/README.md). No progress state belongs in Git.
+3. Verify the `process` tool and notification configuration, then exercise the wrapper's
+   harmless terminal-callback preflight in the actual owning internal dashboard conversation.
+   Confirm an automatic continuation after the initiating turn ends, with the correct owner,
+   event ID and saved terminal evidence; record the verified integration receipt. Repeat after
+   a Gateway restart or notification configuration change. Config availability, a queued native
+   event or a manually forced follow-up alone does not prove delivery. Missing completion is a
+   blocker, not permission to use local-only or run a model polling loop.
+4. Record the exact file/category or resume UUID, unlimited execution policy and native process
+   handle in OpenClaw's private ledger. Launch one source using its `scripts/run-map-import.sh`
+   in native `exec` with `background=true` and `timeoutSeconds=0`. Omit `--max-hours` and use
+   `--unlimited` for continuous operation, including resumes of historically capped runs.
+   Do not use `nohup`, shell `&`, or a Codex implementation wrapper. End the agent turn.
+5. Reconcile terminal events by stable `event_id`, job/result file, pinned run/execution and
+   database inventory. Only `succeeded` plus `verified_at`, inventory `coverage="complete"`
+   and queue `action="complete"` for the exact file permit advancing. Raw
+   `ingestion_files.status="complete"` and `extraction_complete=true` prove extraction,
+   not downstream completion. Samples, suffix verification, exclusions and quality remain separate.
+   The delayed native exit event may arrive after the terminal callback; deduplicate it using
+   the same saved job/event evidence rather than treating it as another import. An unconfirmed
+   callback leaves the durable result for reconciliation and blocks automatic queue advancement.
+6. On failure, stop that file's automatic retries, preserve evidence, and delegate a precise
+   repair through OpenClaw's connected Codex CLI wrapper. Codex handles maintenance and bounded
+   smoke validation. Other files may proceed only after the engineer confirms a source-specific
+   blocker; outage/schema/global-lineage blockers stop provider work across the queue.
+
+`watch` does not require provider limits or a completion deadline. `--unlimited` clears historical
+normalization request/cost and geocoder caps on resume. Consolidation is excluded from the native
+file queue. A resume retains the original record cohort and successful checkpoints. OpenClaw has
+standing authorization for normalization, geocoding, embedding, matching and fusion across all
+intended captures. Unknown costs and diagnostic spending are informative, never approval gates.
+`ingest:status --json` and terminal results retain per-execution usage, including failed requests.
+Optional finite limits remain available when explicitly selected by an operator; do not add them
+to the standing backlog policy. After verified whole-file completion, OpenClaw selects the next
+eligible intended capture immediately and continues until all are complete or explicitly blocked.
+
+Native handles live in Gateway memory and are lost on restart. Recover using PostgreSQL,
+local job files and verified process/lock evidence, never by replaying a launch command.
+The machine must remain awake. The queue is metadata; OpenClaw owns file-to-file advancement
+and evidence-based repair/resume decisions.
 
 ## Notification setup and delivery limits
 
@@ -136,10 +205,11 @@ deduplicate the event ID, and report the exhausted bound. Do not cycle full resu
 around persistent provider failure. Diagnose availability/configuration before another launch.
 
 Terminal evidence now includes normalization request count, recorded estimated cost and
-unknown-cost count for the pinned execution, plus recovery state. The suggested `resume`
-preserves the remaining normalization limits. Subtract any subsequent smoke/repair spending
-from the same approved task budget too. Missing evidence or unknown cost requires review;
-never interpret it as zero. A retry-policy-only change does not invalidate completed artifacts.
+unknown-cost count for the pinned execution, plus recovery state. For unrestricted work, the
+suggested `resume` carries `--unlimited`; no spending or overall-deadline review is required.
+Missing identity or completion evidence still needs diagnosis, while unknown cost remains
+telemetry. Optional finite caps apply only to commands that explicitly select them.
+A retry-policy-only change does not invalidate completed artifacts.
 No provider retry allows the runner or supervisor to relaunch a terminated ingestion process.
 
 Each job has a private ignored directory `lib/db-map/.ingest-jobs/<uuid>/`:
@@ -164,7 +234,9 @@ checks and reconciliation before resume. PID presence in `list` is only a hint, 
 Maintenance remains the admission authority; supervisor processes waiting to deliver notifications
 are not ingestion writers. Their actual `run.ts` children are still discovered and registered.
 
-The machine must remain awake and running. A detached process survives a terminal closing, but not
+The machine must remain awake and running. On macOS the worker holds a process-bound sleep
+assertion during a non-dry-run import (see the [runbook](poi-ingestion.md#process-control-and-maintenance)).
+Keep the lid open and a reliable connection; a detached process survives a terminal closing, but not
 a host reboot, app sandbox cleanup, or supervisor SIGKILL. Local job files survive those events;
 inspect them alongside `ingest:control list`, reconcile an absent execution, then delegate a new
 supervised resume. Do not infer success from a finished process or trust a stale manifest. There is

@@ -1,4 +1,4 @@
-import { LlmError } from "./providers/deepinfra.js";
+import { LlmError } from "./providers/llm.js";
 
 export interface RecoveryEvent {
   state: "cooldown" | "recovered" | "settled" | "exhausted" | "paused";

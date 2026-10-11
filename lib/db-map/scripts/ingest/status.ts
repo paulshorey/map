@@ -206,9 +206,15 @@ export async function inspectRun(db: Pool, opts: StatusOptions) {
       artifacts[label] = await rows(sql, sourceSampleValues);
 
     const executions = await rows(
-      `SELECT *, now()-heartbeat_at AS heartbeat_age,
-      (status='running' AND heartbeat_at < now()-interval '30 seconds') AS heartbeat_stale
-      FROM research_ingest_executions WHERE run_id=$1 ORDER BY started_at DESC LIMIT $2`,
+      `SELECT e.*, now()-e.heartbeat_at AS heartbeat_age,
+      (e.status='running' AND e.heartbeat_at < now()-interval '30 seconds') AS heartbeat_stale,
+      (SELECT jsonb_build_object('requests',count(*),
+        'estimated_cost_usd',COALESCE(sum(q.estimated_cost_usd),0),
+        'unknown_cost_requests',count(*) FILTER (WHERE q.estimated_cost_usd IS NULL),
+        'failed_requests',count(*) FILTER (WHERE q.status='failed'))
+       FROM research_normalization_requests q JOIN research_ingest_attempts a ON a.id=q.ingest_attempt_id
+       WHERE a.execution_id=e.id) AS normalization_usage
+      FROM research_ingest_executions e WHERE e.run_id=$1 ORDER BY e.started_at DESC LIMIT $2`,
       sampleValues,
     );
     const attempts = await rows(

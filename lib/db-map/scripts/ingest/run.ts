@@ -2,17 +2,19 @@
  * File-first POI ingestion orchestrator.
  *
  * Usage:
- *   pnpm --filter @lib/db-map ingest:run <poi/...json|jsonl|csv> --category <slug> [options]
+ *   pnpm --filter @lib/db-map ingest:run <data/poi/...json|jsonl|csv> --category <slug> [options]
  *
  * --category is required on every run. Category is never inferred from path or raw data.
  */
 import { getDb } from "../../lib/db/postgres.js";
+import { pathToFileURL } from "node:url";
 import { assertValidCategory, listCategorySlugs } from "./taxonomy.js";
 import {
   runOrchestration,
   type IngestStage,
   type OrchestratorOptions,
 } from "./orchestrator.js";
+import { holdSystemAwake } from "./sleep-inhibitor.js";
 
 const STAGES = new Set<IngestStage>([
   "extract",
@@ -35,13 +37,13 @@ function stage(value: string, flag: string): IngestStage {
 function usageError(message: string): never {
   console.error(message);
   console.error(
-    "Usage: ingest:run <poi/...json|jsonl|csv> --category <slug> [options]",
+    "Usage: ingest:run <data/poi/...json|jsonl|csv> --category <slug> [options]",
   );
   console.error(`Known categories: ${listCategorySlugs().join(", ")}`);
   process.exit(1);
 }
 
-function parseArgs(argv: string[]): OrchestratorOptions {
+export function parseArgs(argv: string[]): OrchestratorOptions {
   const file = argv[0]?.startsWith("--") ? "" : (argv[0] ?? "");
   const opts: OrchestratorOptions = {
     file,
@@ -73,7 +75,8 @@ function parseArgs(argv: string[]): OrchestratorOptions {
     else if (arg === "--reprocess") {
       const selected = value();
       opts.reprocess = selected === "all" ? "all" : stage(selected, arg);
-    } else if (arg === "--max-llm-requests")
+    } else if (arg === "--unlimited") opts.unlimited = true;
+    else if (arg === "--max-llm-requests")
       opts.maxLlmRequests = Number(value());
     else if (arg === "--max-cost-usd") opts.maxCostUsd = Number(value());
     else if (arg === "--geocode-limit") opts.geocodeLimit = Number(value());
@@ -93,7 +96,7 @@ function parseArgs(argv: string[]): OrchestratorOptions {
       opts.consolidate
     ) {
       throw new Error(
-        "--resume preserves scope/options; only --stop-after, --dry-run and provider budgets may be overridden",
+        "--resume preserves scope/options; only --stop-after, --dry-run, --unlimited and optional provider limits may be overridden",
       );
     }
     if (!/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(opts.resume))
@@ -117,6 +120,20 @@ function parseArgs(argv: string[]): OrchestratorOptions {
     }
   }
   if (
+    opts.unlimited &&
+    [opts.maxLlmRequests, opts.maxCostUsd, opts.geocodeLimit].some(
+      (value) => value !== undefined,
+    )
+  )
+    throw new Error("--unlimited cannot be combined with provider limits");
+  for (const [name, number] of [
+    ["--max-llm-requests", opts.maxLlmRequests],
+    ["--geocode-limit", opts.geocodeLimit],
+  ] as const) {
+    if (number !== undefined && !Number.isSafeInteger(number))
+      throw new Error(`${name} must be a nonnegative integer`);
+  }
+  if (
     opts.limit !== undefined &&
     (!Number.isSafeInteger(opts.limit) || opts.limit < 1)
   )
@@ -134,15 +151,25 @@ function parseArgs(argv: string[]): OrchestratorOptions {
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
-  const db = getDb();
+  const releaseAwake = opts.dryRun ? () => {} : await holdSystemAwake();
   try {
-    await runOrchestration(db, opts);
+    const db = getDb();
+    try {
+      await runOrchestration(db, opts);
+    } finally {
+      await db.end();
+    }
   } finally {
-    await db.end();
+    releaseAwake();
   }
 }
 
-main().catch((error) => {
-  console.error("Ingest run failed:", error);
-  process.exit(1);
-});
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  main().catch((error) => {
+    console.error("Ingest run failed:", error);
+    process.exit(1);
+  });
+}

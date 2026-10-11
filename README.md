@@ -95,14 +95,14 @@ bash scripts/agent-env.sh start
 Configure these as **environment variables that survive into the agent phase**
 (not setup-only secrets unless the script is allowed to persist them):
 
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `DB_MAP_URL` | yes, unless `--local-db` | Shared PostgreSQL (same database this Cursor environment uses) |
-| `LOCATIONIQ_API_KEY` | ingestion | Geocoding |
-| `JINA_API_KEY` | ingestion | Embeddings |
-| `DEEPINFRA_API_KEY` | ingestion | Normalization / match LLM |
-| `RAILWAY_TOKEN` | Railway IaC only | Project token scoped to `dev` |
-| `THUNDERFOREST_API_KEY` | optional | Premium tiles |
+| Variable                | Required                 | Purpose                                                        |
+| ----------------------- | ------------------------ | -------------------------------------------------------------- |
+| `DB_MAP_URL`            | yes, unless `--local-db` | Shared PostgreSQL (same database this Cursor environment uses) |
+| `LOCATIONIQ_API_KEY`    | ingestion                | Geocoding                                                      |
+| `JINA_API_KEY`          | ingestion                | Embeddings                                                     |
+| `FIREWORKS_API_KEY`     | ingestion                | DeepSeek V4.1 Flash thinking for normalization / match LLM     |
+| `RAILWAY_TOKEN`         | Railway IaC only         | Project token scoped to `dev`                                  |
+| `THUNDERFOREST_API_KEY` | optional                 | Premium tiles                                                  |
 
 The host must allow outbound network to the database host during agent work.
 `--local-db` provisions isolated PostgreSQL 16+ with `pg_trgm` when a remote URL
@@ -130,6 +130,11 @@ pnpm railway:status
 pnpm railway:config:plan
 ```
 
+Use `pnpm railway:link:production` instead when working against production. Always
+read `pnpm railway:status` before a plan or apply. Dev deploys `apps/map` from `main`;
+production deploys `map` from `prod` with the same build, start, watch, and health
+settings.
+
 The plan is read-only. Use `pnpm railway:config:apply` only after reviewing it.
 Cloud agents should receive a `RAILWAY_TOKEN` project token through their secret
 store and must not write credentials into the repository.
@@ -138,7 +143,9 @@ Pull requests that change `.railway/` receive a pinned Railway plan. Merging app
 that exact reviewed plan to `World/dev`; drift or a changed `.railway/` tree causes
 the apply to fail. Railway PR Environments clone `dev`, deploy only affected services,
 and include supported bot-authored PRs. See the [Railway runbook](.railway/README.md)
-for setup, agent rules, CI behavior, preview limitations, and recovery steps.
+for setup, production operations, agent rules, CI behavior, preview limitations, and
+recovery steps. Agents should follow the repository's
+[Railway IaC skill](.agents/skills/railway-iac/SKILL.md).
 
 ### Environment Variables
 
@@ -162,14 +169,14 @@ for setup, agent rules, CI behavior, preview limitations, and recovery steps.
 You usually launch full imports manually. AI agents share ownership of every stage and may
 stop/resume your runs, migrate schema, and repair experimental data as needed. They normally
 validate fixes with short runs. Before changing a running pipeline, use the shared
-[process-control workflow](poi-ingestion.md#process-control-and-maintenance) to enter
+[process-control workflow](data/poi-ingestion.md#process-control-and-maintenance) to enter
 maintenance and confirm shutdown. `pnpm --filter @lib/db-map ingest:control list --json`
 shows worker evidence and maintenance state.
 
-Raw source files live in `poi/`. The pipeline preserves source records and their history
+Raw source files live in `data/poi/`. The pipeline preserves source records and their history
 in `research_*`, then merges them into the `canonical_*` POIs shown on the map.
 
-Run these commands from the repository root. Replace `<file>` with a path under `poi/`
+Run these commands from the repository root. Replace `<file>` with a path under `data/poi/`
 and `<category>` with a slug from the [taxonomy](lib/db-map/scripts/ingest/taxonomy.ts).
 Category must be explicit; it is never inferred from the file or its records.
 
@@ -213,9 +220,9 @@ blocked records, and data quality still need review.
 Global consolidation is a separate, explicit choice: add `--consolidate` to a full file run.
 It cannot be combined with `--record` or `--limit`. Do not use `--recluster` to resume.
 
-The [ingestion runbook](poi-ingestion.md) owns command semantics, failure investigation,
+The [ingestion runbook](data/poi-ingestion.md) owns command semantics, failure investigation,
 category completeness, cleanup, and reprocessing. New source data should follow the
-[capture spec](poi-research/capture-spec.md).
+[capture spec](data/poi-research/capture-spec.md).
 
 ### Ingestion dashboard and file inventory
 
@@ -380,7 +387,16 @@ The frontend auth hooks (`useAuth`, `useEntitlements`, `usePremiumKey`) already 
 
 Agents use a cheap runner and a detached supervisor; ordinary code checks health hourly and
 keeps logs without spending model tokens. The expensive agent returns only to decide after a
-terminal event. See [agent operations](ingestion-agents.md) for commands and notification
+terminal event. See [agent operations](data/ingestion-agents.md) for commands and notification
 setup. Automatic wake-up requires a verified local Codex connection on every operator host. This
 development Mac uses the official standalone Codex managed daemon and task queue. Manual foreground
 `ingest:run` remains available.
+
+The local OpenClaw coordinator uses `ingest:queue --json` and the
+[native runner](data/ingestion-agents.md#native-openclaw-runner). Its `ingest:supervise watch`
+process stays under OpenClaw background exec, with native terminal completion events, uncapped
+provider work and no overall completion deadline. Use `--unlimited` when resuming an older run
+to clear saved request, cost and geocoder caps. OpenClaw continues the intended file backlog
+after each verified completion. This path does not invoke Codex while waiting; code blockers go to Codex for
+repair. The existing dashboard and audited `ingest:inventory --edit-file` share classification
+state with the queue; no second mutable status file is needed among captures.
