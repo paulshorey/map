@@ -284,7 +284,7 @@ pnpm --filter map cap:android   # builds, syncs, opens Android Studio
 
 ### Live reload during development
 
-1. Start the Next.js dev server: `pnpm dev`
+1. For direct LAN access, start Next.js with `pnpm --filter map exec next dev --hostname 0.0.0.0 --port 4200`. Ordinary `pnpm dev` binds to loopback; private phone-browser access uses [Tailscale](working/local-development-tailscale.md).
 2. Uncomment the `server.url` block in `capacitor.config.ts` and set your machine's LAN IP (e.g. `http://192.168.1.10:4200`)
 3. Run `npx cap run ios` or `npx cap run android`
 
@@ -385,21 +385,18 @@ The frontend auth hooks (`useAuth`, `useEntitlements`, `usePremiumKey`) already 
 
 ### Agent-operated long ingestion
 
-Agents use a cheap runner and a detached supervisor; ordinary code checks health hourly and
-keeps logs without spending model tokens. The expensive agent returns only to decide after a
-terminal event. See [agent operations](data/ingestion-agents.md) for commands and notification
-setup. Automatic wake-up requires a verified local Codex connection on every operator host. This
-development Mac uses the official standalone Codex managed daemon and task queue. Manual foreground
-`ingest:run` remains available.
+The native Codex scheduled map coordinator launches one intended source file at a time
+through the coordinator toolkit's detached supervisor. Ordinary Node owns waiting,
+hourly health checks, and durable results; later scheduled passes reconcile them and
+advance only after verified whole-file completion. Full imports and resumes use
+`--unlimited` without an overall deadline. This workflow requires verified scheduled
+discovery and does not promise an immediate callback.
 
-The local OpenClaw coordinator uses `ingest:queue --json` and the
-[native runner](data/ingestion-agents.md#native-openclaw-runner). Its `ingest:supervise watch`
-process stays under OpenClaw background exec, with native terminal completion events, uncapped
-provider work and no overall completion deadline. Use `--unlimited` when resuming an older run
-to clear saved request, cost and geocoder caps. OpenClaw continues the intended file backlog
-after each verified completion. This path does not invoke Codex while waiting; code blockers go to Codex for
-repair. The existing dashboard and audited `ingest:inventory --edit-file` share classification
-state with the queue; no second mutable status file is needed among captures.
+Other agent hosts use a cheap runner with a verified terminal-notification path, or
+prepare a manual command. See [agent operations](data/ingestion-agents.md) for the
+execution procedures and recovery limits. Manual foreground `ingest:run` remains
+available. The dashboard and audited inventory edits share classification state
+with the queue; no second mutable status file is needed among captures.
 
 ## Private phone access through Tailscale
 

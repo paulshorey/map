@@ -1,7 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { hostname } from "node:os";
-import { parseControlArgs, scriptProcesses, localPidState } from "./control.js";
+import {
+  parseControlArgs,
+  scriptProcesses,
+  localPidState,
+  canReconcile,
+} from "./control.js";
+import { isLocalHost } from "./host-identity.js";
 
 test("control mutations require explicit, unambiguous scope and bounded waits", () => {
   assert.throws(() => parseControlArgs(["stop"]));
@@ -49,4 +55,60 @@ test("process discovery ignores shell text/read-only controls and finds writable
     localPidState(hostname(), process.pid),
     "present_identity_unverified",
   );
+});
+
+test("host identity accepts exact and mDNS aliases without merging different hosts", () => {
+  assert.equal(isLocalHost("Pauls-MacBook-Pro", "Pauls-MacBook-Pro"), true);
+  assert.equal(
+    isLocalHost("Pauls-MacBook-Pro.local", "Pauls-MacBook-Pro"),
+    true,
+  );
+  assert.equal(
+    isLocalHost("Pauls-MacBook-Pro", "Pauls-MacBook-Pro.local"),
+    true,
+  );
+  assert.equal(
+    isLocalHost("PAULS-MACBOOK-PRO.LOCAL.", "pauls-macbook-pro"),
+    true,
+  );
+  assert.equal(isLocalHost("Host.Example.COM", "host.example.com"), true);
+  assert.equal(
+    isLocalHost("Pauls-MacBook-Pro-2.local", "Pauls-MacBook-Pro"),
+    false,
+  );
+  assert.equal(
+    isLocalHost("Pauls-MacBook-Pro.local.evil", "Pauls-MacBook-Pro"),
+    false,
+  );
+  assert.equal(isLocalHost("host.example.com", "host.other.com"), false);
+  assert.equal(isLocalHost("host.example.com", "host"), false);
+});
+
+test("a live mDNS worker remains present; an absent mDNS worker can reconcile only when quiescent", () => {
+  const host = `${hostname().replace(/\.local$/i, "")}.local`;
+  const executionId = "test-execution";
+  const live = localPidState(host, process.pid);
+  assert.equal(live, "present_identity_unverified");
+  assert.equal(
+    canReconcile(
+      {
+        quiescent: true,
+        workers: [{ execution_id: executionId, local_process: live }],
+      },
+      executionId,
+    ),
+    false,
+  );
+  const absent = localPidState(host, 2147483647);
+  assert.equal(absent, "absent");
+  const snapshot: Parameters<typeof canReconcile>[0] = {
+    quiescent: true,
+    workers: [{ execution_id: executionId, local_process: absent }],
+  };
+  assert.equal(canReconcile(snapshot, executionId), true);
+  assert.equal(
+    canReconcile({ ...snapshot, quiescent: false }, executionId),
+    false,
+  );
+  assert.equal(canReconcile(snapshot, "other-execution"), false);
 });
