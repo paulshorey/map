@@ -112,50 +112,36 @@ task. The human/agent split is about typical execution duration, not code or pro
 
 ## Economical long-run orchestration
 
-Read [agent ingestion operations](data/ingestion-agents.md) for the interface, handoff template,
-notification setup, and recovery limits. The following model rules narrow the execution preference
-above; operational ownership does not authorize wasting expensive model time.
+Read [agent ingestion operations](data/ingestion-agents.md) for durable process control,
+notification alternatives and recovery limits. Ordinary Node owns waiting and hourly
+health checks. No AI turn should stay alive to monitor a healthy import.
 
-- The expensive orchestrator (including GPT-6 Astra and GPT-5.6 Sol) makes decisions and repairs
-  code/data. **Never launch full ingestion directly.** Explicitly delegate the approved scope to
-  `ingestion-runner` / `gpt-5.6-luna` with low reasoning and minimal context. Do not let model
-  inheritance silently select the expensive parent, or substitute a bigger runner model.
-- Direct ingestion tests use `ingest:supervise smoke`, a NEW 1–5 record cohort and an expected
-  runtime under 45 seconds. Set provider budgets and stop-after as appropriate. The supervisor
-  enforces a maximum 60-second deadline plus termination grace. A timed-out test needs diagnosis;
-  never repeatedly launch small batches to finish a full import.
-- The cheap runner launches `ingest:supervise start` with a verified parent callback and the exact
-  approved scope. Full imports have no required provider caps or overall completion deadline.
-  Use `--unlimited` to clear inherited provider caps on a resume. Ordinary code owns waiting and hourly health checks.
-  Neither agent should poll, stream logs, run sleep/wait loops, or create an expensive recurring
-  automation to stay alive. Return the launch receipt, then **end the turn**. No healthy status
-  report should invoke a model. No automatic ingestion relaunch, scope expansion, or backlog drain.
-  Bounded in-process provider recovery is owned by ordinary pipeline code; see the runbook's
-  transient normalization provider recovery section. A healthy cooldown does not need an agent.
-- The local OpenClaw coordinator may act as the cheap runner using `ingest:supervise watch`
-  through its native background exec and verified completion event. It follows
-  [the native runner procedure](data/ingestion-agents.md#native-openclaw-runner).
-  This is a foreground process owned by OpenClaw, with model-free supervision; never route
-  full imports through an expensive Codex CLI turn or silently use detached local-only mode.
-  OpenClaw has standing authorization to continue all intended `data/poi` imports, one file at a
-  time, after verified completion. Provider spending and unknown-cost telemetry do not require
-  approval; do not ask for an allowance, ETA or overall deadline. Failures and missing notification
-  evidence require diagnosis, with code/script blockers delegated to the connected Codex engineer.
-- Only a terminal result/error should start a new expensive decision turn. Keep the handoff and
-  report compact (about 150 words); retain raw logs locally. Check the stable event ID to avoid
-  handling duplicate notifications. Verified database completion, not exit zero alone, is success.
-- Verify the host supports the notification path before unattended launch. A cheap subagent's
-  launch receipt is not proof of later wake-up. If unavailable, report that limitation; do not
-  silently use `--local-only`, an independent app server, or expensive polling as a substitute.
-  Local-only detached operation is for humans or a separately verified notification integration.
-- Full backlog execution uses uncapped normalization, geocoding, embedding, matching and fusion.
-  Request/cost telemetry remains informative. Optional finite provider limits or full-run deadlines
-  apply only when explicitly selected by an operator; they are not admission requirements.
-  Preserve maintenance, process identity, evidence and resume rules below.
-- On terminal provider-recovery exhaustion, inspect its recorded bound and provider error;
-  do not repeatedly delegate resumes against an unresolved outage. Preserve the original record
-  scope, completed artifacts and diagnostic evidence; resume with `--unlimited` after the cause is
-  repaired. Unknown costs do not block a working provider or require a spending decision.
+- Paul's native Codex desktop scheduled map coordinator is authorized to manage all intended
+  `data/poi` imports, one file at a time, with uncapped provider stages and no overall deadline.
+  After its verified scheduled-discovery pilot, it may launch the exact reviewed scope through
+  the coordinator toolkit's `map-ingestion.py start`. That wrapper uses detached
+  `ingest:supervise start --local-only`, durable journals and reconciliation on ordinary
+  project scheduled passes. This is an explicitly selected completion strategy; it does not
+  promise an immediate callback. No cheap AI launcher or waiting subprocess is needed.
+- Other expensive coding agents should delegate approved full imports to the explicitly
+  configured `ingestion-runner` / `gpt-5.6-luna` with low reasoning and a verified callback,
+  or prepare the manual command. Do not create high-frequency AI monitoring schedules.
+- Development tests use `ingest:supervise smoke`, a NEW 1–5 record cohort and expected runtime
+  under 45 seconds. Set provider budgets/stop-after as appropriate. Deadline maximum is 60s
+  plus grace. Diagnose a timeout; never chain tests to drain the backlog.
+- Full imports use `--unlimited`, including resumed historically capped runs, preserve original
+  cohort/stages/checkpoints and have no required overall deadline. Spending/unknown-cost telemetry
+  is informational; do not ask for an allowance, ETA or deadline for the standing backlog.
+- Record the exact job/run/execution IDs and return after launch. Reconcile existing human and
+  automated workers before starting anything. Never stop a healthy worker merely to assume
+  ownership. Verified whole-file/database completion, not exit zero, permits advancement.
+- Diagnose terminal failures, source-lock loss or exhausted provider recovery before resuming.
+  Bounded provider cooldown is owned by pipeline code; a live heartbeat does not need an agent.
+  Code/script blockers go to a visible native coding task. Source-specific blockers can permit
+  independent captures; global schema/provider/lineage blockers stop progression.
+- Use durable supervisor stop requests and database controls, verifying actual process/lock exit.
+  Preserve the maintenance, identity, evidence and resume rules below. Do not relaunch blindly
+  or trust an old PID/conversation handle. No automatic process-level retry or scope expansion.
 
 ## Stop before changing a running pipeline
 

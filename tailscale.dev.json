@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "name": "map",
+  "services": [
+    {
+      "name": "web",
+      "kind": "next",
+      "app": "apps/map",
+      "port": 4200,
+      "httpsPort": 4200,
+      "probe": "/api/health"
+    }
+  ]
+}

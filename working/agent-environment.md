@@ -83,7 +83,7 @@ checks that the required map tables exist.
 ```bash
 bash scripts/agent-env.sh check
 pnpm --filter @lib/db-map ingest:status
-pnpm dev                    # map at http://127.0.0.1:5000
+pnpm dev                    # map at http://127.0.0.1:4200
 pnpm dev:ingestion          # dashboard at http://127.0.0.1:5001
 ```
 
