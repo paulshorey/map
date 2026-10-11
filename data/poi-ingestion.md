@@ -121,7 +121,7 @@ reprocess generation. Matching active artifacts are recorded as reused in a bulk
 they are not reactivated, jobs are not re-leased, and canonical output is not rebuilt. Downstream
 ready/excluded records are similarly audited in batches. Missing/stale outputs remain real work.
 Shadow evaluation keeps its regular validation path. Paid provider work stays sequential and
-bounded by the original record cohort. Provider caps are optional; OpenClaw full imports use
+bounded by the original record cohort. Provider caps are optional; the native scheduled coordinator full imports use
 `--unlimited`. Full `ingest:supervise start`/`watch` jobs have no completion deadline by default;
 `--max-hours N` remains an optional operator control. Development smoke deadlines remain bounded.
 
@@ -344,7 +344,7 @@ Run `pnpm --filter @lib/db-map ingest:test-llm` and
 Management account/model reads can verify key validity and model availability without
 inference billing; they do not prove sufficient credits, successful inference, JSON
 quality or end-to-end ingestion. Before unattended imports, validate a new 1–5 record
-managed smoke through the necessary stages, then update the OpenClaw handoff with the observed
+managed smoke through the necessary stages, then update the the native scheduled coordinator handoff with the observed
 result. Full imports require no spending allowance, unknown-cost approval, ETA or overall deadline.
 Follow [agent operations](ingestion-agents.md) for execution.
 
@@ -387,7 +387,7 @@ joined to the exact execution ID. Unrestricted executions suggest `--resume UUID
 which clears historical provider caps while preserving checkpoints. Unknown costs are telemetry,
 not an admission or approval requirement. If an operator explicitly selects finite caps, the
 suggested resume subtracts recorded usage from those optional caps. A bare resume of an old
-capped run retains its original limits; OpenClaw must use `--unlimited` for continuous execution.
+capped run retains its original limits; the native scheduled coordinator must use `--unlimited` for continuous execution.
 
 ```bash
 pnpm --filter @lib/db-map ingest:pause --run <uuid>
@@ -506,8 +506,8 @@ Conflicting edits fail; reread and reconcile rather than overwriting. Scans pres
 operator fields and batch metadata writes to avoid a database round trip per capture.
 Do not maintain a second mutable status file in `data/poi`; database evidence is authoritative.
 
-The [native OpenClaw procedure](ingestion-agents.md#native-openclaw-runner) owns event-based
-execution and repair handoff. `ingest:status --json` exposes exact per-execution normalization
+The [native scheduled coordinator procedure](ingestion-agents.md#native-codex-scheduled-coordinator) owns durable
+execution reconciliation and repair handoff. `ingest:status --json` exposes exact per-execution normalization
 usage for diagnostics, including failed requests and costs that are still unknown. This telemetry
 does not block uncapped imports or require spending approval.
 
