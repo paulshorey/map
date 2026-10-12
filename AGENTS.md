@@ -55,12 +55,11 @@ must stay unset.
 
 Raw source POI data will be ingested by a CLI script. It is a long-running process. Stop and report back if it encounters a problem so we can troubleshoot and fix or improve the process.
 
-1. Smart AI model (Terra) should orchestrate sub-agents to run the scripts, decide on success or failure of each step, decide to start from the beginning or resume a process if it previously ended prematurely. Communicate on the status and health of the process. Recommend next steps - to make code improvements, to fix data, to start over, how to resume data collection at the last spot where it previously failed.
-2. Cheap AI model (Luna) should run the script, monitor progress, and report back success or failure details and logs.
-
-You may also be an advanced AI model (Sol or Astra) that makes development decisions, owns and edits this codebase, and works with the human developer to improve this process. You may run the CLI scripts, but alway limit to just a short subset of records, only for testing and troubleshooting. Real long-running ingestion scripts should be run by cheaper AI agents.
-
-Refer back to your prompt to understand if you are the orchestrator or the runner. Act according to your role.
+The native Codex scheduled coordinator decides scope, reconciles terminal evidence and
+chooses an authorized next action. Ordinary Node supervision owns long-running workers,
+waiting and health checks; no AI model stays alive to monitor a healthy import. Coding
+agents develop and diagnose with bounded selections. Follow the prompt's role and the
+native scheduled exception below before launching full work.
 
 ## Processing source data
 
@@ -118,8 +117,8 @@ health checks. No AI turn should stay alive to monitor a healthy import.
 
 - Paul's native Codex desktop scheduled map coordinator is authorized to manage all intended
   `data/poi` imports, one file at a time, with uncapped provider stages and no overall deadline.
-  After its verified scheduled-discovery pilot, it may launch the exact reviewed scope through
-  the coordinator toolkit's `map-ingestion.py start`. That wrapper uses detached
+  After its verified scheduled-discovery receipt, it may launch the exact reviewed scope through
+  this project's `python3 scripts/coordinator-ingestion.py start`. That wrapper uses detached
   `ingest:supervise start --local-only`, durable journals and reconciliation on ordinary
   project scheduled passes. This is an explicitly selected completion strategy; it does not
   promise an immediate callback. No cheap AI launcher or waiting subprocess is needed.
