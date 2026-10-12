@@ -101,5 +101,12 @@ class MapControls(unittest.TestCase):
         with patch.object(m,'primary_root',return_value=self.repo),patch.object(m.subprocess,'run',return_value=reply),patch.dict(os.environ,{},clear=True):
             with self.assertRaises(ValueError):m.shell_environment(('MISSING',))
 
+    def test_login_probe_uses_primary_map_directory(self):
+        marker=b'\0__MAP_COORDINATOR_ENV__\0'
+        reply=subprocess.CompletedProcess([],0,marker+b'DB_MAP_URL=database-fixture\0','')
+        with patch.object(m,'primary_root',return_value=self.repo),patch.object(m.subprocess,'run',return_value=reply) as probe,patch.dict(os.environ,{},clear=True):
+            self.assertEqual(m.shell_environment(('DB_MAP_URL',))['DB_MAP_URL'],'database-fixture')
+        self.assertEqual(probe.call_args.kwargs['cwd'],self.repo)
+
 if __name__=='__main__':
     os.umask(0o077);unittest.main(verbosity=2)

@@ -80,7 +80,7 @@ def shell_environment(required):
                     match = re.match(r'^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=', line)
                     if match: declared.add(match.group(1))
     marker = b'\0__MAP_COORDINATOR_ENV__\0'
-    probe = subprocess.run(['/bin/zsh','-lc','printf "\\0__MAP_COORDINATOR_ENV__\\0"; /usr/bin/env -0'], capture_output=True, timeout=20)
+    probe = subprocess.run(['/bin/zsh','-lc','printf "\\0__MAP_COORDINATOR_ENV__\\0"; /usr/bin/env -0'], cwd=base, capture_output=True, timeout=20)
     if probe.returncode or marker not in probe.stdout:
         raise ValueError('Map login-shell environment unavailable')
     shell = {}
