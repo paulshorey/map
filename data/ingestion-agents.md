@@ -89,10 +89,14 @@ For normal manual foreground operation, the existing `ingest:run` commands remai
 
 ## Native Codex scheduled coordinator
 
-The native map scheduled task uses its saved Codex prompt and the global coordination
-skill for development/PR/task management. Its schedule, coordinator model and standing
-follow-up authorization live in Codex. The ingestion controls belong to this project:
-`python3 scripts/coordinator-ingestion.py`. No separate coordinator checkout is required.
+All agents inspecting or managing ingestion begin with the project's
+[job discovery and coordination procedure](../AGENTS.md#discover-and-coordinate-ingestion-jobs).
+It maps UUID journals, execution logs and unresolved launch claims to the current database
+evidence. Project ingestion records are independent of scheduled-run memory and global skills.
+The native map task's saved Codex prompt owns its objectives and scheduled handoff; its
+schedule, coordinator model and standing follow-up authorization live in Codex.
+The ingestion controls belong to this project: `python3 scripts/coordinator-ingestion.py`.
+The commands below retain their existing launch/admission requirements.
 
 From the primary map checkout:
 
