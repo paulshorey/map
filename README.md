@@ -166,6 +166,8 @@ recovery steps. Agents should follow the repository's
 
 ## POI Ingestion
 
+Native scheduled map coordination uses the project-local `python3 scripts/coordinator-ingestion.py` for durable discovery and detached import control. See [agent ingestion operations](data/ingestion-agents.md#native-codex-scheduled-coordinator) for commands, credentials, admission and recovery. Scheduling and prompts are managed in Codex.
+
 You usually launch full imports manually. AI agents share ownership of every stage and may
 stop/resume your runs, migrate schema, and repair experimental data as needed. They normally
 validate fixes with short runs. Before changing a running pipeline, use the shared

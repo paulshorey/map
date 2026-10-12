@@ -8,8 +8,9 @@ work. It owns command semantics, limits, completion criteria, and troubleshootin
 ## Agent execution cost
 
 Follow the root model/delegation rules and [agent operations](../../data/ingestion-agents.md).
-Full ingestion belongs to the explicit cheap runner; the expensive engineer only runs short,
-time-limited smoke selections. Do not add model calls to progress/heartbeat/health loops.
+Full ingestion uses deterministic supervision after an approved launch. The verified native
+scheduled coordinator may launch directly under the root exception; coding engineers use
+short, time-limited smoke selections or the explicitly scoped runner/manual workflow. Do not add model calls to progress/heartbeat/health loops.
 `supervise.ts` owns detached jobs and terminal evidence; `supervisor-process.ts` owns live child
 groups; `codex-notify.ts` is the optional verified parent transport. Keep monitoring deterministic,
 notification failures durable, delivery conservative, and resume decisions with the orchestrator.

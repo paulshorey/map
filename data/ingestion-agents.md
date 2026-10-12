@@ -89,40 +89,63 @@ For normal manual foreground operation, the existing `ingest:run` commands remai
 
 ## Native Codex scheduled coordinator
 
-Paul's per-project native desktop coordinator may directly launch exact approved full scopes
-through the coordinator toolkit named in its scheduled prompt. Read that toolkit's
-`config/coordinators/map.md` and `docs/OPERATIONS.md`. This workflow supersedes the generic cheap
-launcher/callback requirement for the verified scheduled coordinator only.
+The native map scheduled task uses its saved Codex prompt and the global coordination
+skill for development/PR/task management. Its schedule, coordinator model and standing
+follow-up authorization live in Codex. The ingestion controls belong to this project:
+`python3 scripts/coordinator-ingestion.py`. No separate coordinator checkout is required.
 
-The toolkit verifies native scheduled task creation and later-run discovery, then records two
-independent scheduled observations of the same durable map job and database run/execution.
-After that acceptance, `scripts/map-ingestion.py start` invokes the existing detached
-`ingest:supervise start --local-only`. No Codex CLI worker or terminal AI summary is launched.
-Node owns the child group, sleep assertion, hourly health checks and durable terminal result.
-Each ordinary map scheduled pass reconciles `.ingest-jobs`, PostgreSQL control/locks and its
-private intent ledger. There is no immediate desktop callback promise, no healthy waiting AI
-loop and no automatic process-level relaunch. The app must be open and the host awake for
-scheduled decisions; durable jobs survive the initiating model turn.
+From the primary map checkout:
 
-Paul authorizes continuous intended captures, normal provider stages and uncapped provider
-spending. Full runs and resumes use `--unlimited`, with no overall completion deadline. Resume
-retains original cohort, stage scope and successful checkpoints. Only verified whole-file
-completion permits choosing the next eligible capture. Read report/verification evidence;
-extraction, a report suffix or partial run is not completion. A source-specific blocker may
-permit another independent file; global outages/schema/lineage blockers stop progression.
+```sh
+python3 scripts/coordinator-ingestion.py snapshot
+python3 scripts/coordinator-ingestion.py accept --job ACTUAL_JOB_UUID
+python3 scripts/coordinator-ingestion.py start -- data/poi/CAPTURE.json --category CATEGORY
+python3 scripts/coordinator-ingestion.py start -- --resume ACTUAL_RUN_UUID --unlimited
+python3 scripts/coordinator-ingestion.py stop --job ACTUAL_JOB_UUID
+python3 scripts/coordinator-ingestion.py release --intent ACTUAL_INTENT_UUID --evidence PRIVATE_NOTE
+```
 
-Reconcile existing human-started jobs first. Never stop a healthy worker just to adopt it or
-start a duplicate source. On failed/stalled work inspect the exact result and current database
-state. Delegate implementation repair to a visible native coding task in an isolated worktree;
-maintenance and quiescence are required before runtime/schema/data changes. Keep production
-imports in the reviewed primary checkout. Use targeted supervisor/database control requests
-for stops, confirm lock/process exit and never signal an unverified saved PID.
+The Python interface uses only the standard library and the login/injected shell
+credentials. It reads variable names from .env.example references, never dotenv values.
+Existing injected values win. DB_MAP_URL is required for database discovery; full provider
+runs also require the existing pipeline keys. Values stay in the child environment.
 
-Durable discovery/control from this project's checkout remains available to a future agent
-or human developer through `ingest:supervise list`, `status --job UUID`, `stop --job UUID` and
-`ingest:control list --json`. The scheduled coordinator wrapper adds duplicate admission guards;
-its ambiguous launch claims require evidence-based operator reconciliation, not age-based retry.
-Raw logs, credentials, detailed evidence and provider receipts stay private.
+`snapshot` joins current database controls with `.ingest-jobs/UUID/job.json` and
+result.json evidence. Private admission observations and intent claims live in
+`lib/db-map/.ingest-jobs/.coordinator/`, already ignored by Git. Two different native
+scheduled owners can `accept` the same pinned job/run/execution to verify later-run
+discovery; the existing verified receipt was retained during the helper relocation.
+That receipt gates unattended starts, rather than any external model/schedule registry.
+
+`start` records intent before invoking existing detached `ingest:supervise start
+--local-only`, serializes coordinator launches and requires verified quiescence plus
+resolved journals. It returns the exact job UUID and ends setup. Full runs/resumes use
+--unlimited with no overall deadline and retain original cohort/stages/checkpoints.
+Production imports use the primary checkout; a coding worktree cannot launch them.
+Node owns the child group, sleep assertion, hourly probes and durable terminal result.
+No Codex waiting process, terminal AI summary, immediate desktop callback or process-level
+relaunch is promised. Ordinary scheduled passes reconcile completion at the cadence
+selected in Codex. The app and host must be available for scheduled decisions.
+
+Paul's continuous intended-capture/provider-stage spending authorization remains in
+force. Only verified whole-file completion permits choosing the next eligible capture;
+extraction, report suffixes or partial runs are not completion. Diagnose failed/stalled
+work and global outages before resuming. Source-specific blockers may permit independent
+captures. Maintenance/quiescence are required before changing running runtime/schema/data.
+
+Reconcile human-started workers first; preserve healthy imports and avoid duplicate
+sources. `stop` requests a targeted supervisor stop, which is not proof of termination.
+`release` needs the exact terminal journal/result and database quiescence plus a verification
+note. Database locks remain cross-host truth; a snapshot cannot serialize unrelated human
+or unmanaged starts. PID presence does not identify a process or authorize a signal.
+
+Lost/ambiguous start responses leave `imports/active.claim` held. Inspect the recorded
+argv/time, newly created journals and database workers before any retry. An operator must
+record the exact identified job_id in the matching intent before ordinary terminal release,
+or prove submission absent before removing just that abandoned claim. Never expire a claim
+by age, wipe the journal tree or kill a saved PID blindly. Raw logs and detailed evidence
+remain private. The underlying ingest:supervise and ingest:control commands still provide
+independent human/agent discovery and control.
 
 ## Notification setup and delivery limits
 
