@@ -109,6 +109,37 @@ If a stage lacks a suitable bound or cannot select the failing records, investig
 read-only queries and fixtures, then add or fix the diagnostic control when needed for the
 task. The human/agent split is about typical execution duration, not code or process ownership.
 
+## Discover and coordinate ingestion jobs
+
+Any agent asked to inspect or manage ingestion, including a scheduled coordinator, starts
+with this procedure. Use the primary map checkout for live operations. From its root, run
+`python3 scripts/coordinator-ingestion.py snapshot` once to discover database workers/locks,
+supervised jobs and launch intents; use the guides below for command details.
+
+- Find the relevant job by its run/execution IDs and timestamps. Follow the snapshot's
+  `journal` and `result_path` to `lib/db-map/.ingest-jobs/<job UUID>/job.json` and
+  `result.json`. Use `pnpm --silent --filter @lib/db-map ingest:status --run <run UUID>
+  --json --limit 10` to identify source/file, stage and failure evidence. Read relevant log
+  excerpts only; the matching event journal is
+  `lib/db-map/.ingest-logs/<run UUID>-<execution UUID>.jsonl`. Do not guess from filenames.
+- Inspect unresolved snapshot `claims` and, if present,
+  `lib/db-map/.ingest-jobs/.coordinator/imports/active.claim` plus its matching
+  `imports/<intent UUID>/intent.json`. These record launch ownership and the job receipt.
+  `ingestion-acceptance.json` and `observations/` are setup/discovery evidence used by the
+  current start gate; they do not prove present worker health or completion.
+- Preserve healthy imports. For failed, stalled or conflicting evidence, pin the exact IDs
+  and diagnose before stop/resume/retry. Use the helper's `stop` and `release` interfaces;
+  confirm process/lock exit and terminal evidence. A lost launch response must be reconciled
+  against existing jobs and workers before another start. Never discard a claim by age.
+- When continued ingestion is in scope and no unresolved worker/launch blocks it, use
+  `pnpm --silent --filter @lib/db-map ingest:queue --json` for eligible work. Verify whole-file
+  completion before advancing, and follow the full-launch and maintenance rules below.
+- Tools own job/intent records. Keep raw logs and diagnostic evidence private; report actual
+  IDs, findings, actions and next steps in the current chat. Scheduled-run memory may link
+  these records, but fresh project evidence governs each decision. Both runtime directories
+  are Git-ignored; no automatic retention cleanup exists. Preserve active/unresolved records
+  and evidence needed for recovery; do not prune them during an ordinary inspection pass.
+
 ## Economical long-run orchestration
 
 Read [agent ingestion operations](data/ingestion-agents.md) for durable process control,
