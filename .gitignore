@@ -45,3 +45,6 @@ lib/db-map/.ingest-logs/
 lib/db-map/.ingest-jobs/
 
 /scripts/__pycache__/
+
+# Private continuity and task records for local Codex scheduled runs.
+/.codex/project-coordinator/
