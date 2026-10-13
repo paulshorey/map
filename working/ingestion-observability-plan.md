@@ -1,6 +1,6 @@
 # Ingestion observability implementation
 
-Status: implemented and validated; original full Dyrt resume pending final launch receipt (October 12, 2026).
+Status: implemented, validated and running the repaired original full Dyrt cohort (October 12, 2026).
 PR: https://github.com/paulshorey/map/pull/40
 
 ## Baseline and decision
@@ -110,3 +110,37 @@ normalize-only selections do not depend on a later verification stage. The real 
 frontier scan took 559 ms including connection/transfer; six rollback-only real claim checks took
 148–262 ms each. Thirteen scheduler/telemetry tests include large adopted frontiers and early
 artifact commit versus late handler return. The final smoke and resumed job receipt follow below.
+
+## Final operational handoff
+
+The final one-record managed smoke succeeded (run `4a2af2de-b61d-4fce-9a8f-1402613e1e98`,
+execution `33ab6758-5f52-4d7a-a08a-d74e0ddb98ac`, job
+`880b9fc2-f06b-4146-b64d-e9c5a020ab17`) with zero normalization requests and all stages verified.
+
+Full original run `4dda8606-9c20-4275-bae6-c14cdea9e38c` was then resumed on the repaired
+implementation (`eb13275`) through the configured cheap launcher. Final job:
+`008eba39-a370-4369-a506-8c1e7b360832`; execution:
+`3c766665-ac68-4d0c-b992-545e96b10429`. Original cohort/options/checkpoints were preserved,
+with explicit `--unlimited --llm-concurrency 4`, no overall deadline and hourly ordinary Node
+health checks. Maintenance is open. The callback route passed preflight; the deliberately stopped
+first startup also produced a durable accepted terminal delivery receipt to the current parent.
+This establishes transport acceptance, not a guarantee of immediate client consumption.
+
+At 04:37 UTC on October 13, the shared snapshot showed a live worker/source lock, 33 active
+record tasks, 1,120 successful embedding tasks and 33 successful verification tasks, plus 36 Jina
+calls averaging 32 records each with zero failures. Browser inspection at approximately 04:41 UTC
+showed 3,746 completed embedding tasks and 120 completed verification tasks. These are dated
+startup observations, not a maintained progress ledger or whole-file completion proof.
+Normalization is held by backpressure while the adopted 16,873-record downstream frontier drains;
+its shared four-slot admission becomes available as that frontier falls below the low watermark.
+
+The next action is to preserve this progressing worker. Use the shared overview/doctor for fresh
+state and the existing supervisor stop/control procedures for intervention. The two legacy
+failed/stale normalization outputs remain visible and are eligible for managed repair; ten files
+still need classification and category quality is not accepted. Canonical matching/dispatch
+round trips are the next performance candidates. Provider/database stage timing and throughput
+must be compared before changing canonical serialization or quality settings.
+
+Journal: `lib/db-map/.ingest-logs/4dda8606-9c20-4275-bae6-c14cdea9e38c-3c766665-ac68-4d0c-b992-545e96b10429.jsonl`.
+Durable job/result directory: `lib/db-map/.ingest-jobs/008eba39-a370-4369-a506-8c1e7b360832/`.
+The primary checkout stays on the implementation PR branch; `main` has not been merged.
