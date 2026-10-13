@@ -24,6 +24,7 @@ export function performanceOpportunities(
   metrics: any[],
   concurrency: number,
   remaining: number,
+  taskMetrics: any[] = [],
 ) {
   const suggestions: Array<{
     code: string;
@@ -62,6 +63,22 @@ export function performanceOpportunities(
   const emb = metrics.find(
     (x) => x.operation === "embed" && Number(x.mean_batch_size) < 8,
   );
+  const matching = taskMetrics.find(
+    (m) =>
+      m.stage === "match" &&
+      m.records >= 10 &&
+      m.mean_database_ms > m.mean_elapsed_ms * 0.5,
+  );
+  if (matching)
+    suggestions.push({
+      code: "matching_database_time",
+      evidence: matching,
+      confidence: "measured",
+      recommendation:
+        "Inspect candidate-query plans and database round trips before increasing matching concurrency; canonical activation must remain serialized",
+      experiment:
+        "Read-only EXPLAIN on the pinned candidate selection, then compare the same bounded cohort with warm-cache effects labeled",
+    });
   if (emb)
     suggestions.push({
       code: "embedding_batch_fill",
@@ -128,6 +145,7 @@ async function localEvidence() {
           supervisor_pid: job.supervisor_pid,
           child_pid: job.child_pid,
           last_health_at: job.last_health_at ?? null,
+          last_health_evidence: job.last_health_evidence ?? null,
           started_at: job.started_at,
           journal: join(base, id, "job.json"),
         });
@@ -226,6 +244,16 @@ export async function getOverview(
         [options.run ?? null],
       )
     ).rows;
+    const active_tasks = run
+      ? (
+          await client.query(
+            `SELECT source_record_id,stage,execution_id,attempt_id,started_at,
+      extract(epoch from clock_timestamp()-started_at)::float AS active_seconds FROM research_ingest_tasks
+      WHERE run_id=$1 AND state='running' ORDER BY started_at LIMIT 100`,
+            [run],
+          )
+        ).rows
+      : [];
     const scans = (
       await client.query(
         `SELECT * FROM research_ingest_inventory_scans ORDER BY started_at DESC LIMIT 5`,
@@ -355,6 +383,24 @@ export async function getOverview(
       ...x,
       inspect_args: ["ingest:doctor", "--run", x.run_id, "--json"],
     }));
+    for (const file of classified.filter((f) => f.normalization_failed > 0)) {
+      interventions.push({
+        code: "normalization_outputs_invalid",
+        scope: "file",
+        severity: "warning",
+        file: file.logical_path,
+        run_id: file.resume_run?.id ?? file.latest_run?.id,
+        records: file.normalization_failed,
+        message:
+          "Failed or stale normalized outputs remain; inspect their record traces. Managed resume selects them for repair.",
+        inspect_args: [
+          "ingest:status",
+          "--run",
+          file.resume_run?.id ?? file.latest_run?.id,
+          "--json",
+        ],
+      });
+    }
     for (const w of control.workers) {
       if (w.heartbeat_stale)
         interventions.push({
@@ -476,9 +522,11 @@ export async function getOverview(
         metrics.length ? metrics : [{ operation: "normalize", ...legacy }],
         concurrency,
         remaining,
+        task_metrics,
       ),
       execution: current ?? null,
       tasks,
+      active_tasks,
       task_metrics,
       file_count: inventory.files.length,
       file_page: {
@@ -521,13 +569,24 @@ export async function getOverview(
         })),
     };
     if (options.includeInventory) data.inventory = inventory;
-    if (options.detail && run)
+    if (options.detail && run) {
+      data.task_samples = (
+        await client.query(
+          `SELECT source_record_id,stage,state,input,output,attempt_id,execution_id,started_at,finished_at
+       FROM (SELECT t.*,row_number() OVER(PARTITION BY stage,state ORDER BY i.source_ordinal,i.source_record_id) AS sample_rank
+        FROM research_ingest_tasks t JOIN research_ingest_run_items i USING(run_id,source_record_id)
+        WHERE t.run_id=$1 AND state IN ('pending','paused','quarantined','waiting_budget')) sampled
+       WHERE sample_rank<=5 ORDER BY rank,state,source_record_id`,
+          [run],
+        )
+      ).rows;
       data.recent_attempts = (
         await client.query(
           `SELECT id,execution_id,stage,target_key,status,started_at,finished_at,input,output,error FROM research_ingest_attempts WHERE run_id=$1 ORDER BY started_at DESC LIMIT 20`,
           [run],
         )
       ).rows;
+    }
     await client.query("ROLLBACK");
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);

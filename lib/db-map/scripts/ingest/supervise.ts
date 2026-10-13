@@ -198,7 +198,7 @@ async function tail(path: string) {
   }
 }
 
-async function evidence(job: Job) {
+export async function evidence(job: Job) {
   if (!job.run_id || !job.execution_id) return null;
   const db = await getDb().connect();
   try {
@@ -217,6 +217,9 @@ async function evidence(job: Job) {
     extract(epoch FROM now()-e.heartbeat_at)::float AS heartbeat_age_seconds,
     (SELECT count(*)::int FROM research_ingest_run_items WHERE run_id=r.id) AS scope_records,
     (SELECT max(greatest(started_at,finished_at)) FROM research_ingest_attempts WHERE execution_id=e.id) AS last_progress_at
+    ,GREATEST((SELECT max(finished_at) FROM research_ingest_attempts WHERE execution_id=e.id AND status IN ('succeeded','reused','skipped')),
+       (SELECT max(last_attempt_at) FROM research_ingest_run_records WHERE run_id=r.id AND extract_state IN ('written','unchanged'))) AS last_committed_at
+    ,(SELECT COALESCE(jsonb_agg(t),'[]'::jsonb) FROM (SELECT stage,state,count(*)::int AS records FROM research_ingest_tasks WHERE run_id=r.id GROUP BY stage,state) t) AS task_counts
     FROM research_ingest_runs r JOIN research_ingest_executions e ON e.run_id=r.id
     WHERE r.id=$1 AND e.id=$2`,
         [job.run_id, job.execution_id],
@@ -462,6 +465,17 @@ async function worker(id: string) {
       await persist();
       const e = await evidence(job);
       if (!e) return "startup_not_registered_at_hourly_check";
+      job.last_health_evidence = {
+        observed_at: job.last_health_at,
+        run_id: job.run_id,
+        execution_id: job.execution_id,
+        last_committed_at: e.last_committed_at,
+        last_progress_at: e.last_progress_at,
+        heartbeat_age_seconds: e.heartbeat_age_seconds,
+        task_counts: e.task_counts,
+        provider_recovery: e.provider_recovery,
+      };
+      await persist();
       if (e.execution_status !== "running")
         return "worker_alive_after_terminal_execution";
       if (e.heartbeat_age_seconds > 120)

@@ -32,6 +32,7 @@ export interface Job {
   health_interval_seconds: number;
   health_checks: number;
   last_health_at?: string;
+  last_health_evidence?: Record<string, unknown>;
   finished_at?: string;
   stop_reason?: string;
   result?: Record<string, unknown>;

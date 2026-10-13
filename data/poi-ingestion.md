@@ -37,6 +37,8 @@ continue and the run ends partial. Ten consecutive validation failures in one st
 systemic circuit breaker. Authentication, billing, unexpected provider shapes, database, schema,
 source-lock and lineage faults stop globally. Non-POIs are explicitly skipped downstream.
 All canonical mutations use one process lane and the existing database-wide canonical lock.
+Linked embedding/geocode activation refreshes canonical build inputs in that same transaction;
+unlinked records activate independently.
 Geocoding stays at one request per second. Embeddings batch up to 32 records, with a two-second
 maximum collection wait and one embedding request in flight. At 1,000 normalized records waiting
 for downstream verification, normalization pauses until the backlog drops below 500.
@@ -158,7 +160,7 @@ pnpm --silent --filter @lib/db-map ingest:issues list --run <run-uuid> --json
 ```
 
 The default returns 20 files, whole-inventory totals, stage task counts, exact worker/run/job
-identity, interventions, next action, last commits and active ages, scan receipts, and measured
+identity, interventions, next action, last commits, exact active record IDs and active ages, scan receipts, and measured
 performance suggestions. Metrics are bounded to the latest 1,000 calls/completed attempts.
 Provider calls include admission wait, response latency, requests, batch size, known/unknown cost,
 model, prompt/cache/completion/reasoning tokens when supplied, HTTP status and quota headers.
@@ -170,7 +172,10 @@ separately. Measured findings and optimization hypotheses have different confide
 The payload's TypeScript contract and JSON Schema live in `lib/db-map/contracts/ingestion-*`.
 API filters are `run`, `file`, `limit`, `offset`, `detail=1`; `inventory=1` includes the original
 inventory projection so the dashboard can refresh both panels with one database snapshot.
+Detail/doctor also returns five pending/paused/quarantined/budget-held task samples per stage/state.
 Focused status/control/trace and coordinator snapshot interfaces remain the drill-down tools.
+Hourly Node checks persist committed progress separately from latest attempted work and task counts
+in each job journal; they do not invoke a model for healthy progress.
 
 `research_ingest_inventory_scans` records checkout, commit, stable host ID, scan start/end,
 outcome and errors. Its exclusive advisory key `(91832,3)` is distinct from the shared worker /

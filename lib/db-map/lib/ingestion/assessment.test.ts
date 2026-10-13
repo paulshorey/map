@@ -26,6 +26,10 @@ const fixture: Evidence = {
 test("whole file completion needs extraction, readiness and verification", () => {
   assert.equal(assessFile(fixture).coverage, "complete");
   assert.equal(
+    assessFile({ ...fixture, global_verified: false }).coverage,
+    "ready_to_verify",
+  );
+  assert.equal(
     assessFile({ ...fixture, verified: 1 }).coverage,
     "ready_to_verify",
   );

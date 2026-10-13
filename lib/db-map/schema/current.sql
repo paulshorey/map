@@ -1692,6 +1692,13 @@ CREATE INDEX research_ingest_executions_run_idx ON public.research_ingest_execut
 
 
 --
+-- Name: research_ingest_inventory_scans_recent_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_inventory_scans_recent_idx ON public.research_ingest_inventory_scans USING btree (started_at DESC);
+
+
+--
 -- Name: research_ingest_issues_open_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1703,6 +1710,13 @@ CREATE INDEX research_ingest_issues_open_idx ON public.research_ingest_issues US
 --
 
 CREATE INDEX research_ingest_provider_calls_execution_idx ON public.research_ingest_provider_calls USING btree (execution_id, started_at DESC);
+
+
+--
+-- Name: research_ingest_provider_calls_run_recent_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_provider_calls_run_recent_idx ON public.research_ingest_provider_calls USING btree (run_id, started_at DESC);
 
 
 --

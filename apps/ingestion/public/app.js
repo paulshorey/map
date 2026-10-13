@@ -79,7 +79,9 @@ function render() {
   );
   $("stat-partial").textContent = number(files.filter(isUnfinished).length);
   $("stat-unstarted").textContent = number(
-    files.filter((f) => f.coverage === "unstarted").length,
+    files.filter(
+      (f) => f.disposition === "import" && f.coverage === "unstarted",
+    ).length,
   );
   document
     .querySelectorAll(".tabs [data-view]")
@@ -128,12 +130,13 @@ function render() {
       (view === "attention" && f.attention) ||
       (view === "unfinished" && isUnfinished(f)) ||
       (view === "review" && f.disposition === "needs_review") ||
-      f.coverage === view
+      (f.coverage === view &&
+        (view !== "unstarted" || f.disposition === "import"))
     );
   });
   $("filtered-count").textContent = number(filtered.length);
   $("table-caption").textContent =
-    `${number(files.filter((f) => f.disposition === "needs_review").length)} files need classification · Counts reflect current file versions`;
+    `${number(files.filter((f) => f.disposition === "import").length)} intended imports · ${number(files.filter((f) => f.disposition === "needs_review").length)} need classification · ${number(files.filter((f) => !["import", "needs_review"].includes(f.disposition)).length)} supporting or excluded · Counts reflect current file versions`;
   $("files").innerHTML = filtered.length
     ? filtered
         .map((f) => {
@@ -212,8 +215,9 @@ function renderOperations(o) {
         `<li>${esc(label(m.provider))} / ${esc(label(m.operation))}: ${number(m.requests)} calls, ${m.mean_latency_ms === null ? "unknown" : (m.mean_latency_ms / 1000).toFixed(1)}s mean, ${m.mean_batch_size} records/call, ${number(m.failed)} failed</li>`,
     )
     .join("");
-  panel.innerHTML = `<h2>${esc(label(o.decision.action))}</h2><p>${esc(o.decision.reason || o.execution?.logical_path || "No active worker")}</p>
+  panel.innerHTML = `<h2>${esc(label(o.decision.action))}</h2><p>${esc(o.decision.reason || o.decision.item?.reason || o.execution?.logical_path || "No active worker")}</p>
     ${o.execution ? `<p class="muted-note">Run <code>${esc(o.execution.run_id)}</code> · ${esc(label(o.execution.status))} · scheduler ${o.execution.scheduler_version} · heartbeat ${date(o.execution.heartbeat_at)}</p>` : ""}
+    ${o.active_tasks?.length ? `<p>Active records: ${o.active_tasks.map((t) => `${esc(t.source_record_id)} (${esc(t.stage)}, ${Math.round(t.active_seconds)}s)`).join(" · ")}</p>` : ""}
     <div class="stage-overview">${Object.entries(stages)
       .map(
         ([name, t]) =>
