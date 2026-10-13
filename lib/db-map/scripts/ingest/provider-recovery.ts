@@ -110,8 +110,7 @@ export class ProviderRecovery {
         lastError = error;
         if (options.stopped()) continue;
         if (retry >= 5) return exhausted("record_retry_limit");
-        if (this.executionRetries >= 100)
-          return exhausted("execution_retry_limit");
+
         const backoff =
           Math.min(300_000, 30_000 * 2 ** retry) +
           Math.floor(this.clock.random() * 1_000);

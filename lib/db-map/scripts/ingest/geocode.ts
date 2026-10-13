@@ -23,6 +23,7 @@ import {
   GeocodeError,
   type GeocodeHit,
 } from "./providers/locationiq.js";
+import { artifactTransaction } from "./execution.js";
 import { stableHash } from "./hash.js";
 
 const DEFAULT_GEOCODE_LIMIT = 4500;
@@ -205,8 +206,9 @@ async function writeRowCoords(
     provider: "locationiq",
     version: "locationiq-v1",
   });
-  await db.query(
-    `WITH artifact AS (
+  await artifactTransaction(db, async (client) => {
+    const { rows } = await client.query(
+      `WITH artifact AS (
        INSERT INTO research_poi_geocodes (
        normalization_id, input_hash, query_norm, provider, provider_version,
        lat, lng, precision, status, activated_at
@@ -224,9 +226,14 @@ async function writeRowCoords(
        lat = $4, lng = $5, coordinate_source = 'geocode', coordinate_precision = $6,
        geocode_query_norm = $3,
        active_geocode_id = (SELECT id FROM artifact)
-     WHERE id = $1`,
-    [id, inputHash, queryNorm, lat, lng, precision],
-  );
+     WHERE id = $1 RETURNING active_geocode_id`,
+      [id, inputHash, queryNorm, lat, lng, precision],
+    );
+    return {
+      value: undefined,
+      output: { status: "succeeded", geocode_id: rows[0].active_geocode_id },
+    };
+  });
 }
 
 export async function runGeocode(
@@ -331,11 +338,6 @@ export async function runGeocode(
     try {
       hit = await geocode(q.display);
     } catch (err) {
-      if (err instanceof GeocodeError) {
-        throw new Error(`Geocode failed for ${row.id}: ${err.message}`, {
-          cause: err,
-        });
-      }
       throw err;
     }
     stats.apiCalls++;

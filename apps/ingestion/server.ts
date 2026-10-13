@@ -1,3 +1,4 @@
+import { getOverview } from "@lib/db-map/sql/ingestion-overview";
 import {
   createServer,
   type IncomingMessage,
@@ -80,6 +81,46 @@ export function createDashboard(port: number) {
     }
     const url = new URL(req.url ?? "/", `http://127.0.0.1:${port}`);
     try {
+      if (req.method === "GET" && url.pathname === "/api/overview") {
+        const run = url.searchParams.get("run") ?? undefined;
+        if (run && !UUID.test(run)) {
+          json(400, { error: "Run must be a UUID" });
+          return;
+        }
+        const limit = Number(url.searchParams.get("limit") ?? 20),
+          offset = Number(url.searchParams.get("offset") ?? 0);
+        if (
+          !Number.isSafeInteger(limit) ||
+          limit < 1 ||
+          limit > 100 ||
+          !Number.isSafeInteger(offset) ||
+          offset < 0
+        ) {
+          json(400, { error: "Invalid file pagination" });
+          return;
+        }
+        const result = await getOverview(db, {
+          run,
+          file: url.searchParams.get("file") ?? undefined,
+          limit,
+          offset,
+          detail: url.searchParams.get("detail") === "1",
+          includeInventory: url.searchParams.get("inventory") === "1",
+        });
+        if (result.inventory)
+          result.inventory = {
+            ...result.inventory,
+            control: result.control?.maintenance,
+            refreshing,
+            refreshResult,
+            refreshError,
+          };
+        json(
+          result.components.database.status === "unknown" ? 503 : 200,
+          result,
+        );
+        return;
+      }
       if (req.method === "GET" && url.pathname === "/api/inventory") {
         json(200, {
           ...(await inventory()),

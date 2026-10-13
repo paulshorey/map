@@ -1,3 +1,7 @@
+import {
+  hostInstallationId,
+  processStartIdentity,
+} from "./host-installation.js";
 /** Detached process owner. Healthy waiting/probes use no model; only terminal reporting may. */
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -413,6 +417,7 @@ async function worker(id: string) {
     mode: 0o600,
   });
   job.supervisor_pid = process.pid;
+  job.supervisor_start = processStartIdentity();
   await saveJob(job);
   let serial = Promise.resolve();
   const persist = () => {
@@ -425,10 +430,11 @@ async function worker(id: string) {
     cwd: PACKAGE,
     log: jobPath(id, "worker.log"),
     timeoutMs: job.timeout_seconds === null ? null : job.timeout_seconds * 1000,
-    graceMs: 10_000,
+    graceMs: job.mode === "smoke" ? 10_000 : 210_000,
     healthIntervalMs: job.health_interval_seconds * 1000,
     onStart: async (pid) => {
       job.child_pid = pid;
+      job.child_start = processStartIdentity(pid);
       job.status = "running";
       await persist();
       if (process.send && process.connected)
@@ -571,6 +577,7 @@ async function start(opts: ReturnType<typeof parseSupervisorArgs>) {
           : "runner",
     argv: opts.runArgs,
     host: hostname(),
+    host_id: hostInstallationId(),
     parent_thread: opts.parent || undefined,
     runner_model: opts.command === "watch" ? "external" : "gpt-5.6-luna",
     started_at: new Date().toISOString(),

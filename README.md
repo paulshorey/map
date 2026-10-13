@@ -385,6 +385,20 @@ The frontend auth hooks (`useAuth`, `useEntitlements`, `usePremiumKey`) already 
 | `GET`   | `/api/providers/:id/credentials`           | Provider API key (premium only, 403 for free)         |
 | `GET`   | `/api/health`                              | Health check                                          |
 
+### Ingestion progress and intervention
+
+The loopback [ingestion dashboard](http://127.0.0.1:5001/) and agent CLI share one operations
+snapshot. Use `pnpm --silent --filter @lib/db-map ingest:overview --json` for the current work,
+interventions, next action, scan freshness, provider timing/cost and quality state. Pin a run with
+`ingest:doctor --run <uuid> --json` for diagnosis. File output is paginated; summary counts cover
+all discovered captures. See the [runbook](data/poi-ingestion.md#shared-agent-and-human-observability)
+for the contract, drill-downs and audited record repair/quality commands.
+
+Managed records progress concurrently through their dependencies, with a shared default of four
+LLM requests, bounded embedding batches and serialized canonical writes. `--llm-concurrency N`
+changes scheduling without changing a resumed cohort, normalization model or prompt. Full-file
+completion requires final global verification; sampled quality acceptance is reported separately.
+
 ### Agent-operated long ingestion
 
 The native Codex scheduled map coordinator launches one intended source file at a time

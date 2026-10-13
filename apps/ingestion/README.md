@@ -73,3 +73,12 @@ The integration test writes two isolated non-POI fixture records, scans the chec
 its own fixtures. It calls no providers. Provider metrics in the UI cover attributed normalization
 requests; legacy calls and matching/fusion costs are not included. There is no scheduler or alert
 delivery while the app is closed. See the [shared runbook](../../poi-ingestion.md).
+
+## Shared operations view
+
+`GET /api/overview` powers the active-work, intervention, performance and quality panels and the
+agent `ingest:overview` CLI. `inventory=1` returns both projections in one snapshot; bounded
+file pagination and run/file/detail filters are documented in the shared ingestion runbook.
+The dashboard renders the assessment and preserves draft edits while refreshing. Launch and
+record-repair commands remain in the managed CLI. Database outages display unknown evidence
+and suppress launch recommendations. Quality reviews remain explicit audited sample evidence.

@@ -1,3 +1,7 @@
+import {
+  hostInstallationId,
+  processStartIdentity,
+} from "./host-installation.js";
 import { execFile } from "node:child_process";
 import { hostname, userInfo } from "node:os";
 import { promisify } from "node:util";
@@ -143,7 +147,7 @@ export function scriptProcesses(output: string) {
     if (
       !script ||
       /(?:\.test|golden)/.test(script) ||
-      /ingest\/(?:control|supervise|pause|status|report|trace|verify|inventory|queue|test-[\w-]+)$/.test(
+      /ingest\/(?:control|supervise|pause|status|report|trace|verify|inventory|queue|overview|doctor|issues|quality|test-[\w-]+)$/.test(
         script,
       )
     )
@@ -152,12 +156,19 @@ export function scriptProcesses(output: string) {
   });
 }
 
-export async function inspectControl(db: Pool) {
+export async function inspectControl(db: Pool | import("pg").PoolClient) {
   const state = await controlState(db);
   const evidence = await workerEvidence(db);
   const workers = evidence.workers.map((w) => ({
     ...w,
-    local_process: localPidState(w.host, w.pid),
+    local_process:
+      w.host_id === hostInstallationId()
+        ? localPidState(hostname(), w.pid)
+        : localPidState(w.host, w.pid),
+    identity_verified:
+      w.host_id === hostInstallationId() &&
+      w.process_start !== null &&
+      processStartIdentity(w.pid) === w.process_start,
     source_locked: evidence.sourceLocks.some((l) => l.source === w.source),
   }));
   let localProcesses: ReturnType<typeof scriptProcesses> = [];

@@ -1,3 +1,7 @@
+import {
+  hostInstallationId,
+  processStartIdentity,
+} from "./host-installation.js";
 import { mkdir, readFile, writeFile, rename, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
@@ -12,6 +16,9 @@ export interface Job {
   mode: "runner" | "smoke" | "native";
   argv: string[];
   host: string;
+  host_id?: string;
+  supervisor_start?: string | null;
+  child_start?: string | null;
   supervisor_pid?: number;
   child_pid?: number;
   run_id?: string;
@@ -63,9 +70,17 @@ export async function listJobs() {
   const jobs = [];
   for (const id of entries.filter((id) => UUID.test(id))) {
     const job = await loadJob(id);
-    const local = isLocalHost(job.host);
+    const local = job.host_id === hostInstallationId() || isLocalHost(job.host);
     jobs.push({
       ...job,
+      supervisor_identity_verified:
+        local &&
+        Boolean(job.supervisor_start) &&
+        processStartIdentity(job.supervisor_pid ?? 0) === job.supervisor_start,
+      child_identity_verified:
+        local &&
+        Boolean(job.child_start) &&
+        processStartIdentity(job.child_pid ?? 0) === job.child_start,
       supervisor_present: local ? pidPresent(job.supervisor_pid) : null,
       child_present: local ? pidPresent(job.child_pid) : null,
     });

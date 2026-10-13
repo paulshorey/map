@@ -80,3 +80,29 @@ test("ambiguous unlimited/capped commands and fractional call limits fail before
     /preserves scope/,
   );
 });
+
+test("concurrency overrides execution scheduling without widening resume scope", () => {
+  const saved = parseArgs([
+    "capture.json",
+    "--category",
+    "campground",
+    "--record",
+    "r",
+    "--unlimited",
+  ]);
+  const opts = resolveResumeOptions(
+    saved,
+    parseArgs(["--resume", runId, "--llm-concurrency", "8"]),
+    runId,
+    "capture.json",
+  );
+  assert.equal(opts.llmConcurrency, 8);
+  assert.equal(opts.limit, 1);
+  assert.equal(opts.record, "r");
+  assert.equal(opts.unlimited, true);
+  for (const n of ["0", "17", "1.1"])
+    assert.throws(
+      () => parseArgs(["--resume", runId, "--llm-concurrency", n]),
+      /1..16/,
+    );
+});

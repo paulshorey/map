@@ -687,6 +687,21 @@
       "column": "error",
       "nullable": true,
       "type": "unknown"
+    },
+    {
+      "column": "host_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "process_start",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "scheduler_version",
+      "nullable": false,
+      "type": "number"
     }
   ],
   "research_ingest_inventory": [
@@ -808,6 +823,63 @@
       "type": "Date"
     }
   ],
+  "research_ingest_inventory_scans": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "host_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "checkout",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "git_commit",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "started_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "finished_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "discovered",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "missing",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "errors",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "error",
+      "nullable": true,
+      "type": "string"
+    }
+  ],
   "research_ingest_inventory_versions": [
     {
       "column": "inventory_id",
@@ -831,6 +903,313 @@
     },
     {
       "column": "last_seen_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_ingest_issue_events": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "issue_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "actor",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "action",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "reason",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_ingest_issues": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "run_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "source_record_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "stage",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "code",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "scope",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "severity",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "message",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "evidence",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "retryable",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "first_seen_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "last_seen_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_ingest_provider_call_items": [
+    {
+      "column": "call_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "attempt_id",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "research_ingest_provider_calls": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "run_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "execution_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "provider",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "operation",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "model",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "records",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "started_at",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "finished_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "queue_ms",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "latency_ms",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "prompt_tokens",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "cached_tokens",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "completion_tokens",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "reasoning_tokens",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "estimated_cost_usd",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "http_status",
+      "nullable": true,
+      "type": "number"
+    },
+    {
+      "column": "quota",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "concurrency",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "error",
+      "nullable": true,
+      "type": "unknown"
+    }
+  ],
+  "research_ingest_quality_reviews": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "inventory_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "file_sha256",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "pipeline_versions",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "actor",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "decision",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "reason",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "sample_records",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "reviewed_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_ingest_record_verifications": [
+    {
+      "column": "run_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_record_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "execution_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "observation_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "output",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "pipeline_versions",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "outcome",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "verified_at",
       "nullable": false,
       "type": "Date"
     }
@@ -1061,6 +1440,73 @@
       "type": "Date"
     }
   ],
+  "research_ingest_tasks": [
+    {
+      "column": "run_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source_record_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "stage",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "rank",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "state",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "execution_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "claim_token",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "attempt_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "input",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "output",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "started_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "finished_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "updated_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
   "research_match_decisions": [
     {
       "column": "id",
@@ -1283,6 +1729,11 @@
     },
     {
       "column": "ingest_attempt_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "provider_call_id",
       "nullable": true,
       "type": "string"
     }

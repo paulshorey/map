@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:poi-map:ingestion-overview:1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "observed_at",
+    "components",
+    "summary",
+    "decision",
+    "interventions",
+    "improvements",
+    "files"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "components": {
+      "type": "object",
+      "required": ["database", "local"],
+      "properties": {
+        "database": {
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "status": {
+              "enum": ["available", "unknown"]
+            }
+          }
+        },
+        "local": {
+          "type": "object",
+          "required": ["observed_at", "jobs", "claims", "errors"],
+          "properties": {
+            "observed_at": {
+              "type": "string"
+            },
+            "jobs": {
+              "type": "array"
+            },
+            "claims": {
+              "type": "array"
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": ["object", "null"]
+    },
+    "decision": {
+      "type": "object",
+      "required": ["action"],
+      "properties": {
+        "action": {
+          "type": "string"
+        }
+      }
+    },
+    "interventions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "scope", "severity"]
+      }
+    },
+    "improvements": {
+      "type": "array"
+    },
+    "files": {
+      "type": "array"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "components": {
+            "properties": {
+              "database": {
+                "properties": {
+                  "status": {
+                    "const": "unknown"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "summary": {
+            "type": "null"
+          },
+          "decision": {
+            "properties": {
+              "action": {
+                "const": "inspect"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

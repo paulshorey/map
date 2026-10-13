@@ -13,6 +13,7 @@ import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { ingestConfig } from "./config.js";
 import { embedTexts, EmbedError } from "./providers/jina.js";
+import { artifactTransaction } from "./execution.js";
 import { stableHash } from "./hash.js";
 
 const DEFAULT_THROTTLE_MS = 200;
@@ -94,7 +95,7 @@ export function buildEmbedText(row: EmbedRow): string | null {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function writeEmbedding(
+export async function writeEmbedding(
   db: Pool,
   id: string,
   text: string,
@@ -105,8 +106,9 @@ async function writeEmbedding(
     model: ingestConfig.embeddings.model,
     dim: ingestConfig.embeddings.dim,
   });
-  await db.query(
-    `WITH artifact AS (
+  await artifactTransaction(db, async (client) => {
+    const { rows } = await client.query(
+      `WITH artifact AS (
        INSERT INTO research_poi_embeddings (
        normalization_id, input_hash, model, model_version, embedding, activated_at
        )
@@ -119,9 +121,17 @@ async function writeEmbedding(
      )
      UPDATE research_pois SET content_embedding = $4,
        active_embedding_id = (SELECT id FROM artifact)
-     WHERE id = $1`,
-    [id, inputHash, ingestConfig.embeddings.model, vector],
-  );
+     WHERE id = $1 RETURNING active_embedding_id`,
+      [id, inputHash, ingestConfig.embeddings.model, vector],
+    );
+    return {
+      value: undefined,
+      output: {
+        status: "succeeded",
+        embedding_id: rows[0].active_embedding_id,
+      },
+    };
+  });
 }
 
 async function fetchRows(db: Pool, opts: CliOptions): Promise<EmbedRow[]> {

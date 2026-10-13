@@ -42,7 +42,7 @@ export function queueItem(file: File) {
     // A failure or operator pause needs a decision, not an automatic retry.
     action = "inspect";
     reason =
-      "Inspect unfinished full-file work, its stop reason and remaining budgets; resume this UUID after resolving the cause";
+      "Inspect unfinished full-file work, its stop reason and effective execution settings; resume this UUID after resolving the cause";
   } else if (file.commands.start) {
     action = "start";
     runArgs = start;
@@ -74,14 +74,10 @@ export function queueItem(file: File) {
     inspect: run
       ? `pnpm --silent --filter @lib/db-map ingest:status --run ${run.id} --json`
       : file.commands.status,
-    resume_args: fullScope ? ["--resume", run.id] : null,
+    resume_args: fullScope ? ["--resume", run.id, "--unlimited"] : null,
     run_args: runArgs,
     requires: runArgs
-      ? [
-          "review_source_shape_and_identity",
-          "explicit_provider_budgets",
-          "verified_native_completion",
-        ]
+      ? ["review_source_shape_and_identity", "verified_completion_strategy"]
       : [],
   };
 }

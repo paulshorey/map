@@ -1,0 +1,1982 @@
+{
+  "schema_version": 1,
+  "review_basis": "Existing audited inventory classifications; quality approval is separate",
+  "captures": [
+    {
+      "file": "data/poi/art-fairs/apis/artsy_fairs.json",
+      "source": "artsy_fairs",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Artsy GraphQL art-fair API export (2,957 records) with name/slug/artsy_id/start_date/end_date/url/city/country/venue_address/lat-lng; date 2,957/2,957, url 2,957/2,957, city 520/2,957, coords 465/2,957. Genuine art-fair records; temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/biennials/biennale_com.json",
+      "source": "biennale_com",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Art-fairs biennials capture: 43 recurring biennale POI records, each with name, city, country, lat/lng (43/43), venue, dates and website. Recurring art-fair/biennale identity; temporal art_fair category. Classified 2026-10-06 10:20 CDT heartbeat after structural review; not yet imported."
+    },
+    {
+      "file": "data/poi/art-fairs/biennials/biennial_association.json",
+      "source": "biennial_association",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Art-fairs biennials capture: 41 recurring biennale POI records, each with name, city, country, lat/lng (41/41), venue and website. Recurring art-fair/biennale identity; temporal art_fair category. Classified 2026-10-06 10:20 CDT heartbeat after structural review; not yet imported."
+    },
+    {
+      "file": "data/poi/art-fairs/biennials/biennial_foundation.json",
+      "source": "biennial_foundation",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event art-biennial POI records (name/city/country/venue/website_url; lat/lng on 100/304). Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_fair records; partial geocoding is a later stage."
+    },
+    {
+      "file": "data/poi/art-fairs/biennials/carnifest.json",
+      "source": "carnifest",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event biennial/festival POI records (name/city/country/start_date/end_date/venue/street_address/lat/lng/website_url, 31/31 full coverage). Import as art_fair."
+    },
+    {
+      "file": "data/poi/art-fairs/biennials/edinburgh_fringe.json",
+      "source": "edinburgh_fringe",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event Edinburgh Fringe POI records (name/city/country/start_date/end_date/venue/lat/lng/website_url, 10/10 full coverage). Import as art_fair."
+    },
+    {
+      "file": "data/poi/art-fairs/biennials/light_festivals.json",
+      "source": "light",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event light-festival POI records (name/city/country/start_date/end_date/venue/lat/lng/website_url, 31/31 full coverage). Import as art_fair."
+    },
+    {
+      "file": "data/poi/art-fairs/biennials/midatlantic_arts_festivals.json",
+      "source": "midatlantic_arts",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event Mid-Atlantic arts-festival POI records (name/city/country/start_date/end_date/venue/lat/lng/website_url, 39/39 full coverage). Import as art_fair."
+    },
+    {
+      "file": "data/poi/art-fairs/craft-shows/artandcrafts_com.json",
+      "source": "artandcrafts_com",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event US craft-show/art-fair listing (26 records) with name/start_date/end_date/city/state/country/venue_name/street_address/website_url/booth_fee/attendance/juried/categories/source_url; city on 25/26, coords sparse. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/craft-shows/artfairslist.json",
+      "source": "artfairslist",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/art-fairs/craft-shows/artsandcraftsnetwork.json",
+      "source": "artsandcraftsnetwork",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event craft-show/art-fair directory (538 records), full craft-show shape; city 538/538, coords sparse. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/craft-shows/artshowsource.json",
+      "source": "artshowsource",
+      "category": null,
+      "required": false,
+      "disposition": "ignored",
+      "reason": "Empty capture ([]): extraction produced no importable records. Documented as a missing/failed capture, not success. Excluded from the work queue; retain the empty artifact as evidence."
+    },
+    {
+      "file": "data/poi/art-fairs/craft-shows/craftshowconnect.json",
+      "source": "craftshowconnect",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event craft-show listing (11 records), full craft-show shape; city 11/11. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/craft-shows/festivalnet.json",
+      "source": "festivalnet",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event craft-show/art-fair directory (287 records), full craft-show shape; city 286/287, coords sparse. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/craft-shows/nationalcraftshowdirectory.json",
+      "source": "nationalcraftshowdirectory",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event craft-show listing (8 records), full craft-show shape with coordinates on all 8. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/craft-shows/thecraftmap.json",
+      "source": "thecraftmap",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event craft-show/art-fair map capture (2,539 records), full craft-show shape with coordinates on 2,096 and city on 2,436. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/directories/artfaircalendar.json",
+      "source": "artfaircalendar",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Audited 2026-10-06 11:10 CDT: 71 art-fair event records; 71/71 name+city+country+state+start_date+website_url, 67/71 venue_name (lat/lng 0). Genuine per-event POI records. Classified import/art_fair; needs paid full run + whole-file verification."
+    },
+    {
+      "file": "data/poi/art-fairs/directories/artfairdates.json",
+      "source": "artfairdates",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Audited 2026-10-06 11:10 CDT: 30 art-fair event records; 30/30 name+city+country+venue_name+start_date+website_url (lat/lng 0). Genuine per-event POI records. Classified import/art_fair; needs paid full run + whole-file verification."
+    },
+    {
+      "file": "data/poi/art-fairs/directories/artfairmag.json",
+      "source": "artfairmag",
+      "category": null,
+      "required": false,
+      "disposition": "ignored",
+      "reason": "Empty capture ([]): extraction produced no importable records. Documented as a missing/failed capture, not success. Excluded from the work queue; retain the empty artifact as evidence."
+    },
+    {
+      "file": "data/poi/art-fairs/directories/artfairslist.json",
+      "source": "artfairslist",
+      "category": null,
+      "required": false,
+      "disposition": "ignored",
+      "reason": "Empty capture ([]): extraction produced no importable records. Documented as a missing/failed capture, not success. Excluded from the work queue; retain the empty artifact as evidence."
+    },
+    {
+      "file": "data/poi/art-fairs/directories/artfairsourcebook.json",
+      "source": "artfairsourcebook",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Audited 2026-10-06 11:10 CDT: 699 art-fair event records; 699/699 name+city+country+state+start_date+website_url (lat/lng 0, street/venue 0). Genuine per-event POI records (global art-fair sourcebook), distinct from Wikipedia index scrapes. Classified import/art_fair; needs paid full run + whole-file verification."
+    },
+    {
+      "file": "data/poi/art-fairs/directories/artfestival_com.json",
+      "source": "artfestival_com",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Audited 2026-10-06 11:10 CDT: 67 art-fair event records; 67/67 name+country+state+street_address+start_date+website_url (city 0, lat/lng 0). Genuine per-event POI records with street addresses. Classified import/art_fair; needs paid full run + whole-file verification."
+    },
+    {
+      "file": "data/poi/art-fairs/directories/artfix_2026.json",
+      "source": "artfix_2026",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Audited 2026-10-06 11:10 CDT: 29 art-fair event records; 28/29 city, 29/29 country+venue_name+start_date+website_url (lat/lng 0). Genuine per-event POI records. Classified import/art_fair; needs paid full run + whole-file verification."
+    },
+    {
+      "file": "data/poi/art-fairs/directories/artnet_events.json",
+      "source": "artnet",
+      "category": null,
+      "required": false,
+      "disposition": "ignored",
+      "reason": "Empty capture ([]): extraction produced no importable records. Documented as a missing/failed capture, not success. Excluded from the work queue; retain the empty artifact as evidence."
+    },
+    {
+      "file": "data/poi/art-fairs/directories/artnews_2026_calendar.json",
+      "source": "artnews_2026_calendar",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Art-news editorial calendar: 40 records with only name+text+url (fair round-up prose, no city/coordinates/dates). Supporting research, not POI records."
+    },
+    {
+      "file": "data/poi/art-fairs/directories/thefairguide.json",
+      "source": "thefairguide",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Art-fair name index (48 records) exposing only name/month/website_url; no city, country, venue or coordinates. Supporting research index, not per-event POI records."
+    },
+    {
+      "file": "data/poi/art-fairs/other/callforentry.json",
+      "source": "callforentry",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: ZAPP/callforentry.org call-for-entry application listings (24 records) with name/city/state/country/website_url but no event dates or coordinates; entry-application pages, not per-event POI records. Supporting."
+    },
+    {
+      "file": "data/poi/art-fairs/other/streetartlist.json",
+      "source": "streetartlist",
+      "category": null,
+      "required": false,
+      "disposition": "ignored",
+      "reason": "Empty capture ([]): extraction produced no importable records. Documented as a missing/failed capture, not success. Excluded from the work queue; retain the empty artifact as evidence."
+    },
+    {
+      "file": "data/poi/art-fairs/performing-arts/buskercentral.json",
+      "source": "buskercentral",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event busking/street-arts festival directory (152 records) with name/start_date/city/country/website_url; city 151/152, coords sparse. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/performing-arts/larp_portal_faires.json",
+      "source": "larp_portal_faires",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Renaissance/LARP faire name directory (158 records) exposing only name/country/state/website_url (state 152/158); no city, dates or coordinates. Supporting research index, not per-event POI records."
+    },
+    {
+      "file": "data/poi/art-fairs/performing-arts/maker_faire.json",
+      "source": "maker_faire",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event Maker Faire directory (259 records) with name/start_date/city/country/website_url; city 259/259. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/performing-arts/renfaire_com.json",
+      "source": "renfaire_com",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event renaissance-faire directory (189 records) with name/state/country/lat-lng/website_url; coords 186/189, state 189/189. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/performing-arts/renfaireguide.json",
+      "source": "renfaireguide",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event renaissance-faire directory (711 records) with name/start_date/city/country/venue_name/website_url; city 219/711, date 244/711, country 711/711. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/regional/ireland_events.json",
+      "source": "ireland",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event Ireland arts/festival/market events (475 records) with name/start_date/end_date/city/country/venue_name/street_address/lat-lng/website_url; coords 475/475, city 474/475, venue 475/475. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/regional/toronto_festivals.json",
+      "source": "toronto",
+      "category": "art_fair",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_fair: Per-event Toronto festival calendar (1,495 records) with name/start_date/end_date/city/country/venue_name/street_address/lat-lng/website_url; coords 1,489/1,495, city 1,495/1,495, venue 1,495/1,495. Temporal art-fair event type."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikidata_all_festivals.json",
+      "source": "wikidata_all",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Massive 5,000-record multi-type Wikidata festival harvest (opera, film, theatre, folk, arts, music, parades, ...); 'all festivals' superset, not a bounded per-art-fair POI set. Art fairs are a tiny unspecified minority; 999/5000 have coords. Supporting research index, not an art-fair POI file."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikidata_art_fairs.json",
+      "source": "wikidata_art_fairs",
+      "category": null,
+      "required": false,
+      "disposition": "ignored",
+      "reason": "Empty capture ([]): extraction produced no importable records. Documented as a missing/failed capture, not success. Excluded from the work queue; retain the empty artifact as evidence."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikidata_art_festivals.json",
+      "source": "wikidata_art",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Corrupted Wikidata 'art fair' (Q484692) type harvest: mostly national/regional hymns and anthems ('Hino do municipio', 'Hymn of ...') plus songs/religious pieces mis-typed as art fair; 0/2481 have coordinates. Same pollution documented for wikidata_art_fairs.json. Not art-fair POI records."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikidata_arts_festivals.json",
+      "source": "wikidata_arts",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Massive 5,000-record 'arts festival' Wikidata harvest dominated by film festivals (Festival d'Automne a Paris, Philadelphia Film Festival, ...); multi-genre superset, not a bounded per-art-fair POI set. Supporting research index."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikidata_biennials.json",
+      "source": "wikidata_biennials",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Wikidata biennale type index (118 records, 24/118 coords). Biennials are already captured as art-fair POIs via data/poi/art-fairs/biennials/biennale_com.json + biennial_association.json; this is the name/city/country research index, not a per-art-fair POI file."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikidata_carnivals.json",
+      "source": "wikidata_carnivals",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Wikidata carnival type index (280 records, 53/280 coords). Carnivals are already captured via data/poi/carnival/* and art-parades/*; supporting research index, not art-fair POIs."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikidata_folk_festivals.json",
+      "source": "wikidata_folk",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Wikidata folk-festival type index (347 records incl. Oktoberfest; 129/347 coords). Folk festivals are not art fairs; supporting research index."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikidata_theatre_festivals.json",
+      "source": "wikidata_theatre",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Wikidata theatre-festival type index (934 records, many historic Eisteddfod rows; 119/934 coords). Theatre festivals are not art fairs; supporting research index."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikipedia_biennale.json",
+      "source": "wikipedia_biennale",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia 'Biennale' article index/link scrape: records expose only name+section+country_section+wikipedia_url+source_url (no city, coords or dates). Supporting research evidence, not POI records."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikipedia_biennials.json",
+      "source": "wikipedia_biennials",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Wikipedia 'Biennale' article link-list scrape (99 name+country/city rows; 0 coords, no dates). Biennials already captured as art-fair POIs via art-fairs/biennials/*. Supporting research index."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikipedia_caribbean_carnivals.json",
+      "source": "wikipedia_caribbean_carnivals",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia 'List of Caribbean carnivals' index scrape: records expose only name+section+source+wiki_title (no city, coords or dates). Supporting research evidence, not POI records."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikipedia_europe_festivals.json",
+      "source": "wikipedia_europe",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia 'List of festivals in Europe' index/link scrape: records expose only name+section+wikipedia_url+source_url (no city, coords or dates). Supporting research evidence, not POI records."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikipedia_festivals_index.json",
+      "source": "wikipedia_festivals_index",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia 'Lists of festivals' navigation index: records are links to per-country list pages (name+section+wikipedia_url+source_url); no POI attributes. Supporting research evidence, not POI records."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikipedia_folk_festivals.json",
+      "source": "wikipedia_folk",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia 'List of folk festivals' index scrape: records expose only name+section+source (no city, coords or dates). Supporting research evidence, not POI records."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikipedia_new_media_art_festivals.json",
+      "source": "wikipedia_new_media_art",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia 'List of new media art festivals' index scrape: records expose only name+section+source (no city, coords or dates). Supporting research evidence, not POI records."
+    },
+    {
+      "file": "data/poi/art-fairs/wikipedia/wikipedia_theatre_festivals.json",
+      "source": "wikipedia_theatre",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Wikipedia 'List of theatre festivals' link-list scrape (43 name+country/city rows; 0 coords). Theatre festivals are not art fairs; supporting research index."
+    },
+    {
+      "file": "data/poi/art-parades/community-blogs/atlas_obscura_parades.json",
+      "source": "atlas_obscura_parades",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event art-parade/procession POI records (20): name/city/country/annual_date/lat/lng/website_url/description/source/start_date/end_date (Atlas Obscura parade category; coords present)"
+    },
+    {
+      "file": "data/poi/art-parades/community-blogs/bread_and_puppet.json",
+      "source": "bread_and_puppet",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event art-parade/procession POI records (9): name/city/country/start_date/end_date/annual_date/lat/lng/website_url/description/source (coords present)"
+    },
+    {
+      "file": "data/poi/art-parades/community-blogs/cathedral_procession_ghouls.json",
+      "source": "cathedral_procession_ghouls",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event art-parade/procession POI records (1): name/city/country/annual_date/lat/lng/website_url/description/source (coords present)"
+    },
+    {
+      "file": "data/poi/art-parades/community-blogs/headout_unusual_festivals.json",
+      "source": "headout_unusual",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Blog listicle 'unusual festivals': name+country only, no city/coords/dates; includes page-nav junk entries ('Cities','Headout','Partners','We Accept','Get Help 24/7'). Research listicle, not per-event POI records."
+    },
+    {
+      "file": "data/poi/art-parades/community-blogs/insureandgo_parades.json",
+      "source": "insureandgo_parades",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Blog listicle 'biggest and best parades': sparse name+country(+partial city) and unreliable dates, no coords; includes nav/footer junk ('The Bottom Line','Explore Beyond!','Places','Categories','Final Travel Tips for Parade'). Weak page scrape, not structured POI records."
+    },
+    {
+      "file": "data/poi/art-parades/community-blogs/mybucketlist_events.json",
+      "source": "mybucketlist",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Off-taxonomy 'bucket list events' listicle (sports championships: Masters, FIFA, Kentucky Derby, Wimbledon, U.S. Open, CMA Awards, etc.) with name+city+date but no coords. Not art-parade POI records; research material."
+    },
+    {
+      "file": "data/poi/art-parades/community-blogs/nyc_halloween_parade.json",
+      "source": "nyc_halloween_parade",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event art-parade/procession POI records (1): name/city/country/annual_date/lat/lng/website_url/description/source (coords present)"
+    },
+    {
+      "file": "data/poi/art-parades/community-blogs/traveloutlandish_festivals.json",
+      "source": "traveloutlandish",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event art-parade/procession POI records (15): name/city/country/annual_date/lat/lng/website_url/description/start_date/end_date/source (coords present)"
+    },
+    {
+      "file": "data/poi/art-parades/company-tours/artichoke_trust_projects.json",
+      "source": "artichoke_trust_projects",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "13 per-event giant-puppet/processional POI records (name/city/country/venue/street/lat/lng/url/dates/description) from Artichoke Trust productions."
+    },
+    {
+      "file": "data/poi/art-parades/company-tours/la_machine_nantes.json",
+      "source": "la_machine_nantes",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "7 per-event/per-venue giant mechanical puppet POI records with city/venue/street/coords from Les Machines de l'ile."
+    },
+    {
+      "file": "data/poi/art-parades/company-tours/royal_de_luxe_history.json",
+      "source": "royal_de_luxe_history",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "15 per-event Royal de Luxe giant-puppet performance POI records with city/venue/coords."
+    },
+    {
+      "file": "data/poi/art-parades/company-tours/royal_de_luxe_wikipedia_table.json",
+      "source": "royal_de_luxe_wikipedia_table",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia performance table (45 rows: name/city/country/year/dates only). No venue, address or coordinates; identities do not overlap the 15-record royal_de_luxe_history.json import, so it is a link-table reference rather than a separate POI capture."
+    },
+    {
+      "file": "data/poi/art-parades/company-tours/the_herds_tour.json",
+      "source": "the_herds_tour",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "53 per-event giant-puppet migration spectacle POI records (The Herds) with city/venue/street/coords."
+    },
+    {
+      "file": "data/poi/art-parades/company-tours/walk_with_amal.json",
+      "source": "walk_with_amal",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "14 per-city Little Amal (The Walk) giant-puppet performance POI records with city/coords."
+    },
+    {
+      "file": "data/poi/art-parades/company-tours/wikipedia_little_amal.json",
+      "source": "wikipedia_little_amal",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "41 per-city Little Amal giant-puppet performance POI records (Wikipedia-sourced) with city/coords."
+    },
+    {
+      "file": "data/poi/art-parades/company-tours/wikipedia_sultans_elephant.json",
+      "source": "wikipedia_sultans_elephant",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "6 per-event The Sultan's Elephant giant-puppet performance POI records with city/coords."
+    },
+    {
+      "file": "data/poi/art-parades/kinetic-art-car/avam_baltimore_kinetic.json",
+      "source": "avam_baltimore_kinetic",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "1 per-event human-powered kinetic sculpture race POI record (AVAM East Coast Championship) with city/state/venue/street/coords/url/dates."
+    },
+    {
+      "file": "data/poi/art-parades/kinetic-art-car/burning_man_mutant_vehicles.json",
+      "source": "burning_man_mutant_vehicles",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "1 per-event art-car/mutant-vehicle gathering POI record (Burning Man) with city/state/venue/street/coords/url/dates."
+    },
+    {
+      "file": "data/poi/art-parades/kinetic-art-car/houston_art_car_parade.json",
+      "source": "houston_art_car_parade",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "1 per-event art car parade POI record (Houston Art Car Parade) with city/state/venue/street/coords/url/dates."
+    },
+    {
+      "file": "data/poi/art-parades/kinetic-art-car/kinetic_grand_championship.json",
+      "source": "kinetic_grand_championship",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "1 per-event kinetic sculpture race POI record (Kinetic Grand Championship, Arcata CA) with city/state/venue/street/coords/url/dates."
+    },
+    {
+      "file": "data/poi/art-parades/kinetic-art-car/wikipedia_art_cars.json",
+      "source": "wikipedia_art_cars",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "4 per-event/per-venue art-car POI records (Houston Art Car Parade, ArtCar Museum, Burning Man Mutant Vehicles, Cartist Automobile Art Festival) with name/city/venue/coords/url; 3/4 have lat/lng, Cartist lacks city/coords but is a distinct India festival record."
+    },
+    {
+      "file": "data/poi/art-parades/kinetic-art-car/wikipedia_giant_puppets.json",
+      "source": "wikipedia_giant_puppets",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "6 per-event/per-venue giant-puppet processional POI records (Bread and Puppet Theater, NYC Village Halloween Parade, Royal de Luxe, Little Amal, Jaipur Dussehra, Man Engine) with name/city/country/venue/street/coords/url; 5/6 have lat/lng, Little Amal is multi-city ('Various')."
+    },
+    {
+      "file": "data/poi/art-parades/kinetic-art-car/wikipedia_kinetic_races.json",
+      "source": "wikipedia_kinetic_races",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "19 per-event kinetic sculpture race POI records (Kinetic Grand Championship, AVAM, Menagerie in Motion, Lowell, Port Townsend, Da Vinci Days, Ventura, Philadelphia, Gizmotion, Geraldton, Prescott Valley, Clearlake, Poland, Longmont, Papio, Rockland, Canberra, Klamath, People's Sculpture Racing) with name/city/country/venue/street/coords/url; 18/19 have lat/lng."
+    },
+    {
+      "file": "data/poi/art-parades/puppet-directories/beverley_puppet_links.json",
+      "source": "beverley_puppet_links",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Puppetry organisations/links directory: 47 records with only name+website_url+category+country (no city/coordinates/dates). Supporting research, not POI records."
+    },
+    {
+      "file": "data/poi/art-parades/puppet-directories/chicago_puppet_fest.json",
+      "source": "chicago_puppet_fest",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event puppetry records: Chicago International Puppet Theater Festival (Jan 20-31, 2027) plus dated Puppet Lab/workshop events, each with city=Chicago and website_url. ~7 of 20 rows are site navigation/heading artifacts (e.g. 'Events', 'Event Views Navigation', 'Fest History') to exclude during quality review; core records are per-event festival/workshop POIs."
+    },
+    {
+      "file": "data/poi/art-parades/puppet-directories/culture_si_puppetry.json",
+      "source": "culture_si_puppetry",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "culture.si puppetry events index: 83 records with only name+country+website_url (no city/coordinates/dates). Supporting research, not POI records."
+    },
+    {
+      "file": "data/poi/art-parades/puppet-directories/fmtm_charleville.json",
+      "source": "fmtm_charleville",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Predominantly a website page scrape (nav/footer/legal/workshop pages: 'Newsletter', 'Terms of use', 'Places and contact', duplicated workshop listings) rather than per-event records: only 2 rows carry a city and 1 a date. Genuine event identity is limited to the FMTM festival and Temps d'M, already represented in sibling puppet-festival captures; exclude as a source-page scrape."
+    },
+    {
+      "file": "data/poi/art-parades/puppet-directories/henson_foundation_festivals.json",
+      "source": "henson_foundation",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Global puppetry-festival directory with per-event identity: 75 festival records, each with venue_name/location text (e.g. 'Varna - Bulgaria', 'Brattleboro, VT'), 22 with start/end dates and 71 with website_url. Some venue_name values are placeholder/photo-credit artifacts and city is populated for only 16 rows, so location normalization is imperfect; treat as per-event festival POIs for art_parade with quality flags."
+    },
+    {
+      "file": "data/poi/art-parades/puppet-directories/new_orleans_puppet_fest.json",
+      "source": "new_orleans_puppet_fest",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Single-event site scrape: 1 genuine record (New Orleans Giant Puppet Festival, city+url) alongside 4 call-to-action/site pages ('Submit your show today.', 'DONATE TODAY', 'Join Our Patreon', 'Year Round Events'); no per-event dates and no per-event dataset. Not an importable per-event capture."
+    },
+    {
+      "file": "data/poi/art-parades/puppet-directories/puppeteers_of_america.json",
+      "source": "puppeteers_of_america",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Puppeteers of America event listing: 29 records with only name+website_url+source (no city/coordinates/dates). Supporting research, not POI records."
+    },
+    {
+      "file": "data/poi/art-parades/puppet-directories/unima_events.json",
+      "source": "unima",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "UNIMA news/event index scrape: 194 rows with name+url but only 1 city and 0 dates; content mixes news posts, calls for applicants and country navigation entries ('Bosnia-Herzegovina', 'Bulgaria'). No per-event location/date granularity for POI extraction; retain as supporting reference."
+    },
+    {
+      "file": "data/poi/art-parades/street-arts/aurillac_festival.json",
+      "source": "aurillac_festival",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/art-parades/street-arts/critical_stages_festivals.json",
+      "source": "critical_stages",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Per-event international street/theatre festival POI records: 241 records, 198 with city+country, 196 website_url, 210 description/focus (contemporary dance, theatre, street arts). Genuine festival identity records for art_parade; matching/fusion resolves overlap with sibling street-arts captures."
+    },
+    {
+      "file": "data/poi/art-parades/street-arts/festivalfinder_eu.json",
+      "source": "festivalfinder_eu",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Per-event European festival POI records: 3635 records, 3570 city + 3635 country + location_raw, 3544 end_date, 3635 detail_url. Genuine festival identity records for art_parade; large but per-event granularity with location."
+    },
+    {
+      "file": "data/poi/art-parades/street-arts/global_streets.json",
+      "source": "global_streets",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "UK outdoor-arts partner network listing: 14 records, only 1 venue_name, no city/coords/dates (country=UK/England only). Organisational/network directory, not per-event POI records. Retain as supporting research."
+    },
+    {
+      "file": "data/poi/art-parades/street-arts/ietm_members.json",
+      "source": "ietm_members",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "IETM performing-arts organisation member directory: 428 records with only name+member_type+website_url (0 city, 0 country, 0 coords, 0 dates). Organisation lookup list, not event POI records. Retain as supporting research."
+    },
+    {
+      "file": "data/poi/art-parades/street-arts/outdoorartsuk_members.json",
+      "source": "outdoorartsuk_members",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "OutdoorArtsUK member directory: 380 organisation records, 380 country=UK only, 25 city, 0 coords, 0 dates, 120 member_type/region. Organisation directory, not per-event POI records. Retain as supporting research."
+    },
+    {
+      "file": "data/poi/art-parades/street-arts/visiteurope_events.json",
+      "source": "visiteurope",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Per-event European festival POI records: 13 records, all 13 with city+country+start_date, 12 end_date, 13 website_url+description. Genuine event identity records for art_parade."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/beltane_fire_festival.json",
+      "source": "beltane_fire_festival",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/ducasse_ath.json",
+      "source": "ducasse_ath",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/ducasse_mons.json",
+      "source": "ducasse_mons",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/edinburgh_hogmanay.json",
+      "source": "edinburgh_hogmanay",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/giant_lantern_festival_philippines.json",
+      "source": "giant_lantern_festival_philippines",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/krampus_perchten.json",
+      "source": "krampus_perchten",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/las_fallas_valencia.json",
+      "source": "las_fallas_valencia",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/schemenlaufen_imst.json",
+      "source": "schemenlaufen_imst",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/unesco_processional_giants.json",
+      "source": "unesco_processional_giants",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/up_helly_aa.json",
+      "source": "up_helly_aa",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/wikipedia_processional_giants.json",
+      "source": "wikipedia_processional_giants",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/unesco-processional/yi_peng_lanterns.json",
+      "source": "yi_peng_lanterns",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event processional/UNESCO POI records: name/city/country/venue_name/street_address/lat/lng/website_url plus annual_date and description. Distinct from the name+url-only Wikipedia index scrapes. Classify as importable art_parade records; date/quality normalization is a later stage."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikidata_carnival_processions.json",
+      "source": "wikidata_carnival_processions",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/carnival: Genuine per-event carnival/procession records (236) from Wikidata: name/wikidata_qid/wikidata_type 236/236, country 203/236, city 77/236, coords 47/236, website 49/236 (Carnival of Venice, New Orleans Mardi Gras, ...). Temporal carnival event type; sparse dates/coords expected and geocoding is an authorized downstream stage."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikidata_lantern_fire_festivals.json",
+      "source": "wikidata_lantern_fire",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Mixed Wikidata dump (40 records): lantern/fire festivals plus unrelated film festivals; country 31/40, city 8/40, coords 3/40, start_date 1/40. Insufficient per-event location identity."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikidata_parades_processions.json",
+      "source": "wikidata_parades_processions",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Corrupted broad Wikidata dump (1,927 records): mostly non-event entities (vessels USS/HMS/Fairplay, ceremonies, generic concepts) with only name+wikidata entity URL; country 289/1,927 (15%), city 71, coords 103. Not a per-event POI set."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikidata_puppet_parade_festivals.json",
+      "source": "wikidata_puppet_parade",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Mixed Wikidata dump (39 records): parade/festival names plus unrelated film festivals; country 21/39, city 4/39, coords 3/39, no dates. Insufficient per-event location identity."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_art_cars.json",
+      "source": "wikipedia_art_cars",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_beltane.json",
+      "source": "wikipedia_beltane",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_carnival.json",
+      "source": "wikipedia_carnival",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_carnival_processions.json",
+      "source": "wikipedia_carnival_processions",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia carnival-procession term/article link list: 189 entries with name+description+wikipedia_url, no city/coordinates/dates. Supporting research, not POI records."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_giant_lantern_festival.json",
+      "source": "wikipedia_giant_lantern_festival",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_parade: Single genuine per-event lantern-festival POI: name/city/state/country/annual_date/website/description (Giant Lantern Festival, San Fernando, Philippines). Temporal procession/festival type; taxonomy has no lantern slug so folder category art_parade applies."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_giant_puppets.json",
+      "source": "wikipedia_giant_puppets",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_halloween_events.json",
+      "source": "wikipedia_halloween",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Wikipedia scrape (262 records) of Halloween-article related links/concepts (saints, liturgical year, 'observed in many countries'); city 6/262, country 6/262, coords 5/262. Not per-event POI records."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_halloween_parade.json",
+      "source": "wikipedia_halloween_parade",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_kinetic_races.json",
+      "source": "wikipedia_kinetic_races",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_krampus.json",
+      "source": "wikipedia_krampus",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_lantern_festivals.json",
+      "source": "wikipedia_lantern",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Wikipedia scrape (68 records) of religious holidays and related concepts (Christmas, Eid, Diwali, Hanukkah, Candlemas); city 12/68, country 12/68, coords 12/68. Not per-event POI records."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_las_fallas.json",
+      "source": "wikipedia_las_fallas",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_parades.json",
+      "source": "wikipedia_parades",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia parade glossary/link list: 99 entries with name+description+wikipedia_url, no city/coordinates/dates. Supporting research, not POI records."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_processional_giants_belgium_france.json",
+      "source": "wikipedia_processional_giants_belgium_france",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_royal_de_luxe.json",
+      "source": "wikipedia_royal_de_luxe",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Royal de Luxe spectacle table (45 records, city/country 45/45, date 44/45) that is a near-duplicate of the already-supporting company-tours/royal_de_luxe_wikipedia_table.json (all 30 non-empty spectacle titles match). Alternate duplicate; no separate import."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_sultans_elephant.json",
+      "source": "wikipedia_sultans_elephant",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_up_helly_aa.json",
+      "source": "wikipedia_up_helly_aa",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Wikipedia article prose/gallery/table scrape (records expose only name+section+source/wiki_title; no POI identity, coordinates, city or dates). Supporting research evidence, not POI records; excluded from imports per data/poi/README.md."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_wicker_man.json",
+      "source": "wikipedia_wicker_man",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Classified supporting: Wikipedia scrape (69 records) of Wicker Man article related links/concepts (druids, Celtic paganism, human sacrifice); city 3/69, country 3/69, coords 3/69. Not per-event POI records."
+    },
+    {
+      "file": "data/poi/art-parades/wikipedia/wikipedia_yi_peng.json",
+      "source": "wikipedia_yi_peng",
+      "category": "art_parade",
+      "required": true,
+      "disposition": "import",
+      "reason": "Classified import/art_parade: Single genuine per-event lantern-festival POI: name/city/country/annual_date/description (Yi Peng, Chiang Mai, Thailand). Temporal procession/festival type."
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/arbnet_morton_register.csv",
+      "source": "arbnet_morton_register",
+      "category": null,
+      "required": false,
+      "disposition": "alternate",
+      "reason": "Alternate flat CSV export of arbnet_morton_register.json (identical 2,733-record arbnet_id set; same 7 fields). The registered JSON capture is the primary import target; this CSV adds no distinct records. Excluded from the work queue; preserve for provenance."
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/arbnet_morton_register.json",
+      "source": "arbnet",
+      "category": "arboretum",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/bgci_gardens.csv",
+      "source": "bgci_gardens",
+      "category": null,
+      "required": false,
+      "disposition": "alternate",
+      "reason": "Alternate flat CSV export of bgci_gardens_full.json (identical 3,649-record bgci_id set; 96 columns). The registered JSON capture is the primary import target; this CSV adds no distinct records. Excluded from the work queue; preserve for provenance/column reference."
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/bgci_gardens_full.json",
+      "source": "bgci",
+      "category": "botanical_garden",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/gardenology_us_gardens.csv",
+      "source": "gardenology_us_gardens",
+      "category": null,
+      "required": false,
+      "disposition": "alternate",
+      "reason": "Alternate flat export of data/poi/botanical_gardens_data/gardenology_us_gardens.json. Byte-field record identity verified identical to the JSON sibling (738/738 records, zero-only-in-either across state,country,name,city,gardenology_url). The JSON sibling is already disposition=import; exclude this duplicate export from the queue to avoid double-importing the same POIs."
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/gardenology_us_gardens.json",
+      "source": "gardenology",
+      "category": "botanical_garden",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/iabg_checklist_gardens.csv",
+      "source": "iabg_checklist_gardens",
+      "category": null,
+      "required": false,
+      "disposition": "alternate",
+      "reason": "Alternate flat export of data/poi/botanical_gardens_data/iabg_checklist_gardens.json. Record identity verified identical to the JSON sibling (2115/2115 records, zero-only-in-either across region,country,name,alt_name). The JSON sibling is already disposition=import; exclude this duplicate export from the queue."
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/iabg_checklist_gardens.json",
+      "source": "iabg",
+      "category": "botanical_garden",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/osm_botanical_gardens.csv",
+      "source": "osm",
+      "category": "botanical_garden",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/wikidata_botanical_gardens.csv",
+      "source": "wikidata_botanical_gardens",
+      "category": null,
+      "required": false,
+      "disposition": "alternate",
+      "reason": "Alternate flat export of data/poi/botanical_gardens_data/wikidata_botanical_gardens.json. Record identity verified identical to the JSON sibling (3916/3916 records, zero-only-in-either across wikidata_id,name,country,latitude,longitude,website,founded,area_ha,wikidata_url). The JSON sibling is already disposition=import; exclude this duplicate export from the queue."
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/wikidata_botanical_gardens.json",
+      "source": "wikidata",
+      "category": "botanical_garden",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/wikipedia_intl_gardens.csv",
+      "source": "wikipedia_intl_gardens",
+      "category": null,
+      "required": false,
+      "disposition": "alternate",
+      "reason": "Alternate flat export of data/poi/botanical_gardens_data/wikipedia_intl_gardens.json. Record identity verified identical to the JSON sibling (3293/3293 records, zero-only-in-either across country,name,notes,wikipedia_url,source_url). The JSON sibling is already disposition=import; exclude this duplicate export from the queue."
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/wikipedia_intl_gardens.json",
+      "source": "wikipedia_intl",
+      "category": "botanical_garden",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/wikipedia_us_gardens.csv",
+      "source": "wikipedia_us_gardens",
+      "category": null,
+      "required": false,
+      "disposition": "alternate",
+      "reason": "Alternate flat export of data/poi/botanical_gardens_data/wikipedia_us_gardens.json. Record identity verified identical to the JSON sibling (855/855 records, zero-only-in-either across state,country,name,wikipedia_url,founded). The JSON sibling is already disposition=import; exclude this duplicate export from the queue."
+    },
+    {
+      "file": "data/poi/botanical_gardens_data/wikipedia_us_gardens.json",
+      "source": "wikipedia_us",
+      "category": "botanical_garden",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/carnival/apokries_greece_carnivals.json",
+      "source": "apokries_greece_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (7 records): name/city/country/region/dates(season)/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/bear_festival_pyrenees.json",
+      "source": "bear_festival_pyrenees",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (3 records): name/city/country/region/dates/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/bridgwater_carnival.json",
+      "source": "bridgwater_carnival",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI record (1 entry): name/city(Bridgwater)/country(UK)/region/dates/description/parade_route_info/source_url. Importable carnival POI; date/coords normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/carnivalcities_events_html.json",
+      "source": "carnivalcities_events_html",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (20 records): name/city/country/start+end_date/official_website/organizer/postal_code/url. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/catavino_spain_carnivals.json",
+      "source": "catavino_spain_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (9 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/cityvoyager_balkans_carnivals.json",
+      "source": "cityvoyager_balkans_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (14 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/ecotuktuk_portugal_carnivals.json",
+      "source": "ecotuktuk_portugal_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (8 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/europcar_belgium_carnivals.json",
+      "source": "europcar_belgium_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (9 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/european_heritage_days.json",
+      "source": "european_heritage_days",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (3 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/_extraction_summary.json",
+      "source": "extraction_summary",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Extraction counts and file summary, not POI records. Retain as supporting evidence."
+    },
+    {
+      "file": "data/poi/carnival/fasiangy_slovakia.json",
+      "source": "fasiangy_slovakia",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (1 records): name/city/country/region/dates/start+end_date/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/fecc_carnivalcities_all_pages.json",
+      "source": "fecc_carnivalcities_all_pages",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Supporting/reference capture, not importable POI records: FECC carnivalcities.net page index: id/name/parent/country_slug/url/content_preview/dates_found. Structural site index, not per-event POI records."
+    },
+    {
+      "file": "data/poi/carnival/fecc_carnivalcities_countries.json",
+      "source": "fecc_carnivalcities_countries",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Supporting/reference capture, not importable POI records: FECC member-cities + Wikipedia-page index (member_cities/all_wp_pages/city_detail_pages). Structural index, not POI records."
+    },
+    {
+      "file": "data/poi/carnival/fecc_carnivalcities_events.json",
+      "source": "fecc_carnivalcities",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (21 records): name/city/country/start+end_date/description/lat/lon/organizer_websites (FECC event API). Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/fecc_carnivalcities_members.json",
+      "source": "fecc_carnivalcities_members",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Supporting/reference capture, not importable POI records: FECC member-city page index: id/name/parent/country_slug/url/content_preview/dates_found. Structural site index, not POI records."
+    },
+    {
+      "file": "data/poi/carnival/fecc_wikipedia.json",
+      "source": "fecc_wikipedia",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Supporting/reference capture, not importable POI records: FECC Wikipedia summary: conventions(43)/member_cities_raw(22) text lists. Research/reference, not per-event POI records."
+    },
+    {
+      "file": "data/poi/carnival/festivalenfrance_carnivals.json",
+      "source": "festivalenfrance_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (21 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/flixbus_france_carnivals.json",
+      "source": "flixbus_france_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (3 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/flixbus_germany_carnivals.json",
+      "source": "flixbus_germany_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (4 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/global_carnivalist.json",
+      "source": "global_carnivalist",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/carnival/gonomad_sardinia_carnivals.json",
+      "source": "gonomad_sardinia_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (5 records): name/city/country/region/dates/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/iamexpat_germany_carnivals.json",
+      "source": "iamexpat_germany_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (8 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/iamexpat_netherlands_carnivals.json",
+      "source": "iamexpat_netherlands_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (8 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/kukeri_bulgaria_villages.json",
+      "source": "kukeri_bulgaria_villages",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (5 records): name/city/country/region/dates/start+end_date/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/kurentovanje_slovenia.json",
+      "source": "kurentovanje_slovenia",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (1 records): name/city/country/region/dates/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/merimerieu_europe_carnivals.json",
+      "source": "merimerieu_europe_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (10 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/pegasus_europe_carnivals.json",
+      "source": "pegasus_europe_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (5 records): name/city/country/dates/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/recordgo_spain_carnivals.json",
+      "source": "recordgo_spain_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (14 records): name/city/country/dates/description (13 named Carnival-of-X + 1 non-carnival 'Valentine's Day'; many city/date='unknown' -> later normalization). Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/reddit_carnivals.json",
+      "source": "reddit_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (24 records): name/city/country/description/tradition_type/reddit_url/source_thread. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/reddit_raw_comments.json",
+      "source": "reddit_raw_comments",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Supporting/reference capture, not importable POI records: Raw Reddit thread/comment dumps (comments/date/note/reddit_url/thread_id/title/votes). Source material, not POI records."
+    },
+    {
+      "file": "data/poi/carnival/rick_steves_festivals.json",
+      "source": "rick_steves",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (392 records): name/city/country/dates/description (multi-country festival directory incl. carnivals). Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/rough_guides_carnivals.json",
+      "source": "rough_guides",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/carnival/smithsonian_mamuthones.json",
+      "source": "smithsonian_mamuthones",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (1 records): name/city/country/region/dates/start+end_date/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/surva_bulgaria.json",
+      "source": "surva_bulgaria",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (1 records): name/city/country/region/dates/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/tschaggatta_lotschental.json",
+      "source": "tschaggatta_lotschental",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (1 records): name/city/country/region/dates/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/unesco_ich_carnivals.json",
+      "source": "unesco_ich_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (17 records): name/cities/countries/region/coordinates/description/timing/inscription_year (UNESCO ICH). Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/unesco_ich_full_list.json",
+      "source": "unesco_ich_full_list",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (18 records): name/cities/countries/region/coordinates/description (UNESCO ICH full list). Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/unesco_ich_specific.json",
+      "source": "unesco_ich_specific",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (6 records): name/cities/countries/region/description/timing/inscription_year/url (UNESCO ICH). Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/uzgavenes_lithuania.json",
+      "source": "uzgavenes_lithuania",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (1 records): name/city/country/region/dates/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/vevcani_carnival.json",
+      "source": "vevcani_carnival",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (1 records): name/city/country/region/dates/contact/tradition_type/description. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/visiteurope_carnivals.json",
+      "source": "visiteurope_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (5 records): name/city/country/start+end_date/date_raw/description/url. Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/wikidata_carnivals.json",
+      "source": "wikidata_carnivals",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (851 records): name/city/country/description/website/inception/wikidata_id/wikidata_url (Wikidata carnival instances). Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/wikipedia_carnival_articles.json",
+      "source": "wikipedia_carnival_articles",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (37 records): name/city/country/dates/description/infobox/sections/sub_events/source_article (city/dates sparse; per-event carnival articles). Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/wikipedia_carnivals_articles.json",
+      "source": "wikipedia_carnivals_articles",
+      "category": "carnival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event carnival POI capture (65 records): name/city/country/dates/description/source_article/source_url (55/65 city; per-event carnival articles). Importable carnival POIs; date/coordinate normalization is a later stage."
+    },
+    {
+      "file": "data/poi/carnival/wikipedia_carnivals_category.json",
+      "source": "wikipedia_carnivals_category",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Supporting/reference capture, not importable POI records: Wikipedia category API listing (titles/pages). Index, not POI records."
+    },
+    {
+      "file": "data/poi/carnival/wikipedia_germany_carnival.json",
+      "source": "wikipedia_germany_carnival",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Supporting/reference capture, not importable POI records: Single Wikipedia article raw_text scrape (no structured city/dates/coords). Source material, not POI record."
+    },
+    {
+      "file": "data/poi/carnival/wikipedia_spain_carnival.json",
+      "source": "wikipedia_spain_carnival",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Supporting/reference capture, not importable POI records: Single Wikipedia article raw_text scrape (no structured city/dates/coords). Source material, not POI record."
+    },
+    {
+      "file": "data/poi/hostels/california-hostels.json",
+      "source": "california_hostels",
+      "category": "hostel",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/hostels/colorado-hostels.json",
+      "source": "colorado_hostels",
+      "category": "hostel",
+      "required": true,
+      "disposition": "import",
+      "reason": "Colorado hostel POIs (32 records: name, lat/lng, description, address, website). Structural sibling of imported data/poi/hostels/california-hostels.json (category hostel); same generic-v1 array shape."
+    },
+    {
+      "file": "data/poi/music-festivals/apis/edm_dance_directory.json",
+      "source": "edm_dance_directory",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/jambase_countries.json",
+      "source": "jambase_countries",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "API country lookup list, not festival records. Retain as supporting evidence."
+    },
+    {
+      "file": "data/poi/music-festivals/apis/jambase_festivals.json",
+      "source": "jambase",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/jambase_genres.json",
+      "source": "jambase_genres",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "API genre lookup list, not festival records. Retain as supporting evidence."
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_01_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_02_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_03_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_04_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_05_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_06_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_07_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_08_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_09_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_10_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_11_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_12_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_13_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_14_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_15_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/musicbrainz_festivals_16_of_16.json",
+      "source": "musicbrainz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/resident_advisor_festivals.json",
+      "source": "resident_advisor",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/songkick_festivals.json",
+      "source": "songkick",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/ticketmaster_festivals_full.json",
+      "source": "ticketmaster",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/apis/viberate_festivals.json",
+      "source": "viberate",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/directories/efestivals_uk.json",
+      "source": "efestivals_uk",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event music-festival directory records (342 entries): name/slug/city/country/dates/genres/venue plus capacity/website; only 1/342 carries lat/lng. UK coverage from festivalabroad enrichment; efestivals.co.uk pages are Cloudflare-protected. Importable music_festival POIs; coords/date normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/directories/festapp_festivals.json",
+      "source": "festapp",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event music-festival directory records (1796 entries across 59 countries, 739 country-unknown): name/slug/city/country/location/start-end dates/genres/lineup/organizer and ticket URLs. Importable music_festival POIs; coords/date normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/directories/festivalabroad_festivals.json",
+      "source": "festivalabroad",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event music-festival directory records (3380 entries): name/slug/city/country/location/venue/start-end dates/genres/description/website; 13/3380 carry lat/lng. Importable music_festival POIs; coords/date normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/directories/festival_alarm_festivals.json",
+      "source": "festival_alarm",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event music-festival directory records (5104 entries): name/category/genres/country/city/venue/start-end dates/duration/visitors/price/website. Importable music_festival POIs; coords/date normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/directories/festivalando_festivals.json",
+      "source": "festivalando",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Brazilian festival-blog export (1800 entries): title/url/slug/date/excerpt/venue(null). Genuine per-event festival posts but no city/country/coords and excerpt is editorial prose, so records are marginal; classify import as music_festival POIs with venue/location normalization deferred. Source identity festivalando.com.br."
+    },
+    {
+      "file": "data/poi/music-festivals/directories/festivalatlas_festivals.json",
+      "source": "festivalatlas",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/directories/festivalfinder_eu.json",
+      "source": "festivalfinder_eu",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event festival records (551 entries, European Festivals Association): name/city/country/location/start-end dates/source_url; multi-genre arts+music. Importable music_festival POIs; coords/date normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/directories/festivals_directory.json",
+      "source": "festivals_directory",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine curated per-event festival records (85 entries): name/city/country/location/start-end dates/genres/description/source_url. Importable music_festival POIs; coords/date normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/directories/festivism_festivals.json",
+      "source": "festivism",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/directories/musicfestivalwizard_festivals.json",
+      "source": "musicfestivalwizard",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/directories/skiddle_festivals.json",
+      "source": "skiddle",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event festival listing records (323 entries): name/location/dates_text/genre/url. No city/country split or coords; location is a free-text place string. Importable music_festival POIs with location normalization deferred."
+    },
+    {
+      "file": "data/poi/music-festivals/directories/songkick_browse_festivals.json",
+      "source": "songkick",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/music-festivals/directories/thatfestivalsite_festivals.json",
+      "source": "thatfestivalsite",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event festival directory records (1415 entries): name/id/city/country/location/venue/start-end dates/genres/lineup/status; many carry lat/lng. Importable music_festival POIs; coords/date normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/genres/bluegrass_festivals.json",
+      "source": "bluegrass",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event bluegrass-festival directory records (374 entries): name/city/state/country/dates(month+start/end)/genre/website/source/year. Importable music_festival POIs; coords/date normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/genres/concerts_metal_festivals.json",
+      "source": "concerts_metal",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event metal-festival directory records (590 entries): name/date/city/country/genre/website/source, many with lat/lng. Importable music_festival POIs; date normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/genres/downbeat_jazz_festivals.json",
+      "source": "downbeat_jazz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event jazz-festival records (142 entries): name/location/country/year/dates_2026/notes/genre/website. Importable music_festival POIs; coords normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/genres/festifeed_festivals.json",
+      "source": "festifeed",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event music/club event records (254 entries): name/start-end dates/venue/city/country/genres/website/description/organizers. Importable music_festival POIs; coords normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/genres/metal_travels_festivals.json",
+      "source": "metal_travels",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event metal-festival records (93 entries): name/country/location/dates/genre/website/source. Importable music_festival POIs; coords normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/genres/smoothjazz_festivals.json",
+      "source": "smoothjazz",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event smooth-jazz festival records (158 entries): name/city/state_region/country/dates/website/source. Importable music_festival POIs; coords normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/genres/world_music_central_festivals.json",
+      "source": "world_music_central",
+      "category": "music_festival",
+      "required": true,
+      "disposition": "import",
+      "reason": "Genuine per-event world-music festival records (78 entries): name/location/country/description/genre/website/city/wikidata_qid. Importable music_festival POIs; coords normalization is a later stage."
+    },
+    {
+      "file": "data/poi/music-festivals/other/bandsintown_festivals.json",
+      "source": "bandsintown",
+      "category": null,
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Classification pending"
+    },
+    {
+      "file": "data/poi/music-festivals/other/setlistfm_festivals.json",
+      "source": "setlistfm",
+      "category": null,
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Classification pending"
+    },
+    {
+      "file": "data/poi/music-festivals/regional/bandwagon_asia_full.json",
+      "source": "bandwagon_asia",
+      "category": null,
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Classification pending"
+    },
+    {
+      "file": "data/poi/music-festivals/regional/getfestiwise_festivals_full.json",
+      "source": "getfestiwise_festivals",
+      "category": null,
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Classification pending"
+    },
+    {
+      "file": "data/poi/music-festivals/regional/world_festival_directory.json",
+      "source": "world_festival_directory",
+      "category": null,
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Classification pending"
+    },
+    {
+      "file": "data/poi/music-festivals/ticketmaster_art_events.json",
+      "source": "ticketmaster_art",
+      "category": null,
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Classification pending"
+    },
+    {
+      "file": "data/poi/music-festivals/wikipedia/wikipedia_country_music_festivals.json",
+      "source": "wikipedia_country_music",
+      "category": null,
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Classification pending"
+    },
+    {
+      "file": "data/poi/music-festivals/wikipedia/wikipedia_festival_names.json",
+      "source": "wikipedia_festival_names",
+      "category": null,
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Classification pending"
+    },
+    {
+      "file": "data/poi/music-festivals/wikipedia/wikipedia_festivals.json",
+      "source": "wikipedia",
+      "category": null,
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Classification pending"
+    },
+    {
+      "file": "data/poi/rv_campgrounds_data/analysis_summary.json",
+      "source": "analysis_summary",
+      "category": null,
+      "required": false,
+      "disposition": "supporting",
+      "reason": "Summary statistics of source captures, not a POI record array. Retain as research evidence; exclude from imports."
+    },
+    {
+      "file": "data/poi/rv_campgrounds_data/osm/caravan_sites.csv",
+      "source": "osm_camp",
+      "category": "campground",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/rv_campgrounds_data/ridb/campsites_rv_hookup.csv",
+      "source": "campsites_rv_hookup",
+      "category": null,
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Classification pending"
+    },
+    {
+      "file": "data/poi/rv_campgrounds_data/ridb/facilities.csv",
+      "source": "ridb",
+      "category": "campground",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv",
+      "source": "thedyrt",
+      "category": "campground",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    },
+    {
+      "file": "data/poi/rv_campgrounds_data/uscampgrounds/all_campgrounds_combined.csv",
+      "source": "uscampgrounds",
+      "category": "campground",
+      "required": true,
+      "disposition": "import",
+      "reason": "Explicit registered source mapping"
+    }
+  ]
+}

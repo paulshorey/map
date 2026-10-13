@@ -1,4 +1,7 @@
+import { canonicalLane } from "./concurrency.js";
 import { currentAttempt } from "./execution.js";
+import { finishTask } from "../../sql/ingestion-tasks.js";
+
 import { pathToFileURL } from "node:url";
 /**
  * Match research_pois into canonical_pois (M8).
@@ -1338,7 +1341,7 @@ function installShutdownHandler(signal: ShutdownSignal): () => void {
   return () => process.off("SIGINT", onSigint);
 }
 
-export async function runMatch(
+async function runMatchInternal(
   pool: Pool,
   opts: CliOptions,
   shutdown: ShutdownSignal,
@@ -1416,7 +1419,22 @@ export async function runMatch(
           );
         } else {
           const canonicalId = await applyDecision(client, row, decision, opts);
+          const ctx = currentAttempt();
+          if (ctx?.claim) {
+            const build = (
+              await client.query(
+                "SELECT active_build_id FROM canonical_pois WHERE id=$1",
+                [canonicalId],
+              )
+            ).rows[0];
+            await finishTask(client, ctx.claim, ctx.attemptId, {
+              status: "succeeded",
+              canonical_id: canonicalId,
+              build_id: build.active_build_id,
+            });
+          }
           await client.query("COMMIT");
+          if (ctx?.claim) ctx.committed = true;
           console.log(
             `OK ${row.name ?? row.id}: ${decision.decision === "merge" ? "merged into" : "created"} ${canonicalId}` +
               ` (${decision.method}${decision.score !== null ? ` ${decision.score.toFixed(3)}` : ""})`,
@@ -1522,3 +1540,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
     console.error("Match failed:", err);
     process.exit(1);
   });
+
+export async function runMatch(
+  pool: Pool,
+  opts: CliOptions,
+  shutdown: ShutdownSignal,
+): Promise<MatchStats> {
+  return canonicalLane.run(() => runMatchInternal(pool, opts, shutdown));
+}

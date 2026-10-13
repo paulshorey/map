@@ -176,6 +176,9 @@ export interface ResearchIngestExecutionsRow {
   "finished_at": Date | null;
   "stop_reason": string | null;
   "error": unknown | null;
+  "host_id": string | null;
+  "process_start": string | null;
+  "scheduler_version": number;
 }
 
 export interface ResearchIngestInventoryRow {
@@ -207,12 +210,103 @@ export interface ResearchIngestInventoryEditsRow {
   "created_at": Date;
 }
 
+export interface ResearchIngestInventoryScansRow {
+  "id": string;
+  "host_id": string;
+  "checkout": string;
+  "git_commit": string | null;
+  "started_at": Date;
+  "finished_at": Date | null;
+  "status": string;
+  "discovered": number | null;
+  "missing": number | null;
+  "errors": unknown;
+  "error": string | null;
+}
+
 export interface ResearchIngestInventoryVersionsRow {
   "inventory_id": string;
   "file_sha256": string;
   "byte_size": number;
   "first_seen_at": Date;
   "last_seen_at": Date;
+}
+
+export interface ResearchIngestIssueEventsRow {
+  "id": number;
+  "issue_id": string;
+  "actor": string;
+  "action": string;
+  "reason": string;
+  "created_at": Date;
+}
+
+export interface ResearchIngestIssuesRow {
+  "id": string;
+  "run_id": string | null;
+  "source_record_id": string | null;
+  "stage": string | null;
+  "code": string;
+  "scope": string;
+  "severity": string;
+  "message": string;
+  "evidence": unknown;
+  "retryable": boolean;
+  "status": string;
+  "first_seen_at": Date;
+  "last_seen_at": Date;
+}
+
+export interface ResearchIngestProviderCallItemsRow {
+  "call_id": string;
+  "attempt_id": string;
+}
+
+export interface ResearchIngestProviderCallsRow {
+  "id": string;
+  "run_id": string | null;
+  "execution_id": string | null;
+  "provider": string;
+  "operation": string;
+  "model": string | null;
+  "records": number;
+  "status": string;
+  "started_at": Date;
+  "finished_at": Date | null;
+  "queue_ms": number | null;
+  "latency_ms": number | null;
+  "prompt_tokens": number | null;
+  "cached_tokens": number | null;
+  "completion_tokens": number | null;
+  "reasoning_tokens": number | null;
+  "estimated_cost_usd": number | null;
+  "http_status": number | null;
+  "quota": unknown;
+  "concurrency": unknown;
+  "error": unknown | null;
+}
+
+export interface ResearchIngestQualityReviewsRow {
+  "id": string;
+  "inventory_id": string;
+  "file_sha256": string;
+  "pipeline_versions": unknown;
+  "actor": string;
+  "decision": string;
+  "reason": string;
+  "sample_records": Array<string>;
+  "reviewed_at": Date;
+}
+
+export interface ResearchIngestRecordVerificationsRow {
+  "run_id": string;
+  "source_record_id": string;
+  "execution_id": string;
+  "observation_id": string;
+  "output": unknown;
+  "pipeline_versions": unknown;
+  "outcome": string;
+  "verified_at": Date;
 }
 
 export interface ResearchIngestRunItemsRow {
@@ -268,6 +362,22 @@ export interface ResearchIngestRunsRow {
   "verified_at": Date | null;
 }
 
+export interface ResearchIngestTasksRow {
+  "run_id": string;
+  "source_record_id": string;
+  "stage": string;
+  "rank": number;
+  "state": string;
+  "execution_id": string | null;
+  "claim_token": string | null;
+  "attempt_id": string | null;
+  "input": unknown;
+  "output": unknown | null;
+  "started_at": Date | null;
+  "finished_at": Date | null;
+  "updated_at": Date;
+}
+
 export interface ResearchMatchDecisionsRow {
   "id": string;
   "research_id": string;
@@ -319,6 +429,7 @@ export interface ResearchNormalizationRequestsRow {
   "completed_at": Date | null;
   "run_id": string | null;
   "ingest_attempt_id": string | null;
+  "provider_call_id": string | null;
 }
 
 export interface ResearchPipelineJobsRow {
@@ -595,10 +706,18 @@ export interface PostgresDbSchema {
   "research_ingest_executions": ResearchIngestExecutionsRow;
   "research_ingest_inventory": ResearchIngestInventoryRow;
   "research_ingest_inventory_edits": ResearchIngestInventoryEditsRow;
+  "research_ingest_inventory_scans": ResearchIngestInventoryScansRow;
   "research_ingest_inventory_versions": ResearchIngestInventoryVersionsRow;
+  "research_ingest_issue_events": ResearchIngestIssueEventsRow;
+  "research_ingest_issues": ResearchIngestIssuesRow;
+  "research_ingest_provider_call_items": ResearchIngestProviderCallItemsRow;
+  "research_ingest_provider_calls": ResearchIngestProviderCallsRow;
+  "research_ingest_quality_reviews": ResearchIngestQualityReviewsRow;
+  "research_ingest_record_verifications": ResearchIngestRecordVerificationsRow;
   "research_ingest_run_items": ResearchIngestRunItemsRow;
   "research_ingest_run_records": ResearchIngestRunRecordsRow;
   "research_ingest_runs": ResearchIngestRunsRow;
+  "research_ingest_tasks": ResearchIngestTasksRow;
   "research_match_decisions": ResearchMatchDecisionsRow;
   "research_match_overrides": ResearchMatchOverridesRow;
   "research_normalization_requests": ResearchNormalizationRequestsRow;
