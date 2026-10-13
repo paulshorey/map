@@ -121,20 +121,20 @@ test("an independent fetch transport failure remains provider-retryable", async 
   assert.equal(calls, 1);
 });
 
-test("defaults pin Fireworks V4.1 and reject unbounded/ambiguous thinking settings", () => {
-  assert.equal(readLlmConfig({}).thinkingBudgetTokens, 2048);
+test("defaults pin Fireworks GLM and reject unbounded/ambiguous thinking settings", () => {
+  assert.equal(readLlmConfig({}).thinkingBudgetTokens, 256);
   assert.equal(
     readLlmConfig({}).model,
-    "accounts/fireworks/models/deepseek-v4p1-flash",
+    "accounts/fireworks/models/glm-5p3-flash",
   );
   assert.equal(
     readLlmConfig({ LLM_THINKING_BUDGET_TOKENS: "4096" }).thinkingBudgetTokens,
     4096,
   );
-  for (const value of ["0", "-1", "100", "1023", "1024.5", "NaN", "Infinity"]) {
+  for (const value of ["0", "-1", "256.5", "none", "NaN", "Infinity"]) {
     assert.throws(
       () => readLlmConfig({ LLM_THINKING_BUDGET_TOKENS: value }),
-      /integer >= 1024/,
+      /integer >= 1/,
     );
   }
 });
@@ -150,8 +150,8 @@ test("short final answers retain a separate thinking allowance and JSON schema",
     maxTokens: 64,
     responseFormat,
   });
-  assert.equal(body.max_tokens, 2112);
-  assert.equal(body.reasoning_effort, 2048);
+  assert.equal(body.max_tokens, 320);
+  assert.equal(body.reasoning_effort, 256);
   assert.equal(body.service_tier, "default");
   assert.deepEqual(body.response_format, responseFormat);
   assert.equal("thinking" in body, false);
@@ -161,6 +161,60 @@ test("short final answers retain a separate thinking allowance and JSON schema",
       /maxTokens/,
     );
   }
+});
+
+test("explicit DeepSeek overrides retain a real hard cap and their own rates", async () => {
+  const model = "accounts/fireworks/models/deepseek-v4p1-flash";
+  assert.equal(readLlmConfig({ LLM_MODEL: model }).thinkingBudgetTokens, 2048);
+  for (const value of ["1", "256", "1000", "1023"]) {
+    assert.throws(
+      () =>
+        readLlmConfig({ LLM_MODEL: model, LLM_THINKING_BUDGET_TOKENS: value }),
+      /integer >= 1024/,
+    );
+  }
+  Object.assign(ingestConfig.llm, readLlmConfig({ LLM_MODEL: model }));
+  assert.equal(
+    buildChatRequest({ system: "fixture", user: "fixture", maxTokens: 64 })
+      .max_tokens,
+    2112,
+  );
+  respond(
+    completion({
+      prompt_tokens: 100,
+      completion_tokens: 240,
+      prompt_tokens_details: { cached_tokens: 40 },
+    }),
+  );
+  const result = await completeChat({
+    system: "fixture",
+    user: "fixture",
+    retries: 0,
+  });
+  assert.equal(
+    result.usage.estimatedCost,
+    (60 * 0.3 + 40 * 0.006 + 240 * 1.2) / 1_000_000,
+  );
+});
+
+test("GLM reasoning telemetry accepts the provider output-token details shape", async () => {
+  respond(
+    completion({
+      prompt_tokens: 100,
+      completion_tokens: 400,
+      output_tokens_details: { reasoning_tokens: 256 },
+    }),
+  );
+  const result = await completeChat({
+    system: "fixture",
+    user: "fixture",
+    retries: 0,
+  });
+  assert.equal(result.reasoningTokens, 256);
+  assert.equal(
+    result.usage.estimatedCost,
+    (100 * 0.15 + 400 * 0.5) / 1_000_000,
+  );
 });
 
 test("stale provider/endpoint overrides fail before any request or credential lookup", async () => {
@@ -203,7 +257,7 @@ test("thinking remains separate from final JSON and is counted once in output co
   assert.equal(result.content, '{"ok":true}');
   assert.equal(
     result.usage.estimatedCost,
-    (60 * 0.3 + 40 * 0.006 + 240 * 1.2) / 1_000_000,
+    (60 * 0.15 + 40 * 0.03 + 240 * 0.5) / 1_000_000,
   );
   assert.equal(
     JSON.stringify(result).includes("fixture reasoning marker"),
@@ -220,14 +274,14 @@ test("provider cost takes precedence, including zero; unknown models remain unkn
       cost,
     );
   }
-  respond(
-    completion({ prompt_tokens: 100, completion_tokens: 20 }, "another-model"),
-  );
-  assert.equal(
-    (await completeChat({ system: "fixture", user: "fixture", retries: 0 }))
-      .usage.estimatedCost,
-    null,
-  );
+  for (const model of ["another-model", "toString", "__proto__"]) {
+    respond(completion({ prompt_tokens: 100, completion_tokens: 20 }, model));
+    assert.equal(
+      (await completeChat({ system: "fixture", user: "fixture", retries: 0 }))
+        .usage.estimatedCost,
+      null,
+    );
+  }
 });
 
 test("missing or malformed token accounting never produces a fabricated cost", async () => {
@@ -265,7 +319,7 @@ test("reasoning-only truncation stops immediately and retains billable usage", a
       assert.equal(error.result?.usage.completionTokens, 2048);
       assert.equal(
         error.result?.usage.estimatedCost,
-        (100 * 0.3 + 2048 * 1.2) / 1_000_000,
+        (100 * 0.15 + 2048 * 0.5) / 1_000_000,
       );
       return true;
     },
@@ -344,14 +398,14 @@ test("exact normalization cache identity changes with model/thinking; determinis
   const input = {
     rawContentHash: "fixture",
     model: "fixture",
-    llmMode: "deepseek",
+    llmMode: "provider",
   };
   const original = normalizationInputHash(input, false);
   assert.equal(normalizationInputHash(input, false), original);
   ingestConfig.llm.thinkingBudgetTokens = 4096;
   assert.notEqual(normalizationInputHash(input, false), original);
   assert.equal(normalizationInputHash(input, true), stableHash(input));
-  ingestConfig.llm.thinkingBudgetTokens = 2048;
+  ingestConfig.llm.thinkingBudgetTokens = 256;
   ingestConfig.llm.model = "accounts/fireworks/models/another-model";
   assert.notEqual(normalizationInputHash(input, false), original);
   assert.equal(normalizationInputHash(input, true), stableHash(input));

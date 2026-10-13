@@ -3,6 +3,7 @@ import { normalizeName, websiteDomain } from "./text.js";
 import { strictDate, type DeterministicFacts, type DeterministicInput } from "./deterministic.js";
 import type { LlmNormalizationOutput } from "./contracts.js";
 import { isListingDomain, type NormalizationProfile } from "./profiles.js";
+import { resolveAttributes } from "./attributes.js";
 
 export interface ResolvedNormalization {
   status: "accepted" | "rejected" | "degraded";
@@ -170,17 +171,8 @@ export function resolveNormalization(input: {
       : null;
   if (proposed?.country_code && !proposedCountry) warnings.push("invalid_llm_country_code");
 
-  const attributes: Record<string, string | number | boolean> = {};
-  for (const attribute of proposed?.attributes ?? []) {
-    if (
-      attribute &&
-      typeof attribute.key === "string" &&
-      ["string", "number", "boolean"].includes(typeof attribute.value)
-    ) {
-      attributes[attribute.key] = attribute.value;
-    }
-  }
-  if (proposed?.edition_year !== null && proposed?.edition_year !== undefined) {
+  const attributes = resolveAttributes(captured, proposed?.attributes ?? [], evidence, warnings);
+  if (!Object.hasOwn(attributes, "edition_year") && proposed?.edition_year !== null && proposed?.edition_year !== undefined) {
     attributes.edition_year = proposed.edition_year;
   }
 

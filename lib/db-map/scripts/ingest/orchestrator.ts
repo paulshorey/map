@@ -16,7 +16,7 @@ import type { Pool, PoolClient } from "pg";
 import { parseGenericRecords } from "./extractors/generic.js";
 import { rawContentHash } from "./hash.js";
 import { runHybridNormalize } from "./normalize/runner.js";
-import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
+import { PIPELINE_VERSIONS, resumePipelineUpgrade } from "./pipeline-versions.js";
 import {
   hashSourceFile,
   resolveSourceFile,
@@ -948,6 +948,7 @@ export async function runOrchestration(
   measureDatabase(db);
   let opts = { ...supplied };
   let previous: any;
+  let pipelineUpgrade: ReturnType<typeof resumePipelineUpgrade> = null;
   if (opts.resume) {
     const { rows } = await db.query(
       `SELECT r.*,f.logical_path,v.file_sha256,v.extractor_version
@@ -964,21 +965,7 @@ export async function runOrchestration(
       previous.id,
       previous.logical_path,
     );
-    if (
-      previous.managed &&
-      JSON.stringify(previous.pipeline_versions) !==
-        JSON.stringify(PIPELINE_VERSIONS)
-    ) {
-      // JSONB key order is not stable: compare values below instead.
-      if (
-        Object.entries(PIPELINE_VERSIONS).some(
-          ([k, v]) => previous.pipeline_versions[k] !== v,
-        )
-      )
-        throw new Error(
-          "Pipeline versions changed; start a new file run instead of resuming an old scope",
-        );
-    }
+    if (previous.managed) pipelineUpgrade = resumePipelineUpgrade(previous.pipeline_versions);
   }
   if (
     (opts.fromStage === "consolidate" || opts.stopAfter === "consolidate") &&
@@ -1066,7 +1053,10 @@ export async function runOrchestration(
         ],
       );
     }
-    execution = await Execution.start(db, ctx.runId, opts, lock);
+    execution = await Execution.start(db, ctx.runId, {
+      ...opts,
+      ...(pipelineUpgrade ? { pipeline_version_upgrade: pipelineUpgrade } : {}),
+    }, lock);
   } catch (error) {
     lock.release(true);
     throw error;

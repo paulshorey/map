@@ -384,10 +384,10 @@ restart all previously running jobs. Report final gate state and which runs rema
 
 ## Pausing and crash recovery
 
-### Fireworks DeepSeek configuration
+### Fireworks GLM configuration
 
 The shared LLM client defaults to Fireworks serverless
-`accounts/fireworks/models/deepseek-v4p1-flash` at
+`accounts/fireworks/models/glm-5p3-flash` at
 `https://api.fireworks.ai/inference/v1`, using shell-injected `FIREWORKS_API_KEY`.
 This covers normalization, prose dates, match adjudication, and description fusion.
 There is no separate thinking model ID. Remove stale DeepInfra `LLM_PROVIDER`,
@@ -395,15 +395,16 @@ There is no separate thinking model ID. Remove stale DeepInfra `LLM_PROVIDER`,
 inconsistent provider/endpoint before accessing a key or sending a request.
 See [.env.example](../.env.example) for the non-secret configuration catalog.
 
-`LLM_THINKING_BUDGET_TOKENS` defaults to 2048 and must be an integer >= 1024.
-The client sends that integer as `reasoning_effort`; for V4.1 this selects high
-thinking with a hard thinking-token cap. It never also sends `thinking`, because
+`LLM_THINKING_BUDGET_TOKENS` defaults to 256 for GLM and must be a positive integer.
+The client sends the integer as `reasoning_effort`; GLM 5.3 is a thinking-only
+model and rejects disabling thinking. It never also sends `thinking`, because
 Fireworks rejects both controls together. Each call adds this allowance to its
-final-answer allowance to form total `max_tokens`: normalization uses 1800 + 2048
-= 3848; short date answers use 64 + 2048 = 2112. The cap leaves room for a final
-answer but does not guarantee that a model will produce valid or complete JSON.
-These semantics are from the [chat API](https://docs.fireworks.ai/api-reference/post-chatcompletions)
-and [reasoning guide](https://docs.fireworks.ai/guides/reasoning).
+final-answer allowance to form total `max_tokens`: normalization uses 1800 + 256
+= 2056; short date answers use 64 + 256 = 320. The cap leaves room for a final
+answer but does not guarantee valid or complete JSON. An explicit
+`accounts/fireworks/models/deepseek-v4p1-flash` override defaults to 2048 and
+requires at least 1024 for a hard cap; smaller V4.1 values do not enforce a cap.
+See the [chat API](https://docs.fireworks.ai/api-reference/post-chatcompletions).
 
 Only final `message.content` is parsed/stored; separate reasoning content is not
 added to JSON or retained in the request journal. The supported OpenAI-style
@@ -414,26 +415,43 @@ A `length` finish reason stops without repeating the same inadequate token cap;
 the failed request retains any returned usage/cost. Review the output/thinking
 allowance before resuming instead of treating truncation as a provider outage.
 
-Requests explicitly select the default service tier. The fallback estimate for
-this exact model uses the [standard serverless prices](https://docs.fireworks.ai/serverless/pricing),
-checked 2026-10-05: $0.30 input, $0.006 cached input, and $1.20 output per million
-tokens. Completion tokens include thinking and are counted once. Provider-reported
-cost takes precedence; other model overrides or missing/malformed usage remain
-unknown cost. Recheck rates before authorizing a long import. Per-record repair,
-fallback, lost-response and non-normalization spending still have the limits
-described in the budget table above.
+Requests explicitly select the default service tier. The fallback estimate uses
+[standard serverless prices](https://docs.fireworks.ai/serverless/pricing), checked
+2026-10-13: GLM costs $0.15 input, $0.03 cached input, and $0.50 output per million
+tokens. The explicit DeepSeek V4.1 override retains its $0.30 / $0.006 / $1.20
+rates. Completion tokens include thinking and are counted once. Provider-reported
+cost takes precedence; unknown models or missing/malformed usage remain unknown
+cost. Per-record repair, fallback, lost-response and non-normalization spending
+still have the limits described in the budget table above.
+
+Captured primitive attributes are authoritative in the resolver even if the
+model omits or contradicts them. Zero and false survive. Known rating, review-count,
+price and campground boolean strings are typed by code; opaque IDs and other text
+remain intact. Each retained captured attribute receives its exact source path.
+Additional model attributes need an exact primitive value at a cited input path;
+container-only, missing or contradictory evidence cannot activate an invented value.
+Nested captured data remains in immutable raw observations and may support such
+additional scalar attributes. Malformed attribute/evidence arrays fail validation
+and use the existing bounded JSON repair path.
 
 Provider-backed normalization cache identity includes provider, endpoint, model,
 thinking allowance, output allowance and request settings. Changes produce a new
 cache identity for unfinished/newly selected records. Managed resume still preserves
 already completed checkpoints and their original provenance; it does not rewrite
-the entire prior run using a new provider. Use an explicit new reprocessing run
+the entire prior run using a new provider. The exact hybrid-v3 / poi-normalize-v2
+to hybrid-v4 / poi-normalize-v3 upgrade is compatible when every other pipeline
+version matches. The execution options audit both version sets while the original
+run and artifacts retain their original versions. Other version drift still
+requires a new run. Use an explicit new reprocessing run
 only when a reviewed quality issue requires that extra work. Deterministic-only
 cache keys retain their existing shape. Normalization request rows record the full
 non-secret request body, including effective thinking and output limits.
 
 Run `pnpm --filter @lib/db-map ingest:test-llm` and
 `pnpm --filter @lib/db-map ingest:test-provider-recovery` for mocked provider checks.
+Run `pnpm --filter @lib/db-map ingest:test-normalization` for source-attribute and
+version guards, and `pnpm --filter @lib/db-map ingest:test-normalization:integration`
+for an isolated provider-free resume check against the development database.
 Management account/model reads can verify key validity and model availability without
 inference billing; they do not prove sufficient credits, successful inference, JSON
 quality or end-to-end ingestion. Before unattended imports, validate a new 1–5 record

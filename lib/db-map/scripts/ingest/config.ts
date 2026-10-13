@@ -23,19 +23,23 @@ function envNumber(key: string, fallback: number): number {
 }
 
 export function readLlmConfig(variables: NodeJS.ProcessEnv = process.env) {
+  const model =
+    variables.LLM_MODEL || "accounts/fireworks/models/glm-5p3-flash";
+  const deepSeek = model === "accounts/fireworks/models/deepseek-v4p1-flash";
   const thinkingBudgetTokens = Number(
-    variables.LLM_THINKING_BUDGET_TOKENS || 2048,
+    variables.LLM_THINKING_BUDGET_TOKENS || (deepSeek ? 2048 : 256),
   );
   if (
     !Number.isSafeInteger(thinkingBudgetTokens) ||
-    thinkingBudgetTokens < 1024
+    thinkingBudgetTokens < (deepSeek ? 1024 : 1)
   ) {
-    throw new Error("LLM_THINKING_BUDGET_TOKENS must be an integer >= 1024");
+    throw new Error(
+      `LLM_THINKING_BUDGET_TOKENS must be an integer >= ${deepSeek ? 1024 : 1}`,
+    );
   }
   return {
     provider: variables.LLM_PROVIDER || "fireworks",
-    model:
-      variables.LLM_MODEL || "accounts/fireworks/models/deepseek-v4p1-flash",
+    model,
     baseUrl: (
       variables.LLM_BASE_URL || "https://api.fireworks.ai/inference/v1"
     ).replace(/\/+$/, ""),

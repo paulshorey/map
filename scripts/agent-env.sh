@@ -226,9 +226,9 @@ persist_runtime_env() {
     printf 'export EMBEDDINGS_MODEL="${EMBEDDINGS_MODEL:-jina-embeddings-v3}"\n'
     printf 'export EMBEDDINGS_DIM="${EMBEDDINGS_DIM:-384}"\n'
     printf 'export LLM_PROVIDER="${LLM_PROVIDER:-fireworks}"\n'
-    printf 'export LLM_MODEL="${LLM_MODEL:-accounts/fireworks/models/deepseek-v4p1-flash}"\n'
+    printf 'export LLM_MODEL="${LLM_MODEL:-accounts/fireworks/models/glm-5p3-flash}"\n'
     printf 'export LLM_BASE_URL="${LLM_BASE_URL:-https://api.fireworks.ai/inference/v1}"\n'
-    printf 'export LLM_THINKING_BUDGET_TOKENS="${LLM_THINKING_BUDGET_TOKENS:-2048}"\n'
+    # Persist explicit thinking overrides above; config.ts chooses model-specific defaults.
   } > "${tmp}"
   chmod 600 "${tmp}"
   mv "${tmp}" "${ENV_FILE}"

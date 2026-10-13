@@ -836,7 +836,7 @@ function prepareNormalization(
       profileVersion: profile.version,
       examplesVersion: EXAMPLES_VERSION,
       model: ingestConfig.llm.model,
-      llmMode: opts.noLlm ? "deterministic_only" : "deepseek",
+      llmMode: opts.noLlm ? "deterministic_only" : "provider",
       reprocessGeneration,
     },
     opts.noLlm,
