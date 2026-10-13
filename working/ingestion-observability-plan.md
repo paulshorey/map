@@ -245,3 +245,16 @@ the affected provider path are available; no persistent capacity fault was obser
 resume of the original full cohort is the reviewed next action, with improved evidence if the
 unproven historical occupancy problem recurs. Maintenance was reopened with this chat's token,
 and the original parent's matching CLI/daemon notification probe is ready.
+
+The configured cheap launcher acknowledged the original-cohort checkpoint resume on `cb1b4d5`:
+job `5f64b03f-125a-4276-a3aa-a64b42f8fcc4`, execution
+`af084e7a-6d8d-49f7-a358-b2cce7eb3100`, run `4dda8606-9c20-4275-bae6-c14cdea9e38c`.
+Its admission reconciliation confirmed open/quiescent controls and no conflicting workers,
+locks or launch claims. The exact managed scope is `--resume <original run> --unlimited
+--llm-concurrency 4`; no full-run deadline. Node owns hourly checks and terminal callback.
+This is launch acknowledgement; whole-file completion is still pending. The coding agent did
+not launch or stay alive to monitor full ingestion.
+
+Journal: `lib/db-map/.ingest-logs/4dda8606-9c20-4275-bae6-c14cdea9e38c-af084e7a-6d8d-49f7-a358-b2cce7eb3100.jsonl`.
+Job/result directory: `lib/db-map/.ingest-jobs/5f64b03f-125a-4276-a3aa-a64b42f8fcc4/`.
+Private receipt: `/tmp/map-ingestion-failure-10294406-resume-receipt.json`.
