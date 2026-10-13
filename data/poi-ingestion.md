@@ -50,6 +50,21 @@ finished. Remaining work with no active/ready tasks stops with `scheduler_stalle
 stage/state counts for diagnosis; it never establishes completion. Limited stop points and
 provider-budget pauses retain their normal incomplete outcomes.
 
+Database failures retain structured `error.database` evidence: checkout versus query operation,
+pool capacity, total/idle/waiting clients and up to 20 oldest connection holders with stage,
+record/attempt identity and hold duration. The managed source-lock connection is labeled.
+No SQL, parameters or credentials are retained. A local pool checkout timeout has code
+`database_pool_checkout_timeout`; it stops globally and does not enter provider cooldown or
+automatic query replay. A pending provider request aborted by a systemic failure preserves
+that original error. See the [pool API](https://node-postgres.com/apis/pool) and
+[Node abort semantics](https://nodejs.org/api/globals.html#abortsignalreason) for the client behavior.
+
+Terminal packets include structured `execution_error` and recent attempt errors. Their
+`current_stage` is the earliest unfinished cohort stage, which may differ from the last failed
+record attempt. Use both when locating the failure. A historical connection timeout without
+pool evidence does not prove a leak or an infrastructure outage; check current admission and
+database availability, then validate the pinned affected record before deciding to resume.
+
 Three distinct questions need distinct evidence:
 
 1. **What happened in this invocation?** Execution and attempt history, provider requests,

@@ -208,6 +208,9 @@ export async function evidence(job: Job) {
       await db.query(
         `SELECT r.id,r.status,r.current_stage,r.stop_reason,left(r.fatal_error,1200) AS fatal_error,
     r.verified_at,e.status AS execution_status,e.heartbeat_at,e.options AS execution_options,
+    CASE WHEN e.error IS NOT NULL THEN jsonb_build_object('name',e.error->'name',
+      'message',left(e.error->>'message',1200),'code',e.error->'code','database',e.error->'database')
+      ELSE NULL END AS execution_error,
     CASE WHEN r.counters->'providerRecovery'->>'executionId'=e.id::text
       THEN r.counters->'providerRecovery' ELSE NULL END AS provider_recovery,
     (SELECT jsonb_build_object('requests',count(*),'estimated_cost_usd',COALESCE(sum(q.estimated_cost_usd),0),
@@ -230,12 +233,18 @@ export async function evidence(job: Job) {
       await db.query(
         `SELECT stage,target_key,status,left(error->>'message',1200) AS error,
     error->'status' AS http_status,error->'retryable' AS retryable,error->'retryAfterMs' AS retry_after_ms,
+    error->>'code' AS error_code,error->'database' AS database,
     output->>'reason' AS reason,started_at,finished_at FROM research_ingest_attempts
     WHERE execution_id=$1 ORDER BY greatest(started_at,finished_at) DESC LIMIT 3`,
         [job.execution_id],
       )
     ).rows;
-    return { ...r, recent_attempts: attempts };
+    return {
+      ...r,
+      current_stage_meaning:
+        "Earliest unfinished stage in the cohort; use recent_attempts and execution_error for failure origin",
+      recent_attempts: attempts,
+    };
   } finally {
     await db.query("ROLLBACK").catch(() => undefined);
     db.release();

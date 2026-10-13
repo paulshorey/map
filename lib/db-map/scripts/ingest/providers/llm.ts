@@ -357,6 +357,11 @@ async function completeChatUncontrolled(
       }
       return result;
     } catch (error) {
+      // A scheduler/database failure can abort this fetch with its own Error reason.
+      // Preserve that failure; it is not a retryable provider transport outage.
+      const executionSignal =
+        currentAttempt()?.execution.abortController.signal;
+      if (executionSignal?.aborted) executionSignal.throwIfAborted();
       const normalized =
         error instanceof LlmError
           ? error

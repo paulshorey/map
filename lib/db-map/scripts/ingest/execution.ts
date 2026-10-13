@@ -5,6 +5,7 @@ import { hostname } from "node:os";
 import type { Pool, PoolClient } from "pg";
 import { admitWorker } from "../../sql/ingestion-control.js";
 import { ProviderRecovery } from "./provider-recovery.js";
+import { labelDatabaseConnection } from "./database-telemetry.js";
 import {
   hostInstallationId,
   processStartIdentity,
@@ -81,6 +82,7 @@ export const errorDetails = (error: unknown) => ({
   retryable: (error as { retryable?: boolean })?.retryable,
   retryAfterMs: (error as { retryAfterMs?: number })?.retryAfterMs,
   reason: (error as { reason?: string })?.reason,
+  database: (error as { database?: unknown })?.database,
   cause:
     error instanceof Error && error.cause instanceof Error
       ? {
@@ -96,6 +98,7 @@ export async function lockSource(
   source: string,
 ): Promise<PoolClient> {
   const lock = await db.connect();
+  labelDatabaseConnection(db, lock, "source_lock");
   try {
     await lock.query("SET statement_timeout = '10s'");
     await lock.query("BEGIN");

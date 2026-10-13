@@ -194,3 +194,54 @@ not whole-file completion. No additional full run was started by the coding agen
 Journal: `lib/db-map/.ingest-logs/4dda8606-9c20-4275-bae6-c14cdea9e38c-05da7235-9b09-4d25-8f19-37d9e32dec04.jsonl`.
 Job/result directory: `lib/db-map/.ingest-jobs/10294406-7958-43e2-a932-7bbcdbc0f20f/`.
 Private launch receipt: `/tmp/map-ingestion-failure-008eba39-resume-receipt.json`.
+
+## October 13 database timeout diagnosis
+
+Execution `05da7235-9b09-4d25-8f19-37d9e32dec04` / job
+`10294406-7958-43e2-a932-7bbcdbc0f20f` stopped at 08:22:58 UTC after substantial matching
+progress. Durable task totals include 5,151 successful and eight reused matches, 5,159 successful
+canonical/record verification tasks and 16,819 successful embeddings. This execution made zero
+normalization requests while downstream backpressure held admission; it did make 77 successful
+Fireworks matching calls. Whole-file verification remains absent.
+
+The exact last failed unit was matching record 20908, not normalization. The terminal
+`current_stage=normalize` identifies the earliest unfinished cohort stage. The fatal error
+message is emitted by the installed pg-pool 3.14.0 checkout queue, not its new-connection path.
+Scheduler failure aborted the concurrent matching fetch with the database Error as its reason;
+the old LLM catch relabeled it retryable "Network error". The actual occupancy/leak/lock/network
+cause is unproven because the old process did not retain pool evidence. Current read-only
+diagnostics succeeded (nine server connections against max_connections=500, one active).
+
+Fresh discovery confirmed no workers, locks or launch claims. A concurrent independent review
+task briefly owned maintenance, then verified clean checkouts/no runtime writes and released
+its own gate. This chat entered its own gate before changes; other-task evidence and journals
+were preserved. No data reset, schema change or full launch was performed during diagnosis.
+
+Database query/checkout failures now preserve bounded pool/holder diagnostics and the exact
+checkout error code. Source-lock leases are labeled and released/removed leases are discarded.
+Systemic cancellation preserves its original error through the provider layer. Terminal evidence
+includes the structured execution error and clarifies current-stage versus failed-attempt meaning.
+This adds missing diagnostic evidence; it does not claim to have established the historical
+pool occupancy cause or add speculative database retries/capacity changes.
+
+The real pg-pool offline saturation test verifies checkout timeout, promise/callback handling,
+holder identities, release/reuse and omission of SQL/parameters. Mocked provider tests verify
+database-triggered cancellation is systemic and independent socket errors remain recoverable.
+The affected-record live validation and next delegated receipt will be recorded below.
+
+Validation passed: 17 scheduler/concurrency/embedding/telemetry tests, 13 LLM tests, 12 provider
+recovery tests, 27 supervisor/notification/control-option tests and database type/contract checks.
+The old terminal evidence was read through the updated collector: it correctly shows
+`execution_error` as the database timeout, actual failed matching record 20908 and absent
+historical pool metadata. This does not retrospectively fabricate missing evidence.
+
+The bounded managed smoke started at matching for record 20908, retaining its upstream
+normalization/coordinates/embedding. It succeeded through matching, canonical and record/global
+verification plus reporting: run `1b52dfd8-6161-42cd-8a56-090280d27977`, execution
+`756c46cb-6fe7-4764-9735-9410ae710e50`, job `6ee6396c-6453-4c89-99ab-a316741fa009`,
+verified at 2026-10-13T12:56:28.872Z. One successful Fireworks matching request cost $0.0017199;
+no normalization, geocoding or embedding provider work was needed. Current database reads and
+the affected provider path are available; no persistent capacity fault was observed. A checkpoint
+resume of the original full cohort is the reviewed next action, with improved evidence if the
+unproven historical occupancy problem recurs. Maintenance was reopened with this chat's token,
+and the original parent's matching CLI/daemon notification probe is ready.
