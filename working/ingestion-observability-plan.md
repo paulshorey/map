@@ -181,3 +181,16 @@ embedding/matching/canonical verification. Its `verified_at` is 2026-10-13T05:08
 This sample validates the repaired path; it does not establish whole-file completion.
 Maintenance was reopened with the owned token for validation. The parent notification probe
 is ready using the matching installed Codex CLI. The next launch remains delegated.
+
+The configured cheap launcher acknowledged the repaired full resume on `f016449`: job
+`10294406-7958-43e2-a932-7bbcdbc0f20f`, execution
+`05da7235-9b09-4d25-8f19-37d9e32dec04`, original run
+`4dda8606-9c20-4275-bae6-c14cdea9e38c`. Its admission reconciliation confirmed an open gate,
+quiescence and no unresolved worker/lock/claim. It used `--unlimited --llm-concurrency 4`,
+preserving the original cohort/options and remaining checkpoints. Node owns hourly checks and
+terminal delivery; no model remains alive to watch progress. This is a launch acknowledgement,
+not whole-file completion. No additional full run was started by the coding agent.
+
+Journal: `lib/db-map/.ingest-logs/4dda8606-9c20-4275-bae6-c14cdea9e38c-05da7235-9b09-4d25-8f19-37d9e32dec04.jsonl`.
+Job/result directory: `lib/db-map/.ingest-jobs/10294406-7958-43e2-a932-7bbcdbc0f20f/`.
+Private launch receipt: `/tmp/map-ingestion-failure-008eba39-resume-receipt.json`.
