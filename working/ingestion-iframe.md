@@ -11,5 +11,14 @@ Its service stays local-only (`publish: false`). Restart only the dashboard serv
 reload the parent dashboard to pick up both policies. Ingestion workers, maintenance,
 schema and data do not require changes.
 
-Validation: app typecheck and request tests, shared inventory tests, response headers,
-and an actual browser iframe loading the dashboard across local ports.
+Completed October 13, 2026. App typecheck, all 3 request tests, all 12 shared inventory
+tests, and `git diff --check` passed. The paired local-dev change passed its 110-test
+suite. After the dashboard restart, live response headers and the launcher snapshot
+reported no framing restriction and `tabOnly: false`. A browser iframe on another local
+port displayed the dashboard with live inventory and worker evidence. The ingestion
+worker continued running and maintenance remained open.
+
+Handoffs: [map #41](https://github.com/paulshorey/map/pull/41) and
+[local-dev #4](https://github.com/paulshorey/local-dev/pull/4). Isolated feature branches
+hold the committed changes; applied copies remain in the busy primary checkouts so
+the local dashboard works immediately without changing their existing branch histories.
