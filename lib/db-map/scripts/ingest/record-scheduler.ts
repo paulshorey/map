@@ -8,7 +8,7 @@ import {
   type TaskClaim,
   type RecordStage,
 } from "../../sql/ingestion-tasks.js";
-import { Execution, errorDetails } from "./execution.js";
+import { Execution, errorDetails, type AttemptResult } from "./execution.js";
 import { LlmError } from "./providers/llm.js";
 export function recordFailure(error: unknown) {
   // Unknown code/database/provider-shape failures stop globally. Only recognized record validation is isolated.
@@ -27,6 +27,30 @@ export function recordFailure(error: unknown) {
     )
   );
 }
+async function getDownstreamFrontier(
+  db: Pool,
+  run: string,
+): Promise<Set<string>> {
+  // One bounded pass. A freshly populated task table can give a correlated self-join a catastrophic plan.
+  return new Set(
+    (
+      await db.query(
+        `SELECT source_record_id FROM (
+    SELECT source_record_id,bool_or(stage='normalize' AND state IN ('succeeded','reused')) AS normalized,
+      bool_or(stage='verify' AND state='pending') AS unverified,bool_or(state='quarantined') AS quarantined
+    FROM research_ingest_tasks WHERE run_id=$1 GROUP BY source_record_id
+  ) records WHERE normalized AND unverified AND NOT quarantined`,
+        [run],
+      )
+    ).rows.map((r) => r.source_record_id),
+  );
+}
+export async function getDownstreamBacklog(
+  db: Pool,
+  run: string,
+): Promise<number> {
+  return (await getDownstreamFrontier(db, run)).size;
+}
 export async function runRecordScheduler(options: {
   db: Pool;
   ex: Execution;
@@ -36,7 +60,7 @@ export async function runRecordScheduler(options: {
   shadow: boolean;
   concurrency: number;
   finiteBudget: boolean;
-  execute: (claim: TaskClaim) => Promise<void>;
+  execute: (claim: TaskClaim) => Promise<AttemptResult | void>;
 }) {
   const { db, ex, run } = options;
   const selectedFrom = RECORD_STAGES.indexOf(options.from as RecordStage);
@@ -63,25 +87,26 @@ export async function runRecordScheduler(options: {
     pressure = false,
     revision = 0;
   const consecutiveRecordFailures = new Map<RecordStage, number>();
+  // One source owner mutates these tasks. Start from durable state, then maintain the committed frontier locally.
+  const frontier =
+    last === RECORD_STAGES.length - 1
+      ? await getDownstreamFrontier(db, run)
+      : new Set<string>();
+  const finishedRecords = new Set<string>();
   try {
     for (;;) {
       const before = revision;
       let launched = 0;
       ex.check();
       if (!ex.stopped && !fatal) {
-        const backlog = (
-          await db.query(
-            `SELECT count(*)::int AS n FROM research_ingest_tasks n JOIN research_ingest_tasks v USING(run_id,source_record_id)
-        WHERE n.run_id=$1 AND n.stage='normalize' AND n.state IN ('succeeded','reused') AND v.stage='verify' AND v.state='pending'
-        AND NOT EXISTS(SELECT 1 FROM research_ingest_tasks b WHERE b.run_id=n.run_id AND b.source_record_id=n.source_record_id AND b.state='quarantined')`,
-            [run],
-          )
-        ).rows[0].n;
-        pressure = pressure ? backlog >= 500 : backlog >= 1000;
+        pressure =
+          last === RECORD_STAGES.length - 1 &&
+          (pressure ? frontier.size >= 500 : frontier.size >= 1000);
         const state = {
           version: 2,
           backpressure: pressure,
-          downstream_backlog: backlog,
+          downstream_backlog: frontier.size,
+          observed_at: new Date().toISOString(),
           active: Object.fromEntries([...active].map(([s, p]) => [s, p.size])),
         };
         await db.query(
@@ -108,7 +133,24 @@ export async function runRecordScheduler(options: {
             launched++;
             const work = options
               .execute(claim)
-              .then(() => {
+              .then((result) => {
+                if (
+                  result &&
+                  ["succeeded", "reused", "skipped"].includes(result.status)
+                ) {
+                  if (
+                    stage === "normalize" &&
+                    !finishedRecords.has(claim.source_record_id)
+                  )
+                    frontier.add(claim.source_record_id);
+                  if (stage === "verify") {
+                    finishedRecords.add(claim.source_record_id);
+                    frontier.delete(claim.source_record_id);
+                  }
+                } else if (result?.status === "blocked") {
+                  finishedRecords.add(claim.source_record_id);
+                  frontier.delete(claim.source_record_id);
+                }
                 consecutiveRecordFailures.set(stage, 0);
               })
               .catch(async (error) => {
@@ -118,6 +160,10 @@ export async function runRecordScheduler(options: {
                   return;
                 }
                 const quarantine = recordFailure(error);
+                if (quarantine) {
+                  finishedRecords.add(claim.source_record_id);
+                  frontier.delete(claim.source_record_id);
+                }
                 try {
                   await failTask(db, claim, detail, quarantine);
                 } catch (failure) {

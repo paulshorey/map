@@ -1394,6 +1394,7 @@ export async function runOrchestration(
           ex.stopped = true;
           ex.stopReason = "provider_budget";
         }
+        return result;
       },
     });
     if (schedule.budget || schedule.partial || schedule.paused) {

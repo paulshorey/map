@@ -52,7 +52,7 @@ artifacts refreshed. Existing observations, normalizations and journals were pre
 Private baseline and rollout evidence is retained under
 `~/.local/state/map-ingestion-audits/2026-10-12-visibility/`. Runtime UUID journals remain under
 the primary checkout's ignored `.ingest-jobs` and `.ingest-logs`. Tokens and raw diagnostic
-payloads are excluded from this document. Validation completed: package/app typechecks and app contract drift checks; 10 scheduler,
+payloads are excluded from this document. Validation completed: package/app typechecks and app contract drift checks; 13 scheduler,
 14 inventory/overview, 11 LLM, 12 recovery, four control, 27 supervisor and two app tests;
 eight coordinator tests; live JSON Schema validation (including unsafe unknown-state rejection).
 The isolated two-record integration passed real SQL task dependency/fencing/rollback and advisory
@@ -94,3 +94,19 @@ Source completeness and editorial quality need reviewed current-capture samples.
 still need classification. Provider fields absent from responses remain unknown, and legacy
 standalone workers lack cross-host registration. An advisory next action always rechecks live
 admission at launch. No model waits alive to monitor a healthy full import.
+
+## Full-cohort startup correction
+
+The first full restart (job `66286f43-b797-4585-af94-e495e34a0d58`, execution
+`028ea493-8869-4a19-ae46-cb8432302ff9`) exposed a poor PostgreSQL plan for the correlated
+backlog count on 259,632 newly seeded tasks. It admitted no records and made zero new
+normalization requests. Maintenance requested its stop; the exact identified read-only query
+was cancelled after 353 seconds, and process/lock quiescence was confirmed. Diagnostic evidence,
+terminal result and callback receipt were retained. No successful artifacts were reset.
+
+The scheduler now builds its committed frontier with one grouped pass, then maintains a set of
+record IDs as stage outcomes arrive. Completion ordering cannot produce phantom backpressure;
+normalize-only selections do not depend on a later verification stage. The real 43,272-record
+frontier scan took 559 ms including connection/transfer; six rollback-only real claim checks took
+148–262 ms each. Thirteen scheduler/telemetry tests include large adopted frontiers and early
+artifact commit versus late handler return. The final smoke and resumed job receipt follow below.

@@ -15,6 +15,10 @@ function fixture(ids: string[]) {
       state: "pending",
     })),
   );
+  const groups = new Map(
+    ids.map((id) => [id, tasks.filter((t) => t.source_record_id === id)]),
+  );
+  const snapshots: any[] = [];
   const db = {
     query: async (sql: string, args: any[] = []) => {
       if (sql.startsWith("WITH selected")) {
@@ -25,12 +29,9 @@ function fixture(ids: string[]) {
             (t) =>
               t.stage === stage &&
               t.state === "pending" &&
-              tasks
-                .filter(
-                  (p) =>
-                    p.source_record_id === t.source_record_id &&
-                    p.rank < t.rank,
-                )
+              groups
+                .get(t.source_record_id)!
+                .filter((p) => p.rank < t.rank)
                 .every((p) =>
                   ["succeeded", "reused", "skipped"].includes(p.state),
                 ),
@@ -48,7 +49,19 @@ function fixture(ids: string[]) {
           })),
         };
       }
-      if (sql.startsWith("SELECT count")) return { rows: [{ n: 0 }] };
+      if (sql.startsWith("SELECT source_record_id FROM"))
+        return {
+          rows: [...groups.values()]
+            .filter(
+              (g) =>
+                ["succeeded", "reused"].includes(g[0]!.state) &&
+                g[5]!.state === "pending" &&
+                !g.some((t) => t.state === "quarantined"),
+            )
+            .map((g) => ({ source_record_id: g[0]!.source_record_id })),
+        };
+      if (sql.startsWith("UPDATE research_ingest_runs"))
+        snapshots.push(JSON.parse(args[1]));
       if (sql.startsWith("SELECT stage,state"))
         return { rows: tasks.map((t) => ({ ...t, records: 1 })) };
       if (sql.startsWith("UPDATE research_ingest_tasks SET state=$6")) {
@@ -68,13 +81,11 @@ function fixture(ids: string[]) {
     check() {},
   } as unknown as Execution;
   const done = (claim: TaskClaim) => {
-    tasks.find(
-      (t) =>
-        t.source_record_id === claim.source_record_id &&
-        t.stage === claim.stage,
-    )!.state = "succeeded";
+    groups
+      .get(claim.source_record_id)!
+      .find((t) => t.stage === claim.stage)!.state = "succeeded";
   };
-  return { db, ex, tasks, done };
+  return { db, ex, tasks, done, snapshots };
 }
 test("ready records finish downstream while a slow normalization is still active", async () => {
   const f = fixture(["fast", "slow"]);
@@ -171,4 +182,71 @@ test("repeated record failures trip a systemic circuit breaker before draining a
     f.tasks.filter((t) => t.stage === "normalize" && t.state === "pending")
       .length > 0,
   );
+});
+
+test("a large adopted frontier drains below the low watermark before new normalization", async () => {
+  const f = fixture(Array.from({ length: 1002 }, (_, i) => String(i)));
+  for (const t of f.tasks)
+    if (t.stage === "normalize" && Number(t.source_record_id) < 1000)
+      t.state = "reused";
+  let firstAdmission = -1;
+  await runRecordScheduler({
+    ...f,
+    run: "run",
+    shadow: false,
+    concurrency: 4,
+    finiteBudget: false,
+    execute: async (c) => {
+      if (c.stage === "normalize" && firstAdmission < 0)
+        firstAdmission = f.tasks.filter(
+          (t) => t.stage === "verify" && t.state === "succeeded",
+        ).length;
+      f.done(c);
+      return { status: "succeeded" };
+    },
+  });
+  assert.ok(firstAdmission > 500);
+  assert.ok(f.tasks.every((t) => ["succeeded", "reused"].includes(t.state)));
+});
+test("a normalize-only run can finish its selected work despite an adopted downstream backlog", async () => {
+  const f = fixture(Array.from({ length: 1002 }, (_, i) => String(i)));
+  for (const t of f.tasks)
+    if (t.stage === "normalize" && Number(t.source_record_id) < 1000)
+      t.state = "reused";
+  const result = await runRecordScheduler({
+    ...f,
+    run: "run",
+    shadow: false,
+    stopAfter: "normalize",
+    concurrency: 4,
+    finiteBudget: false,
+    execute: async (c) => {
+      f.done(c);
+      return { status: "succeeded" };
+    },
+  });
+  assert.equal(result.paused, true);
+  assert.ok(
+    f.tasks
+      .filter((t) => t.stage === "normalize")
+      .every((t) => ["succeeded", "reused"].includes(t.state)),
+  );
+});
+
+test("downstream completion before normalization's final return cannot leave phantom backpressure", async () => {
+  const f = fixture(["early-commit", "fast"]);
+  await runRecordScheduler({
+    ...f,
+    run: "run",
+    shadow: false,
+    concurrency: 4,
+    finiteBudget: false,
+    execute: async (c) => {
+      f.done(c);
+      if (c.stage === "normalize")
+        await sleep(c.source_record_id === "early-commit" ? 60 : 5);
+      return { status: "succeeded" };
+    },
+  });
+  assert.equal(f.snapshots.at(-1).downstream_backlog, 0);
 });
