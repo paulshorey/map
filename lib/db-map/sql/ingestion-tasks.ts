@@ -248,3 +248,24 @@ export async function taskCounts(db: Pool, run: string) {
     )
   ).rows;
 }
+
+/** Quarantined/excluded records deliberately stop; every other selected task must finish. */
+export async function unfinishedTaskCounts(
+  db: Pool,
+  run: string,
+  from: number,
+  through: number,
+) {
+  return (
+    await db.query(
+      `WITH blocked_records AS (
+      SELECT source_record_id FROM research_ingest_tasks WHERE run_id=$1 AND state='quarantined'
+      UNION SELECT source_record_id FROM research_ingest_issues WHERE run_id=$1 AND status='excluded'
+    ) SELECT t.stage,t.state,count(*)::int AS records FROM research_ingest_tasks t
+    LEFT JOIN blocked_records b USING(source_record_id)
+    WHERE t.run_id=$1 AND t.rank BETWEEN $2 AND $3 AND b.source_record_id IS NULL
+      AND t.state NOT IN ('succeeded','reused','skipped') GROUP BY t.stage,t.state ORDER BY t.stage,t.state`,
+      [run, from, through],
+    )
+  ).rows;
+}

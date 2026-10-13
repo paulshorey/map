@@ -19,6 +19,7 @@ function fixture(ids: string[]) {
     ids.map((id) => [id, tasks.filter((t) => t.source_record_id === id)]),
   );
   const snapshots: any[] = [];
+  const excluded = new Set<string>();
   const db = {
     query: async (sql: string, args: any[] = []) => {
       if (sql.startsWith("WITH selected")) {
@@ -64,6 +65,21 @@ function fixture(ids: string[]) {
         snapshots.push(JSON.parse(args[1]));
       if (sql.startsWith("SELECT stage,state"))
         return { rows: tasks.map((t) => ({ ...t, records: 1 })) };
+      if (sql.startsWith("WITH blocked_records"))
+        return {
+          rows: tasks
+            .filter(
+              (t) =>
+                t.rank >= args[1] &&
+                t.rank <= args[2] &&
+                !["succeeded", "reused", "skipped"].includes(t.state) &&
+                !excluded.has(t.source_record_id) &&
+                !groups
+                  .get(t.source_record_id)!
+                  .some((p) => p.state === "quarantined"),
+            )
+            .map((t) => ({ ...t, records: 1 })),
+        };
       if (sql.startsWith("UPDATE research_ingest_tasks SET state=$6")) {
         const t = tasks.find(
           (t) => t.source_record_id === args[1] && t.stage === args[2],
@@ -85,7 +101,7 @@ function fixture(ids: string[]) {
       .get(claim.source_record_id)!
       .find((t) => t.stage === claim.stage)!.state = "succeeded";
   };
-  return { db, ex, tasks, done, snapshots };
+  return { db, ex, tasks, done, snapshots, excluded };
 }
 test("ready records finish downstream while a slow normalization is still active", async () => {
   const f = fixture(["fast", "slow"]);
@@ -249,4 +265,106 @@ test("downstream completion before normalization's final return cannot leave pha
     },
   });
   assert.equal(f.snapshots.at(-1).downstream_backlog, 0);
+});
+
+test("completion during a later claim query triggers another dependency pass before exit", async () => {
+  const f = fixture(["finishing-match", "already-matched"]);
+  for (const t of f.tasks)
+    if (t.rank < (t.source_record_id === "finishing-match" ? 3 : 5))
+      t.state = "reused";
+  let finishMatch!: () => void;
+  const matching = new Promise<void>((resolve) => {
+    finishMatch = resolve;
+  });
+  const query = f.db.query.bind(f.db) as any;
+  let finishDuringSelect = false;
+  (f.db as any).query = async (sql: string, args: any[] = []) => {
+    if (sql.startsWith("UPDATE research_ingest_runs")) {
+      const state = JSON.parse(args[1]);
+      finishDuringSelect =
+        state.active.match === 1 &&
+        Object.entries(state.active).every(
+          ([stage, count]) => stage === "match" || count === 0,
+        ) &&
+        f.tasks.some(
+          (t) =>
+            t.source_record_id === "already-matched" &&
+            t.stage === "verify" &&
+            t.state === "succeeded",
+        );
+    }
+    const result = await query(sql, args);
+    if (
+      sql.startsWith("WITH selected") &&
+      args[2] === "embed" &&
+      finishDuringSelect
+    ) {
+      finishDuringSelect = false;
+      finishMatch();
+      // The match commits after canonical/verify were queried, before this empty select returns.
+      await sleep(0);
+    }
+    return result;
+  };
+  await runRecordScheduler({
+    ...f,
+    run: "run",
+    shadow: false,
+    concurrency: 4,
+    finiteBudget: false,
+    execute: async (c) => {
+      if (c.source_record_id === "finishing-match" && c.stage === "match")
+        await matching;
+      if (c.source_record_id === "already-matched") await sleep(0);
+      f.done(c);
+      return { status: "succeeded" };
+    },
+  });
+  assert.equal(
+    f.tasks.find(
+      (t) => t.source_record_id === "finishing-match" && t.stage === "verify",
+    )!.state,
+    "succeeded",
+  );
+});
+
+test("idle scheduling cannot report completion while selected work remains", async () => {
+  const f = fixture(["unclaimable"]);
+  const query = f.db.query.bind(f.db) as any;
+  (f.db as any).query = async (sql: string, args: any[] = []) =>
+    sql.startsWith("WITH selected") ? { rows: [] } : query(sql, args);
+  await assert.rejects(
+    runRecordScheduler({
+      ...f,
+      run: "run",
+      shadow: false,
+      concurrency: 4,
+      finiteBudget: false,
+      execute: async () => {
+        assert.fail("no claim was admitted");
+      },
+    }),
+    (error: any) =>
+      error.code === "scheduler_stalled" &&
+      /normalize\/pending=1/.test(error.message),
+  );
+});
+
+test("operator exclusions may leave dependent tasks pending without a false stall", async () => {
+  const f = fixture(["excluded"]);
+  f.excluded.add("excluded");
+  const query = f.db.query.bind(f.db) as any;
+  (f.db as any).query = async (sql: string, args: any[] = []) =>
+    sql.startsWith("WITH selected") ? { rows: [] } : query(sql, args);
+  const result = await runRecordScheduler({
+    ...f,
+    run: "run",
+    shadow: false,
+    concurrency: 4,
+    finiteBudget: false,
+    execute: async () => {
+      assert.fail("excluded record was admitted");
+    },
+  });
+  assert.equal(result.paused, false);
 });

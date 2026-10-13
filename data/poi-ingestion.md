@@ -43,6 +43,13 @@ Geocoding stays at one request per second. Embeddings batch up to 32 records, wi
 maximum collection wait and one embedding request in flight. At 1,000 normalized records waiting
 for downstream verification, normalization pauses until the backlog drops below 500.
 
+Scheduler idleness requires a stable dependency pass: if work finishes during a claim query,
+the scheduler scans dependencies again before exiting. Before report/global verification it
+also checks that every selected task outside quarantined or operator-excluded records has
+finished. Remaining work with no active/ready tasks stops with `scheduler_stalled`, including
+stage/state counts for diagnosis; it never establishes completion. Limited stop points and
+provider-budget pauses retain their normal incomplete outcomes.
+
 Three distinct questions need distinct evidence:
 
 1. **What happened in this invocation?** Execution and attempt history, provider requests,

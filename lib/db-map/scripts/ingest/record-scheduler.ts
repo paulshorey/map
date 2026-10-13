@@ -4,6 +4,7 @@ import {
   claimTasks,
   failTask,
   taskCounts,
+  unfinishedTaskCounts,
   RECORD_STAGES,
   type TaskClaim,
   type RecordStage,
@@ -202,7 +203,19 @@ export async function runRecordScheduler(options: {
       }
       const pending = [...active.values()].flatMap((s) => [...s]);
       if (!pending.length) {
-        if (launched) continue;
+        // A completion may unlock a stage already queried in this reverse-order pass.
+        // Check revision before declaring idleness, even when the last promise has gone.
+        if (launched || revision !== before) continue;
+        if (!ex.stopped && !fatal) {
+          const unfinished = await unfinishedTaskCounts(db, run, from, last);
+          if (unfinished.length)
+            throw Object.assign(
+              new Error(
+                `Record scheduler stalled with unfinished tasks: ${unfinished.map((t) => `${t.stage}/${t.state}=${t.records}`).join(", ")}; inspect task dependencies and backpressure before resuming`,
+              ),
+              { code: "scheduler_stalled" },
+            );
+        }
         break;
       }
       if (revision !== before) continue;

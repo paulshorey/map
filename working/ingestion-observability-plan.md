@@ -111,7 +111,7 @@ frontier scan took 559 ms including connection/transfer; six rollback-only real 
 148–262 ms each. Thirteen scheduler/telemetry tests include large adopted frontiers and early
 artifact commit versus late handler return. The final smoke and resumed job receipt follow below.
 
-## Final operational handoff
+## October 12 startup handoff
 
 The final one-record managed smoke succeeded (run `4a2af2de-b61d-4fce-9a8f-1402613e1e98`,
 execution `33ab6758-5f52-4d7a-a08a-d74e0ddb98ac`, job
@@ -144,3 +144,40 @@ must be compared before changing canonical serialization or quality settings.
 Journal: `lib/db-map/.ingest-logs/4dda8606-9c20-4275-bae6-c14cdea9e38c-3c766665-ac68-4d0c-b992-545e96b10429.jsonl`.
 Durable job/result directory: `lib/db-map/.ingest-jobs/008eba39-a370-4369-a506-8c1e7b360832/`.
 The primary checkout stays on the implementation PR branch; `main` has not been merged.
+
+## October 13 scheduler exit repair
+
+Job `008eba39-a370-4369-a506-8c1e7b360832`, execution
+`3c766665-ac68-4d0c-b992-545e96b10429`, stopped at 05:00 UTC during scope verification.
+It retained 16,820 successful embedding tasks, 516 successful matching tasks and 515
+successful record verifications, with zero new normalization requests. The listed incomplete
+records already had valid normalization/embedding artifacts and were waiting for matching.
+Record 938's match committed while its canonical/verification tasks remained pending.
+Read-only diagnosis found 16,356 immediately ready matches and 26,399 normalization tasks.
+
+The scheduler checked its completion revision only when promises remained active. If the last
+match finished during a later claim query, the reverse dependency pass had already missed the
+newly unlocked work and the empty promise set caused premature exit. The exact ordering is
+reproduced by a regression test that failed on the prior implementation. Completion revision
+now takes precedence over an empty active set; a stable idle pass additionally checks durable
+selected task counts and raises `scheduler_stalled` for unfinished eligible work. Quarantined
+and operator-excluded records, deliberate stop points and provider-budget pauses retain their
+own semantics. Global verification remains required.
+
+Maintenance was entered after fresh discovery confirmed process/lock quiescence. Journals,
+successful outputs and the original 43,272-record scope are retained. No data reset or schema
+change is needed. Validation and the next delegated receipt will be recorded below.
+
+All 16 scheduler/concurrency/embedding/telemetry tests and the database type/contract checks
+passed. A one-record rollback-only real PostgreSQL check verified unfinished counts, selected
+stage bounds and quarantine/operator-exclusion handling; its full-cohort query took 87 ms.
+All diagnostic mutations rolled back. No schema changes were made.
+
+One-record managed smoke selected source record 939 and succeeded through every stage, report
+and global lineage verification: run `cae432e8-920d-4ea0-b3ea-bfb958457b2e`, execution
+`58ab7e6d-4157-40fa-9ed3-08c0e52e78f2`, job `d0e345e0-af43-4efe-b077-e26618e369b4`.
+It made one normalization request costing $0.0038505, reused source coordinates and completed
+embedding/matching/canonical verification. Its `verified_at` is 2026-10-13T05:08:43.007Z.
+This sample validates the repaired path; it does not establish whole-file completion.
+Maintenance was reopened with the owned token for validation. The parent notification probe
+is ready using the matching installed Codex CLI. The next launch remains delegated.
