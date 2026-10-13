@@ -29,8 +29,8 @@ The provider rejected disabled thinking; a 256-token cap retained complete outpu
 
 Static validation: 33 mocked provider, recovery, attribute and version tests passed.
 Normalization golden checks and database types/contracts passed. Match golden
-fixtures were unavailable in this database (all 13 skipped); live downstream
-validation is still required. Shell syntax and diff whitespace checks passed.
+fixtures were unavailable in this database (all 13 skipped); the live checks below
+provide downstream coverage. Shell syntax and diff whitespace checks passed.
 
 The dedicated `ingest:test-normalization:integration` passed: the reviewed upgrade
 retained the one-record cohort, observation/normalization IDs and original run
@@ -90,25 +90,45 @@ paused outcome, exit 2, no forced kill, and no remaining worker/source lock.
 Its frozen cohort has 43,272 records; 16,872 normalization tasks were checkpointed
 and 26,400 pending at the stop. Raw evidence remains in the private runtime journals.
 
-The tested GLM branch is active in the primary checkout. Maintenance is off and
-there are no remaining ingestion workers or source locks. The original full Dyrt
-run remains paused. Its callback probe returned `unavailable`: Codex CLI/server
-version mismatch (0.162.1 / 0.155.1), so an unattended ordinary-agent launch cannot
-meet the verified-delivery rule in [agent operations](../data/ingestion-agents.md).
-No CLI/server upgrade or unrelated full import was attempted.
+The initial handoff left the full import paused because callback preflight reported
+a Codex CLI/server version mismatch (0.162.1 / 0.155.1). After Paul upgraded both
+and explicitly requested continuation, a fresh probe on 2026-10-13 returned `ready`.
+Fresh discovery confirmed maintenance off, no workers/locks or unresolved claims,
+and the source checksum still matched the original run. Non-secret LLM overrides
+were unset, so the tested GLM defaults apply.
 
-Manual foreground resume from the primary checkout (same frozen cohort, unlimited
-provider stages, no global consolidation or overall deadline):
+The configured `ingestion-runner` / GPT-5.6 Luna low launcher resumed the same run
+from the primary checkout at 2026-10-13 19:40:59 UTC:
+
+- Supervisor job: `fcdb4393-9d18-432b-aec7-8e8bfcd6ef5d`
+- Execution: `0b8c933e-4188-45a3-81ad-557e29378195`
+- Parent callback: this chat, `01a1361f-f97f-7b42-b1c0-d1c0f7f8f37c`
+- Frozen cohort: 43,272 records; original observations/checkpoints preserved.
+- Provider stages: `--unlimited`; no overall deadline or global consolidation.
+- Health checks: hourly ordinary Node supervision; no AI monitoring loop.
+
+Recorded launch command:
 
 ```sh
-pnpm --filter @lib/db-map ingest:run --resume 4dda8606-9c20-4275-bae6-c14cdea9e38c --unlimited
+pnpm --silent --filter @lib/db-map ingest:supervise start \
+  --notify-thread 01a1361f-f97f-7b42-b1c0-d1c0f7f8f37c -- \
+  --resume 4dda8606-9c20-4275-bae6-c14cdea9e38c --unlimited
 ```
 
-Before any alternative background launch, reconcile current workers/claims again.
-For a verified parent callback, fix the local version mismatch and follow the
-cheap-runner workflow; the native scheduled coordinator can reconcile under its
-existing authorized workflow. Preserve completed old artifacts; the two smoke
-records were intentionally reprocessed and have fresh verified downstream output.
+Bounded startup verification confirmed exactly one worker with verified process
+identity and its source lock, a current heartbeat, maintenance off, and the exact
+reviewed pipeline-version upgrade in execution options. At 19:42:15 UTC, 73
+canonical checks and reused match attempts had committed, with 72 record
+verifications complete. No new provider calls were recorded at that point;
+the scheduler was reusing existing downstream artifacts. This is launch/progress
+evidence, not full-file completion or proof of terminal callback delivery.
+
+The Node supervisor owns continued waiting and durable results in the job's private
+`.ingest-jobs` directory. Terminal notification is configured for the parent chat;
+the callback probe proves transport readiness, and the terminal queue receipt will
+record acceptance when delivery is attempted. Reconcile the existing job and
+current workers/claims before any further launch. Preserve completed old artifacts;
+the two smoke records have fresh verified downstream output.
 
 No schema migration or credential change is needed. The primary checkout's
 unrelated dashboard and generated Next.js edits are preserved.
