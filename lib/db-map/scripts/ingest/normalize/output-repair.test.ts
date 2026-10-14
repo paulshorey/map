@@ -191,6 +191,7 @@ test("provider and audit failures during normalization repair are not quarantine
       return true;
     },
   );
+  assert.equal(requests.length, 2);
 });
 test("normalization repair retains a working JSON-object fallback and remains bounded", async () => {
   for (const [content, finish] of [

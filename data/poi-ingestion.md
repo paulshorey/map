@@ -442,6 +442,9 @@ Unusable normalization output (invalid JSON/schema, empty final answer or trunca
 one contextual repair; truncated/empty output uses a bounded larger final-answer allowance.
 If a provider rejected `json_schema`, the separately audited `json_object` compatibility fallback
 also remains the format for output repair. A failed repair never starts another repair.
+After that repair, malformed JSON or invalid normalization fields become a quarantined
+record-validation issue. Provider/authentication and audit/database failures retain their
+global recovery or stop behavior; they are never relabeled as a bad record.
 Matching now requests a strict two-field JSON schema (`same_place`, `reason`) and validates
 both fields in code. It allows 512 final-answer tokens initially and 1,024 for its one output
 repair, plus the configured thinking allowance. A second invalid match becomes an explicit

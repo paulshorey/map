@@ -173,3 +173,14 @@ Inventory shares that exact compatibility list for record/exclusion proofs, and 
 proofs only after the same run succeeds with current audited verification. The two-record
 integration also checks an interim-v4 exclusion, the missing-current-audit guard and rejection
 of an unreviewed prior version.
+
+## Dyrt live validation — 2026-10-14
+
+GLM remains the selected model. Final review found that generic errors from a second invalid
+normalization reply could stop the full run. Exhausted output validation now becomes an explicit
+quarantinable LLM validation error, while repair-time provider and audit/database failures keep
+their original behavior. Mocked tests verify both paths and forbid another output repair.
+
+Live Dyrt validation is pending: use bounded new cohorts under the supervisor smoke deadline,
+including the original matching-failure record and representative existing source records.
+Retain the original full run, five quarantines, artifacts and private failure evidence.

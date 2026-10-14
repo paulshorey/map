@@ -114,7 +114,7 @@ function parseJsonContent(content: string): unknown {
     const end = content.lastIndexOf("}");
     if (start >= 0 && end > start)
       return JSON.parse(content.slice(start, end + 1));
-    throw new Error("DeepSeek response was not valid JSON");
+    throw new Error("LLM normalization response was not valid JSON");
   }
 }
 
