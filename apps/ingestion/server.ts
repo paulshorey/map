@@ -18,6 +18,36 @@ import { refreshInventory } from "@lib/db-map/ingestion/inventory-scan";
 import { inspectRun, parseStatusArgs } from "@lib/db-map/ingest/status";
 import { controlState } from "@lib/db-map/sql/ingestion-control";
 
+export function dashboardContentSecurityPolicy(
+  extraOrigins = process.env.INGESTION_FRAME_ORIGINS ?? "",
+) {
+  // local-dev's port is configurable. Trust only loopback hosts by default,
+  // never a parent inferred from Referer, Origin or forwarding headers.
+  const parents = new Set([
+    "'self'",
+    "http://127.0.0.1:*",
+    "http://localhost:*",
+  ]);
+  for (const value of extraOrigins.split(/\s+/).filter(Boolean)) {
+    const origin = new URL(value);
+    if (
+      !["http:", "https:"].includes(origin.protocol) ||
+      origin.username ||
+      origin.password ||
+      origin.pathname !== "/" ||
+      origin.search ||
+      origin.hash ||
+      /[\s*;'"\[\]]/.test(value) ||
+      (value !== origin.origin && value !== `${origin.origin}/`)
+    )
+      throw new Error(
+        "INGESTION_FRAME_ORIGINS must contain exact HTTP(S) origins",
+      );
+    parents.add(origin.origin);
+  }
+  return `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; frame-ancestors ${[...parents].join(" ")}; base-uri 'none'; form-action 'self'`;
+}
+
 export function authorizeRequest(
   req: Pick<IncomingMessage, "headers" | "method">,
   port: number,
@@ -42,6 +72,7 @@ async function body(req: IncomingMessage) {
   return JSON.parse(data || "{}");
 }
 export function createDashboard(port: number) {
+  const contentSecurityPolicy = dashboardContentSecurityPolicy();
   const db = getDb();
   let refreshing = false;
   let refreshResult: unknown = null;
@@ -65,10 +96,7 @@ export function createDashboard(port: number) {
   const server = createServer(async (req, res) => {
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader(
-      "Content-Security-Policy",
-      "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'",
-    );
+    res.setHeader("Content-Security-Policy", contentSecurityPolicy);
     const json = (status: number, value: unknown) => {
       res.writeHead(status, {
         "Content-Type": "application/json; charset=utf-8",
