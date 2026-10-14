@@ -181,12 +181,49 @@ normalization reply could stop the full run. Exhausted output validation now bec
 quarantinable LLM validation error, while repair-time provider and audit/database failures keep
 their original behavior. Mocked tests verify both paths and forbid another output repair.
 
-Live Dyrt validation is pending: use bounded new cohorts under the supervisor smoke deadline,
-including the original matching-failure record and representative existing source records.
-Retain the original full run, five quarantines, artifacts and private failure evidence.
+Live Dyrt validation passed with three distinct records: `124071` (Lone Mountain Camping,
+the original matching failure), `0` (Hocking Hills Camping), and `2` (Point Beach State Forest).
+The original full run, five quarantines, artifacts and private failure evidence remain intact.
 
 The initial three-record validation passed full scope and lineage verification. It exposed
 safe but incomplete typing for known Dyrt hookup/site/vehicle attributes. Those booleans and
 numbers are now formatted by code, while opaque IDs remain text. Resolver v6 gives pending
-work a fresh cache identity; reviewed previous checkpoints remain compatible. Revalidate the
-same three records after this correction rather than expanding the sample or draining work.
+work a fresh cache identity; reviewed previous checkpoints remain compatible. The same three
+records were revalidated after the correction without expanding the sample or draining work.
+
+Final resolver-v6 receipts:
+
+| Records | Job | Run | Execution | Result / elapsed |
+| --- | --- | --- | --- | --- |
+| 124071 | d86eb581-b0e1-4063-a66a-c01d8cde2bb8 | 2d310c98-a447-4257-90a3-dc4e816109f4 | a3775e98-30de-4997-83a7-a87bcee0a0f3 | succeeded / 25.169s |
+| 0, 2 | 39a2d70e-1894-4f29-bffc-b2b222893036 | b8f82353-911f-46fa-903e-014e1b176ac9 | d7259aae-5603-4eb3-84e4-b55114a822de | succeeded / 34.121s |
+
+Both new smoke cohorts had 60-second deadlines, finite normalization budgets and zero geocoder
+budget; no consolidation or full resume. Each record made one fresh GLM/256 normalization
+request with valid schema output and no repair. Latencies were 6.540s, 6.298s and 5.165s.
+All stages, global lineage checks and selected-record verification passed. Original observations,
+coordinates and old normalization/embedding artifacts were retained. All 21/21/18 captured
+attributes survived with the documented types; zero ratings/reviews/prices and false flags passed.
+Country codes remain null on the three normalization artifacts because that field is missing
+from the capture; no geocoder was called. Lone Mountain retains an informational
+`country_code_missing` warning. Sample quality review `99c52cb8-2ab9-4d08-9879-5de9b420b352`
+accepted the inspected record fidelity/formatting, separately from whole-file/category completion.
+
+Across the initial and final passes, all seven Fireworks calls and six Jina embedding calls
+succeeded. Recorded Fireworks estimate: $0.00473655; embedding costs were not supplied.
+The isolated two-record database test also passed current-version resume, original/interim
+exclusion proofs, missing-audit and incompatible-version guards with no repeated normalization
+or provider requests; its fixtures were removed. Static validation passed 13 repair tests,
+10 normalization/version tests, 17 scheduler/concurrency tests, types/contracts and golden checks.
+
+The 43,272-record capture's complete extraction proof is unchanged. Full Dyrt run
+`4dda8606-9c20-4275-bae6-c14cdea9e38c` remains failed/stopped, with five existing issues open.
+Before full recovery, inspect and audit retries of those issues through the runbook's maintenance
+procedure; then the exact original-scope command is:
+
+```sh
+pnpm --filter @lib/db-map ingest:run --resume 4dda8606-9c20-4275-bae6-c14cdea9e38c --unlimited
+```
+
+Raw jobs, provider/attempt journals and quality-review evidence remain private in the ignored
+runtime directories. No full import or existing issue retry was launched by this validation task.
