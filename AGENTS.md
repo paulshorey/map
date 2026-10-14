@@ -9,6 +9,13 @@ Interactive POI map - letting the user search and filter points of interest on a
 
 This is a monorepo. Apps live in `apps/`; shared libraries live in `lib/`.
 
+The ingestion monitoring dashboard in `apps/ingestion` is a private internal tool,
+run only on this computer or through an approved-device private Tailscale proxy;
+it is never a public admin service. local-dev iframe previews are intentional.
+Keep its existing lightweight request checks and framing policy, but do not add
+public-hosting authentication or security infrastructure without a separate request.
+See [dashboard framing](apps/ingestion/docs/framing.md).
+
 - ./working directory contains project management tasks, specs, plans, and notes. You own this folder. Please add, edit, and rearrange the files as you edit the codebase. Keep this project management status and progress up to date.
 - ./data folder contains raw POI data from multiple sources - it is unfinished, needs to be processed. This data is committed to the repository, with the intention of being normalized, analyzed, aggregated, converted to our custom data format, and saved to our database to be displayed on the map in the user-facing app. Please help to keep any documentation files and notes (such as AGENTS.md) up to date, to describe the raw files and what needs to be finished.
 
