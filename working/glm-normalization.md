@@ -158,3 +158,7 @@ Final review also separated safe extra-attribute drops from unsupported core fie
 invented amenity retains an `attribute_dropped_*` warning while the valid record remains accepted;
 unsupported city/name evidence still degrades it. The resolver regression covers both outcomes.
 Existing cached artifacts were not invalidated or rewritten.
+
+Output repair also retains `json_object` after an explicit schema-unsupported compatibility
+fallback. Mocked malformed, empty and truncated fallback replies verify the repair wire format,
+audit linkage and absence of a second repair, for both successful and failed repair output.

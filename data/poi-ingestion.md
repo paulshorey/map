@@ -438,6 +438,8 @@ and use the existing bounded JSON repair path.
 
 Unusable normalization output (invalid JSON/schema, empty final answer or truncation) gets
 one contextual repair; truncated/empty output uses a bounded larger final-answer allowance.
+If a provider rejected `json_schema`, the separately audited `json_object` compatibility fallback
+also remains the format for output repair. A failed repair never starts another repair.
 Matching now requests a strict two-field JSON schema (`same_place`, `reason`) and validates
 both fields in code. It allows 512 final-answer tokens initially and 1,024 for its one output
 repair, plus the configured thinking allowance. A second invalid match becomes an explicit

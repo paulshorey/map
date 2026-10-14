@@ -10,6 +10,7 @@ import {
   buildChatRequest,
   isUnsupportedResponseFormat,
   LlmError,
+  type ChatOptions,
   type ChatMessage,
   type ChatResult,
 } from "../providers/llm.js";
@@ -343,6 +344,8 @@ export async function callNormalizer(
       },
     },
   };
+  let effectiveResponseFormat: ChatOptions["responseFormat"] =
+    requestOptions.responseFormat;
   let requestId = await insertRequest(
     db,
     row,
@@ -363,9 +366,10 @@ export async function callNormalizer(
       if (!isUnsupportedResponseFormat(error)) throw error;
       // The compatibility fallback is another HTTP request and must retain its own budget/audit row.
       await finishRequest(db, requestId, null, undefined, error);
+      effectiveResponseFormat = { type: "json_object" };
       const fallbackOptions = {
         ...requestOptions,
-        responseFormat: { type: "json_object" as const },
+        responseFormat: effectiveResponseFormat,
       };
       requestId = await insertRequest(
         db,
@@ -402,7 +406,13 @@ export async function callNormalizer(
           `Return one corrected JSON object matching the schema. record.record_id must be exactly ${row.id}, not source_record_id. Do not explain.`,
       },
     ];
-    const repairOptions = { ...requestOptions, maxTokens: incompleteOutput ? NORMALIZATION_MAX_OUTPUT_TOKENS * 2 : requestOptions.maxTokens };
+    const repairOptions = {
+      ...requestOptions,
+      responseFormat: effectiveResponseFormat,
+      maxTokens: incompleteOutput
+        ? NORMALIZATION_MAX_OUTPUT_TOKENS * 2
+        : requestOptions.maxTokens,
+    };
     const repairId = await insertRequest(
       db,
       row,

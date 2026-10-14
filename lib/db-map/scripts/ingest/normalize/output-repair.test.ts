@@ -113,6 +113,50 @@ test("failed normalization repair cannot trigger a third request", async () => {
   await assert.rejects(callNormalizer(db, row, "hash", "generic", "v1", {}));
   assert.equal(requests.length, 2);
 });
+test("normalization repair retains a working JSON-object fallback and remains bounded", async () => {
+  for (const [content, finish] of [
+    ["{", "length"],
+    ["", "stop"],
+    ["bad", "stop"],
+  ]) {
+    for (const repairContent of [JSON.stringify(output), "bad repair"]) {
+      requests = [];
+      queries = [];
+      globalThis.fetch = async (_url, options) => {
+        requests.push(JSON.parse(String(options!.body)));
+        if (requests.length === 1)
+          return Response.json(
+            { error: { message: "json_schema response_format not supported" } },
+            { status: 400 },
+          );
+        return Response.json({
+          model: ingestConfig.llm.model,
+          choices: [{
+            message: { content: requests.length === 2 ? content : repairContent },
+            finish_reason: requests.length === 2 ? finish : "stop",
+          }],
+          usage: { prompt_tokens: 1, completion_tokens: 1 },
+        });
+      };
+      const answer = callNormalizer(db, row, "hash", "generic", "v1", {});
+      if (repairContent === "bad repair") await assert.rejects(answer);
+      else assert.equal((await answer).output.record.record_id, "fixture");
+      assert.equal(requests.length, 3, "one capability fallback plus one output repair");
+      assert.deepEqual(
+        requests.slice(1).map((request) => request.response_format),
+        [{ type: "json_object" }, { type: "json_object" }],
+      );
+      const inserts = queries.filter((q) =>
+        q.sql.includes("INSERT INTO research_normalization_requests"),
+      );
+      assert.equal(inserts.length, 3);
+      assert.equal(inserts[2]!.args[11], inserts[1]!.args[0]);
+      assert.deepEqual(JSON.parse(String(inserts[2]!.args[10])).response_format, {
+        type: "json_object",
+      });
+    }
+  }
+});
 test("normalization does not spend another request on authentication or database audit failures", async () => {
   let calls = 0;
   globalThis.fetch = async () => {
