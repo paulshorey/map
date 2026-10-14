@@ -114,7 +114,7 @@ function parseJsonContent(content: string): unknown {
     const end = content.lastIndexOf("}");
     if (start >= 0 && end > start)
       return JSON.parse(content.slice(start, end + 1));
-    throw new Error("DeepSeek response was not valid JSON");
+    throw new Error("LLM normalization response was not valid JSON");
   }
 }
 
@@ -423,6 +423,7 @@ export async function callNormalizer(
     );
     let repairResult: ChatResult | null = null;
     let repairParsed: unknown;
+    let repairValidating = false;
     try {
       repairResult = await completeChat({
         retries: currentAttempt() ? 0 : undefined,
@@ -430,8 +431,10 @@ export async function callNormalizer(
         maxTokens: repairOptions.maxTokens,
         responseFormat: repairOptions.responseFormat,
       });
+      repairValidating = true;
       repairParsed = parseJsonContent(repairResult.content);
       const repaired = parseNormalizationOutput(repairParsed, row.id);
+      repairValidating = false;
       await finishRequest(db, repairId, repairResult, repairParsed);
       await db.query(
         `UPDATE research_normalization_requests SET status='repaired' WHERE id=$1`,
@@ -446,6 +449,21 @@ export async function callNormalizer(
         repairParsed,
         repairError,
       );
+      // Provider and audit failures keep their original class. A second bad
+      // JSON object is record validation, same as match adjudication.
+      if (repairValidating) {
+        const reason =
+          repairError instanceof Error
+            ? repairError.message
+            : String(repairError);
+        throw new LlmError(
+          `LLM normalization output validation failed after one repair: ${reason}`,
+          false,
+          undefined,
+          undefined,
+          repairResult ?? undefined,
+        );
+      }
       throw repairError;
     }
   }

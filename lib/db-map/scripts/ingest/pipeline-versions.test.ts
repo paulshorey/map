@@ -25,7 +25,9 @@ test("GLM upgrade preserves old checkpoints only for the exact reviewed version 
     from: interim,
     to: PIPELINE_VERSIONS,
   });
-  assert.deepEqual(compatibleCheckpointVersions(), [legacy, interim]);
+  const priorGlm = { ...PIPELINE_VERSIONS, normalizer: "hybrid-v5" };
+  assert.deepEqual(resumePipelineUpgrade(priorGlm), { from: priorGlm, to: PIPELINE_VERSIONS });
+  assert.deepEqual(compatibleCheckpointVersions(), [legacy, interim, priorGlm]);
   assert.equal(
     resumePipelineUpgrade(
       Object.fromEntries(Object.entries(PIPELINE_VERSIONS).reverse()),
@@ -42,6 +44,7 @@ test("GLM upgrade preserves old checkpoints only for the exact reviewed version 
     { ...legacy, futureStage: "new" },
     { ...interim, prompt: "poi-normalize-v2" },
     { ...interim, embedding: "changed" },
+    { ...priorGlm, prompt: "poi-normalize-v3" },
     {},
   ])
     assert.throws(

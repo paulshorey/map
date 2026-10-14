@@ -38,6 +38,13 @@ const captured: DeterministicInput = {
     source: "TheDyrt",
     postal_code: "00123",
     source_id: "0007",
+    thirty_amp: "False",
+    fifty_amp: "True",
+    big_rig_friendly: "True",
+    pull_through: "True",
+    back_in: "False",
+    max_vehicle_length_ft: "42.5",
+    num_sites: "105",
   },
   raw: { shade: false, capacity: 20, nested: { "cost per night": 12 } },
 };
@@ -87,6 +94,13 @@ test("source attributes survive model omission and deterministic-only normalizat
       source: "TheDyrt",
       postal_code: "00123",
       source_id: "0007",
+      thirty_amp: false,
+      fifty_amp: true,
+      big_rig_friendly: true,
+      pull_through: true,
+      back_in: false,
+      max_vehicle_length_ft: 42.5,
+      num_sites: 105,
     });
     assert.deepEqual(result.fieldEvidence["attributes.rating"], [
       "$.captured.attributes.rating",
@@ -153,6 +167,25 @@ test("additional attributes require matching scalar evidence, including zero and
     assert.equal(Object.hasOwn(result, key), false);
     assert.ok(warnings.includes(`attribute_dropped_${key}`));
   }
+});
+
+test("known Dyrt scalars agree with equivalent model types while opaque IDs remain text", () => {
+  const warnings: string[] = [];
+  const result = resolveAttributes(captured, [
+    { key: "thirty_amp", value: false },
+    { key: "fifty_amp", value: true },
+    { key: "big_rig_friendly", value: true },
+    { key: "pull_through", value: true },
+    { key: "back_in", value: false },
+    { key: "max_vehicle_length_ft", value: 42.5 },
+    { key: "num_sites", value: 105 },
+  ], {}, warnings);
+  assert.equal(result.back_in, false);
+  assert.equal(result.num_sites, 105);
+  assert.equal(result.max_vehicle_length_ft, 42.5);
+  assert.equal(result.postal_code, "00123");
+  assert.equal(result.source_id, "0007");
+  assert.deepEqual(warnings.filter((w) => w.startsWith("attribute_source_conflict_")), []);
 });
 
 test("unsafe keys, inherited paths and contradictory proposals cannot activate", () => {
@@ -225,8 +258,8 @@ test("tighter attribute validation has a fresh cache identity", () => {
   const current = normalizationInputHash(input, true);
   const interim = normalizationInputHash({
     ...input,
-    normalizerVersion: "hybrid-v4",
-    promptVersion: "poi-normalize-v3",
+    normalizerVersion: "hybrid-v5",
+    promptVersion: "poi-normalize-v4",
   }, true);
   assert.notEqual(current, interim);
   assert.equal(normalizationInputHash(input, true), current);

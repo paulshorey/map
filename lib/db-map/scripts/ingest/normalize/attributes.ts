@@ -7,6 +7,8 @@ const numericKeys = new Set([
   "reviews_count",
   "price_low",
   "price_high",
+  "max_vehicle_length_ft",
+  "num_sites",
 ]);
 const booleanKeys = new Set([
   "wifi",
@@ -19,6 +21,11 @@ const booleanKeys = new Set([
   "electric_hookups",
   "accommodation_rv",
   "accommodation_tent",
+  "thirty_amp",
+  "fifty_amp",
+  "big_rig_friendly",
+  "pull_through",
+  "back_in",
 ]);
 
 function primitive(value: unknown): value is AttributeValue {
@@ -47,7 +54,7 @@ export function normalizeAttributeValue(
     const number = Number(text);
     if (
       Number.isFinite(number) &&
-      (key !== "reviews_count" || Number.isSafeInteger(number))
+      (!["reviews_count", "num_sites"].includes(key) || Number.isSafeInteger(number))
     )
       return number;
   }
