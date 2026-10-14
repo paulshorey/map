@@ -153,3 +153,8 @@ unchanged artifact/cohort IDs, and the mocked repair tests forbid a third reques
 
 No full import was restarted during PR cleanup. The five existing quarantines need audited
 retry after matching is validated; ordinary resume only requeues the paused terminal record.
+
+Final review also separated safe extra-attribute drops from unsupported core fields. A discarded
+invented amenity retains an `attribute_dropped_*` warning while the valid record remains accepted;
+unsupported city/name evidence still degrades it. The resolver regression covers both outcomes.
+Existing cached artifacts were not invalidated or rewritten.

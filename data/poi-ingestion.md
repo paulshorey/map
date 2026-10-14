@@ -430,6 +430,8 @@ price and campground boolean strings are typed by code; opaque IDs and other tex
 remain intact. Each retained captured attribute receives its exact source path.
 Additional model attributes need an exact primitive value at a cited input path;
 container-only, missing or contradictory evidence cannot activate an invented value.
+Discarded extras retain `attribute_dropped_*` diagnostics without degrading an otherwise
+valid record. Unsupported core fields still degrade it; source conflicts retain the captured value.
 Nested captured data remains in immutable raw observations and may support such
 additional scalar attributes. Malformed attribute/evidence arrays fail validation
 and use the existing bounded JSON repair path.

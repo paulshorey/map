@@ -148,7 +148,7 @@ test("additional attributes require matching scalar evidence, including zero and
   assert.equal(result.nightly_cost, 12);
   for (const key of ["pool", "fake", "container", "bad_path"]) {
     assert.equal(Object.hasOwn(result, key), false);
-    assert.ok(warnings.includes(`unsupported_attribute_${key}`));
+    assert.ok(warnings.includes(`attribute_dropped_${key}`));
   }
 });
 
@@ -172,6 +172,30 @@ test("unsafe keys, inherited paths and contradictory proposals cannot activate",
   assert.equal(Object.hasOwn(result, "__proto__"), false);
   assert.equal(Object.hasOwn(result, "inherited"), false);
   assert.equal(Object.hasOwn(result, "count"), false);
+});
+
+test("discarding an extra attribute preserves record quality but unsupported core fields still degrade", () => {
+  for (const city of [null, "Invented City"]) {
+    const result = resolveNormalization({
+      output: {
+        record: {
+          ...output.record,
+          city,
+          attributes: [{ key: "pool", value: true }],
+        },
+      },
+      captured,
+      deterministic: buildDeterministicFacts(captured),
+      ingestCategory: "campground",
+      profile: getNormalizationProfile("campground"),
+    });
+    assert.equal(Object.hasOwn(result.attributes, "pool"), false);
+    assert.equal(result.attributes.rating, 0);
+    assert.equal(result.attributes.wifi, false);
+    assert.ok(result.warnings.includes("attribute_dropped_pool"));
+    assert.equal(result.status, city ? "degraded" : "accepted");
+    if (city) assert.ok(result.warnings.includes("unsupported_city"));
+  }
 });
 
 test("JSON-object fallback cannot bypass attribute/evidence type validation", () => {

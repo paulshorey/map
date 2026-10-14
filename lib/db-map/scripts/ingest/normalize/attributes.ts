@@ -105,7 +105,7 @@ export function resolveAttributes(
   const proposedEvidence = { ...evidence };
   for (const { key, value } of proposed) {
     if (!safeKey(key) || !primitive(value)) {
-      warnings.push("unsupported_attribute_key_or_value");
+      warnings.push("attribute_dropped_key_or_value");
       continue;
     }
     modelKeys.add(key);
@@ -130,7 +130,7 @@ export function resolveAttributes(
       );
     });
     if (!paths.length) {
-      warnings.push(`unsupported_attribute_${key}`);
+      warnings.push(`attribute_dropped_${key}`);
       continue;
     }
     // Repeated contradictory proposals cannot silently replace a validated value.
