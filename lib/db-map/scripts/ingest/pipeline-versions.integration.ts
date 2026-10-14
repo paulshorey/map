@@ -20,6 +20,11 @@ try {
     file,
     JSON.stringify([
       { source_record_id: "a", name: "Resume test article", is_poi: false },
+      {
+        source_record_id: "b",
+        name: "Excluded resume test article",
+        is_poi: false,
+      },
     ]),
   );
   const opts = {
@@ -76,6 +81,35 @@ try {
     run.id,
     "compatible old full run must remain resumable in the dashboard",
   );
+  // A deliberate exclusion under the original version remains authoritative after
+  // audited full verification of the same frozen observations. Only this fixture is touched.
+  const excluded = (
+    await db.query(
+      "SELECT * FROM research_ingest_run_items WHERE run_id=$1 AND source_record_id='b'",
+      [run.id],
+    )
+  ).rows[0];
+  const priorExecution = (
+    await db.query(
+      "SELECT id FROM research_ingest_executions WHERE run_id=$1 ORDER BY started_at DESC LIMIT 1",
+      [run.id],
+    )
+  ).rows[0].id;
+  await db.query("UPDATE research_pois SET retired_at=now() WHERE id=$1", [
+    excluded.research_poi_id,
+  ]);
+  await db.query(
+    "INSERT INTO research_ingest_issues(run_id,source_record_id,stage,code,scope,severity,message,status) VALUES($1,'b','normalize','fixture_exclusion','record','blocking','Scoped test exclusion','excluded')",
+    [run.id],
+  );
+  await db.query(
+    "UPDATE research_ingest_tasks SET state='skipped' WHERE run_id=$1 AND source_record_id='b'",
+    [run.id],
+  );
+  await db.query(
+    "INSERT INTO research_ingest_record_verifications(run_id,source_record_id,execution_id,observation_id,output,pipeline_versions,outcome) VALUES($1,'b',$2,$3,'{}',$4,'operator_excluded')",
+    [run.id, priorExecution, excluded.observation_id, JSON.stringify(legacy)],
+  );
   await runOrchestration(db, { ...opts, resume: run.id });
   const after = (
     await db.query(
@@ -96,8 +130,8 @@ try {
   ).rows[0];
   assert.equal(finished.status, "succeeded");
   assert.ok(finished.verified_at);
-  assert.equal(finished.cohort, 1);
-  assert.equal(finished.normalizations, 1);
+  assert.equal(finished.cohort, 2);
+  assert.equal(finished.normalizations, 2);
   assert.deepEqual(finished.pipeline_versions, legacy);
   const options = (
     await db.query(
@@ -115,7 +149,12 @@ try {
     "complete",
     "audited current verification must recognize the upgraded full run",
   );
-  assert.equal(complete.verified, 1);
+  assert.equal(complete.verified, 2);
+  assert.equal(
+    complete.excluded,
+    2,
+    "old explicit exclusion is retained alongside the non-POI record",
+  );
   assert.equal(queueItem(complete).action, "complete");
   await writeFile(file, "[]");
   await assert.rejects(
@@ -137,6 +176,10 @@ try {
     ).rows.map((row) => row.id);
     await db.query(
       "DELETE FROM research_ingest_record_verifications WHERE run_id=ANY($1::uuid[])",
+      [ids],
+    );
+    await db.query(
+      "DELETE FROM research_ingest_issues WHERE run_id=ANY($1::uuid[])",
       [ids],
     );
     await db.query("DELETE FROM research_pois WHERE source_id=$1", [source.id]);

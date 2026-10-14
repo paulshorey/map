@@ -40,7 +40,9 @@ WITH current_versions AS (
  JOIN research_ingest_run_items i ON i.run_id=rv.run_id AND i.source_record_id=rv.source_record_id
  JOIN research_pois rp ON rp.id=i.research_poi_id
  LEFT JOIN canonical_pois cp ON cp.id=rp.canonical_poi_id
- WHERE rv.pipeline_versions=$1::jsonb AND rv.observation_id=rp.active_observation_id AND rv.outcome<>'operator_excluded'
+ WHERE (rv.pipeline_versions=$1::jsonb OR (rv.pipeline_versions=r.pipeline_versions
+   AND r.status='succeeded' AND r.verified_at IS NOT NULL AND r.counters->'verification'->'pipeline_versions'=$1::jsonb))
+   AND rv.observation_id=rp.active_observation_id AND rv.outcome<>'operator_excluded'
    AND rv.output->>'normalization_id'=rp.active_normalization_id::text
    AND (NOT rp.is_poi OR (rv.output->>'embedding_id'=rp.active_embedding_id::text
      AND rv.output->>'canonical_id'=rp.canonical_poi_id::text AND rv.output->>'build_id'=cp.active_build_id::text
@@ -51,7 +53,8 @@ WITH current_versions AS (
     GREATEST(n.activated_at,em.activated_at,b.activated_at,g.activated_at,rv.verified_at) AS proof_changed_at,
     EXISTS(SELECT 1 FROM current_versions v JOIN research_ingest_runs r ON r.source_file_version_id=v.id
       JOIN research_ingest_record_verifications x ON x.run_id=r.id WHERE v.inventory_id=a.inventory_id AND x.observation_id=a.observation_id
-        AND x.outcome='operator_excluded' AND x.pipeline_versions=$1::jsonb) AS operator_excluded,
+        AND x.outcome='operator_excluded' AND (x.pipeline_versions=$1::jsonb OR (x.pipeline_versions=r.pipeline_versions
+          AND r.status='succeeded' AND r.verified_at IS NOT NULL AND r.counters->'verification'->'pipeline_versions'=$1::jsonb))) AS operator_excluded,
     (rp.id IS NOT NULL AND rp.retired_at IS NULL AND rp.active_observation_id=a.observation_id) AS input_valid,
     (n.id IS NOT NULL AND n.observation_id=a.observation_id AND rp.normalization_state IN ('active','degraded','rejected')) AS normalized,
     (rp.lat IS NOT NULL AND rp.lng IS NOT NULL AND (rp.coordinate_source IS DISTINCT FROM 'geocode' OR g.id IS NOT NULL)) AS coordinates,
