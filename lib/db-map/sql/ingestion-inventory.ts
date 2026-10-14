@@ -4,7 +4,11 @@ import {
   shellQuote,
   type Evidence,
 } from "../lib/ingestion/assessment.js";
-import { PIPELINE_VERSIONS, resumePipelineUpgrade } from "../scripts/ingest/pipeline-versions.js";
+import {
+  PIPELINE_VERSIONS,
+  compatibleCheckpointVersions,
+  resumePipelineUpgrade,
+} from "../scripts/ingest/pipeline-versions.js";
 import {
   assertValidCategory,
   listCategorySlugs,
@@ -12,7 +16,9 @@ import {
 
 // The same snapshot and assessment powers the dashboard and CLI. No provider work here.
 const INVENTORY_SQL = `
-WITH current_versions AS (
+WITH compatible_proof_versions AS (
+  SELECT value AS pipeline_versions FROM jsonb_array_elements($3::jsonb)
+), current_versions AS (
   SELECT i.id AS inventory_id,v.* FROM research_ingest_inventory i
   JOIN research_source_files f ON f.logical_path=i.logical_path AND f.category_slug=i.category_slug
   JOIN research_sources s ON s.id=f.source_id AND s.slug=i.source_slug
@@ -40,7 +46,7 @@ WITH current_versions AS (
  JOIN research_ingest_run_items i ON i.run_id=rv.run_id AND i.source_record_id=rv.source_record_id
  JOIN research_pois rp ON rp.id=i.research_poi_id
  LEFT JOIN canonical_pois cp ON cp.id=rp.canonical_poi_id
- WHERE (rv.pipeline_versions=$1::jsonb OR (rv.pipeline_versions=r.pipeline_versions
+ WHERE (rv.pipeline_versions=$1::jsonb OR (rv.pipeline_versions IN (SELECT pipeline_versions FROM compatible_proof_versions)
    AND r.status='succeeded' AND r.verified_at IS NOT NULL AND r.counters->'verification'->'pipeline_versions'=$1::jsonb))
    AND rv.observation_id=rp.active_observation_id AND rv.outcome<>'operator_excluded'
    AND rv.output->>'normalization_id'=rp.active_normalization_id::text
@@ -53,7 +59,7 @@ WITH current_versions AS (
     GREATEST(n.activated_at,em.activated_at,b.activated_at,g.activated_at,rv.verified_at) AS proof_changed_at,
     EXISTS(SELECT 1 FROM current_versions v JOIN research_ingest_runs r ON r.source_file_version_id=v.id
       JOIN research_ingest_record_verifications x ON x.run_id=r.id WHERE v.inventory_id=a.inventory_id AND x.observation_id=a.observation_id
-        AND x.outcome='operator_excluded' AND (x.pipeline_versions=$1::jsonb OR (x.pipeline_versions=r.pipeline_versions
+        AND x.outcome='operator_excluded' AND (x.pipeline_versions=$1::jsonb OR (x.pipeline_versions IN (SELECT pipeline_versions FROM compatible_proof_versions)
           AND r.status='succeeded' AND r.verified_at IS NOT NULL AND r.counters->'verification'->'pipeline_versions'=$1::jsonb))) AS operator_excluded,
     (rp.id IS NOT NULL AND rp.retired_at IS NULL AND rp.active_observation_id=a.observation_id) AS input_valid,
     (n.id IS NOT NULL AND n.observation_id=a.observation_id AND rp.normalization_state IN ('active','degraded','rejected')) AS normalized,
@@ -171,6 +177,7 @@ export async function getInventory(
     const { rows } = await client.query<InventoryFile>(INVENTORY_SQL, [
       JSON.stringify(PIPELINE_VERSIONS),
       options.file ?? null,
+      JSON.stringify(compatibleCheckpointVersions()),
     ]);
     const files = rows.map((file) => {
       const assessment = assessFile(file);

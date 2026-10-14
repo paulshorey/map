@@ -18,6 +18,19 @@ export const PIPELINE_VERSIONS = {
   canonicalBuilder: "canonical-build-v1",
 } as const;
 
+/** Only reviewed checkpoint versions; older proofs also require a fresh full-run audit in inventory. */
+export function compatibleCheckpointVersions(): Record<string, string>[] {
+  if (
+    PIPELINE_VERSIONS.normalizer !== "hybrid-v5" ||
+    PIPELINE_VERSIONS.prompt !== "poi-normalize-v4"
+  )
+    return [];
+  return [
+    { ...PIPELINE_VERSIONS, normalizer: "hybrid-v3", prompt: "poi-normalize-v2" },
+    { ...PIPELINE_VERSIONS, normalizer: "hybrid-v4", prompt: "poi-normalize-v3" },
+  ];
+}
+
 /** This source-preserving upgrade changes pending normalization only, not checkpoint validity. */
 export function resumePipelineUpgrade(previous: Record<string, unknown>): {
   from: Record<string, unknown>;
@@ -30,23 +43,11 @@ export function resumePipelineUpgrade(previous: Record<string, unknown>): {
       ([key, value]) => previous[key] === value,
     );
   if (exact) return null;
-  const reviewedPreviousPairs = [
-    { normalizer: "hybrid-v3", prompt: "poi-normalize-v2" },
-    { normalizer: "hybrid-v4", prompt: "poi-normalize-v3" },
-  ];
   const compatible =
-    PIPELINE_VERSIONS.normalizer === "hybrid-v5" &&
-    PIPELINE_VERSIONS.prompt === "poi-normalize-v4" &&
     expected.length === Object.keys(previous).length &&
-    reviewedPreviousPairs.some((pair) =>
-      Object.entries(PIPELINE_VERSIONS).every(
-        ([key, value]) =>
-          previous[key] ===
-          (key === "normalizer"
-            ? pair.normalizer
-            : key === "prompt"
-              ? pair.prompt
-              : value),
+    compatibleCheckpointVersions().some((versions) =>
+      Object.entries(versions).every(
+        ([key, value]) => previous[key] === value,
       ),
     );
   if (!compatible)

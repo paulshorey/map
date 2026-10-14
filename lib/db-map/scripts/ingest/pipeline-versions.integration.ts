@@ -156,6 +156,37 @@ try {
     "old explicit exclusion is retained alongside the non-POI record",
   );
   assert.equal(queueItem(complete).action, "complete");
+  const interim = {
+    ...PIPELINE_VERSIONS,
+    normalizer: "hybrid-v4",
+    prompt: "poi-normalize-v3",
+  };
+  await db.query(
+    "UPDATE research_ingest_record_verifications SET pipeline_versions=$2::jsonb WHERE run_id=$1 AND source_record_id='b'",
+    [run.id, JSON.stringify(interim)],
+  );
+  assert.equal(
+    (await inventory()).coverage, "complete",
+    "interim GLM exclusion survives the later audited upgrade",
+  );
+  await db.query("UPDATE research_ingest_runs SET verified_at=NULL WHERE id=$1", [run.id]);
+  assert.notEqual(
+    (await inventory()).coverage, "complete",
+    "old exclusions require the successful current full-run audit",
+  );
+  await db.query("UPDATE research_ingest_runs SET verified_at=$2 WHERE id=$1", [run.id, finished.verified_at]);
+  await db.query(
+    "UPDATE research_ingest_record_verifications SET pipeline_versions=$2::jsonb WHERE run_id=$1 AND source_record_id='b'",
+    [run.id, JSON.stringify({ ...interim, normalizer: "hybrid-v2" })],
+  );
+  assert.notEqual(
+    (await inventory()).coverage, "complete",
+    "unreviewed old exclusion versions remain unsupported",
+  );
+  await db.query(
+    "UPDATE research_ingest_record_verifications SET pipeline_versions=$2::jsonb WHERE run_id=$1 AND source_record_id='b'",
+    [run.id, JSON.stringify(interim)],
+  );
   await writeFile(file, "[]");
   await assert.rejects(
     runOrchestration(db, { ...opts, resume: run.id }),

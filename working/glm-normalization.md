@@ -168,3 +168,8 @@ Extra attributes now require key-scoped evidence; generic attributes evidence ca
 unrelated scalar. Resolver/prompt versions advance to hybrid-v5/poi-normalize-v4, invalidating
 looser pending cache hits. Exact reviewed v3/v2 and interim v4/v3 resumes preserve completed
 checkpoints; unrelated stage-version changes remain rejected. Existing data is not rewritten.
+
+Inventory shares that exact compatibility list for record/exclusion proofs, and accepts older
+proofs only after the same run succeeds with current audited verification. The two-record
+integration also checks an interim-v4 exclusion, the missing-current-audit guard and rejection
+of an unreviewed prior version.

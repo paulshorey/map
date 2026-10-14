@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   PIPELINE_VERSIONS,
+  compatibleCheckpointVersions,
   resumePipelineUpgrade,
 } from "./pipeline-versions.js";
 
@@ -24,6 +25,7 @@ test("GLM upgrade preserves old checkpoints only for the exact reviewed version 
     from: interim,
     to: PIPELINE_VERSIONS,
   });
+  assert.deepEqual(compatibleCheckpointVersions(), [legacy, interim]);
   assert.equal(
     resumePipelineUpgrade(
       Object.fromEntries(Object.entries(PIPELINE_VERSIONS).reverse()),
