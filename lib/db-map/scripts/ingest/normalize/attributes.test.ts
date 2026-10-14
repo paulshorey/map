@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { resolveAttributes } from "./attributes.js";
+import { normalizationInputHash } from "./cache.js";
 import {
   parseNormalizationOutput,
+  NORMALIZER_VERSION,
+  PROMPT_VERSION,
   type LlmNormalizationOutput,
 } from "./contracts.js";
 import {
@@ -196,6 +199,37 @@ test("discarding an extra attribute preserves record quality but unsupported cor
     assert.equal(result.status, city ? "degraded" : "accepted");
     if (city) assert.ok(result.warnings.includes("unsupported_city"));
   }
+});
+
+test("generic evidence cannot donate an unrelated scalar to an extra attribute", () => {
+  const warnings: string[] = [];
+  const result = resolveAttributes(
+    captured,
+    [{ key: "pool", value: true }, { key: "shade", value: false }],
+    { attributes: ["$.captured.attributes.pets_allowed", "$.raw.shade"] },
+    warnings,
+  );
+  assert.equal(Object.hasOwn(result, "pool"), false);
+  assert.equal(Object.hasOwn(result, "shade"), false);
+  assert.equal(result.pets_allowed, true);
+  assert.ok(warnings.includes("attribute_dropped_pool"));
+  assert.ok(warnings.includes("attribute_dropped_shade"));
+});
+
+test("tighter attribute validation has a fresh cache identity", () => {
+  const input = {
+    captured,
+    normalizerVersion: NORMALIZER_VERSION,
+    promptVersion: PROMPT_VERSION,
+  };
+  const current = normalizationInputHash(input, true);
+  const interim = normalizationInputHash({
+    ...input,
+    normalizerVersion: "hybrid-v4",
+    promptVersion: "poi-normalize-v3",
+  }, true);
+  assert.notEqual(current, interim);
+  assert.equal(normalizationInputHash(input, true), current);
 });
 
 test("JSON-object fallback cannot bypass attribute/evidence type validation", () => {

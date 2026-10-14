@@ -30,18 +30,24 @@ export function resumePipelineUpgrade(previous: Record<string, unknown>): {
       ([key, value]) => previous[key] === value,
     );
   if (exact) return null;
+  const reviewedPreviousPairs = [
+    { normalizer: "hybrid-v3", prompt: "poi-normalize-v2" },
+    { normalizer: "hybrid-v4", prompt: "poi-normalize-v3" },
+  ];
   const compatible =
-    PIPELINE_VERSIONS.normalizer === "hybrid-v4" &&
-    PIPELINE_VERSIONS.prompt === "poi-normalize-v3" &&
+    PIPELINE_VERSIONS.normalizer === "hybrid-v5" &&
+    PIPELINE_VERSIONS.prompt === "poi-normalize-v4" &&
     expected.length === Object.keys(previous).length &&
-    Object.entries(PIPELINE_VERSIONS).every(
-      ([key, value]) =>
-        previous[key] ===
-        (key === "normalizer"
-          ? "hybrid-v3"
-          : key === "prompt"
-            ? "poi-normalize-v2"
-            : value),
+    reviewedPreviousPairs.some((pair) =>
+      Object.entries(PIPELINE_VERSIONS).every(
+        ([key, value]) =>
+          previous[key] ===
+          (key === "normalizer"
+            ? pair.normalizer
+            : key === "prompt"
+              ? pair.prompt
+              : value),
+      ),
     );
   if (!compatible)
     throw new Error(

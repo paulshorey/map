@@ -13,8 +13,9 @@ is `codex/glm-normalization`, based on the active scheduler fixes in PR #40.
 - Source primitive attributes survive omissions and conflicting model output.
   Known numeric and campground boolean fields are typed safely. Additional model
   attributes require matching scalar evidence. Opaque IDs and text remain intact.
-- Version the normalizer/prompt as hybrid-v4 / poi-normalize-v3. Only the exact
-  previous v3/v2 pair can resume with every other pipeline version unchanged.
+- Version the normalizer/prompt as hybrid-v5 / poi-normalize-v4 after review tightened
+  additional-attribute evidence. Exact previous v3/v2 and interim v4/v3 pairs can resume
+  with every other pipeline version unchanged.
   Execution options audit the upgrade; completed outputs keep their provenance.
 - GLM standard rates are used only for that exact model. Explicit DeepSeek
   overrides retain model-specific thinking requirements and prices.
@@ -162,3 +163,8 @@ Existing cached artifacts were not invalidated or rewritten.
 Output repair also retains `json_object` after an explicit schema-unsupported compatibility
 fallback. Mocked malformed, empty and truncated fallback replies verify the repair wire format,
 audit linkage and absence of a second repair, for both successful and failed repair output.
+
+Extra attributes now require key-scoped evidence; generic attributes evidence cannot donate an
+unrelated scalar. Resolver/prompt versions advance to hybrid-v5/poi-normalize-v4, invalidating
+looser pending cache hits. Exact reviewed v3/v2 and interim v4/v3 resumes preserve completed
+checkpoints; unrelated stage-version changes remain rejected. Existing data is not rewritten.

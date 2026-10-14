@@ -120,7 +120,6 @@ export function resolveAttributes(
       ...new Set([
         ...(proposedEvidence[`attributes.${key}`] ?? []),
         ...(proposedEvidence[key] ?? []),
-        ...(proposedEvidence.attributes ?? []),
       ]),
     ].filter((path) => {
       const sourceValue = evidenceValue({ captured, raw: captured.raw }, path);
