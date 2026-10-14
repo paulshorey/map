@@ -415,14 +415,27 @@ A `length` finish reason stops without repeating the same inadequate token cap;
 the failed request retains any returned usage/cost. Review the output/thinking
 allowance before resuming instead of treating truncation as a provider outage.
 
-Requests explicitly select the default service tier. The fallback estimate uses
-[standard serverless prices](https://docs.fireworks.ai/serverless/pricing), checked
-2026-10-13: GLM costs $0.15 input, $0.03 cached input, and $0.50 output per million
-tokens. The explicit DeepSeek V4.1 override retains its $0.30 / $0.006 / $1.20
-rates. Completion tokens include thinking and are counted once. Provider-reported
-cost takes precedence; unknown models or missing/malformed usage remain unknown
-cost. Per-record repair, fallback, lost-response and non-normalization spending
-still have the limits described in the budget table above.
+`LLM_SERVICE_TIER` defaults to `priority`, sent as `service_tier: "priority"` on
+all shared Fireworks chat calls. Set it to `default` to explicitly select Standard;
+other values fail configuration validation. A rejected Priority request never silently
+downgrades. [Priority admission](https://docs.fireworks.ai/serverless/serverless-modes)
+reduces load shedding during congestion; it shares rate limits with Standard and does
+not guarantee recovery from an infrastructure outage or faster generation. Keep existing
+token caps, structured output and bounded recovery regardless of tier.
+
+The fallback estimate uses [serverless prices](https://docs.fireworks.ai/serverless/pricing),
+checked 2026-10-14: GLM Standard costs $0.15 input, $0.03 cached input, and $0.50
+output per million tokens; Priority costs $0.1875 / $0.0375 / $0.625. An explicit
+DeepSeek V4.1 override retains its own $0.30 / $0.006 / $1.20 Standard rates; Priority
+is also 1.25 times those rates. Completion tokens include thinking and are counted once.
+Provider-reported cost takes precedence, including zero. Fallback pricing uses the
+response's `service_tier` when supplied, otherwise the requested tier; it remains an
+estimate. Unknown models/served tiers or missing/malformed usage remain unknown cost.
+Managed provider-call `concurrency` metadata records `service_tier_requested` and
+`service_tier_returned`; the latter is null when the response omits it, so requesting
+Priority is not reported as proof of the tier actually served. Per-record repair,
+fallback, lost-response and non-normalization spending retain the limits in the budget
+table above.
 
 Captured primitive attributes are authoritative in the resolver even if the
 model omits or contradicts them. Zero and false survive. Known rating, review-count,
@@ -456,8 +469,12 @@ call IDs; every real managed request uses the shared provider telemetry and limi
 Use `pnpm --filter @lib/db-map ingest:test-output-repair` for provider-free failure injection.
 
 Provider-backed normalization cache identity includes provider, endpoint, model,
-thinking allowance, output allowance and request settings. Changes produce a new
-cache identity for unfinished/newly selected records. Managed resume still preserves
+thinking allowance, output allowance and semantic request settings. Admission tier is
+excluded from semantic identity: the historical `service_tier: "default"` key is retained
+in the hash for compatibility, while the actual wire tier is recorded separately. Switching
+Priority/Standard therefore preserves existing cache hashes and successful checkpoints.
+Changes to semantic settings produce a new cache identity for unfinished/newly selected
+records. Managed resume still preserves
 already completed checkpoints and their original provenance; it does not rewrite
 the entire prior run using a new provider. Current resolver/prompt versions are
 hybrid-v6 / poi-normalize-v4; both are in the cache key, so older resolver cache results

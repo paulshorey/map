@@ -18,7 +18,11 @@ const originalKey = process.env.FIREWORKS_API_KEY;
 let calls = 0;
 
 beforeEach(() => {
-  Object.assign(ingestConfig.llm, readLlmConfig({}));
+  // Existing pricing fixtures explicitly exercise Standard; production defaults to Priority.
+  Object.assign(
+    ingestConfig.llm,
+    readLlmConfig({ LLM_SERVICE_TIER: "default" }),
+  );
   process.env.FIREWORKS_API_KEY = "fixture";
   calls = 0;
   // Fail closed: this suite must never make a real inference request.
@@ -139,6 +143,175 @@ test("defaults pin Fireworks GLM and reject unbounded/ambiguous thinking setting
   }
 });
 
+test("Priority is the default admission tier; Standard is explicit and unknown tiers fail closed", () => {
+  assert.equal(readLlmConfig({}).serviceTier, "priority");
+  assert.equal(
+    readLlmConfig({ LLM_SERVICE_TIER: "default" }).serviceTier,
+    "default",
+  );
+  for (const value of ["auto", "fast", "standard", "Priority"]) {
+    assert.throws(
+      () => readLlmConfig({ LLM_SERVICE_TIER: value }),
+      /LLM_SERVICE_TIER/,
+    );
+  }
+  Object.assign(ingestConfig.llm, readLlmConfig({}));
+  const body = buildChatRequest({
+    system: "fixture",
+    user: "fixture",
+    maxTokens: 1800,
+  });
+  assert.equal(body.service_tier, "priority");
+  assert.equal(body.model, "accounts/fireworks/models/glm-5p3-flash");
+  assert.equal(body.reasoning_effort, 256);
+  assert.equal(body.max_tokens, 2056);
+});
+
+test("Priority wire requests use tier-aware rates for known models without double-counting thinking", async () => {
+  for (const [model, input, cached, output] of [
+    ["accounts/fireworks/models/glm-5p3-flash", 0.15, 0.03, 0.5],
+    ["accounts/fireworks/models/deepseek-v4p1-flash", 0.3, 0.006, 1.2],
+  ] as const) {
+    Object.assign(ingestConfig.llm, readLlmConfig({ LLM_MODEL: model }));
+    globalThis.fetch = async (_url, init) => {
+      calls++;
+      assert.equal(JSON.parse(String(init?.body)).service_tier, "priority");
+      return Response.json(
+        completion({
+          prompt_tokens: 100,
+          completion_tokens: 240,
+          prompt_tokens_details: { cached_tokens: 40 },
+          completion_tokens_details: { reasoning_tokens: 220 },
+        }),
+      );
+    };
+    const result = await completeChat({
+      system: "fixture",
+      user: "fixture",
+      retries: 0,
+    });
+    assert.equal(
+      result.usage.estimatedCost,
+      (1.25 * (60 * input + 40 * cached + 240 * output)) / 1_000_000,
+    );
+    // A missing response field does not prove the provider served Priority.
+    assert.equal(result.serviceTier, null);
+  }
+  assert.equal(calls, 2);
+});
+
+test("cost uses the reported served tier and provider cost overrides any fallback", async () => {
+  Object.assign(ingestConfig.llm, readLlmConfig({}));
+  for (const tier of ["default", "priority", "future-tier"]) {
+    respond({
+      ...completion({ prompt_tokens: 100, completion_tokens: 20 }),
+      service_tier: tier,
+    });
+    const result = await completeChat({
+      system: "fixture",
+      user: "fixture",
+      retries: 0,
+    });
+    assert.equal(result.serviceTier, tier);
+    const multiplier =
+      tier === "default" ? 1 : tier === "priority" ? 1.25 : null;
+    assert.equal(
+      result.usage.estimatedCost,
+      multiplier === null
+        ? null
+        : (multiplier * (100 * 0.15 + 20 * 0.5)) / 1_000_000,
+    );
+  }
+  for (const cost of [0, 0.05]) {
+    respond({
+      ...completion({ estimated_cost: cost }),
+      service_tier: "future-tier",
+    });
+    assert.equal(
+      (await completeChat({ system: "fixture", user: "fixture", retries: 0 }))
+        .usage.estimatedCost,
+      cost,
+    );
+  }
+});
+
+test("managed telemetry retains requested and reported tiers, including absent reports and failures", async () => {
+  Object.assign(ingestConfig.llm, readLlmConfig({}));
+  for (const tier of ["priority", undefined]) {
+    for (const fail of [false, true]) {
+      const queries: { sql: string; params: any[] }[] = [];
+      const ctx = {
+        runId: "fixture",
+        attemptId: "fixture",
+        stage: "normalize",
+        execution: {
+          id: "fixture",
+          stopped: false,
+          abortController: new AbortController(),
+          db: {
+            query: async (sql: string, params: any[]) => {
+              queries.push({ sql, params });
+              return { rows: [] };
+            },
+          },
+        },
+      } as any;
+      const body = {
+        ...completion({ prompt_tokens: 100, completion_tokens: 20 }),
+        service_tier: tier,
+      };
+      if (fail) body.choices[0]!.finish_reason = "length";
+      respond(body);
+      await withAttemptContext(ctx, async () => {
+        if (fail)
+          await assert.rejects(
+            completeChat({ system: "fixture", user: "fixture" }),
+            /truncated/,
+          );
+        else await completeChat({ system: "fixture", user: "fixture" });
+      });
+      const start = queries.find((q) =>
+        q.sql.startsWith("INSERT INTO research_ingest_provider_calls("),
+      );
+      const end = queries.find((q) =>
+        q.sql.startsWith("UPDATE research_ingest_provider_calls SET"),
+      );
+      assert.ok(start);
+      assert.ok(end);
+      assert.equal(
+        JSON.parse(start.params[7]).service_tier_requested,
+        "priority",
+      );
+      assert.equal(
+        JSON.parse(end.params[11]).service_tier_requested,
+        "priority",
+      );
+      assert.equal(
+        JSON.parse(end.params[11]).service_tier_returned,
+        tier ?? null,
+      );
+      assert.equal(end.params[1], fail ? "failed" : "succeeded");
+    }
+  }
+});
+
+test("rejected Priority requests never silently downgrade to Standard", async () => {
+  Object.assign(ingestConfig.llm, readLlmConfig({}));
+  globalThis.fetch = async (_url, init) => {
+    calls++;
+    assert.equal(JSON.parse(String(init?.body)).service_tier, "priority");
+    return Response.json(
+      { error: { message: "Priority unavailable for this account" } },
+      { status: 400 },
+    );
+  };
+  await assert.rejects(
+    completeChat({ system: "fixture", user: "fixture", retries: 2 }),
+    (e: unknown) => e instanceof LlmError && e.status === 400 && !e.retryable,
+  );
+  assert.equal(calls, 1);
+});
+
 test("short final answers retain a separate thinking allowance and JSON schema", () => {
   const responseFormat = {
     type: "json_schema" as const,
@@ -173,7 +346,10 @@ test("explicit DeepSeek overrides retain a real hard cap and their own rates", a
       /integer >= 1024/,
     );
   }
-  Object.assign(ingestConfig.llm, readLlmConfig({ LLM_MODEL: model }));
+  Object.assign(
+    ingestConfig.llm,
+    readLlmConfig({ LLM_MODEL: model, LLM_SERVICE_TIER: "default" }),
+  );
   assert.equal(
     buildChatRequest({ system: "fixture", user: "fixture", maxTokens: 64 })
       .max_tokens,
@@ -409,4 +585,30 @@ test("exact normalization cache identity changes with model/thinking; determinis
   ingestConfig.llm.model = "accounts/fireworks/models/another-model";
   assert.notEqual(normalizationInputHash(input, false), original);
   assert.equal(normalizationInputHash(input, true), stableHash(input));
+});
+
+test("changing admission tiers preserves the exact historical normalization cache identity", () => {
+  const input = { rawContentHash: "fixture", llmMode: "provider" };
+  const historical = stableHash({
+    ...input,
+    llm: {
+      provider: "fireworks",
+      baseUrl: "https://api.fireworks.ai/inference/v1",
+      model: "accounts/fireworks/models/glm-5p3-flash",
+      temperature: 0,
+      reasoning_effort: 256,
+      max_tokens: 2056,
+      service_tier: "default",
+      context_length_exceeded_behavior: "error",
+    },
+  });
+  for (const serviceTier of ["priority", "default"] as const) {
+    ingestConfig.llm.serviceTier = serviceTier;
+    assert.equal(normalizationInputHash(input, false), historical);
+    assert.equal(normalizationInputHash(input, true), stableHash(input));
+    assert.equal(
+      buildChatRequest({ system: "fixture", user: "fixture" }).service_tier,
+      serviceTier,
+    );
+  }
 });

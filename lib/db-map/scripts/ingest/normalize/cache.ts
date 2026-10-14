@@ -18,6 +18,9 @@ export function normalizationInputHash(
             provider: ingestConfig.llm.provider,
             baseUrl: ingestConfig.llm.baseUrl,
             ...chatRequestSettings(NORMALIZATION_MAX_OUTPUT_TOKENS),
+            // Admission priority does not change semantic output. Keep the original
+            // serialized value so switching tiers preserves existing cache hashes.
+            service_tier: "default",
           },
         }),
   });
