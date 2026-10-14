@@ -65,11 +65,13 @@ export interface ChatResult {
   latencyMs: number;
   reasoningTokens?: number | null;
   providerCallId?: string;
+  /** Null when the API does not report which tier actually served the request. */
+  serviceTier?: string | null;
 }
 
 /**
- * Fireworks standard serverless prices per 1M tokens
- * (https://docs.fireworks.ai/serverless/pricing, checked 2026-10-13).
+ * Fireworks standard serverless prices per 1M tokens; Priority is 1.25x for these models
+ * (https://docs.fireworks.ai/serverless/pricing, checked 2026-10-14).
  * Used only when the API omits `usage.estimated_cost`.
  */
 const FIREWORKS_USD_PER_MTOK: Record<
@@ -88,9 +90,10 @@ const FIREWORKS_USD_PER_MTOK: Record<
   },
 };
 
-/** Non-secret settings shared by the request journal and normalization cache identity. */
+/** Non-secret wire settings; the normalization cache canonicalizes admission tier separately. */
 export function chatRequestSettings(maxTokens = 1024) {
-  const { provider, model, baseUrl, thinkingBudgetTokens } = ingestConfig.llm;
+  const { provider, model, baseUrl, thinkingBudgetTokens, serviceTier } =
+    ingestConfig.llm;
   if (
     provider !== "fireworks" ||
     baseUrl !== "https://api.fireworks.ai/inference/v1"
@@ -120,7 +123,7 @@ export function chatRequestSettings(maxTokens = 1024) {
     // Do not also send `thinking`: Fireworks rejects both controls together.
     reasoning_effort: thinkingBudgetTokens,
     max_tokens: maxTokens + thinkingBudgetTokens,
-    service_tier: "default" as const,
+    service_tier: serviceTier,
     context_length_exceeded_behavior: "error" as const,
   };
 }
@@ -224,7 +227,11 @@ function tokenCount(value: unknown): number | null {
   return validTokens(value) ? value : null;
 }
 
-function estimateCostUsd(usage: ProviderUsage, model: string): number | null {
+function estimateCostUsd(
+  usage: ProviderUsage,
+  model: string,
+  serviceTier: string,
+): number | null {
   if (
     typeof usage.estimated_cost === "number" &&
     Number.isFinite(usage.estimated_cost) &&
@@ -236,6 +243,9 @@ function estimateCostUsd(usage: ProviderUsage, model: string): number | null {
     ? FIREWORKS_USD_PER_MTOK[model]
     : undefined;
   if (!rates) return null;
+  const multiplier =
+    serviceTier === "priority" ? 1.25 : serviceTier === "default" ? 1 : null;
+  if (multiplier === null) return null;
   const prompt = usage.prompt_tokens;
   const completion = usage.completion_tokens;
   if (!validTokens(prompt) || !validTokens(completion)) return null;
@@ -243,9 +253,10 @@ function estimateCostUsd(usage: ProviderUsage, model: string): number | null {
   if (!validTokens(cached) || cached > prompt) return null;
   const uncached = prompt - cached;
   return (
-    (uncached * rates.input +
-      cached * rates.cachedInput +
-      completion * rates.output) /
+    (multiplier *
+      (uncached * rates.input +
+        cached * rates.cachedInput +
+        completion * rates.output)) /
     1_000_000
   );
 }
@@ -288,6 +299,7 @@ async function completeChatUncontrolled(
       const raw = await res.text();
       let body: {
         model?: string;
+        service_tier?: string;
         choices?: {
           message?: { content?: string };
           finish_reason?: string | null;
@@ -333,6 +345,8 @@ async function completeChatUncontrolled(
         content: typeof content === "string" ? content : "",
         model: body.model ?? model,
         finishReason,
+        serviceTier:
+          typeof body.service_tier === "string" ? body.service_tier : null,
         usage: {
           promptTokens: tokenCount(body.usage?.prompt_tokens),
           cachedTokens: tokenCount(
@@ -342,7 +356,11 @@ async function completeChatUncontrolled(
           totalTokens: tokenCount(body.usage?.total_tokens),
           // completion_tokens already includes thinking: do not bill it twice.
           estimatedCost: body.usage
-            ? estimateCostUsd(body.usage, body.model ?? model)
+            ? estimateCostUsd(
+                body.usage,
+                body.model ?? model,
+                body.service_tier ?? request.service_tier,
+              )
             : null,
         },
         latencyMs: Date.now() - started,
@@ -414,6 +432,8 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
     "fireworks",
     ctx.stage,
     ingestConfig.llm.model,
+    undefined,
+    ingestConfig.llm.serviceTier,
   );
   const queued = Date.now();
   let headers: Headers | undefined,
@@ -451,6 +471,7 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
       cost: result.usage.estimatedCost,
       status,
       headers,
+      serviceTier: result.serviceTier,
     });
     return { ...result, providerCallId: call?.id };
   } catch (error) {
@@ -470,6 +491,7 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
       completionTokens: result?.usage.completionTokens,
       reasoningTokens: result?.reasoningTokens,
       cost: result?.usage.estimatedCost,
+      serviceTier: result?.serviceTier,
     });
     throw error;
   }

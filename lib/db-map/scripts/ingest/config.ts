@@ -26,6 +26,9 @@ export function readLlmConfig(variables: NodeJS.ProcessEnv = process.env) {
   const model =
     variables.LLM_MODEL || "accounts/fireworks/models/glm-5p3-flash";
   const deepSeek = model === "accounts/fireworks/models/deepseek-v4p1-flash";
+  const serviceTier = variables.LLM_SERVICE_TIER || "priority";
+  if (serviceTier !== "default" && serviceTier !== "priority")
+    throw new Error('LLM_SERVICE_TIER must be "default" or "priority"');
   const thinkingBudgetTokens = Number(
     variables.LLM_THINKING_BUDGET_TOKENS || (deepSeek ? 2048 : 256),
   );
@@ -40,6 +43,7 @@ export function readLlmConfig(variables: NodeJS.ProcessEnv = process.env) {
   return {
     provider: variables.LLM_PROVIDER || "fireworks",
     model,
+    serviceTier,
     baseUrl: (
       variables.LLM_BASE_URL || "https://api.fireworks.ai/inference/v1"
     ).replace(/\/+$/, ""),

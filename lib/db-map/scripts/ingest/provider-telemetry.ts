@@ -8,12 +8,14 @@ export interface ProviderCall {
   started: number;
   queued: number;
   contexts: Context[];
+  serviceTier?: string;
 }
 export async function beginProviderCall(
   provider: string,
   operation: string,
   model: string | null,
   contexts: Context[] = currentAttempt() ? [currentAttempt()!] : [],
+  serviceTier?: string,
 ): Promise<ProviderCall | null> {
   const ctx = contexts[0];
   if (!ctx) return null;
@@ -30,14 +32,17 @@ export async function beginProviderCall(
       operation,
       model,
       contexts.length,
-      JSON.stringify(llmLimiter.snapshot()),
+      JSON.stringify({
+        ...llmLimiter.snapshot(),
+        ...(serviceTier ? { service_tier_requested: serviceTier } : {}),
+      }),
     ],
   );
   await ctx.execution.db.query(
     `INSERT INTO research_ingest_provider_call_items(call_id,attempt_id) SELECT $1,unnest($2::uuid[]) ON CONFLICT DO NOTHING`,
     [id, contexts.map((x) => x.attemptId)],
   );
-  return { id, context: ctx, started, queued: started, contexts };
+  return { id, context: ctx, started, queued: started, contexts, serviceTier };
 }
 export function quotaHeaders(headers: Headers) {
   return Object.fromEntries(
@@ -59,6 +64,7 @@ export async function endProviderCall(
     status?: number;
     headers?: Headers;
     error?: unknown;
+    serviceTier?: string | null;
   },
 ) {
   if (!call) return;
@@ -83,7 +89,15 @@ export async function endProviderCall(
       result.cost ?? null,
       result.status ?? null,
       JSON.stringify(result.headers ? quotaHeaders(result.headers) : {}),
-      JSON.stringify(llmLimiter.snapshot()),
+      JSON.stringify({
+        ...llmLimiter.snapshot(),
+        ...(call.serviceTier
+          ? {
+              service_tier_requested: call.serviceTier,
+              service_tier_returned: result.serviceTier ?? null,
+            }
+          : {}),
+      }),
       result.error ? JSON.stringify(errorDetails(result.error)) : null,
     ],
   );

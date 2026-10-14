@@ -9,6 +9,7 @@ import {
   type RecoveryEvent,
 } from "./provider-recovery.js";
 import { completeChat, LlmError, retryAfterMs } from "./providers/llm.js";
+import { ingestConfig, readLlmConfig } from "./config.js";
 
 function fixture() {
   let now = 0;
@@ -304,6 +305,8 @@ test("HTML 429 retains status and cooldown without hidden managed transport retr
 test("completeChat posts to Fireworks with bounded GLM thinking and current pricing", async () => {
   const original = globalThis.fetch;
   const oldKey = process.env.FIREWORKS_API_KEY;
+  const oldConfig = { ...ingestConfig.llm };
+  Object.assign(ingestConfig.llm, readLlmConfig({}));
   process.env.FIREWORKS_API_KEY = "fixture";
   let request: { url: string; init: RequestInit } | undefined;
   globalThis.fetch = async (input, init) => {
@@ -334,7 +337,7 @@ test("completeChat posts to Fireworks with bounded GLM thinking and current pric
     assert.equal(body.model, "accounts/fireworks/models/glm-5p3-flash");
     assert.equal(body.reasoning_effort, 256);
     assert.equal(body.max_tokens, 1280);
-    assert.equal(body.service_tier, "default");
+    assert.equal(body.service_tier, "priority");
     assert.equal(body.thinking, undefined);
     assert.equal(
       (request.init.headers as Record<string, string>).Authorization,
@@ -344,10 +347,11 @@ test("completeChat posts to Fireworks with bounded GLM thinking and current pric
     assert.equal(result.usage.cachedTokens, 10);
     assert.equal(
       result.usage.estimatedCost,
-      (90 * 0.15 + 10 * 0.03 + 20 * 0.5) / 1_000_000,
+      (1.25 * (90 * 0.15 + 10 * 0.03 + 20 * 0.5)) / 1_000_000,
     );
   } finally {
     globalThis.fetch = original;
+    Object.assign(ingestConfig.llm, oldConfig);
     if (oldKey === undefined) delete process.env.FIREWORKS_API_KEY;
     else process.env.FIREWORKS_API_KEY = oldKey;
   }
