@@ -1489,8 +1489,10 @@ export async function runOrchestration(
       false,
     );
     await db.query(
-      "UPDATE research_ingest_runs SET verified_at=now() WHERE id=$1",
-      [ctx.runId],
+      `UPDATE research_ingest_runs SET verified_at=now(),
+       counters=jsonb_set(COALESCE(counters,'{}'::jsonb),'{verification}',
+         jsonb_build_object('pipeline_versions',$2::jsonb,'execution_id',$3::text)) WHERE id=$1`,
+      [ctx.runId, JSON.stringify(PIPELINE_VERSIONS), ex.id],
     );
   } catch (error) {
     finalStatus = "failed";

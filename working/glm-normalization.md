@@ -132,3 +132,24 @@ the two smoke records have fresh verified downstream output.
 
 No schema migration or credential change is needed. The primary checkout's
 unrelated dashboard and generated Next.js edits are preserved.
+
+## PR cleanup and output repair — 2026-10-14
+
+The full execution stopped at 08:58 UTC: record `124071` returned malformed matching JSON.
+Attempt `5680110e-14c0-4e54-ae17-010e19585065` failed after an HTTP 200 response; five earlier
+matches were quarantined after output truncation. Completed normalizations and record proofs
+remain intact; this is not whole-file completion. Raw evidence stays in the private journals.
+
+The PR review repair gives matching a strict two-field output contract, deterministic validation,
+and exactly one contextual output repair with a larger bound. Normalization also repairs an
+empty/truncated final answer once. Invalid responses remain auditable; auth/database/transport
+errors are not mistaken for malformed-output repairs. Provider defaults and concurrency remain
+the reviewed GLM settings; model replacement is a separate quality decision.
+
+Successful final verification now records its effective version in `counters.verification`,
+so inventory and the queue can recognize a compatible resumed full run while retaining its
+original version provenance. The focused provider-free integration asserts completion and
+unchanged artifact/cohort IDs, and the mocked repair tests forbid a third request.
+
+No full import was restarted during PR cleanup. The five existing quarantines need audited
+retry after matching is validated; ordinary resume only requeues the paused terminal record.

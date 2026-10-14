@@ -4,7 +4,7 @@ import {
   shellQuote,
   type Evidence,
 } from "../lib/ingestion/assessment.js";
-import { PIPELINE_VERSIONS } from "../scripts/ingest/pipeline-versions.js";
+import { PIPELINE_VERSIONS, resumePipelineUpgrade } from "../scripts/ingest/pipeline-versions.js";
 import {
   assertValidCategory,
   listCategorySlugs,
@@ -30,7 +30,8 @@ WITH current_versions AS (
   FROM current_versions v JOIN research_ingest_runs r ON r.source_file_version_id=v.id
   JOIN research_ingest_inventory i ON i.id=v.inventory_id AND i.category_slug=r.category_slug
   JOIN research_ingest_run_items ri ON ri.run_id=r.id
-  WHERE r.managed AND r.status='succeeded' AND r.verified_at IS NOT NULL AND r.pipeline_versions=$1::jsonb
+  WHERE r.managed AND r.status='succeeded' AND r.verified_at IS NOT NULL
+    AND COALESCE(r.counters->'verification'->'pipeline_versions',r.pipeline_versions)=$1::jsonb
   GROUP BY v.inventory_id,ri.observation_id
 ), record_verified AS (
  SELECT v.inventory_id,rv.observation_id,max(rv.verified_at) AS verified_at
@@ -96,7 +97,8 @@ SELECT i.*,
   EXISTS(SELECT 1 FROM current_versions v WHERE v.inventory_id=i.id AND v.status='complete') AS extraction_complete,
   (SELECT max(v.record_count) FROM current_versions v WHERE v.inventory_id=i.id AND v.status='complete') AS source_rows,
   EXISTS(SELECT 1 FROM current_versions v JOIN research_ingest_runs r ON r.source_file_version_id=v.id
-    WHERE v.inventory_id=i.id AND r.managed AND r.status='succeeded' AND r.verified_at IS NOT NULL AND r.pipeline_versions=$1::jsonb
+    WHERE v.inventory_id=i.id AND r.managed AND r.status='succeeded' AND r.verified_at IS NOT NULL
+      AND COALESCE(r.counters->'verification'->'pipeline_versions',r.pipeline_versions)=$1::jsonb
       AND r.options->>'limit' IS NULL AND r.options->>'record' IS NULL AND COALESCE((r.options->>'shadow')::boolean,false)=false
       AND r.verified_at>=COALESCE((SELECT max(e.proof_changed_at) FROM evidence e WHERE e.inventory_id=i.id),'-infinity'::timestamptz)) AS global_verified,
   COALESCE(c.records,0) AS records,COALESCE(c.invalid,0) AS invalid,COALESCE(c.normalized,0) AS normalized,
@@ -122,7 +124,7 @@ SELECT i.*,
     LEFT JOIN LATERAL (SELECT e.started_at,e.heartbeat_at FROM research_ingest_executions e
       WHERE e.run_id=r.id ORDER BY e.started_at DESC LIMIT 1) e ON true
     WHERE v.inventory_id=i.id AND r.managed AND r.category_slug=i.category_slug
-      AND r.pipeline_versions=$1::jsonb AND r.status NOT IN ('succeeded','cancelled')
+      AND r.status NOT IN ('succeeded','cancelled')
       AND r.options->>'limit' IS NULL AND r.options->>'record' IS NULL
       AND COALESCE((r.options->>'shadow')::boolean,false)=false
       AND COALESCE((r.options->>'retryFailed')::boolean,false)=false
@@ -181,15 +183,18 @@ export async function getInventory(
           : null;
       // A later smoke selection must not hide unfinished full-file work.
       const r = file.continuation_run ?? file.latest_run;
+      let compatible = false;
+      if (r) {
+        try { resumePipelineUpgrade(r.pipeline_versions); compatible = true; }
+        catch { /* Incompatible versions remain inspectable but cannot advertise resume. */ }
+      }
       const resume =
         r &&
         r.file_sha256 === file.file_sha256 &&
         r.extractor_version === file.extractor_version &&
         r.category_slug === file.category_slug &&
         r.managed &&
-        Object.entries(PIPELINE_VERSIONS).every(
-          ([k, v]) => r.pipeline_versions[k] === v,
-        ) &&
+        compatible &&
         start &&
         !["succeeded", "cancelled"].includes(r.status)
           ? `${commandPrefix} --resume ${r.id} --unlimited`

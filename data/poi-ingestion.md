@@ -434,6 +434,17 @@ Nested captured data remains in immutable raw observations and may support such
 additional scalar attributes. Malformed attribute/evidence arrays fail validation
 and use the existing bounded JSON repair path.
 
+Unusable normalization output (invalid JSON/schema, empty final answer or truncation) gets
+one contextual repair; truncated/empty output uses a bounded larger final-answer allowance.
+Matching now requests a strict two-field JSON schema (`same_place`, `reason`) and validates
+both fields in code. It allows 512 final-answer tokens initially and 1,024 for its one output
+repair, plus the configured thinking allowance. A second invalid match becomes an explicit
+record validation issue, never an implicit match decision. Authentication, unsupported-schema,
+database and transport failures are not output repairs; existing transient recovery remains
+separate. Invalid matching replies are retained in the private execution journal with provider
+call IDs; every real managed request uses the shared provider telemetry and limiter.
+Use `pnpm --filter @lib/db-map ingest:test-output-repair` for provider-free failure injection.
+
 Provider-backed normalization cache identity includes provider, endpoint, model,
 thinking allowance, output allowance and request settings. Changes produce a new
 cache identity for unfinished/newly selected records. Managed resume still preserves
@@ -446,6 +457,11 @@ requires a new run. Use an explicit new reprocessing run
 only when a reviewed quality issue requires that extra work. Deterministic-only
 cache keys retain their existing shape. Normalization request rows record the full
 non-secret request body, including effective thinking and output limits.
+
+Final successful scope verification records its effective pipeline versions and execution ID
+in `research_ingest_runs.counters.verification`. Inventory uses this verification version for
+whole-file proof while preserving the original run/artifact versions. Compatible old full
+runs remain visible as resumable work; incompatible versions never advertise a resume command.
 
 Run `pnpm --filter @lib/db-map ingest:test-llm` and
 `pnpm --filter @lib/db-map ingest:test-provider-recovery` for mocked provider checks.

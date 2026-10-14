@@ -314,7 +314,7 @@ async function finishRequest(
   );
 }
 
-async function callNormalizer(
+export async function callNormalizer(
   db: Pool,
   row: NormalizeRow,
   inputHash: string,
@@ -352,6 +352,7 @@ async function callNormalizer(
   );
   let result: ChatResult | null = null;
   let parsed: unknown;
+  let validating = false;
   try {
     try {
       result = await completeChat({
@@ -378,17 +379,22 @@ async function callNormalizer(
         ...fallbackOptions,
       });
     }
+    validating = true;
     parsed = parseJsonContent(result.content);
     const output = parseNormalizationOutput(parsed, row.id);
+    validating = false;
     await finishRequest(db, requestId, result, parsed);
     return { output, result, requestId };
   } catch (error) {
     await finishRequest(db, requestId, result, parsed, error);
-    if (!result?.content || error instanceof LlmError) throw error;
+    const incompleteOutput = error instanceof LlmError && !error.status && !error.retryable &&
+      /Completion truncated|Empty final/.test(error.message) && error.result;
+    result ??= incompleteOutput ? error.result ?? null : null;
+    if (!result || (!validating && !incompleteOutput)) throw error;
 
     const repairMessages: ChatMessage[] = [
       ...messages,
-      { role: "assistant", content: result.content },
+      ...(result.content ? [{ role: "assistant" as const, content: result.content }] : []),
       {
         role: "user",
         content:
@@ -396,12 +402,13 @@ async function callNormalizer(
           `Return one corrected JSON object matching the schema. record.record_id must be exactly ${row.id}, not source_record_id. Do not explain.`,
       },
     ];
+    const repairOptions = { ...requestOptions, maxTokens: incompleteOutput ? NORMALIZATION_MAX_OUTPUT_TOKENS * 2 : requestOptions.maxTokens };
     const repairId = await insertRequest(
       db,
       row,
       inputHash,
       profileVersion,
-      buildChatRequest({ ...requestOptions, messages: repairMessages }),
+      buildChatRequest({ ...repairOptions, messages: repairMessages }),
       requestId,
     );
     let repairResult: ChatResult | null = null;
@@ -410,8 +417,8 @@ async function callNormalizer(
       repairResult = await completeChat({
         retries: currentAttempt() ? 0 : undefined,
         messages: repairMessages,
-        maxTokens: requestOptions.maxTokens,
-        responseFormat: requestOptions.responseFormat,
+        maxTokens: repairOptions.maxTokens,
+        responseFormat: repairOptions.responseFormat,
       });
       repairParsed = parseJsonContent(repairResult.content);
       const repaired = parseNormalizationOutput(repairParsed, row.id);

@@ -36,6 +36,7 @@
     "ingest:normalize": "tsx scripts/ingest/normalize.ts",
     "ingest:normalize:golden": "tsx scripts/ingest/normalize/golden.ts",
     "ingest:test-normalization": "tsx --test scripts/ingest/normalize/attributes.test.ts scripts/ingest/pipeline-versions.test.ts",
+    "ingest:test-output-repair": "tsx --test scripts/ingest/match/llm.test.ts scripts/ingest/normalize/output-repair.test.ts",
     "ingest:test-normalization:integration": "tsx scripts/ingest/pipeline-versions.integration.ts",
     "ingest:reflow": "tsx scripts/ingest/reflow.ts",
     "ingest:geocode": "tsx scripts/ingest/geocode.ts",

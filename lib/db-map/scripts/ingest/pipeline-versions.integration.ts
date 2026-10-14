@@ -2,16 +2,19 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { resolve, relative } from "node:path";
 import { getDb } from "../../lib/db/postgres.js";
 import { runOrchestration } from "./orchestrator.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
-import { POI_ROOT } from "./source-file.js";
+import { POI_ROOT, REPO_ROOT, hashSourceFile } from "./source-file.js";
+import { getInventory } from "../../sql/ingestion-inventory.js";
+import { queueItem } from "../../lib/ingestion/queue.js";
 
 const db = getDb();
 const slug = `glm_resume_test_${randomUUID().replaceAll("-", "")}`;
 const dir = await mkdtemp(resolve(POI_ROOT, "glm-resume-test-"));
 const file = resolve(dir, `${slug}.json`);
+let inventoryId: string | undefined;
 try {
   await writeFile(
     file,
@@ -27,7 +30,17 @@ try {
     shadow: false,
     retryFailed: false,
   };
-  await runOrchestration(db, { ...opts, limit: 1, stopAfter: "normalize" });
+  const hash = await hashSourceFile(file);
+  inventoryId = (
+    await db.query(
+      `INSERT INTO research_ingest_inventory(logical_path,format,file_sha256,byte_size,source_slug,category_slug,extractor_version,disposition)
+    VALUES($1,'json',$2,$3,$4,'campground','generic-v1','import') RETURNING id`,
+      [relative(REPO_ROOT, file), hash.sha256, hash.byteSize, slug],
+    )
+  ).rows[0].id;
+  const inventory = async () =>
+    (await getInventory(db, { file: relative(REPO_ROOT, file) })).files[0]!;
+  await runOrchestration(db, { ...opts, stopAfter: "normalize" });
   process.exitCode = 0;
   const run = (
     await db.query(
@@ -57,6 +70,11 @@ try {
   await db.query(
     "UPDATE research_ingest_runs SET pipeline_versions=$2::jsonb WHERE id=$1",
     [run.id, JSON.stringify(legacy)],
+  );
+  assert.equal(
+    (await inventory()).resume_run?.id,
+    run.id,
+    "compatible old full run must remain resumable in the dashboard",
   );
   await runOrchestration(db, { ...opts, resume: run.id });
   const after = (
@@ -91,6 +109,14 @@ try {
     from: legacy,
     to: PIPELINE_VERSIONS,
   });
+  const complete = await inventory();
+  assert.equal(
+    complete.coverage,
+    "complete",
+    "audited current verification must recognize the upgraded full run",
+  );
+  assert.equal(complete.verified, 1);
+  assert.equal(queueItem(complete).action, "complete");
   await writeFile(file, "[]");
   await assert.rejects(
     runOrchestration(db, { ...opts, resume: run.id }),
@@ -129,6 +155,10 @@ try {
     ]);
     await db.query("DELETE FROM research_sources WHERE id=$1", [source.id]);
   }
+  if (inventoryId)
+    await db.query("DELETE FROM research_ingest_inventory WHERE id=$1", [
+      inventoryId,
+    ]);
   await rm(dir, { recursive: true, force: true });
   await db.end();
   process.exitCode = 0;

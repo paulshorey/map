@@ -177,6 +177,13 @@ export class Execution {
       );
     }
   }
+  /** Raw unusable model output stays in the private ignored execution journal. */
+  recordProviderOutputFailure(details: {
+    operation: string; pass: number; provider_call_id?: string;
+    content: string; finish_reason: string | null; error: string;
+  }) {
+    this.journal("provider_output_invalid", details);
+  }
 
   static async start(
     db: Pool,
