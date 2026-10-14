@@ -13,8 +13,8 @@ pnpm dev:ingestion
 Open **http://127.0.0.1:5001**. `PORT` or `INGESTION_DASHBOARD_PORT` overrides the port.
 The server binds only to loopback. Keep it local; this is not an authenticated hosted admin app.
 The dashboard supports iframe previews, including the local-dev Apps view. Its CSP restricts
-scripts, styles and API connections to the dashboard's own origin without restricting parent
-frames. API requests still require the dashboard's exact local Host and same-origin checks;
+scripts, styles and API connections to the dashboard's own origin and permits trusted parent
+frames as described below. API requests still require the dashboard's exact local Host and same-origin checks;
 mutations also require JSON and the dashboard client header. Reload the parent page after
 changing preview settings so its frame policy includes the dashboard address.
 
