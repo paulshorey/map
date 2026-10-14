@@ -13,6 +13,19 @@ pnpm dev:ingestion
 Open **http://127.0.0.1:5001**. `PORT` or `INGESTION_DASHBOARD_PORT` overrides the port.
 The server binds only to loopback. Keep it local; this is not an authenticated hosted admin app.
 
+Iframe previews allow same-origin and HTTP loopback parents (`127.0.0.1` and `localhost`)
+on any port, including local-dev at port 8000. Other sites cannot frame the dashboard.
+Loopback ports remain flexible for local controllers and compatible with local-dev's framing
+probe. The Host/origin checks and JSON mutation requirements still apply inside an iframe.
+To trust another controller, set `INGESTION_FRAME_ORIGINS` to a whitespace-separated list of
+exact HTTP(S) origins before starting the dashboard; for example,
+`https://pauls-macbook-pro.taila9173b.ts.net:8000`. Wildcards, credentials, paths, queries and
+fragments are rejected at startup. Do not use a whole-tailnet wildcard.
+The current local-dev ingestion service has `publish: false` and no private proxy URL, so its
+private Tailscale view cannot preview this loopback-only service. Adding a trusted parent does
+not enable a proxy or change API Host/origin admission. Private access needs a separate,
+reviewed proxy/authentication integration.
+
 The inventory persists file hashes/history, missing files, classifications, notes and priorities.
 A scan streams and hashes JSON/JSONL/CSV/KML/KMZ files, without parsing all their records,
 calling providers, or launching ingestion. A failed directory traversal does not mark files
