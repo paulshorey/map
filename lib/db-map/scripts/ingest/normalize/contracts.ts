@@ -1,4 +1,4 @@
-export const NORMALIZER_VERSION = "hybrid-v5";
+export const NORMALIZER_VERSION = "hybrid-v6";
 export const PROMPT_VERSION = "poi-normalize-v4";
 export const SCHEMA_VERSION = "poi-normalize-schema-v1";
 export const EXAMPLES_VERSION = "poi-normalize-examples-v1";

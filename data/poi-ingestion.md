@@ -426,7 +426,8 @@ still have the limits described in the budget table above.
 
 Captured primitive attributes are authoritative in the resolver even if the
 model omits or contradicts them. Zero and false survive. Known rating, review-count,
-price and campground boolean strings are typed by code; opaque IDs and other text
+price, vehicle-length/site-count and campground boolean strings are typed by code;
+hookup amperage, big-rig/pull-through/back-in flags are included. Opaque IDs and other text
 remain intact. Each retained captured attribute receives its exact source path.
 Additional model attributes need an exact primitive value at a cited input path;
 the evidence field must identify that attribute key (`attributes.<key>` or the key itself).
@@ -459,9 +460,9 @@ thinking allowance, output allowance and request settings. Changes produce a new
 cache identity for unfinished/newly selected records. Managed resume still preserves
 already completed checkpoints and their original provenance; it does not rewrite
 the entire prior run using a new provider. Current resolver/prompt versions are
-hybrid-v5 / poi-normalize-v4; both are in the cache key, so looser interim cache results
+hybrid-v6 / poi-normalize-v4; both are in the cache key, so older resolver cache results
 cannot be reused for pending work. Exact hybrid-v3 / poi-normalize-v2 and interim
-hybrid-v4 / poi-normalize-v3 checkpoints can resume when every other pipeline
+hybrid-v4 / poi-normalize-v3 and hybrid-v5 / poi-normalize-v4 checkpoints can resume when every other pipeline
 version matches. The execution options audit both version sets while the original
 run and artifacts retain their original versions. Other version drift still
 requires a new run. Use an explicit new reprocessing run

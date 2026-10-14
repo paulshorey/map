@@ -13,8 +13,8 @@ is `codex/glm-normalization`, based on the active scheduler fixes in PR #40.
 - Source primitive attributes survive omissions and conflicting model output.
   Known numeric and campground boolean fields are typed safely. Additional model
   attributes require matching scalar evidence. Opaque IDs and text remain intact.
-- Version the normalizer/prompt as hybrid-v5 / poi-normalize-v4 after review tightened
-  additional-attribute evidence. Exact previous v3/v2 and interim v4/v3 pairs can resume
+- Version the normalizer/prompt as hybrid-v6 / poi-normalize-v4 after Dyrt validation completed
+  the known-scalar type map. Exact previous v3/v2, v4/v3 and v5/v4 pairs can resume
   with every other pipeline version unchanged.
   Execution options audit the upgrade; completed outputs keep their provenance.
 - GLM standard rates are used only for that exact model. Explicit DeepSeek
@@ -184,3 +184,9 @@ their original behavior. Mocked tests verify both paths and forbid another outpu
 Live Dyrt validation is pending: use bounded new cohorts under the supervisor smoke deadline,
 including the original matching-failure record and representative existing source records.
 Retain the original full run, five quarantines, artifacts and private failure evidence.
+
+The initial three-record validation passed full scope and lineage verification. It exposed
+safe but incomplete typing for known Dyrt hookup/site/vehicle attributes. Those booleans and
+numbers are now formatted by code, while opaque IDs remain text. Resolver v6 gives pending
+work a fresh cache identity; reviewed previous checkpoints remain compatible. Revalidate the
+same three records after this correction rather than expanding the sample or draining work.

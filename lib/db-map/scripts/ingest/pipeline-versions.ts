@@ -21,13 +21,14 @@ export const PIPELINE_VERSIONS = {
 /** Only reviewed checkpoint versions; older proofs also require a fresh full-run audit in inventory. */
 export function compatibleCheckpointVersions(): Record<string, string>[] {
   if (
-    PIPELINE_VERSIONS.normalizer !== "hybrid-v5" ||
+    PIPELINE_VERSIONS.normalizer !== "hybrid-v6" ||
     PIPELINE_VERSIONS.prompt !== "poi-normalize-v4"
   )
     return [];
   return [
     { ...PIPELINE_VERSIONS, normalizer: "hybrid-v3", prompt: "poi-normalize-v2" },
     { ...PIPELINE_VERSIONS, normalizer: "hybrid-v4", prompt: "poi-normalize-v3" },
+    { ...PIPELINE_VERSIONS, normalizer: "hybrid-v5", prompt: "poi-normalize-v4" },
   ];
 }
 
