@@ -1,3 +1,7 @@
+import {
+  hostInstallationId,
+  processStartIdentity,
+} from "./host-installation.js";
 /** Detached process owner. Healthy waiting/probes use no model; only terminal reporting may. */
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -194,7 +198,7 @@ async function tail(path: string) {
   }
 }
 
-async function evidence(job: Job) {
+export async function evidence(job: Job) {
   if (!job.run_id || !job.execution_id) return null;
   const db = await getDb().connect();
   try {
@@ -204,6 +208,9 @@ async function evidence(job: Job) {
       await db.query(
         `SELECT r.id,r.status,r.current_stage,r.stop_reason,left(r.fatal_error,1200) AS fatal_error,
     r.verified_at,e.status AS execution_status,e.heartbeat_at,e.options AS execution_options,
+    CASE WHEN e.error IS NOT NULL THEN jsonb_build_object('name',e.error->'name',
+      'message',left(e.error->>'message',1200),'code',e.error->'code','database',e.error->'database')
+      ELSE NULL END AS execution_error,
     CASE WHEN r.counters->'providerRecovery'->>'executionId'=e.id::text
       THEN r.counters->'providerRecovery' ELSE NULL END AS provider_recovery,
     (SELECT jsonb_build_object('requests',count(*),'estimated_cost_usd',COALESCE(sum(q.estimated_cost_usd),0),
@@ -213,6 +220,9 @@ async function evidence(job: Job) {
     extract(epoch FROM now()-e.heartbeat_at)::float AS heartbeat_age_seconds,
     (SELECT count(*)::int FROM research_ingest_run_items WHERE run_id=r.id) AS scope_records,
     (SELECT max(greatest(started_at,finished_at)) FROM research_ingest_attempts WHERE execution_id=e.id) AS last_progress_at
+    ,GREATEST((SELECT max(finished_at) FROM research_ingest_attempts WHERE execution_id=e.id AND status IN ('succeeded','reused','skipped')),
+       (SELECT max(last_attempt_at) FROM research_ingest_run_records WHERE run_id=r.id AND extract_state IN ('written','unchanged'))) AS last_committed_at
+    ,(SELECT COALESCE(jsonb_agg(t),'[]'::jsonb) FROM (SELECT stage,state,count(*)::int AS records FROM research_ingest_tasks WHERE run_id=r.id GROUP BY stage,state) t) AS task_counts
     FROM research_ingest_runs r JOIN research_ingest_executions e ON e.run_id=r.id
     WHERE r.id=$1 AND e.id=$2`,
         [job.run_id, job.execution_id],
@@ -223,12 +233,18 @@ async function evidence(job: Job) {
       await db.query(
         `SELECT stage,target_key,status,left(error->>'message',1200) AS error,
     error->'status' AS http_status,error->'retryable' AS retryable,error->'retryAfterMs' AS retry_after_ms,
+    error->>'code' AS error_code,error->'database' AS database,
     output->>'reason' AS reason,started_at,finished_at FROM research_ingest_attempts
     WHERE execution_id=$1 ORDER BY greatest(started_at,finished_at) DESC LIMIT 3`,
         [job.execution_id],
       )
     ).rows;
-    return { ...r, recent_attempts: attempts };
+    return {
+      ...r,
+      current_stage_meaning:
+        "Earliest unfinished stage in the cohort; use recent_attempts and execution_error for failure origin",
+      recent_attempts: attempts,
+    };
   } finally {
     await db.query("ROLLBACK").catch(() => undefined);
     db.release();
@@ -413,6 +429,7 @@ async function worker(id: string) {
     mode: 0o600,
   });
   job.supervisor_pid = process.pid;
+  job.supervisor_start = processStartIdentity();
   await saveJob(job);
   let serial = Promise.resolve();
   const persist = () => {
@@ -425,10 +442,11 @@ async function worker(id: string) {
     cwd: PACKAGE,
     log: jobPath(id, "worker.log"),
     timeoutMs: job.timeout_seconds === null ? null : job.timeout_seconds * 1000,
-    graceMs: 10_000,
+    graceMs: job.mode === "smoke" ? 10_000 : 210_000,
     healthIntervalMs: job.health_interval_seconds * 1000,
     onStart: async (pid) => {
       job.child_pid = pid;
+      job.child_start = processStartIdentity(pid);
       job.status = "running";
       await persist();
       if (process.send && process.connected)
@@ -456,6 +474,17 @@ async function worker(id: string) {
       await persist();
       const e = await evidence(job);
       if (!e) return "startup_not_registered_at_hourly_check";
+      job.last_health_evidence = {
+        observed_at: job.last_health_at,
+        run_id: job.run_id,
+        execution_id: job.execution_id,
+        last_committed_at: e.last_committed_at,
+        last_progress_at: e.last_progress_at,
+        heartbeat_age_seconds: e.heartbeat_age_seconds,
+        task_counts: e.task_counts,
+        provider_recovery: e.provider_recovery,
+      };
+      await persist();
       if (e.execution_status !== "running")
         return "worker_alive_after_terminal_execution";
       if (e.heartbeat_age_seconds > 120)
@@ -571,6 +600,7 @@ async function start(opts: ReturnType<typeof parseSupervisorArgs>) {
           : "runner",
     argv: opts.runArgs,
     host: hostname(),
+    host_id: hostInstallationId(),
     parent_thread: opts.parent || undefined,
     runner_model: opts.command === "watch" ? "external" : "gpt-5.6-luna",
     started_at: new Date().toISOString(),

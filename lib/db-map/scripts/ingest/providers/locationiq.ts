@@ -3,6 +3,10 @@
  * swapped for self-hosted Nominatim later without touching the geocode loop.
  */
 import { ingestConfig } from "../config.js";
+import { LlmError, retryAfterMs } from "./llm.js";
+import { currentAttempt } from "../execution.js";
+import { beginProviderCall, endProviderCall } from "../provider-telemetry.js";
+let nextStart = 0;
 
 export interface GeocodeHit {
   lat: number;
@@ -44,7 +48,7 @@ function precisionFrom(row: LocationIqRow): GeocodeHit["precision"] {
   return "point";
 }
 
-export class GeocodeError extends Error {}
+export class GeocodeError extends LlmError {}
 
 /**
  * Forward-geocode a free-text query. Returns null for a definitive "no result"
@@ -53,39 +57,84 @@ export class GeocodeError extends Error {}
  */
 export async function geocode(query: string): Promise<GeocodeHit | null> {
   const key = ingestConfig.geocoder.apiKey();
-  const url = `${BASE_URL}?key=${encodeURIComponent(key)}&q=${encodeURIComponent(
-    query,
-  )}&format=json&limit=1&normalizeaddress=1`;
-
-  let res: Response;
+  const call = await beginProviderCall(PROVIDER, "geocode", null),
+    queued = Date.now();
+  let headers: Headers | undefined,
+    status: number | undefined,
+    started = Date.now();
   try {
-    res = await fetch(url, { signal: AbortSignal.timeout(60_000) });
-  } catch (err) {
-    throw new GeocodeError(`Network error: ${(err as Error).message}`);
+    await new Promise((r) =>
+      setTimeout(r, Math.max(0, nextStart - Date.now())),
+    );
+    const ctx = currentAttempt();
+    if (ctx?.execution.stopped)
+      throw Object.assign(new Error("Geocode admission stopped"), {
+        code: "ingest_paused",
+      });
+    nextStart = Date.now() + 1000;
+    started = Date.now();
+    let res: Response;
+    try {
+      res = await fetch(
+        `${BASE_URL}?key=${encodeURIComponent(key)}&q=${encodeURIComponent(query)}&format=json&limit=1&normalizeaddress=1`,
+        {
+          signal: ctx
+            ? AbortSignal.any([
+                AbortSignal.timeout(60000),
+                ctx.execution.abortController.signal,
+              ])
+            : AbortSignal.timeout(60000),
+        },
+      );
+    } catch (error) {
+      throw new GeocodeError(
+        `Network error: ${(error as Error).message}`,
+        true,
+      );
+    }
+    headers = res.headers;
+    status = res.status;
+    if (status !== 404 && !res.ok)
+      throw new GeocodeError(
+        `Geocoder status ${status}`,
+        status === 429 || status >= 500,
+        status,
+        retryAfterMs(headers.get("retry-after")),
+      );
+    let hit: GeocodeHit | null = null;
+    if (status !== 404) {
+      const body = (await res.json()) as LocationIqRow[] | { error?: string };
+      if (!Array.isArray(body) && body.error !== "Unable to geocode")
+        throw new GeocodeError("Invalid geocoder response");
+      const row = Array.isArray(body) ? body[0] : undefined;
+      if (row) {
+        const lat = Number(row.lat),
+          lng = Number(row.lon);
+        if (
+          !Number.isFinite(lat) ||
+          !Number.isFinite(lng) ||
+          Math.abs(lat) > 90 ||
+          Math.abs(lng) > 180
+        )
+          throw new GeocodeError("Invalid geocoder coordinates");
+        hit = { lat, lng, precision: precisionFrom(row), provider: PROVIDER };
+      }
+    }
+    await endProviderCall(call, {
+      queueMs: started - queued,
+      latencyMs: Date.now() - started,
+      status,
+      headers,
+    });
+    return hit;
+  } catch (error) {
+    await endProviderCall(call, {
+      queueMs: started - queued,
+      latencyMs: Date.now() - started,
+      status,
+      headers,
+      error,
+    });
+    throw error;
   }
-
-  if (res.status === 404) {
-    // LocationIQ returns 404 "Unable to geocode" for no match → definitive miss.
-    return null;
-  }
-  if (res.status === 429) {
-    throw new GeocodeError("Rate limited (429)");
-  }
-  if (!res.ok) {
-    throw new GeocodeError(`Unexpected status ${res.status}`);
-  }
-
-  const body = (await res.json()) as LocationIqRow[] | { error?: string };
-  if (!Array.isArray(body)) {
-    // { error: "Unable to geocode" } shape → miss.
-    return null;
-  }
-  const row = body[0];
-  if (!row) return null;
-
-  const lat = Number(row.lat);
-  const lng = Number(row.lon);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-
-  return { lat, lng, precision: precisionFrom(row), provider: PROVIDER };
 }

@@ -162,7 +162,7 @@ test("authentication, validation, empty output and database errors do not enter 
   }
 });
 
-test("execution retry cap spans records", async () => {
+test("successful recoveries across records do not exhaust an unrelated lifetime allowance", async () => {
   const f = fixture();
   for (let i = 0; i < 100; i++) {
     let calls = 0;
@@ -175,7 +175,7 @@ test("execution retry cap spans records", async () => {
     f.run(async () => {
       throw new LlmError("busy", true, 429);
     }),
-    /execution_retry_limit/,
+    /record_retry_limit/,
   );
 });
 

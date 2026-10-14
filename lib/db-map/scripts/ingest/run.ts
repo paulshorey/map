@@ -62,6 +62,7 @@ export function parseArgs(argv: string[]): OrchestratorOptions {
       return next;
     };
     if (arg === "--resume") opts.resume = value();
+    else if (arg === "--llm-concurrency") opts.llmConcurrency = Number(value());
     else if (arg === "--record") opts.record = value();
     else if (arg === "--consolidate") opts.consolidate = true;
     else if (arg === "--dry-run") opts.dryRun = true;
@@ -146,6 +147,13 @@ export function parseArgs(argv: string[]): OrchestratorOptions {
     !["extract", "normalize", "all"].includes(opts.reprocess)
   )
     throw new Error("Only extract/normalize/all support forced reprocessing");
+  if (
+    opts.llmConcurrency !== undefined &&
+    (!Number.isSafeInteger(opts.llmConcurrency) ||
+      opts.llmConcurrency < 1 ||
+      opts.llmConcurrency > 16)
+  )
+    throw new Error("--llm-concurrency must be 1..16");
   return opts;
 }
 
@@ -153,6 +161,7 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const releaseAwake = opts.dryRun ? () => {} : await holdSystemAwake();
   try {
+    process.env.PG_POOL_MAX ||= "16";
     const db = getDb();
     try {
       await runOrchestration(db, opts);

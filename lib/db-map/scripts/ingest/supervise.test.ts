@@ -16,13 +16,13 @@ import {
   listJobs,
 } from "./supervisor-state.js";
 
-test("supervisor status checks local mDNS job PIDs", async () => {
+test("supervisor status checks exact local job PIDs", async () => {
   const id = randomUUID();
   await createJob({
     id,
     mode: "native",
     argv: [],
-    host: `${hostname().replace(/\.local$/i, "")}.local`,
+    host: hostname(),
     supervisor_pid: process.pid,
     child_pid: 2147483647,
     runner_model: "external",

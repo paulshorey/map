@@ -62,7 +62,13 @@
     "ingest:test-control:integration": "tsx scripts/ingest/control.integration.ts",
     "ingest:supervise": "tsx scripts/ingest/supervise.ts",
     "ingest:test-supervisor": "tsx --test scripts/ingest/supervisor-process.test.ts scripts/ingest/supervise.test.ts scripts/ingest/codex-notify.test.ts scripts/ingest/run-options.test.ts scripts/ingest/sleep-inhibitor.test.ts",
-    "ingest:test-supervisor:integration": "tsx scripts/ingest/supervisor.integration.ts"
+    "ingest:test-supervisor:integration": "tsx scripts/ingest/supervisor.integration.ts",
+    "ingest:overview": "tsx scripts/ingest/overview.ts",
+    "ingest:doctor": "tsx scripts/ingest/doctor.ts",
+    "ingest:issues": "tsx scripts/ingest/issues.ts",
+    "ingest:test-artifacts:integration": "tsx scripts/ingest/artifact-consistency.integration.ts",
+    "ingest:test-scheduler": "tsx --test scripts/ingest/database-telemetry.test.ts scripts/ingest/record-scheduler.test.ts scripts/ingest/concurrency.test.ts scripts/ingest/embedding-batcher.test.ts",
+    "ingest:quality": "tsx scripts/ingest/quality.ts"
   },
   "dependencies": {
     "csv-parse": "^7.0.1",

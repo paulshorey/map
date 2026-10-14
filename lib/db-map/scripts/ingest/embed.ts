@@ -13,6 +13,10 @@ import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { ingestConfig } from "./config.js";
 import { embedTexts, EmbedError } from "./providers/jina.js";
+import { artifactTransaction } from "./execution.js";
+import { canonicalLane } from "./concurrency.js";
+import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
+import { rebuildCanonicalPoi } from "./merge.js";
 import { stableHash } from "./hash.js";
 
 const DEFAULT_THROTTLE_MS = 200;
@@ -94,7 +98,7 @@ export function buildEmbedText(row: EmbedRow): string | null {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function writeEmbedding(
+export async function writeEmbedding(
   db: Pool,
   id: string,
   text: string,
@@ -105,8 +109,19 @@ async function writeEmbedding(
     model: ingestConfig.embeddings.model,
     dim: ingestConfig.embeddings.dim,
   });
-  await db.query(
-    `WITH artifact AS (
+  const linked = (
+    await db.query("SELECT canonical_poi_id FROM research_pois WHERE id=$1", [
+      id,
+    ])
+  ).rows[0]?.canonical_poi_id;
+  const activate = () =>
+    artifactTransaction(db, async (client) => {
+      if (linked)
+        await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [
+          CANONICAL_WRITER_LOCK,
+        ]);
+      const { rows } = await client.query(
+        `WITH artifact AS (
        INSERT INTO research_poi_embeddings (
        normalization_id, input_hash, model, model_version, embedding, activated_at
        )
@@ -119,9 +134,28 @@ async function writeEmbedding(
      )
      UPDATE research_pois SET content_embedding = $4,
        active_embedding_id = (SELECT id FROM artifact)
-     WHERE id = $1`,
-    [id, inputHash, ingestConfig.embeddings.model, vector],
-  );
+     WHERE id = $1 RETURNING active_embedding_id,canonical_poi_id`,
+        [id, inputHash, ingestConfig.embeddings.model, vector],
+      );
+      if (rows[0]?.canonical_poi_id) {
+        if (!linked)
+          throw Object.assign(
+            new Error("Canonical link changed during artifact activation"),
+            { code: "lineage_invalid" },
+          );
+        await rebuildCanonicalPoi(client, rows[0].canonical_poi_id, {
+          noLlm: true,
+        });
+      }
+      return {
+        value: undefined,
+        output: {
+          status: "succeeded",
+          embedding_id: rows[0].active_embedding_id,
+        },
+      };
+    });
+  await (linked ? canonicalLane.run(activate) : activate());
 }
 
 async function fetchRows(db: Pool, opts: CliOptions): Promise<EmbedRow[]> {

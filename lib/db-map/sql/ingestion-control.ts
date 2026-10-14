@@ -116,9 +116,9 @@ export async function requestStops(
   }
 }
 
-export async function workerEvidence(db: Pool) {
+export async function workerEvidence(db: Pool | PoolClient) {
   const workers = (
-    await db.query(`SELECT e.id AS execution_id,e.run_id,e.host,e.pid,e.status,
+    await db.query(`SELECT e.id AS execution_id,e.run_id,e.host,e.host_id,e.process_start,e.pid,e.status,
       e.started_at,e.heartbeat_at,r.current_stage,r.stop_requested,s.slug AS source,
       (e.heartbeat_at < now()-interval '30 seconds') AS heartbeat_stale
     FROM research_ingest_executions e JOIN research_ingest_runs r ON r.id=e.run_id

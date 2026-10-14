@@ -306,6 +306,9 @@ CREATE TABLE public.research_ingest_executions (
     finished_at timestamp with time zone,
     stop_reason text,
     error jsonb,
+    host_id uuid,
+    process_start text,
+    scheduler_version integer DEFAULT 1 NOT NULL,
     CONSTRAINT research_ingest_executions_status_check CHECK ((status = ANY (ARRAY['running'::text, 'succeeded'::text, 'paused'::text, 'partial'::text, 'failed'::text, 'interrupted'::text, 'waiting_budget'::text])))
 );
 
@@ -368,6 +371,26 @@ ALTER TABLE public.research_ingest_inventory_edits ALTER COLUMN id ADD GENERATED
 
 
 --
+-- Name: research_ingest_inventory_scans; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_inventory_scans (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    host_id uuid NOT NULL,
+    checkout text NOT NULL,
+    git_commit text,
+    started_at timestamp with time zone DEFAULT clock_timestamp() NOT NULL,
+    finished_at timestamp with time zone,
+    status text DEFAULT 'running'::text NOT NULL,
+    discovered integer,
+    missing integer,
+    errors jsonb DEFAULT '[]'::jsonb NOT NULL,
+    error text,
+    CONSTRAINT research_ingest_inventory_scans_status_check CHECK ((status = ANY (ARRAY['running'::text, 'succeeded'::text, 'failed'::text, 'busy'::text])))
+);
+
+
+--
 -- Name: research_ingest_inventory_versions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -377,6 +400,136 @@ CREATE TABLE public.research_ingest_inventory_versions (
     byte_size bigint NOT NULL,
     first_seen_at timestamp with time zone DEFAULT now() NOT NULL,
     last_seen_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: research_ingest_issue_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_issue_events (
+    id bigint NOT NULL,
+    issue_id uuid NOT NULL,
+    actor text NOT NULL,
+    action text NOT NULL,
+    reason text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_ingest_issue_events_action_check CHECK ((action = ANY (ARRAY['retry'::text, 'exclude'::text, 'resolved'::text]))),
+    CONSTRAINT research_ingest_issue_events_reason_check CHECK ((length(TRIM(BOTH FROM reason)) > 0))
+);
+
+
+--
+-- Name: research_ingest_issue_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.research_ingest_issue_events ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.research_ingest_issue_events_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: research_ingest_issues; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_issues (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    run_id uuid,
+    source_record_id text,
+    stage text,
+    code text NOT NULL,
+    scope text NOT NULL,
+    severity text NOT NULL,
+    message text NOT NULL,
+    evidence jsonb DEFAULT '{}'::jsonb NOT NULL,
+    retryable boolean DEFAULT false NOT NULL,
+    status text DEFAULT 'open'::text NOT NULL,
+    first_seen_at timestamp with time zone DEFAULT now() NOT NULL,
+    last_seen_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_ingest_issues_scope_check CHECK ((scope = ANY (ARRAY['record'::text, 'file'::text, 'source'::text, 'global'::text]))),
+    CONSTRAINT research_ingest_issues_severity_check CHECK ((severity = ANY (ARRAY['info'::text, 'warning'::text, 'blocking'::text]))),
+    CONSTRAINT research_ingest_issues_status_check CHECK ((status = ANY (ARRAY['open'::text, 'resolved'::text, 'excluded'::text])))
+);
+
+
+--
+-- Name: research_ingest_provider_call_items; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_provider_call_items (
+    call_id uuid NOT NULL,
+    attempt_id uuid NOT NULL
+);
+
+
+--
+-- Name: research_ingest_provider_calls; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_provider_calls (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    run_id uuid,
+    execution_id uuid,
+    provider text NOT NULL,
+    operation text NOT NULL,
+    model text,
+    records integer DEFAULT 1 NOT NULL,
+    status text DEFAULT 'started'::text NOT NULL,
+    started_at timestamp with time zone DEFAULT clock_timestamp() NOT NULL,
+    finished_at timestamp with time zone,
+    queue_ms integer,
+    latency_ms integer,
+    prompt_tokens integer,
+    cached_tokens integer,
+    completion_tokens integer,
+    reasoning_tokens integer,
+    estimated_cost_usd numeric,
+    http_status integer,
+    quota jsonb DEFAULT '{}'::jsonb NOT NULL,
+    concurrency jsonb DEFAULT '{}'::jsonb NOT NULL,
+    error jsonb
+);
+
+
+--
+-- Name: research_ingest_quality_reviews; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_quality_reviews (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    inventory_id uuid NOT NULL,
+    file_sha256 text NOT NULL,
+    pipeline_versions jsonb NOT NULL,
+    actor text NOT NULL,
+    decision text NOT NULL,
+    reason text NOT NULL,
+    sample_records text[] NOT NULL,
+    reviewed_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_ingest_quality_reviews_decision_check CHECK ((decision = ANY (ARRAY['accepted'::text, 'needs_work'::text]))),
+    CONSTRAINT research_ingest_quality_reviews_reason_check CHECK ((length(TRIM(BOTH FROM reason)) > 0)),
+    CONSTRAINT research_ingest_quality_reviews_sample_records_check CHECK ((cardinality(sample_records) > 0))
+);
+
+
+--
+-- Name: research_ingest_record_verifications; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_record_verifications (
+    run_id uuid NOT NULL,
+    source_record_id text NOT NULL,
+    execution_id uuid NOT NULL,
+    observation_id uuid NOT NULL,
+    output jsonb NOT NULL,
+    pipeline_versions jsonb NOT NULL,
+    outcome text NOT NULL,
+    verified_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_ingest_record_verifications_outcome_check CHECK ((outcome = ANY (ARRAY['ready'::text, 'non_poi'::text, 'operator_excluded'::text])))
 );
 
 
@@ -452,6 +605,29 @@ CREATE TABLE public.research_ingest_runs (
 
 
 --
+-- Name: research_ingest_tasks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_ingest_tasks (
+    run_id uuid NOT NULL,
+    source_record_id text NOT NULL,
+    stage text NOT NULL,
+    rank integer NOT NULL,
+    state text DEFAULT 'pending'::text NOT NULL,
+    execution_id uuid,
+    claim_token uuid,
+    attempt_id uuid,
+    input jsonb DEFAULT '{}'::jsonb NOT NULL,
+    output jsonb,
+    started_at timestamp with time zone,
+    finished_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_ingest_tasks_stage_check CHECK ((stage = ANY (ARRAY['normalize'::text, 'geocode'::text, 'embed'::text, 'match'::text, 'canonical'::text, 'verify'::text]))),
+    CONSTRAINT research_ingest_tasks_state_check CHECK ((state = ANY (ARRAY['pending'::text, 'running'::text, 'succeeded'::text, 'reused'::text, 'skipped'::text, 'quarantined'::text, 'waiting_budget'::text, 'paused'::text])))
+);
+
+
+--
 -- Name: research_match_decisions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -519,6 +695,7 @@ CREATE TABLE public.research_normalization_requests (
     completed_at timestamp with time zone,
     run_id uuid,
     ingest_attempt_id uuid,
+    provider_call_id uuid,
     CONSTRAINT research_normalization_requests_status_check CHECK ((status = ANY (ARRAY['started'::text, 'succeeded'::text, 'failed'::text, 'repaired'::text])))
 );
 
@@ -1042,11 +1219,75 @@ ALTER TABLE ONLY public.research_ingest_inventory
 
 
 --
+-- Name: research_ingest_inventory_scans research_ingest_inventory_scans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_inventory_scans
+    ADD CONSTRAINT research_ingest_inventory_scans_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: research_ingest_inventory_versions research_ingest_inventory_versions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.research_ingest_inventory_versions
     ADD CONSTRAINT research_ingest_inventory_versions_pkey PRIMARY KEY (inventory_id, file_sha256);
+
+
+--
+-- Name: research_ingest_issue_events research_ingest_issue_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_issue_events
+    ADD CONSTRAINT research_ingest_issue_events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_issues research_ingest_issues_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_issues
+    ADD CONSTRAINT research_ingest_issues_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_issues research_ingest_issues_run_id_source_record_id_stage_code_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_issues
+    ADD CONSTRAINT research_ingest_issues_run_id_source_record_id_stage_code_key UNIQUE (run_id, source_record_id, stage, code);
+
+
+--
+-- Name: research_ingest_provider_call_items research_ingest_provider_call_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_provider_call_items
+    ADD CONSTRAINT research_ingest_provider_call_items_pkey PRIMARY KEY (call_id, attempt_id);
+
+
+--
+-- Name: research_ingest_provider_calls research_ingest_provider_calls_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_provider_calls
+    ADD CONSTRAINT research_ingest_provider_calls_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_quality_reviews research_ingest_quality_reviews_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_quality_reviews
+    ADD CONSTRAINT research_ingest_quality_reviews_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_record_verifications research_ingest_record_verifications_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_record_verifications
+    ADD CONSTRAINT research_ingest_record_verifications_pkey PRIMARY KEY (run_id, source_record_id);
 
 
 --
@@ -1079,6 +1320,14 @@ ALTER TABLE ONLY public.research_ingest_run_records
 
 ALTER TABLE ONLY public.research_ingest_runs
     ADD CONSTRAINT research_ingest_runs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: research_ingest_tasks research_ingest_tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_tasks
+    ADD CONSTRAINT research_ingest_tasks_pkey PRIMARY KEY (run_id, source_record_id, stage);
 
 
 --
@@ -1443,6 +1692,41 @@ CREATE INDEX research_ingest_executions_run_idx ON public.research_ingest_execut
 
 
 --
+-- Name: research_ingest_inventory_scans_recent_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_inventory_scans_recent_idx ON public.research_ingest_inventory_scans USING btree (started_at DESC);
+
+
+--
+-- Name: research_ingest_issues_open_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_issues_open_idx ON public.research_ingest_issues USING btree (run_id, status, last_seen_at DESC);
+
+
+--
+-- Name: research_ingest_provider_calls_execution_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_provider_calls_execution_idx ON public.research_ingest_provider_calls USING btree (execution_id, started_at DESC);
+
+
+--
+-- Name: research_ingest_provider_calls_run_recent_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_provider_calls_run_recent_idx ON public.research_ingest_provider_calls USING btree (run_id, started_at DESC);
+
+
+--
+-- Name: research_ingest_quality_reviews_file_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_quality_reviews_file_idx ON public.research_ingest_quality_reviews USING btree (inventory_id, reviewed_at DESC);
+
+
+--
 -- Name: research_ingest_run_items_observation_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1475,6 +1759,20 @@ CREATE INDEX research_ingest_runs_file_idx ON public.research_ingest_runs USING 
 --
 
 CREATE INDEX research_ingest_runs_status_idx ON public.research_ingest_runs USING btree (status, heartbeat_at);
+
+
+--
+-- Name: research_ingest_tasks_queue_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_tasks_queue_idx ON public.research_ingest_tasks USING btree (run_id, stage, state, source_record_id);
+
+
+--
+-- Name: research_ingest_tasks_state_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_tasks_state_idx ON public.research_ingest_tasks USING btree (run_id, state);
 
 
 --
@@ -1804,6 +2102,86 @@ ALTER TABLE ONLY public.research_ingest_inventory_versions
 
 
 --
+-- Name: research_ingest_issue_events research_ingest_issue_events_issue_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_issue_events
+    ADD CONSTRAINT research_ingest_issue_events_issue_id_fkey FOREIGN KEY (issue_id) REFERENCES public.research_ingest_issues(id);
+
+
+--
+-- Name: research_ingest_issues research_ingest_issues_run_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_issues
+    ADD CONSTRAINT research_ingest_issues_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.research_ingest_runs(id);
+
+
+--
+-- Name: research_ingest_provider_call_items research_ingest_provider_call_items_attempt_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_provider_call_items
+    ADD CONSTRAINT research_ingest_provider_call_items_attempt_id_fkey FOREIGN KEY (attempt_id) REFERENCES public.research_ingest_attempts(id);
+
+
+--
+-- Name: research_ingest_provider_call_items research_ingest_provider_call_items_call_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_provider_call_items
+    ADD CONSTRAINT research_ingest_provider_call_items_call_id_fkey FOREIGN KEY (call_id) REFERENCES public.research_ingest_provider_calls(id);
+
+
+--
+-- Name: research_ingest_provider_calls research_ingest_provider_calls_execution_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_provider_calls
+    ADD CONSTRAINT research_ingest_provider_calls_execution_id_fkey FOREIGN KEY (execution_id) REFERENCES public.research_ingest_executions(id);
+
+
+--
+-- Name: research_ingest_provider_calls research_ingest_provider_calls_run_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_provider_calls
+    ADD CONSTRAINT research_ingest_provider_calls_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.research_ingest_runs(id);
+
+
+--
+-- Name: research_ingest_quality_reviews research_ingest_quality_reviews_inventory_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_quality_reviews
+    ADD CONSTRAINT research_ingest_quality_reviews_inventory_id_fkey FOREIGN KEY (inventory_id) REFERENCES public.research_ingest_inventory(id);
+
+
+--
+-- Name: research_ingest_record_verifications research_ingest_record_verificatio_run_id_source_record_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_record_verifications
+    ADD CONSTRAINT research_ingest_record_verificatio_run_id_source_record_id_fkey FOREIGN KEY (run_id, source_record_id) REFERENCES public.research_ingest_run_items(run_id, source_record_id);
+
+
+--
+-- Name: research_ingest_record_verifications research_ingest_record_verifications_execution_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_record_verifications
+    ADD CONSTRAINT research_ingest_record_verifications_execution_id_fkey FOREIGN KEY (execution_id) REFERENCES public.research_ingest_executions(id);
+
+
+--
+-- Name: research_ingest_record_verifications research_ingest_record_verifications_observation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_record_verifications
+    ADD CONSTRAINT research_ingest_record_verifications_observation_id_fkey FOREIGN KEY (observation_id) REFERENCES public.research_poi_observations(id);
+
+
+--
 -- Name: research_ingest_run_items research_ingest_run_items_observation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1884,6 +2262,30 @@ ALTER TABLE ONLY public.research_ingest_runs
 
 
 --
+-- Name: research_ingest_tasks research_ingest_tasks_attempt_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_tasks
+    ADD CONSTRAINT research_ingest_tasks_attempt_id_fkey FOREIGN KEY (attempt_id) REFERENCES public.research_ingest_attempts(id);
+
+
+--
+-- Name: research_ingest_tasks research_ingest_tasks_execution_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_tasks
+    ADD CONSTRAINT research_ingest_tasks_execution_id_fkey FOREIGN KEY (execution_id) REFERENCES public.research_ingest_executions(id);
+
+
+--
+-- Name: research_ingest_tasks research_ingest_tasks_run_id_source_record_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_ingest_tasks
+    ADD CONSTRAINT research_ingest_tasks_run_id_source_record_id_fkey FOREIGN KEY (run_id, source_record_id) REFERENCES public.research_ingest_run_items(run_id, source_record_id);
+
+
+--
 -- Name: research_match_decisions research_match_decisions_candidate_poi_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1929,6 +2331,14 @@ ALTER TABLE ONLY public.research_normalization_requests
 
 ALTER TABLE ONLY public.research_normalization_requests
     ADD CONSTRAINT research_normalization_requests_observation_id_fkey FOREIGN KEY (observation_id) REFERENCES public.research_poi_observations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_normalization_requests research_normalization_requests_provider_call_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_normalization_requests
+    ADD CONSTRAINT research_normalization_requests_provider_call_id_fkey FOREIGN KEY (provider_call_id) REFERENCES public.research_ingest_provider_calls(id);
 
 
 --

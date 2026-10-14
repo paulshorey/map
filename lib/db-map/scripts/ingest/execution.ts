@@ -5,6 +5,16 @@ import { hostname } from "node:os";
 import type { Pool, PoolClient } from "pg";
 import { admitWorker } from "../../sql/ingestion-control.js";
 import { ProviderRecovery } from "./provider-recovery.js";
+import { labelDatabaseConnection } from "./database-telemetry.js";
+import {
+  hostInstallationId,
+  processStartIdentity,
+} from "./host-installation.js";
+import {
+  fenceTask,
+  finishTask,
+  type TaskClaim,
+} from "../../sql/ingestion-tasks.js";
 
 export type Outcome =
   | "succeeded"
@@ -21,8 +31,48 @@ const context = new AsyncLocalStorage<{
   runId: string;
   attemptId: string;
   execution: Execution;
+  claim?: TaskClaim;
+  stage: string;
+  committed?: boolean;
+  databaseMs?: number;
+  databaseQueries?: number;
+  providerMs?: number;
+  providerQueueMs?: number;
+  activationMs?: number;
 }>();
 export const currentAttempt = () => context.getStore();
+export const withAttemptContext = <T>(
+  ctx: NonNullable<ReturnType<typeof currentAttempt>>,
+  fn: () => Promise<T>,
+) => context.run(ctx, fn);
+/** Artifact activation, checkpoint and task eligibility share one commit. */
+export async function artifactTransaction<T>(
+  db: Pool,
+  fn: (client: PoolClient) => Promise<{ value: T; output: AttemptResult }>,
+) {
+  const ctx = currentAttempt();
+  const started = performance.now();
+  ctx?.execution.check();
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN");
+    if (ctx?.claim) await fenceTask(client, ctx.claim);
+    const result = await fn(client);
+    if (ctx?.claim)
+      await finishTask(client, ctx.claim, ctx.attemptId, result.output);
+    await client.query("COMMIT");
+    if (ctx?.claim) ctx.committed = true;
+    if (ctx)
+      ctx.activationMs = (ctx.activationMs ?? 0) + performance.now() - started;
+    return result.value;
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 export const errorDetails = (error: unknown) => ({
   name: error instanceof Error ? error.name : "Error",
   message: error instanceof Error ? error.message : String(error),
@@ -32,6 +82,7 @@ export const errorDetails = (error: unknown) => ({
   retryable: (error as { retryable?: boolean })?.retryable,
   retryAfterMs: (error as { retryAfterMs?: number })?.retryAfterMs,
   reason: (error as { reason?: string })?.reason,
+  database: (error as { database?: unknown })?.database,
   cause:
     error instanceof Error && error.cause instanceof Error
       ? {
@@ -47,6 +98,7 @@ export async function lockSource(
   source: string,
 ): Promise<PoolClient> {
   const lock = await db.connect();
+  labelDatabaseConnection(db, lock, "source_lock");
   try {
     await lock.query("SET statement_timeout = '10s'");
     await lock.query("BEGIN");
@@ -66,6 +118,7 @@ export async function lockSource(
 }
 
 export class Execution {
+  readonly abortController = new AbortController();
   stopped = false;
   stopReason = "";
   private timer?: NodeJS.Timeout;
@@ -147,9 +200,16 @@ export class Execution {
         [runId],
       );
       const { rows } = await lock.query(
-        `INSERT INTO research_ingest_executions(run_id,host,pid,options)
-      VALUES($1,$2,$3,$4) RETURNING id`,
-        [runId, hostname(), process.pid, JSON.stringify(options)],
+        `INSERT INTO research_ingest_executions(run_id,host,pid,options,host_id,process_start)
+      VALUES($1,$2,$3,$4,$5,$6) RETURNING id`,
+        [
+          runId,
+          hostname(),
+          process.pid,
+          JSON.stringify(options),
+          hostInstallationId(),
+          processStartIdentity(),
+        ],
       );
       await lock.query(
         `UPDATE research_ingest_runs SET status='running', stop_requested=false,
@@ -167,6 +227,7 @@ export class Execution {
     // Losing this connection means the source lock is gone: never continue writing unlocked.
     lock.on("error", (error) => {
       const details = errorDetails(error);
+      execution.abortController.abort(error);
       execution.journal("source_lock_lost", details);
       console.error(
         "Ingestion source lock lost; exiting for recovery",
@@ -180,6 +241,7 @@ export class Execution {
         .catch((error) => {
           execution.journal("heartbeat_failed", errorDetails(error));
           execution.heartbeatError = error;
+          execution.abortController.abort(error);
           execution.stopped = true;
           execution.stopReason = "heartbeat_failed";
         });
@@ -249,10 +311,14 @@ export class Execution {
     fn: () => Promise<AttemptResult>,
     reuse = true,
     canReuse?: (result: AttemptResult) => Promise<boolean>,
+    claim?: TaskClaim,
   ): Promise<AttemptResult> {
     const attempt = () =>
-      this.attemptOnce(stage, target, input, fn, reuse, canReuse);
-    if (stage !== "normalize") return attempt();
+      this.attemptOnce(stage, target, input, fn, reuse, canReuse, claim);
+    if (
+      !["normalize", "geocode", "embed", "match", "canonical"].includes(stage)
+    )
+      return attempt();
     return this.providerRecovery.run({
       attempt,
       stopped: () => {
@@ -289,9 +355,10 @@ export class Execution {
     fn: () => Promise<AttemptResult>,
     reuse = true,
     canReuse?: (result: AttemptResult) => Promise<boolean>,
+    claim?: TaskClaim,
   ): Promise<AttemptResult> {
     this.check();
-    if (reuse) {
+    if (reuse && !claim) {
       if (!this.completed.has(stage)) {
         const { rows } = await this.db.query(
           `SELECT * FROM (SELECT DISTINCT ON(target_key) target_key,status,output
@@ -323,21 +390,77 @@ export class Execution {
       ],
     );
     const id = rows[0].id;
-    await this.db.query(
-      "UPDATE research_ingest_runs SET current_stage=$2 WHERE id=$1",
-      [this.runId, stage],
-    );
-    try {
-      const result = await context.run(
-        { runId: this.runId, attemptId: id, execution: this },
-        fn,
-      );
-      this.journal("attempt_result", { id, stage, target, result });
+    if (claim)
       await this.db.query(
-        `UPDATE research_ingest_attempts SET status=$2,output=$3,finished_at=now()
-        WHERE id=$1 AND status='running'`,
-        [id, result.status, JSON.stringify(result)],
+        `UPDATE research_ingest_tasks SET attempt_id=$6 WHERE run_id=$1 AND source_record_id=$2 AND stage=$3 AND claim_token=$4 AND execution_id=$5`,
+        [
+          claim.run_id,
+          claim.source_record_id,
+          claim.stage,
+          claim.claim_token,
+          claim.execution_id,
+          id,
+        ],
       );
+    if (!claim)
+      await this.db.query(
+        "UPDATE research_ingest_runs SET current_stage=$2 WHERE id=$1",
+        [this.runId, stage],
+      );
+    const ctx: NonNullable<ReturnType<typeof currentAttempt>> = {
+      runId: this.runId,
+      attemptId: id,
+      execution: this,
+      stage,
+      claim,
+      committed: false,
+    };
+    try {
+      const result = await context.run(ctx, fn);
+      result.metrics = {
+        database_ms: Math.round(ctx.databaseMs ?? 0),
+        database_queries: ctx.databaseQueries ?? 0,
+        provider_ms: Math.round(ctx.providerMs ?? 0),
+        provider_queue_ms: Math.round(ctx.providerQueueMs ?? 0),
+        activation_ms: Math.round(ctx.activationMs ?? 0),
+      };
+      this.journal("attempt_result", { id, stage, target, result });
+      if (claim && !ctx.committed) {
+        const client = await this.db.connect();
+        try {
+          await client.query("BEGIN");
+          await finishTask(client, claim, id, result);
+          await client.query("COMMIT");
+        } catch (error) {
+          await client.query("ROLLBACK").catch(() => undefined);
+          throw error;
+        } finally {
+          client.release();
+        }
+      } else if (!ctx.committed) {
+        await this.db.query(
+          `UPDATE research_ingest_attempts SET status=$2,output=$3,finished_at=now() WHERE id=$1 AND status='running'`,
+          [id, result.status, JSON.stringify(result)],
+        );
+      } else {
+        await this.db.query(
+          `UPDATE research_ingest_attempts SET output=output||$2::jsonb,status=$3 WHERE id=$1`,
+          [id, JSON.stringify(result), result.status],
+        );
+        if (claim)
+          await this.db.query(
+            `UPDATE research_ingest_tasks SET output=output||$6::jsonb,state=$7 WHERE run_id=$1 AND source_record_id=$2 AND stage=$3 AND claim_token=$4 AND execution_id=$5 AND state IN ('succeeded','reused','skipped')`,
+            [
+              claim.run_id,
+              claim.source_record_id,
+              claim.stage,
+              claim.claim_token,
+              claim.execution_id,
+              JSON.stringify(result),
+              result.status,
+            ],
+          );
+      }
       if (["succeeded", "reused", "skipped"].includes(result.status))
         this.completed.get(stage)?.set(target, result);
       return result;

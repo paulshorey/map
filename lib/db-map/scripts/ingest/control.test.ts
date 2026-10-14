@@ -84,8 +84,8 @@ test("host identity accepts exact and mDNS aliases without merging different hos
   assert.equal(isLocalHost("host.example.com", "host"), false);
 });
 
-test("a live mDNS worker remains present; an absent mDNS worker can reconcile only when quiescent", () => {
-  const host = `${hostname().replace(/\.local$/i, "")}.local`;
+test("an exact local worker remains present; an absent local worker can reconcile only when quiescent", () => {
+  const host = hostname();
   const executionId = "test-execution";
   const live = localPidState(host, process.pid);
   assert.equal(live, "present_identity_unverified");

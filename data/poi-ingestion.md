@@ -25,9 +25,45 @@ file → extract → fixed record cohort → normalize → geocode → embed →
 ```
 
 Canonical builds happen transactionally inside matching/merging and normalization refresh;
-`canonical` checks their existence. It is not a separate rebuild algorithm. Stages process
-one record at a time, with all selected records finishing a stage before the next starts.
-A failed required operation stops the run. Non-POIs are explicitly skipped downstream.
+`canonical` checks their existence. It is not a separate rebuild algorithm. Extraction finishes
+and freezes the cohort before the record scheduler starts. Independent records then progress
+through their own dependencies; ready downstream work has priority. Shared Fireworks admission
+defaults to four requests in flight (`--llm-concurrency 1..16`), across normalization, matching
+and fusion. The selected normalization model, prompt and thinking mode are unchanged: every
+eligible POI still uses the LLM. Explicit `--no-llm` remains a diagnostic option.
+
+Recognized record validation failures are quarantined with durable issues; independent records
+continue and the run ends partial. Ten consecutive validation failures in one stage trip a
+systemic circuit breaker. Authentication, billing, unexpected provider shapes, database, schema,
+source-lock and lineage faults stop globally. Non-POIs are explicitly skipped downstream.
+All canonical mutations use one process lane and the existing database-wide canonical lock.
+Linked embedding/geocode activation refreshes canonical build inputs in that same transaction;
+unlinked records activate independently.
+Geocoding stays at one request per second. Embeddings batch up to 32 records, with a two-second
+maximum collection wait and one embedding request in flight. At 1,000 normalized records waiting
+for downstream verification, normalization pauses until the backlog drops below 500.
+
+Scheduler idleness requires a stable dependency pass: if work finishes during a claim query,
+the scheduler scans dependencies again before exiting. Before report/global verification it
+also checks that every selected task outside quarantined or operator-excluded records has
+finished. Remaining work with no active/ready tasks stops with `scheduler_stalled`, including
+stage/state counts for diagnosis; it never establishes completion. Limited stop points and
+provider-budget pauses retain their normal incomplete outcomes.
+
+Database failures retain structured `error.database` evidence: checkout versus query operation,
+pool capacity, total/idle/waiting clients and up to 20 oldest connection holders with stage,
+record/attempt identity and hold duration. The managed source-lock connection is labeled.
+No SQL, parameters or credentials are retained. A local pool checkout timeout has code
+`database_pool_checkout_timeout`; it stops globally and does not enter provider cooldown or
+automatic query replay. A pending provider request aborted by a systemic failure preserves
+that original error. See the [pool API](https://node-postgres.com/apis/pool) and
+[Node abort semantics](https://nodejs.org/api/globals.html#abortsignalreason) for the client behavior.
+
+Terminal packets include structured `execution_error` and recent attempt errors. Their
+`current_stage` is the earliest unfinished cohort stage, which may differ from the last failed
+record attempt. Use both when locating the failure. A historical connection timeout without
+pool evidence does not prove a leak or an infrastructure outage; check current admission and
+database availability, then validate the pinned affected record before deciding to resume.
 
 Three distinct questions need distinct evidence:
 
@@ -114,27 +150,80 @@ visiting each completed item in application code. This is
 per-record completion, not a highest-ID cursor: earlier failed or invalidated items remain eligible
 when later items have already completed. Source IDs need not be numeric or sequential.
 
-New runs and unfinished parts of resumed runs also reuse existing outputs efficiently. In batches
-of 500 metadata records, normalization checks the same exact input hash as the normalizer:
-immutable captured evidence, model/mode, prompt/schema/examples/profile/normalizer versions and
-reprocess generation. Matching active artifacts are recorded as reused in a bulk audit insert;
-they are not reactivated, jobs are not re-leased, and canonical output is not rebuilt. Downstream
-ready/excluded records are similarly audited in batches. Missing/stale outputs remain real work.
-Shadow evaluation keeps its regular validation path. Paid provider work stays sequential and
-bounded by the original record cohort. Provider caps are optional; the native scheduled coordinator full imports use
-`--unlimited`. Full `ingest:supervise start`/`watch` jobs have no completion deadline by default;
-`--max-hours N` remains an optional operator control. Development smoke deadlines remain bounded.
+New runs reuse existing normalization caches through the normalizer's exact identity checks.
+Resumes adopt valid normalization attempts only when their observation and active artifact IDs
+still match. `research_ingest_tasks` holds record/stage dependencies, claims and outcomes.
+Claims use `FOR UPDATE SKIP LOCKED`; activation checks the claim token, execution and observation
+inside the same transaction as artifact, attempt and task writes. Abandoned tasks can be reclaimed
+after the predecessor has stopped. Successful artifacts survive a stopped invocation; external
+provider delivery is at least once, so a lost response can still be billed again.
 
-Each stage prints `checkpointed`, `reused in batches`, and `need work` counts, with preparation
-time. These summaries also live in `research_ingest_runs.counters.queue`. Successful reuse still
-has one durable attempt per record; batching changes round trips, not the audit granularity.
-Same-run resume avoids per-record cache checks for completed checkpoints. A fresh run must still
-check current cache identity, but performs those checks in batches. File hashing and database
-validation remain necessary; starting or resuming is not constant-time.
+Record verification certifies the exact observation, normalization, coordinates, embedding,
+membership and canonical build. File completion additionally requires a successful full-cohort
+global verification at least as recent as the active artifacts and record proofs. A later sample
+cannot hide a compatible full-file continuation or certify an entire file. Shadow normalization
+never activates its output. Optional finite normalization budgets serialize admission to preserve
+threshold behavior; full imports and resumes use `--unlimited` and have no mandatory deadline.
 
-Use Ctrl-C or `ingest:pause` to stop a live worker, wait for its exit, then restart with `--resume`.
-Code changes take effect in the next process; do not start an overlapping worker for the source.
-The dashboard lists **Continue existing run** before **Start NEW full run** when resume is valid.
+### Shared agent and human observability
+
+`ingest:overview --json` and loopback `GET /api/overview` consume the same versioned assessment.
+The CLI works without the dashboard. Database evidence is read in one repeatable-read, read-only
+transaction; local job/intent/process evidence has its own observation time. Unknown evidence
+blocks launch recommendations. Missing components never become an empty healthy summary.
+
+```sh
+pnpm --silent --filter @lib/db-map ingest:overview --json
+pnpm --silent --filter @lib/db-map ingest:overview --run <run-uuid> --detail --json
+pnpm --silent --filter @lib/db-map ingest:overview --file <logical-path> --json
+pnpm --silent --filter @lib/db-map ingest:overview --limit 100 --offset 100 --json
+pnpm --silent --filter @lib/db-map ingest:doctor --run <run-uuid> --json
+pnpm --silent --filter @lib/db-map ingest:issues list --run <run-uuid> --json
+```
+
+The default returns 20 files, whole-inventory totals, stage task counts, exact worker/run/job
+identity, interventions, next action, last commits, exact active record IDs and active ages, scan receipts, and measured
+performance suggestions. Metrics are bounded to the latest 1,000 calls/completed attempts.
+Provider calls include admission wait, response latency, requests, batch size, known/unknown cost,
+model, prompt/cache/completion/reasoning tokens when supplied, HTTP status and quota headers.
+Attempt timing separates provider, database round trips and remaining local work. Batch calls
+are attributed to all participating attempts without counting one call repeatedly. No credentials,
+raw provider payloads or SQL parameters are included. Legacy normalization telemetry is labeled
+separately. Measured findings and optimization hypotheses have different confidence labels.
+
+The payload's TypeScript contract and JSON Schema live in `lib/db-map/contracts/ingestion-*`.
+API filters are `run`, `file`, `limit`, `offset`, `detail=1`; `inventory=1` includes the original
+inventory projection so the dashboard can refresh both panels with one database snapshot.
+Detail/doctor also returns five pending/paused/quarantined/budget-held task samples per stage/state.
+Focused status/control/trace and coordinator snapshot interfaces remain the drill-down tools.
+Hourly Node checks persist committed progress separately from latest attempted work and task counts
+in each job journal; they do not invoke a model for healthy progress.
+
+`research_ingest_inventory_scans` records checkout, commit, stable host ID, scan start/end,
+outcome and errors. Its exclusive advisory key `(91832,3)` is distinct from the shared worker /
+exclusive maintenance key `(91832,1)` and admission mutex `(91832,2)`. New workers and jobs also
+record a persistent installation UUID plus process start time. Legacy hostname reconciliation
+remains conservative. A stored PID alone never authorizes signaling.
+
+`data/poi-research/expected-captures.json` accounts for the audited 247 captures, required imports,
+supporting captures and explicit review/exclusion reasons. It holds expectations, not progress.
+Structural completion, degraded output, sampled quality acceptance and category completeness
+are separate. No quality acceptance is inferred from an exit code or a few valid coordinates.
+
+After inspecting an issue, repairs require quiescent owned maintenance. Retry clears the affected
+stage and descendants while retaining attempts and earlier successful artifacts. Explicit exclusion
+retires the record/membership, rebuilds affected canonical output and records the operator reason;
+no automatic exclusion is performed. Quality review is an auditable statement about inspected
+current-capture sample records, not proof that an entire category is complete.
+
+```sh
+pnpm --silent --filter @lib/db-map ingest:issues resolve --issue <issue-uuid> \
+  --maintenance-token <owned-token> --action retry --reason '<diagnosis and repair>' --json
+pnpm --silent --filter @lib/db-map ingest:issues resolve --issue <issue-uuid> \
+  --maintenance-token <owned-token> --action exclude --reason '<reviewed exclusion>' --json
+pnpm --silent --filter @lib/db-map ingest:quality review --file <logical-path> \
+  --decision accepted --records <source-id,source-id> --reason '<sample evidence>' --json
+```
 
 ## Bounded stage diagnostics
 
@@ -352,12 +441,12 @@ managed smoke through the necessary stages, then update the native scheduled coo
 result. Full imports require no spending allowance, unknown-cost approval, ETA or overall deadline.
 Follow [agent operations](ingestion-agents.md) for execution.
 
-### Transient normalization provider recovery
+### Transient provider recovery
 
-Managed normalization automatically retries the **same record**, within the same execution,
+Managed normalization, geocoding, embedding, matching and canonical work automatically retry the **same record**, within the same execution,
 for HTTP 429/5xx, network errors and request timeouts. Ordinary code owns the cooldown; it does
-not invoke an agent, restart ingestion, expand the frozen cohort, or advance downstream early.
-Other stages retain their existing error policy. Authentication/configuration errors, invalid
+not invoke an agent, restart ingestion, expand the frozen cohort, or bypass a record dependency.
+Authentication/configuration errors, invalid
 model output, and database errors do not enter this recovery loop.
 
 The default allows five additional attempts per record, with delays of 30, 60, 120, 240 and
@@ -365,12 +454,14 @@ The default allows five additional attempts per record, with delays of 30, 60, 1
 even for a non-JSON 429/5xx response. No retry starts after the record's 15-minute recovery
 window; an in-flight record can finish afterward, subject to existing 180-second timeouts per
 HTTP call (including format fallback/repair). The window bounds retry scheduling, not a hard kill.
-A requested delay that cannot fit ends recovery rather than retrying early. At most 100
-retries are scheduled across an execution. Exhaustion fails with stop reason
+A requested delay that cannot fit ends recovery rather than retrying early. There is no
+lifetime execution retry cap that a long healthy import can exhaust. Exhaustion fails with stop reason
 `provider_recovery_exhausted`; successful checkpoints remain resumable.
 
 Each managed retry appends a new stage attempt and rechecks the execution's normalization
-optional provider limits. Hidden HTTP retries are disabled for managed normalization. Failed requests, repair
+optional provider limits. Hidden HTTP retries are disabled for managed requests. The shared limiter halves concurrency
+and applies a provider-wide cooldown on 429/503, honors Retry-After and observed quota headers,
+then restores one slot after 15 healthy minutes. Failed requests, repair
 requests and JSON-format fallbacks all count as request rows. Existing per-record repair and
 fallback calls can still exceed a threshold within a record; these are not universal hard
 billing limits. A response lost in transit may have unknown cost and may be billed twice on
@@ -547,14 +638,13 @@ command. A successful sample must be described as a sample.
 | Old run refuses resume                  | Its pinned input/output or pipeline version changed; start a new run with an explicit repair selection and review cached artifacts.                            |
 | Slow run                                | Compare attempt duration, provider latency/tokens/cost, query plans and cache hits on the same sample. Distinguish warm-cache speedups from code improvements. |
 
-Current tradeoffs: managed processing is sequential; record-level checkpoint queries and
-single-record provider embeddings favor debuggability over maximum throughput. Already-valid
-artifacts and completed checkpoints use the batched work queue described above. Normalization cost
-accounting is richer than matching/fusion accounting. Budgets are stage-specific thresholds,
-not a universal quota service. File discovery is available through the inventory scanner; there is no scheduler or guarantee
-that standalone scripts participate in managed locking. Add batching/concurrency only with
-failure injection and unchanged provenance/recovery guarantees.
-
+Current tradeoffs: canonical matching/fusion remains serialized and can become the next bottleneck.
+Matching can hold its transaction across a provider call; decoupling proposal generation from
+fenced canonical activation is a future improvement that needs candidate-version checks.
+Provider quota headers and reasoning/cost fields may be absent; unknown values stay explicit.
+Optional budgets are stage thresholds, not a universal quota service. Standalone legacy scripts
+do not gain managed lifecycle registration. Recommendations are advisory and never auto-relaunch,
+change models, reduce reasoning or expand scope.
 Validation commands:
 
 ```bash
@@ -563,6 +653,8 @@ pnpm --filter @lib/db-map ingest:normalize:golden
 pnpm --filter @lib/db-map ingest:test-recovery
 pnpm --filter @lib/db-map ingest:test-work-queue
 pnpm --filter @lib/db-map ingest:test-control
+pnpm --filter @lib/db-map ingest:test-scheduler
+pnpm --filter @lib/db-map ingest:test-inventory
 ```
 
 The control integration test (`ingest:test-control:integration`) exercises the global gate and

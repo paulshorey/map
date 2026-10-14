@@ -5,6 +5,7 @@ export type Coverage =
   | "complete"
   | "unknown";
 export interface Evidence {
+  global_verified?: boolean;
   missing_at: unknown;
   scan_error: string | null;
   disposition: string;
@@ -58,6 +59,7 @@ export function assessFile(e: Evidence, now = Date.now()) {
     coverage = "unknown";
   else if (!e.current_version) coverage = "unstarted";
   else if (
+    e.global_verified !== false &&
     e.extraction_complete &&
     e.records > 0 &&
     e.verified === e.records &&

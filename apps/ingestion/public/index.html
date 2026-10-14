@@ -46,6 +46,14 @@
       <div id="notice" role="status" hidden></div>
       <div id="maintenance" role="status" hidden></div>
       <div id="error" role="alert" hidden></div>
+      <section
+        id="operations"
+        class="operations"
+        aria-label="Active pipeline and interventions"
+      >
+        <h2>Pipeline operations</h2>
+        <p>Loading worker evidence…</p>
+      </section>
       <section class="stats" aria-label="Inventory summary">
         <button class="stat" data-view="all">
           <span>Discovered files</span><strong id="stat-total">—</strong
@@ -58,7 +66,7 @@
           ><small>More work or verification needed</small></button
         ><button class="stat" data-view="unstarted">
           <span>Unstarted</span><strong id="stat-unstarted">—</strong
-          ><small>No extraction for current version</small>
+          ><small>Intended imports awaiting extraction</small>
         </button>
       </section>
       <section class="inventory-panel">

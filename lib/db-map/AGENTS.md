@@ -16,7 +16,7 @@ groups; `codex-notify.ts` is the optional verified parent transport. Keep monito
 notification failures durable, delivery conservative, and resume decisions with the orchestrator.
 Never use a persisted PID as signal authorization, auto-relaunch an abandoned job, or report
 terminal delivery as proven without a transport receipt. Tests must mock parent wake-ups.
-`provider-recovery.ts` owns bounded managed normalization cooldowns. Keep failed attempts
+`provider-recovery.ts` owns bounded managed provider cooldowns. Keep failed attempts
 append-only, honor optional operator limits on each retry, preserve heartbeat/stop responsiveness, and never
 retry authentication, validation or database failures as provider throttling. Use mocked
 clocks/providers for failure injection, not paid long-running outage tests.
@@ -63,7 +63,12 @@ Paths below are relative to `scripts/ingest/` unless shown otherwise.
 
 Inventory/discovery lives in `lib/ingestion/inventory-scan.ts`, shared coverage assessment in
 `lib/ingestion/assessment.ts`, and application queries in `sql/ingestion-inventory.ts`.
-`apps/ingestion` and `scripts/ingest/inventory.ts` must consume the same assessment. Preserve
+`sql/ingestion-overview.ts`, `contracts/ingestion-operations.ts`, `scripts/ingest/overview.ts` and
+`doctor.ts` provide the shared human/agent operations view. Record scheduling lives in
+`record-scheduler.ts` and `sql/ingestion-tasks.ts`; shared provider admission and canonical
+serialization live in `concurrency.ts`. Keep activation, task completion and attempt output
+atomic and fenced. New stable host IDs supplement, never replace, process identity verification.
+`apps/ingestion` and the inventory/overview CLIs must consume the same assessment. Preserve
 operator notes/classification on scans; never infer full-file completion from the latest sample.
 
 ## Invariants to preserve
@@ -73,7 +78,8 @@ operator notes/classification on scans; never infer full-file completion from th
   their provenance. Use the generic capture-spec extractor when the format conforms.
 - Managed runs freeze their record/observation cohort. Each invocation appends an execution;
   each retry appends an attempt with input IDs, output IDs, timing, and structured errors.
-  Never overwrite prior failures or advance past an unsuccessful required stage. Only mark
+  Never overwrite prior failures or advance a record past an unsuccessful required stage. Quarantine
+  recognized record failures; stop globally for systemic/provider-shape/database/lineage faults. Only mark
   success after reporting and verification. Keep stage data writes atomic; recovery is
   at-least-once, so do not promise exactly-once provider calls.
 - Managed workers must pass the maintenance admission gate and hold their worker/source locks

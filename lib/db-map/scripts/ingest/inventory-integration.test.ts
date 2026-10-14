@@ -13,6 +13,13 @@ import {
 } from "../../sql/ingestion-inventory.js";
 import { refreshInventory } from "../../lib/ingestion/inventory-scan.js";
 import { traceResearchRecord } from "../../sql/lineage.js";
+import {
+  seedTasks,
+  claimTasks,
+  fenceTask,
+  finishTask,
+} from "../../sql/ingestion-tasks.js";
+import type { Pool } from "pg";
 const db = getDb();
 const slug = "inventory_test_" + randomUUID().replaceAll("-", "");
 const dir = await mkdtemp(resolve(POI_ROOT, "inventory-test-"));
@@ -44,7 +51,9 @@ try {
     )
   ).rows[0].id;
   const find = async () => {
-    const f = (await getInventory(db)).files.find((f) => f.id === inventoryId);
+    const f = (await getInventory(db, { file: logical })).files.find(
+      (f) => f.id === inventoryId,
+    );
     assert.ok(f);
     return f;
   };
@@ -70,6 +79,109 @@ try {
   assert.equal(full.records, 2);
   assert.equal(full.verified, 2);
   assert.equal(full.excluded, 2);
+  // Real PostgreSQL task SQL: lower-stage barriers, disjoint claims, fencing and atomic checkpoint rollback.
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN");
+    const run = full.latest_run!.id;
+    const execution = (
+      await client.query(
+        "SELECT id FROM research_ingest_executions WHERE run_id=$1 ORDER BY started_at DESC LIMIT 1",
+        [run],
+      )
+    ).rows[0].id;
+    await client.query(
+      "UPDATE research_ingest_executions SET status='running' WHERE id=$1",
+      [execution],
+    );
+    const scoped = client as unknown as Pool;
+    await seedTasks(scoped, run, execution);
+    await client.query(
+      "UPDATE research_ingest_tasks SET state='pending' WHERE run_id=$1 AND stage='normalize'",
+      [run],
+    );
+    assert.equal(
+      (await claimTasks(scoped, run, execution, "match", 2)).length,
+      0,
+      "every prerequisite must complete",
+    );
+    const [one, two] = await Promise.all([
+      claimTasks(scoped, run, execution, "normalize"),
+      claimTasks(scoped, run, execution, "normalize"),
+    ]);
+    assert.equal(one.length, 1);
+    assert.equal(two.length, 1);
+    assert.notEqual(one[0]!.source_record_id, two[0]!.source_record_id);
+    const claim = one[0]!;
+    await assert.rejects(
+      fenceTask(client, { ...claim, claim_token: randomUUID() }),
+      /Stale task claim/,
+    );
+    await fenceTask(client, claim);
+    const task = (
+      await client.query(
+        "SELECT attempt_id,output FROM research_ingest_tasks WHERE run_id=$1 AND source_record_id=$2 AND stage='normalize'",
+        [run, claim.source_record_id],
+      )
+    ).rows[0];
+    await client.query(
+      "UPDATE research_ingest_attempts SET status='running' WHERE id=$1",
+      [task.attempt_id],
+    );
+    await finishTask(client, claim, task.attempt_id, {
+      ...task.output,
+      status: "reused",
+    });
+    assert.equal(
+      (
+        await client.query(
+          "SELECT state FROM research_ingest_tasks WHERE run_id=$1 AND source_record_id=$2 AND stage='normalize'",
+          [run, claim.source_record_id],
+        )
+      ).rows[0].state,
+      "reused",
+    );
+    assert.equal(
+      (
+        await client.query(
+          "SELECT status FROM research_ingest_attempts WHERE id=$1",
+          [task.attempt_id],
+        )
+      ).rows[0].status,
+      "reused",
+    );
+  } finally {
+    await client.query("ROLLBACK");
+    client.release();
+  }
+  const lockA = await db.connect(),
+    lockB = await db.connect();
+  try {
+    await lockA.query("SELECT pg_advisory_lock_shared(91832,1)");
+    assert.equal(
+      (await lockB.query("SELECT pg_try_advisory_lock(91832,3) AS acquired"))
+        .rows[0].acquired,
+      true,
+      "scan compatible with managed worker",
+    );
+    assert.equal(
+      (await lockA.query("SELECT pg_try_advisory_lock(91832,3) AS acquired"))
+        .rows[0].acquired,
+      false,
+      "second scanner serialized",
+    );
+    assert.equal(
+      (await lockB.query("SELECT pg_try_advisory_lock(91832,1) AS acquired"))
+        .rows[0].acquired,
+      false,
+      "maintenance still drains workers",
+    );
+  } finally {
+    await lockA.query("SELECT pg_advisory_unlock_all()");
+    await lockB.query("SELECT pg_advisory_unlock_all()");
+    lockA.release();
+    lockB.release();
+  }
   const trace = (await traceResearchRecord(db, slug, "a")) as {
     research: { source_record_id: string };
     observations: unknown[];
@@ -185,17 +297,38 @@ try {
   console.log(
     "PASS: inventory SQL, sample-vs-file completion, distinct retry counts, stale outputs, changed/missing files, edit validation, notes retained across scans, history preserved.",
   );
+  process.exitCode = 0;
 } finally {
   sourceId ??= (
     await db.query("SELECT id FROM research_sources WHERE slug=$1", [slug])
   ).rows[0]?.id;
   if (sourceId) {
-    await db.query("DELETE FROM research_pois WHERE source_id=$1", [sourceId]);
     const ids = (
       await db.query("SELECT id FROM research_ingest_runs WHERE source_id=$1", [
         sourceId,
       ])
     ).rows.map((r) => r.id);
+    await db.query(
+      `DELETE FROM research_ingest_provider_call_items WHERE call_id IN (SELECT id FROM research_ingest_provider_calls WHERE run_id=ANY($1::uuid[]))`,
+      [ids],
+    );
+    for (const table of [
+      "research_ingest_tasks",
+      "research_ingest_record_verifications",
+      "research_ingest_provider_calls",
+    ])
+      await db.query(`DELETE FROM ${table} WHERE run_id=ANY($1::uuid[])`, [
+        ids,
+      ]);
+    await db.query(
+      `DELETE FROM research_ingest_issue_events WHERE issue_id IN (SELECT id FROM research_ingest_issues WHERE run_id=ANY($1::uuid[]))`,
+      [ids],
+    );
+    await db.query(
+      `DELETE FROM research_ingest_issues WHERE run_id=ANY($1::uuid[])`,
+      [ids],
+    );
+    await db.query("DELETE FROM research_pois WHERE source_id=$1", [sourceId]);
     for (const table of [
       "research_pipeline_jobs",
       "research_ingest_attempts",
@@ -216,5 +349,4 @@ try {
     ]);
   await rm(dir, { recursive: true, force: true });
   await db.end();
-  process.exitCode = 0;
 }

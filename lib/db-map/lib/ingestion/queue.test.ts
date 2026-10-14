@@ -73,7 +73,7 @@ test("unfinished full-file work survives a later sample and requires inspection"
   });
   assert.equal(item.action, "inspect");
   assert.equal(item.continuation_run_id, "full-run");
-  assert.deepEqual(item.resume_args, ["--resume", "full-run"]);
+  assert.deepEqual(item.resume_args, ["--resume", "full-run", "--unlimited"]);
   assert.equal(item.run_args, null);
   assert.match(item.inspect!, /full-run/);
   const sample = queueItem({

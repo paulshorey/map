@@ -32,8 +32,25 @@ WITH current_versions AS (
   JOIN research_ingest_run_items ri ON ri.run_id=r.id
   WHERE r.managed AND r.status='succeeded' AND r.verified_at IS NOT NULL AND r.pipeline_versions=$1::jsonb
   GROUP BY v.inventory_id,ri.observation_id
+), record_verified AS (
+ SELECT v.inventory_id,rv.observation_id,max(rv.verified_at) AS verified_at
+ FROM current_versions v JOIN research_ingest_runs r ON r.source_file_version_id=v.id
+ JOIN research_ingest_record_verifications rv ON rv.run_id=r.id
+ JOIN research_ingest_run_items i ON i.run_id=rv.run_id AND i.source_record_id=rv.source_record_id
+ JOIN research_pois rp ON rp.id=i.research_poi_id
+ LEFT JOIN canonical_pois cp ON cp.id=rp.canonical_poi_id
+ WHERE rv.pipeline_versions=$1::jsonb AND rv.observation_id=rp.active_observation_id AND rv.outcome<>'operator_excluded'
+   AND rv.output->>'normalization_id'=rp.active_normalization_id::text
+   AND (NOT rp.is_poi OR (rv.output->>'embedding_id'=rp.active_embedding_id::text
+     AND rv.output->>'canonical_id'=rp.canonical_poi_id::text AND rv.output->>'build_id'=cp.active_build_id::text
+     AND rv.output->>'geocode_id' IS NOT DISTINCT FROM rp.active_geocode_id::text))
+ GROUP BY v.inventory_id,rv.observation_id
 ), evidence AS (
   SELECT a.*,rp.is_poi,rp.normalization_state,
+    GREATEST(n.activated_at,em.activated_at,b.activated_at,g.activated_at,rv.verified_at) AS proof_changed_at,
+    EXISTS(SELECT 1 FROM current_versions v JOIN research_ingest_runs r ON r.source_file_version_id=v.id
+      JOIN research_ingest_record_verifications x ON x.run_id=r.id WHERE v.inventory_id=a.inventory_id AND x.observation_id=a.observation_id
+        AND x.outcome='operator_excluded' AND x.pipeline_versions=$1::jsonb) AS operator_excluded,
     (rp.id IS NOT NULL AND rp.retired_at IS NULL AND rp.active_observation_id=a.observation_id) AS input_valid,
     (n.id IS NOT NULL AND n.observation_id=a.observation_id AND rp.normalization_state IN ('active','degraded','rejected')) AS normalized,
     (rp.lat IS NOT NULL AND rp.lng IS NOT NULL AND (rp.coordinate_source IS DISTINCT FROM 'geocode' OR g.id IS NOT NULL)) AS coordinates,
@@ -44,9 +61,9 @@ WITH current_versions AS (
         AND bi.embedding_id IS NOT DISTINCT FROM rp.active_embedding_id
         AND bi.geocode_id IS NOT DISTINCT FROM rp.active_geocode_id)) AS linked,
     cp.status AS publication_status,
-    (vi.verified_at IS NOT NULL AND n.activated_at<=vi.verified_at
-      AND (NOT rp.is_poi OR (em.activated_at<=vi.verified_at AND b.activated_at<=vi.verified_at
-        AND (g.id IS NULL OR g.activated_at<=vi.verified_at)))) AS verified
+    (COALESCE(rv.verified_at,vi.verified_at) IS NOT NULL AND n.activated_at<=COALESCE(rv.verified_at,vi.verified_at)
+      AND (NOT rp.is_poi OR (em.activated_at<=COALESCE(rv.verified_at,vi.verified_at) AND b.activated_at<=COALESCE(rv.verified_at,vi.verified_at)
+        AND (g.id IS NULL OR g.activated_at<=COALESCE(rv.verified_at,vi.verified_at))))) AS verified
   FROM records a LEFT JOIN research_pois rp ON rp.id=a.research_poi_id
   LEFT JOIN research_poi_normalizations n ON n.id=rp.active_normalization_id
   LEFT JOIN research_poi_geocodes g ON g.id=rp.active_geocode_id AND g.normalization_id=n.id
@@ -55,13 +72,14 @@ WITH current_versions AS (
   LEFT JOIN canonical_pois cp ON cp.id=m.canonical_poi_id
   LEFT JOIN canonical_poi_builds b ON b.id=cp.active_build_id
   LEFT JOIN verified_items vi ON vi.inventory_id=a.inventory_id AND vi.observation_id=a.observation_id
+  LEFT JOIN record_verified rv ON rv.inventory_id=a.inventory_id AND rv.observation_id=a.observation_id
 ), flags AS (
-  SELECT *, input_valid AND normalized AND (NOT is_poi OR (coordinates AND embedded AND linked)) AS ready FROM evidence
+  SELECT *, (operator_excluded OR (input_valid AND normalized AND (NOT is_poi OR (coordinates AND embedded AND linked)))) AS ready FROM evidence
 ), counts AS (
   SELECT inventory_id,count(*)::int AS records,
-    count(*) FILTER(WHERE NOT COALESCE(input_valid,false))::int AS invalid,
+    count(*) FILTER(WHERE NOT COALESCE(input_valid,false) AND NOT operator_excluded)::int AS invalid,
     count(*) FILTER(WHERE input_valid AND normalized)::int AS normalized,
-    count(*) FILTER(WHERE input_valid AND normalized AND NOT is_poi)::int AS excluded,
+    count(*) FILTER(WHERE operator_excluded OR (input_valid AND normalized AND NOT is_poi))::int AS excluded,
     count(*) FILTER(WHERE input_valid AND is_poi AND coordinates)::int AS coordinates,
     count(*) FILTER(WHERE input_valid AND normalized AND is_poi AND embedded)::int AS embedded,
     count(*) FILTER(WHERE input_valid AND normalized AND is_poi AND linked)::int AS linked,
@@ -69,7 +87,7 @@ WITH current_versions AS (
     count(*) FILTER(WHERE normalization_state IN ('failed','active_stale'))::int AS normalization_failed,
     count(*) FILTER(WHERE normalization_state='degraded')::int AS degraded,
     count(*) FILTER(WHERE ready)::int AS ready,
-    count(*) FILTER(WHERE ready AND verified)::int AS verified
+    count(*) FILTER(WHERE ready AND (verified OR operator_excluded))::int AS verified
   FROM flags GROUP BY inventory_id
 )
 SELECT i.*,
@@ -77,6 +95,10 @@ SELECT i.*,
   EXISTS(SELECT 1 FROM current_versions v WHERE v.inventory_id=i.id) AS current_version,
   EXISTS(SELECT 1 FROM current_versions v WHERE v.inventory_id=i.id AND v.status='complete') AS extraction_complete,
   (SELECT max(v.record_count) FROM current_versions v WHERE v.inventory_id=i.id AND v.status='complete') AS source_rows,
+  EXISTS(SELECT 1 FROM current_versions v JOIN research_ingest_runs r ON r.source_file_version_id=v.id
+    WHERE v.inventory_id=i.id AND r.managed AND r.status='succeeded' AND r.verified_at IS NOT NULL AND r.pipeline_versions=$1::jsonb
+      AND r.options->>'limit' IS NULL AND r.options->>'record' IS NULL AND COALESCE((r.options->>'shadow')::boolean,false)=false
+      AND r.verified_at>=COALESCE((SELECT max(e.proof_changed_at) FROM evidence e WHERE e.inventory_id=i.id),'-infinity'::timestamptz)) AS global_verified,
   COALESCE(c.records,0) AS records,COALESCE(c.invalid,0) AS invalid,COALESCE(c.normalized,0) AS normalized,
   COALESCE(c.excluded,0) AS excluded,COALESCE(c.coordinates,0) AS coordinates,COALESCE(c.embedded,0) AS embedded,
   COALESCE(c.linked,0) AS linked,COALESCE(c.published,0) AS published,COALESCE(c.ready,0) AS ready,
@@ -110,6 +132,7 @@ SELECT i.*,
     JOIN research_ingest_runs r ON r.source_file_version_id=v.id JOIN research_ingest_attempts a ON a.run_id=r.id
     WHERE f.logical_path=i.logical_path AND a.status IN ('succeeded','reused','skipped')) AS last_commit_at
 FROM research_ingest_inventory i LEFT JOIN counts c ON c.inventory_id=i.id
+WHERE ($2::text IS NULL OR i.logical_path=$2 OR i.id::text=$2)
 ORDER BY i.priority DESC,i.logical_path`;
 
 export interface InventoryFile extends Evidence {
@@ -130,13 +153,19 @@ export interface InventoryFile extends Evidence {
   last_commit_at: string | null;
   source_rows: number | null;
 }
-export async function getInventory(db: Pool) {
-  const client = await db.connect();
+export async function getInventory(
+  db: Pool,
+  options: { client?: PoolClient; file?: string } = {},
+) {
+  const own = !options.client;
+  const client = options.client ?? (await db.connect());
   try {
-    await client.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
+    if (own)
+      await client.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
     await client.query("SET LOCAL statement_timeout='15s'");
     const { rows } = await client.query<InventoryFile>(INVENTORY_SQL, [
       JSON.stringify(PIPELINE_VERSIONS),
+      options.file ?? null,
     ]);
     const files = rows.map((file) => {
       const assessment = assessFile(file);
@@ -163,7 +192,7 @@ export async function getInventory(db: Pool) {
         ) &&
         start &&
         !["succeeded", "cancelled"].includes(r.status)
-          ? `${commandPrefix} --resume ${r.id}`
+          ? `${commandPrefix} --resume ${r.id} --unlimited`
           : null;
       return {
         ...file,
@@ -182,17 +211,17 @@ export async function getInventory(db: Pool) {
         },
       };
     });
-    await client.query("ROLLBACK");
+    if (own) await client.query("ROLLBACK");
     return {
       inspectedAt: new Date().toISOString(),
       categories: listCategorySlugs(),
       files,
     };
   } catch (error) {
-    await client.query("ROLLBACK").catch(() => undefined);
+    if (own) await client.query("ROLLBACK").catch(() => undefined);
     throw error;
   } finally {
-    client.release();
+    if (own) client.release();
   }
 }
 export type InventorySnapshot = Awaited<ReturnType<typeof getInventory>>;

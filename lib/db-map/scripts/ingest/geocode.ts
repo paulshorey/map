@@ -23,6 +23,10 @@ import {
   GeocodeError,
   type GeocodeHit,
 } from "./providers/locationiq.js";
+import { artifactTransaction } from "./execution.js";
+import { canonicalLane } from "./concurrency.js";
+import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
+import { rebuildCanonicalPoi } from "./merge.js";
 import { stableHash } from "./hash.js";
 
 const DEFAULT_GEOCODE_LIMIT = 4500;
@@ -192,7 +196,7 @@ async function writeCache(
   );
 }
 
-async function writeRowCoords(
+export async function writeRowCoords(
   db: Pool,
   id: string,
   lat: number,
@@ -205,8 +209,19 @@ async function writeRowCoords(
     provider: "locationiq",
     version: "locationiq-v1",
   });
-  await db.query(
-    `WITH artifact AS (
+  const linked = (
+    await db.query("SELECT canonical_poi_id FROM research_pois WHERE id=$1", [
+      id,
+    ])
+  ).rows[0]?.canonical_poi_id;
+  const activate = () =>
+    artifactTransaction(db, async (client) => {
+      if (linked)
+        await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [
+          CANONICAL_WRITER_LOCK,
+        ]);
+      const { rows } = await client.query(
+        `WITH artifact AS (
        INSERT INTO research_poi_geocodes (
        normalization_id, input_hash, query_norm, provider, provider_version,
        lat, lng, precision, status, activated_at
@@ -224,9 +239,25 @@ async function writeRowCoords(
        lat = $4, lng = $5, coordinate_source = 'geocode', coordinate_precision = $6,
        geocode_query_norm = $3,
        active_geocode_id = (SELECT id FROM artifact)
-     WHERE id = $1`,
-    [id, inputHash, queryNorm, lat, lng, precision],
-  );
+     WHERE id = $1 RETURNING active_geocode_id,canonical_poi_id`,
+        [id, inputHash, queryNorm, lat, lng, precision],
+      );
+      if (rows[0]?.canonical_poi_id) {
+        if (!linked)
+          throw Object.assign(
+            new Error("Canonical link changed during artifact activation"),
+            { code: "lineage_invalid" },
+          );
+        await rebuildCanonicalPoi(client, rows[0].canonical_poi_id, {
+          noLlm: true,
+        });
+      }
+      return {
+        value: undefined,
+        output: { status: "succeeded", geocode_id: rows[0].active_geocode_id },
+      };
+    });
+  await (linked ? canonicalLane.run(activate) : activate());
 }
 
 export async function runGeocode(
@@ -331,11 +362,6 @@ export async function runGeocode(
     try {
       hit = await geocode(q.display);
     } catch (err) {
-      if (err instanceof GeocodeError) {
-        throw new Error(`Geocode failed for ${row.id}: ${err.message}`, {
-          cause: err,
-        });
-      }
       throw err;
     }
     stats.apiCalls++;

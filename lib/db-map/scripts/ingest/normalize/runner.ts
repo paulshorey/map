@@ -1,7 +1,9 @@
-import { currentAttempt } from "../execution.js";
+import { currentAttempt, artifactTransaction } from "../execution.js";
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import { ingestConfig } from "../config.js";
+import { canonicalLane } from "../concurrency.js";
+import { CANONICAL_WRITER_LOCK } from "../../../lib/ingestion/locks.js";
 import { rebuildCanonicalPoi } from "../merge.js";
 import {
   completeChat,
@@ -288,6 +290,7 @@ async function finishRequest(
        estimated_cost_usd = $11,
        latency_ms = $12,
        error = $13,
+       provider_call_id = $14,
        completed_at = now()
      WHERE id = $1`,
     [
@@ -304,6 +307,9 @@ async function finishRequest(
       result?.usage.estimatedCost ?? null,
       result?.latencyMs ?? null,
       error instanceof Error ? error.message : error ? String(error) : null,
+      result?.providerCallId ??
+        (error instanceof LlmError ? error.providerCallId : null) ??
+        null,
     ],
   );
 }
@@ -671,16 +677,19 @@ async function activateNormalization(
   shadow: boolean,
 ): Promise<void> {
   if (shadow) return;
-  const client = await db.connect();
-  try {
-    await client.query("BEGIN");
-    const shouldRematch =
-      (row.active_match_fingerprint !== null &&
-        row.active_match_fingerprint !== resolved.matchFingerprint) ||
-      (row.active_normalization_id !== normalizationId &&
-        row.coordinate_source === "geocode");
-    await client.query(
-      `UPDATE research_pois SET
+  await canonicalLane.run(() =>
+    artifactTransaction(db, async (client) => {
+      if (row.canonical_poi_id)
+        await client.query("SELECT pg_advisory_xact_lock($1)", [
+          CANONICAL_WRITER_LOCK,
+        ]);
+      const shouldRematch =
+        (row.active_match_fingerprint !== null &&
+          row.active_match_fingerprint !== resolved.matchFingerprint) ||
+        (row.active_normalization_id !== normalizationId &&
+          row.coordinate_source === "geocode");
+      await client.query(
+        `UPDATE research_pois SET
          active_normalization_id = $2::uuid,
          normalization_input_hash = $3,
          normalization_state = $4,
@@ -712,80 +721,84 @@ async function activateNormalization(
          matched_normalization_id = CASE WHEN $25 THEN NULL ELSE $2::uuid END,
          attributes = COALESCE(attributes, '{}'::jsonb) || $26::jsonb
        WHERE id = $1`,
-      [
-        row.id,
-        normalizationId,
-        inputHash,
-        resolved.status === "rejected"
-          ? "rejected"
-          : resolved.status === "degraded"
-            ? "degraded"
-            : "active",
-        resolved.displayName,
-        resolved.matchName,
-        resolved.description,
-        resolved.website,
-        resolved.websiteDomain,
-        resolved.phone,
-        resolved.email,
-        resolved.address,
-        resolved.city,
-        resolved.region,
-        resolved.countryCode,
-        resolved.isPoi,
-        resolved.categorySlugs,
-        resolved.startsAt,
-        resolved.endsAt,
-        resolved.datePrecision,
-        null,
-        null,
-        null,
-        null,
-        shouldRematch,
-        JSON.stringify({
-          ...resolved.attributes,
-          ...(resolved.venue ? { venue: resolved.venue } : {}),
-          normalization: {
-            id: normalizationId,
-            input_hash: inputHash,
-            warnings: resolved.warnings,
-          },
-        }),
-      ],
-    );
-    await client.query(
-      `UPDATE research_poi_normalizations SET activated_at = now() WHERE id = $1`,
-      [normalizationId],
-    );
-    if (row.canonical_poi_id && shouldRematch) {
-      await client.query(
-        `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
-        retirement_reason='normalization_changed' WHERE research_poi_id=$1 AND active`,
-        [row.id],
+        [
+          row.id,
+          normalizationId,
+          inputHash,
+          resolved.status === "rejected"
+            ? "rejected"
+            : resolved.status === "degraded"
+              ? "degraded"
+              : "active",
+          resolved.displayName,
+          resolved.matchName,
+          resolved.description,
+          resolved.website,
+          resolved.websiteDomain,
+          resolved.phone,
+          resolved.email,
+          resolved.address,
+          resolved.city,
+          resolved.region,
+          resolved.countryCode,
+          resolved.isPoi,
+          resolved.categorySlugs,
+          resolved.startsAt,
+          resolved.endsAt,
+          resolved.datePrecision,
+          null,
+          null,
+          null,
+          null,
+          shouldRematch,
+          JSON.stringify({
+            ...resolved.attributes,
+            ...(resolved.venue ? { venue: resolved.venue } : {}),
+            normalization: {
+              id: normalizationId,
+              input_hash: inputHash,
+              warnings: resolved.warnings,
+            },
+          }),
+        ],
       );
-    } else if (row.canonical_poi_id) {
       await client.query(
-        `WITH retired AS (
+        `UPDATE research_poi_normalizations SET activated_at = now() WHERE id = $1`,
+        [normalizationId],
+      );
+      if (row.canonical_poi_id && shouldRematch) {
+        await client.query(
+          `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
+        retirement_reason='normalization_changed' WHERE research_poi_id=$1 AND active`,
+          [row.id],
+        );
+      } else if (row.canonical_poi_id) {
+        await client.query(
+          `WITH retired AS (
         UPDATE research_canonical_memberships SET active=false, retired_at=now(), retirement_reason='normalization_refreshed'
         WHERE research_poi_id=$1 AND active AND normalization_id IS DISTINCT FROM $2::uuid
         RETURNING research_poi_id,canonical_poi_id,match_decision_id,matcher_version
       ) INSERT INTO research_canonical_memberships(research_poi_id,normalization_id,canonical_poi_id,match_decision_id,matcher_version,run_id)
         SELECT research_poi_id,$2,canonical_poi_id,match_decision_id,matcher_version,$3 FROM retired`,
-        [row.id, normalizationId, currentAttempt()?.runId ?? null],
-      );
-    }
-    if (row.canonical_poi_id) {
-      await rebuildCanonicalPoi(client as PoolClient, row.canonical_poi_id, {
-        noLlm: true,
-      });
-    }
-    await client.query("COMMIT");
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
-  }
+          [row.id, normalizationId, currentAttempt()?.runId ?? null],
+        );
+      }
+      if (row.canonical_poi_id) {
+        await rebuildCanonicalPoi(client as PoolClient, row.canonical_poi_id, {
+          noLlm: true,
+        });
+      }
+
+      return {
+        value: undefined,
+        output: {
+          status: "succeeded",
+          normalization_id: normalizationId,
+          active: true,
+        },
+      };
+    }),
+  );
 }
 
 function prepareNormalization(

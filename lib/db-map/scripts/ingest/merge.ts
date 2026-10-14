@@ -1,3 +1,4 @@
+import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { currentAttempt } from "./execution.js";
 import type { PoolClient } from "pg";
 import { chat } from "./providers/llm.js";
@@ -506,6 +507,7 @@ export async function rebuildCanonicalPoi(
   canonicalId: string,
   opts: RebuildOptions,
 ): Promise<void> {
+  await client.query("SELECT pg_advisory_xact_lock($1)",[CANONICAL_WRITER_LOCK]);
   const { rows } = await client.query<MergeRow>(
     `SELECT
        rp.id, m.id AS membership_id, rp.active_normalization_id, rp.active_geocode_id,

@@ -1,4 +1,9 @@
-import { prepareStageQueue } from "./work-queue.js";
+import { measureDatabase } from "./database-telemetry.js";
+import { runRecordScheduler } from "./record-scheduler.js";
+import { EmbeddingBatcher } from "./embedding-batcher.js";
+import { buildEmbedText } from "./embed.js";
+import { configureLlmConcurrency, canonicalLane } from "./concurrency.js";
+import { artifactTransaction } from "./execution.js";
 import { spawn } from "node:child_process";
 import { Execution, lockSource, type AttemptResult } from "./execution.js";
 import { runGeocode } from "./geocode.js";
@@ -33,6 +38,7 @@ export type IngestStage =
   | "report";
 
 export interface OrchestratorOptions {
+  llmConcurrency?: number;
   file: string;
   category: string;
   dryRun: boolean;
@@ -874,7 +880,13 @@ async function recordState(db: Pool, item: RunItem) {
     `SELECT rp.id,rp.active_observation_id,rp.active_normalization_id,
     rp.normalization_state,rp.is_poi,rp.lat,rp.lng,rp.name_normalized,rp.category_slugs,
     (rp.content_embedding IS NOT NULL) AS has_embedding,rp.active_embedding_id,rp.active_geocode_id,
-    rp.canonical_poi_id,rp.retired_at,cp.active_build_id,cp.status AS canonical_status
+    rp.canonical_poi_id,rp.retired_at,cp.active_build_id,cp.status AS canonical_status,
+    EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id) AS membership_valid,
+    EXISTS(SELECT 1 FROM research_canonical_memberships m JOIN canonical_poi_build_inputs b ON b.membership_id=m.id
+      WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
+        AND b.build_id=cp.active_build_id AND b.normalization_id=rp.active_normalization_id
+        AND b.embedding_id IS NOT DISTINCT FROM rp.active_embedding_id AND b.geocode_id IS NOT DISTINCT FROM rp.active_geocode_id) AS lineage_ready,
+    rp.city,rp.region
     FROM research_pois rp LEFT JOIN canonical_pois cp ON cp.id=rp.canonical_poi_id WHERE rp.id=$1`,
     [item.research_poi_id],
   );
@@ -901,8 +913,12 @@ export function resolveResumeOptions(
   const overrides = Object.fromEntries(
     Object.entries(supplied).filter(
       ([key, value]) =>
-        ["maxLlmRequests", "maxCostUsd", "geocodeLimit"].includes(key) &&
-        value !== undefined,
+        [
+          "maxLlmRequests",
+          "maxCostUsd",
+          "geocodeLimit",
+          "llmConcurrency",
+        ].includes(key) && value !== undefined,
     ),
   );
   const opts: OrchestratorOptions = {
@@ -914,7 +930,8 @@ export function resolveResumeOptions(
     dryRun: supplied.dryRun,
     unlimited:
       supplied.unlimited ||
-      (Object.keys(overrides).length === 0 && saved.unlimited),
+      (!Object.keys(overrides).some((key) => key !== "llmConcurrency") &&
+        saved.unlimited),
   };
   if (opts.unlimited) {
     delete opts.maxLlmRequests;
@@ -928,6 +945,7 @@ export async function runOrchestration(
   db: Pool,
   supplied: OrchestratorOptions,
 ): Promise<void> {
+  measureDatabase(db);
   let opts = { ...supplied };
   let previous: any;
   if (opts.resume) {
@@ -1113,10 +1131,8 @@ export async function runOrchestration(
       await db.query(
         `SELECT i.source_record_id FROM research_ingest_run_items i
       LEFT JOIN research_pois rp ON rp.id=i.research_poi_id
-      WHERE i.run_id=$1 AND (rp.id IS NULL OR rp.retired_at IS NOT NULL OR rp.active_observation_id IS DISTINCT FROM i.observation_id
-        OR EXISTS (SELECT 1 FROM research_ingest_attempts a WHERE a.run_id=i.run_id AND a.stage='normalize'
-          AND a.target_key=i.source_record_id AND a.status IN ('succeeded','reused') AND a.output->>'active'='true'
-          AND a.output->>'normalization_id' IS DISTINCT FROM rp.active_normalization_id::text)) LIMIT 1`,
+      WHERE i.run_id=$1 AND NOT EXISTS(SELECT 1 FROM research_ingest_record_verifications v WHERE v.run_id=i.run_id AND v.source_record_id=i.source_record_id AND v.outcome='operator_excluded' AND v.observation_id=i.observation_id) AND (rp.id IS NULL OR rp.retired_at IS NOT NULL OR rp.active_observation_id IS DISTINCT FROM i.observation_id
+        OR false) LIMIT 1`,
         [ctx.runId],
       )
     ).rows[0];
@@ -1125,33 +1141,21 @@ export async function runOrchestration(
         `Pinned input/output changed for ${changed.source_record_id}; start a new run`,
       );
 
-    const stages = ["normalize", "geocode", "embed", "match", "canonical"];
-    const ordered = ["extract", ...stages, "consolidate", "report", "verify"];
-    const start = opts.fromStage ? ordered.indexOf(opts.fromStage) : 0;
+    configureLlmConcurrency(opts.llmConcurrency ?? 4);
+    const embeddings = new EmbeddingBatcher(db);
     let geocodeCalls = 0;
-    for (const stage of stages) {
-      if (start > ordered.indexOf(stage)) continue;
-      const queue = await prepareStageQueue(db, ex, stage, items.length, {
-        source: resolved.source.meta.slug,
-        runId: ctx.runId,
-        noLlm: opts.noLlm,
-        shadow: opts.shadow,
-        reprocess: opts.reprocess === "normalize" || opts.reprocess === "all",
-        generation: ctx.runId,
-        retryFailed: false,
-      });
-      if (ex.stopped) {
-        finalStatus = "paused";
-        reason = ex.stopReason;
-        return;
-      }
-      for (const item of queue.items) {
-        ex.check();
-        if (ex.stopped) {
-          finalStatus = "paused";
-          reason = ex.stopReason;
-          return;
-        }
+    const schedule = await runRecordScheduler({
+      db,
+      ex,
+      run: ctx.runId,
+      from: opts.fromStage,
+      stopAfter: opts.stopAfter,
+      shadow: opts.shadow,
+      concurrency: opts.llmConcurrency ?? 4,
+      finiteBudget:
+        opts.maxLlmRequests !== undefined || opts.maxCostUsd !== undefined,
+      execute: async (item) => {
+        const stage = item.stage;
         const result = await ex.attempt(
           stage,
           item.source_record_id,
@@ -1230,7 +1234,7 @@ export async function runOrchestration(
                   opts.geocodeLimit === undefined
                     ? undefined
                     : Math.max(0, opts.geocodeLimit - geocodeCalls),
-                throttleMs: 1000,
+                throttleMs: 0,
                 dryRun: false,
               });
               geocodeCalls += stats.apiCalls;
@@ -1253,12 +1257,11 @@ export async function runOrchestration(
                   status: "reused",
                   embedding_id: state.active_embedding_id,
                 };
-              const stats = await runEmbed(db, {
-                recordId: item.research_poi_id!,
-                batchSize: 1,
-                throttleMs: 200,
-                dryRun: false,
-              });
+              const text = buildEmbedText(state);
+              if (!text)
+                return { status: "blocked", reason: "embedding_input_empty" };
+              await embeddings.add(item.research_poi_id!, text);
+              const stats = { selected: 1, embedded: 1 };
               const after = await recordState(db, item);
               return {
                 status:
@@ -1270,12 +1273,43 @@ export async function runOrchestration(
               };
             }
             if (stage === "match") {
-              if (state.canonical_poi_id)
+              if (state.canonical_poi_id && state.membership_valid) {
+                if (!state.lineage_ready)
+                  await canonicalLane.run(() =>
+                    artifactTransaction(db, async (client) => {
+                      await rebuildCanonicalPoi(
+                        client,
+                        state.canonical_poi_id,
+                        { noLlm: opts.noLlm },
+                      );
+                      const build = (
+                        await client.query(
+                          "SELECT active_build_id FROM canonical_pois WHERE id=$1",
+                          [state.canonical_poi_id],
+                        )
+                      ).rows[0];
+                      return {
+                        value: undefined,
+                        output: {
+                          status: "succeeded",
+                          canonical_id: state.canonical_poi_id,
+                          build_id: build.active_build_id,
+                        },
+                      };
+                    }),
+                  );
+                const ready = await recordState(db, item);
                 return {
                   status: "reused",
                   canonical_id: state.canonical_poi_id,
-                  build_id: state.active_build_id,
+                  build_id: ready.active_build_id,
                 };
+              }
+              if (state.canonical_poi_id)
+                throw Object.assign(
+                  new Error("Canonical membership lineage mismatch"),
+                  { code: "lineage_invalid" },
+                );
               if (
                 state.lat === null ||
                 state.lng === null ||
@@ -1311,7 +1345,15 @@ export async function runOrchestration(
                 build_id: after.active_build_id,
               };
             }
+            if (!state.lineage_ready)
+              throw Object.assign(
+                new Error("Canonical build input lineage mismatch"),
+                { code: "lineage_invalid" },
+              );
             return {
+              normalization_id: state.active_normalization_id,
+              embedding_id: state.active_embedding_id,
+              geocode_id: state.active_geocode_id,
               status:
                 state.canonical_poi_id && state.active_build_id
                   ? "succeeded"
@@ -1321,7 +1363,7 @@ export async function runOrchestration(
               publication_status: state.canonical_status,
             };
           },
-          true,
+          false,
           async (previous) => {
             if (stage === "normalize") return true;
             const state = await recordState(db, item);
@@ -1345,24 +1387,29 @@ export async function runOrchestration(
               previous.build_id === state.active_build_id
             );
           },
+          item,
         );
-        if (result.status === "paused") {
-          finalStatus = "paused";
-          reason = ex.stopReason || `${stage}:paused`;
-          return;
+
+        if (result.status === "waiting_budget") {
+          ex.stopped = true;
+          ex.stopReason = "provider_budget";
         }
-        if (["waiting_budget", "blocked"].includes(result.status)) {
-          finalStatus =
-            result.status === "waiting_budget" ? "waiting_budget" : "partial";
-          reason = `${stage}:${result.reason ?? result.status}`;
-          return;
-        }
-      }
-      if (opts.stopAfter === stage || (stage === "normalize" && opts.shadow)) {
-        finalStatus = "paused";
-        reason = opts.shadow ? "shadow_complete" : `stop_after_${stage}`;
-        return;
-      }
+        return result;
+      },
+    });
+    if (schedule.budget || schedule.partial || schedule.paused) {
+      finalStatus = schedule.budget
+        ? "waiting_budget"
+        : schedule.partial
+          ? "partial"
+          : "paused";
+      reason = schedule.budget
+        ? "provider_budget"
+        : schedule.partial
+          ? "record_intervention_required"
+          : ex.stopReason ||
+            (opts.shadow ? "shadow_complete" : `stop_after_${opts.stopAfter}`);
+      return;
     }
     if (opts.consolidate) {
       if (opts.limit !== undefined || opts.record)
@@ -1433,7 +1480,7 @@ export async function runOrchestration(
           `SELECT i.source_record_id FROM research_ingest_run_items i
           LEFT JOIN research_pois rp ON rp.id=i.research_poi_id
           LEFT JOIN canonical_pois cp ON cp.id=rp.canonical_poi_id
-          WHERE i.run_id=$1 AND (rp.id IS NULL OR rp.retired_at IS NOT NULL
+          WHERE i.run_id=$1 AND NOT EXISTS(SELECT 1 FROM research_ingest_record_verifications v WHERE v.run_id=i.run_id AND v.source_record_id=i.source_record_id AND v.outcome='operator_excluded' AND v.observation_id=i.observation_id) AND (rp.id IS NULL OR rp.retired_at IS NOT NULL
             OR rp.active_observation_id IS DISTINCT FROM i.observation_id
             OR rp.active_normalization_id IS NULL OR rp.normalization_state IN ('pending','failed','active_stale')
             OR (rp.is_poi AND (rp.lat IS NULL OR rp.lng IS NULL OR rp.content_embedding IS NULL

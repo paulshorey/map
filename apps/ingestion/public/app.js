@@ -79,7 +79,9 @@ function render() {
   );
   $("stat-partial").textContent = number(files.filter(isUnfinished).length);
   $("stat-unstarted").textContent = number(
-    files.filter((f) => f.coverage === "unstarted").length,
+    files.filter(
+      (f) => f.disposition === "import" && f.coverage === "unstarted",
+    ).length,
   );
   document
     .querySelectorAll(".tabs [data-view]")
@@ -128,12 +130,13 @@ function render() {
       (view === "attention" && f.attention) ||
       (view === "unfinished" && isUnfinished(f)) ||
       (view === "review" && f.disposition === "needs_review") ||
-      f.coverage === view
+      (f.coverage === view &&
+        (view !== "unstarted" || f.disposition === "import"))
     );
   });
   $("filtered-count").textContent = number(filtered.length);
   $("table-caption").textContent =
-    `${number(files.filter((f) => f.disposition === "needs_review").length)} files need classification · Counts reflect current file versions`;
+    `${number(files.filter((f) => f.disposition === "import").length)} intended imports · ${number(files.filter((f) => f.disposition === "needs_review").length)} need classification · ${number(files.filter((f) => !["import", "needs_review"].includes(f.disposition)).length)} supporting or excluded · Counts reflect current file versions`;
   $("files").innerHTML = filtered.length
     ? filtered
         .map((f) => {
@@ -186,14 +189,60 @@ function render() {
     $("notice").hidden = false;
   }
 }
+function renderOperations(o) {
+  const panel = $("operations");
+  if (o.components.database.status !== "available") {
+    panel.innerHTML =
+      "<h2>Pipeline evidence unavailable</h2><p>Inspect database connectivity. The displayed inventory may be older.</p>";
+    return;
+  }
+  const active = o.tasks.filter((t) => t.state === "running");
+  const stages = o.tasks.reduce((all, t) => {
+    (all[t.stage] ??= { done: 0, pending: 0, active: 0, blocked: 0 })[
+      t.state === "running"
+        ? "active"
+        : t.state === "quarantined"
+          ? "blocked"
+          : ["succeeded", "reused", "skipped"].includes(t.state)
+            ? "done"
+            : "pending"
+    ] += t.records;
+    return all;
+  }, {});
+  const metrics = o.provider_metrics
+    .map(
+      (m) =>
+        `<li>${esc(label(m.provider))} / ${esc(label(m.operation))}: ${number(m.requests)} calls, ${m.mean_latency_ms === null ? "unknown" : (m.mean_latency_ms / 1000).toFixed(1)}s mean, ${m.mean_batch_size} records/call, ${number(m.failed)} failed</li>`,
+    )
+    .join("");
+  panel.innerHTML = `<h2>${esc(label(o.decision.action))}</h2><p>${esc(o.decision.reason || o.decision.item?.reason || o.execution?.logical_path || "No active worker")}</p>
+    ${o.execution ? `<p class="muted-note">Run <code>${esc(o.execution.run_id)}</code> · ${esc(label(o.execution.status))} · scheduler ${o.execution.scheduler_version} · heartbeat ${date(o.execution.heartbeat_at)}</p>` : ""}
+    ${o.active_tasks?.length ? `<p>Active records: ${o.active_tasks.map((t) => `${esc(t.source_record_id)} (${esc(t.stage)}, ${Math.round(t.active_seconds)}s)`).join(" · ")}</p>` : ""}
+    <div class="stage-overview">${Object.entries(stages)
+      .map(
+        ([name, t]) =>
+          `<div><strong>${esc(label(name))}</strong><span>${number(t.done)} done · ${number(t.active)} active · ${number(t.pending)} pending · ${number(t.blocked)} blocked</span></div>`,
+      )
+      .join("")}</div>
+    <h3>Interventions (${o.interventions.length})</h3>${o.interventions.length ? "<ul>" + o.interventions.map((x) => `<li><strong>${esc(label(x.code))}</strong> · ${esc(x.scope)}${x.source_record_id ? " · record " + esc(x.source_record_id) : ""}<br>${esc(x.message || "Inspect pinned evidence")}</li>`).join("") + "</ul>" : "<p>No current interventions.</p>"}
+    <details><summary>Provider performance and improvement opportunities</summary><ul>${metrics}</ul>${o.improvements.map((x) => `<p><strong>${esc(label(x.code))}</strong> · ${esc(x.confidence)}<br>${esc(x.recommendation)}<br><small>${esc(x.experiment)}</small></p>`).join("")}</details>
+    <p class="muted-note">Scan: ${o.scans.length ? date(o.scans[0].started_at) + " · " + esc(o.scans[0].status) : "No durable scan receipt yet"} · Database evidence ${date(o.observed_at)} · ${number(o.summary.degraded_records)} degraded source records require quality review.</p>`;
+}
 async function refresh() {
   if (loading) return;
   loading = true;
   try {
-    snapshot = await api("/api/inventory");
+    const operations = await api("/api/overview?inventory=1");
+    snapshot = operations.inventory;
     $("error").hidden = true;
     render();
     if (currentId) updateSummary();
+    try {
+      renderOperations(operations);
+    } catch (e) {
+      $("operations").innerHTML =
+        "<h2>Worker evidence unavailable</h2><p>Inventory remains visible. Inspect ingest:overview for the current error.</p>";
+    }
   } catch (e) {
     error(e);
     $("connection").textContent = "Refresh failed · showing last evidence";

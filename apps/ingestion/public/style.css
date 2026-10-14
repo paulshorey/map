@@ -813,3 +813,36 @@ dialog::backdrop {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.operations {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid var(--border, #d9dfe4);
+  border-radius: 12px;
+  background: var(--panel, #fff);
+}
+.operations h3 {
+  margin-top: 20px;
+}
+.stage-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.stage-overview div {
+  padding: 12px;
+  background: rgba(128, 128, 128, 0.06);
+  border-radius: 8px;
+}
+.stage-overview span {
+  display: block;
+  font-size: 12px;
+  margin-top: 6px;
+}
+.operations li {
+  margin-bottom: 10px;
+}
+.operations code {
+  overflow-wrap: anywhere;
+}

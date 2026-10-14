@@ -3,6 +3,9 @@ import { createReadStream } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
 import { extname, resolve, relative } from "node:path";
 import type { Pool } from "pg";
+import { execFileSync } from "node:child_process";
+import { hostInstallationId } from "../../scripts/ingest/host-installation.js";
+import { INGEST_LOCK_NAMESPACE, INVENTORY_SCAN_LOCK } from "./locks.js";
 import {
   POI_RELATIVE_PATH,
   REPO_ROOT,
@@ -82,11 +85,40 @@ export async function discoverFiles(
 export async function refreshInventory(db: Pool, root = REPO_ROOT) {
   const client = await db.connect();
   let locked = false;
+  let scanId: string | undefined;
+  let commit: string | null = null;
+  try {
+    commit = execFileSync("git", ["-C", root, "rev-parse", "HEAD"], {
+      encoding: "utf8",
+      timeout: 3000,
+    }).trim();
+  } catch {}
   try {
     locked = (
-      await client.query("SELECT pg_try_advisory_lock(91832,1) AS locked")
+      await client.query("SELECT pg_try_advisory_lock($1,$2) AS locked", [
+        INGEST_LOCK_NAMESPACE,
+        INVENTORY_SCAN_LOCK,
+      ])
     ).rows[0].locked;
-    if (!locked) throw new Error("Inventory refresh already running");
+    scanId = (
+      await client.query(
+        `INSERT INTO research_ingest_inventory_scans(host_id,checkout,git_commit,status)
+      VALUES($1,$2,$3,$4) RETURNING id`,
+        [hostInstallationId(), root, commit, locked ? "running" : "busy"],
+      )
+    ).rows[0].id;
+    if (!locked) {
+      await client.query(
+        "UPDATE research_ingest_inventory_scans SET finished_at=now(),error='Another inventory scanner owns the scan lock' WHERE id=$1",
+        [scanId],
+      );
+      throw Object.assign(
+        new Error(
+          "Inventory refresh already running: another scanner owns the inventory lock",
+        ),
+        { code: "inventory_scan_busy" },
+      );
+    }
     const files = await discoverFiles(root);
     await client.query("BEGIN");
     await client.query("SET LOCAL statement_timeout='15s'");
@@ -125,8 +157,22 @@ export async function refreshInventory(db: Pool, root = REPO_ROOT) {
       WHERE NOT(logical_path=ANY($1::text[]))`,
       [files.map((f) => f.path)],
     );
+    await client.query(
+      `UPDATE research_ingest_inventory_scans SET status='succeeded',finished_at=clock_timestamp(),discovered=$2,missing=$3,errors=$4 WHERE id=$1`,
+      [
+        scanId,
+        files.length,
+        missing.rowCount,
+        JSON.stringify(
+          files
+            .filter((f) => f.error)
+            .map((f) => ({ path: f.path, error: f.error })),
+        ),
+      ],
+    );
     await client.query("COMMIT");
     return {
+      scan_id: scanId,
       discovered: files.length,
       missing: missing.rowCount,
       errors: files
@@ -135,11 +181,21 @@ export async function refreshInventory(db: Pool, root = REPO_ROOT) {
     };
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
+    if (scanId && locked)
+      await client
+        .query(
+          "UPDATE research_ingest_inventory_scans SET status='failed',finished_at=clock_timestamp(),error=$2 WHERE id=$1",
+          [scanId, error instanceof Error ? error.message : String(error)],
+        )
+        .catch(() => undefined);
     throw error;
   } finally {
     if (locked)
       await client
-        .query("SELECT pg_advisory_unlock(91832,1)")
+        .query("SELECT pg_advisory_unlock($1,$2)", [
+          INGEST_LOCK_NAMESPACE,
+          INVENTORY_SCAN_LOCK,
+        ])
         .catch(() => undefined);
     client.release();
   }

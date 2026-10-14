@@ -3,6 +3,8 @@ import { afterEach, beforeEach, test } from "node:test";
 import { ingestConfig, readLlmConfig } from "../config.js";
 import { stableHash } from "../hash.js";
 import { normalizationInputHash } from "../normalize/cache.js";
+import { withAttemptContext } from "../execution.js";
+import { isTransientProviderError } from "../provider-recovery.js";
 import {
   buildChatRequest,
   completeChat,
@@ -55,6 +57,69 @@ function completion(
     usage,
   };
 }
+
+test("database cancellation of an in-flight fetch preserves the systemic error", async () => {
+  const controller = new AbortController();
+  const databaseError = Object.assign(
+    new Error("timeout exceeded when trying to connect"),
+    { code: "database_pool_checkout_timeout" },
+  );
+  const ctx = {
+    runId: "fixture",
+    attemptId: "fixture",
+    stage: "match",
+    execution: {
+      id: "fixture",
+      stopped: false,
+      abortController: controller,
+      db: { query: async () => ({ rows: [] }) },
+    },
+  } as any;
+  globalThis.fetch = async () => {
+    calls++;
+    controller.abort(databaseError);
+    throw databaseError;
+  };
+  await withAttemptContext(ctx, () =>
+    assert.rejects(
+      completeChat({ system: "fixture", user: "fixture" }),
+      (error) => {
+        assert.equal(error, databaseError);
+        assert.equal(isTransientProviderError(error), false);
+        return true;
+      },
+    ),
+  );
+  assert.equal(calls, 1);
+});
+
+test("an independent fetch transport failure remains provider-retryable", async () => {
+  const ctx = {
+    runId: "fixture",
+    attemptId: "fixture",
+    stage: "match",
+    execution: {
+      id: "fixture",
+      stopped: false,
+      abortController: new AbortController(),
+      db: { query: async () => ({ rows: [] }) },
+    },
+  } as any;
+  globalThis.fetch = async () => {
+    calls++;
+    throw new Error("socket hang up");
+  };
+  await withAttemptContext(ctx, () =>
+    assert.rejects(
+      completeChat({ system: "fixture", user: "fixture" }),
+      (error) => {
+        assert.equal(isTransientProviderError(error), true);
+        return true;
+      },
+    ),
+  );
+  assert.equal(calls, 1);
+});
 
 test("defaults pin Fireworks V4.1 and reject unbounded/ambiguous thinking settings", () => {
   assert.equal(readLlmConfig({}).thinkingBudgetTokens, 2048);

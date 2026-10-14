@@ -194,7 +194,7 @@ it or that the resulting model turn completed.
 ## Evidence, stops, and recovery
 
 Managed normalization handles bounded transient provider recovery inside the existing worker;
-see [the runbook](poi-ingestion.md#transient-normalization-provider-recovery) for limits and evidence.
+see [the runbook](poi-ingestion.md#transient-provider-recovery) for limits and evidence.
 A live cooldown with a current heartbeat is expected. Leave it to ordinary code; do not wake
 an agent, stop it merely for a 429, or launch a second worker. Smoke deadlines still win.
 After a terminal `provider_recovery_exhausted` callback, inspect the exact attempt/status,

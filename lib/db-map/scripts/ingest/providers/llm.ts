@@ -7,8 +7,12 @@
  * Docs: https://docs.fireworks.ai/guides/querying-text-models
  */
 import { ingestConfig } from "../config.js";
+import { llmLimiter } from "../concurrency.js";
+import { currentAttempt } from "../execution.js";
+import { beginProviderCall, endProviderCall } from "../provider-telemetry.js";
 
 export class LlmError extends Error {
+  providerCallId?: string;
   constructor(
     message: string,
     readonly retryable = false,
@@ -44,6 +48,7 @@ export interface ChatOptions {
   responseFormat?: JsonSchemaResponseFormat | { type: "json_object" };
   timeoutMs?: number;
   retries?: number;
+  onResponse?: (headers: Headers, status: number) => void;
 }
 
 export interface ChatResult {
@@ -58,6 +63,8 @@ export interface ChatResult {
     estimatedCost: number | null;
   };
   latencyMs: number;
+  reasoningTokens?: number | null;
+  providerCallId?: string;
 }
 
 /**
@@ -196,6 +203,7 @@ interface ProviderUsage {
   completion_tokens?: number;
   prompt_tokens_details?: { cached_tokens?: number };
   total_tokens?: number;
+  completion_tokens_details?: { reasoning_tokens?: number };
 }
 
 function validTokens(value: unknown): value is number {
@@ -230,12 +238,14 @@ function estimateCostUsd(usage: ProviderUsage, model: string): number | null {
 }
 
 /** OpenAI-compatible Fireworks completion with bounded retry and telemetry. */
-export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
+async function completeChatUncontrolled(
+  opts: ChatOptions,
+): Promise<ChatResult> {
   const { model, baseUrl, apiKey } = ingestConfig.llm;
   // Configuration failures are not transient network failures.
   const request = buildChatRequest(opts);
   const authorization = `Bearer ${apiKey()}`;
-  const retries = opts.retries ?? 2;
+  const retries = opts.retries ?? (currentAttempt() ? 0 : 2);
   let lastError: LlmError | undefined;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -248,7 +258,12 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
     try {
       const res = await fetch(`${baseUrl}/chat/completions`, {
         method: "POST",
-        signal: controller.signal,
+        signal: currentAttempt()
+          ? AbortSignal.any([
+              controller.signal,
+              currentAttempt()!.execution.abortController.signal,
+            ])
+          : controller.signal,
         headers: {
           "Content-Type": "application/json",
           Authorization: authorization,
@@ -256,6 +271,7 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
         body: JSON.stringify(request),
       });
 
+      opts.onResponse?.(res.headers, res.status);
       const raw = await res.text();
       let body: {
         model?: string;
@@ -317,6 +333,9 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
             : null,
         },
         latencyMs: Date.now() - started,
+        reasoningTokens: tokenCount(
+          body.usage?.completion_tokens_details?.reasoning_tokens,
+        ),
       };
       if (finishReason === "length") {
         throw new LlmError(
@@ -338,6 +357,11 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
       }
       return result;
     } catch (error) {
+      // A scheduler/database failure can abort this fetch with its own Error reason.
+      // Preserve that failure; it is not a retryable provider transport outage.
+      const executionSignal =
+        currentAttempt()?.execution.abortController.signal;
+      if (executionSignal?.aborted) executionSignal.throwIfAborted();
       const normalized =
         error instanceof LlmError
           ? error
@@ -366,6 +390,75 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
     }
   }
   throw lastError ?? new LlmError("Completion failed");
+}
+
+/** Shared execution-wide admission and common telemetry for every LLM operation. */
+export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
+  const ctx = currentAttempt();
+  if (!ctx) return completeChatUncontrolled(opts);
+  const call = await beginProviderCall(
+    "fireworks",
+    ctx.stage,
+    ingestConfig.llm.model,
+  );
+  const queued = Date.now();
+  let headers: Headers | undefined,
+    status: number | undefined,
+    queueMs = 0;
+  try {
+    const result = await llmLimiter.run(
+      async () => {
+        queueMs = Date.now() - queued;
+        return completeChatUncontrolled({
+          ...opts,
+          onResponse: (h, s) => {
+            headers = h;
+            status = s;
+            llmLimiter.observe(
+              h,
+              s,
+              Math.ceil(JSON.stringify(buildChatRequest(opts)).length / 4),
+              chatRequestSettings(opts.maxTokens).max_tokens,
+              retryAfterMs(h.get("retry-after")),
+            );
+            opts.onResponse?.(h, s);
+          },
+        });
+      },
+      () => ctx.execution.stopped,
+    );
+    await endProviderCall(call, {
+      queueMs,
+      latencyMs: result.latencyMs,
+      promptTokens: result.usage.promptTokens,
+      cachedTokens: result.usage.cachedTokens,
+      completionTokens: result.usage.completionTokens,
+      reasoningTokens: result.reasoningTokens,
+      cost: result.usage.estimatedCost,
+      status,
+      headers,
+    });
+    return { ...result, providerCallId: call?.id };
+  } catch (error) {
+    if (error instanceof LlmError) {
+      error.providerCallId = call?.id;
+      if (error.result) error.result.providerCallId = call?.id;
+    }
+    const result = error instanceof LlmError ? error.result : undefined;
+    await endProviderCall(call, {
+      queueMs,
+      status,
+      headers,
+      error,
+      latencyMs: result?.latencyMs,
+      promptTokens: result?.usage.promptTokens,
+      cachedTokens: result?.usage.cachedTokens,
+      completionTokens: result?.usage.completionTokens,
+      reasoningTokens: result?.reasoningTokens,
+      cost: result?.usage.estimatedCost,
+    });
+    throw error;
+  }
 }
 
 /** Compatibility single-turn helper used by date/match/description code. */
