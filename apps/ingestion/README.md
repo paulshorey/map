@@ -13,10 +13,24 @@ pnpm dev:ingestion
 Open **http://127.0.0.1:5001**. `PORT` or `INGESTION_DASHBOARD_PORT` overrides the port.
 The server binds only to loopback. Keep it local; this is not an authenticated hosted admin app.
 The dashboard supports iframe previews, including the local-dev Apps view. Its CSP restricts
-scripts, styles and API connections to the dashboard's own origin without restricting parent
-frames. API requests still require the dashboard's exact local Host and same-origin checks;
+scripts, styles and API connections to the dashboard's own origin and permits trusted parent
+frames as described below. API requests still require the dashboard's exact local Host and same-origin checks;
 mutations also require JSON and the dashboard client header. Reload the parent page after
 changing preview settings so its frame policy includes the dashboard address.
+
+Iframe previews allow same-origin and HTTP loopback parents (`127.0.0.1` and `localhost`)
+on any port, including local-dev at port 8000. Other sites cannot frame the dashboard.
+Loopback ports remain flexible for local controllers and compatible with local-dev's framing
+probe. The Host/origin checks and JSON mutation requirements still apply inside an iframe.
+To trust another controller, set `INGESTION_FRAME_ORIGINS` to a whitespace-separated list of
+exact HTTP(S) origins before starting the dashboard; for example,
+`https://pauls-macbook-pro.taila9173b.ts.net:8000`. Wildcards, credentials, paths, queries and
+fragments are rejected at startup. Do not use a whole-tailnet wildcard.
+The current local-dev ingestion service has `publish: false` and no private proxy URL, so its
+private Tailscale view cannot preview this loopback-only service. Adding a trusted parent does
+not enable a proxy or change API Host/origin admission. Private access needs a separate,
+reviewed proxy/authentication integration.
+The [private dashboard framing note](docs/framing.md) explains the retained lightweight policy.
 
 The inventory persists file hashes/history, missing files, classifications, notes and priorities.
 A scan streams and hashes JSON/JSONL/CSV/KML/KMZ files, without parsing all their records,

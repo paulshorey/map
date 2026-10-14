@@ -3,6 +3,11 @@
 Read the root AGENTS.md, database guide, and shared ingestion runbook. This is a loopback-only
 Node/TypeScript server plus a small static browser app, separate from the public map/mobile app.
 
+This dashboard is a private internal app, never publicly accessible. It runs on this
+computer or an approved-device private Tailscale proxy; local-dev iframe previews are
+intentional. Preserve simple existing checks without adding public-service security
+infrastructure. See [the framing note](docs/framing.md) for the small retained allowlist.
+
 - Keep completion logic in `@lib/db-map/sql/ingestion-inventory` and its shared assessment;
   do not implement a second browser-only interpretation of success.
 - Use the shared `ingest:control` CLI for human/agent worker lifecycle and maintenance.
