@@ -1,5 +1,5 @@
-export const NORMALIZER_VERSION = "hybrid-v3";
-export const PROMPT_VERSION = "poi-normalize-v2";
+export const NORMALIZER_VERSION = "hybrid-v5";
+export const PROMPT_VERSION = "poi-normalize-v4";
 export const SCHEMA_VERSION = "poi-normalize-schema-v1";
 export const EXAMPLES_VERSION = "poi-normalize-examples-v1";
 
@@ -55,6 +55,18 @@ export interface LlmNormalizationOutput {
 
 const nullableString = { anyOf: [{ type: "string" }, { type: "null" }] };
 const nullableInteger = { anyOf: [{ type: "integer" }, { type: "null" }] };
+const entityKinds = [
+  "place",
+  "event_series",
+  "event_occurrence",
+  "contained_feature",
+  "organization",
+  "article",
+  "region",
+  "tour",
+  "listing",
+  "other",
+];
 
 export const NORMALIZATION_JSON_SCHEMA: Record<string, unknown> = {
   type: "object",
@@ -95,18 +107,7 @@ export const NORMALIZATION_JSON_SCHEMA: Record<string, unknown> = {
         invalid_reason: nullableString,
         entity_kind: {
           type: "string",
-          enum: [
-            "place",
-            "event_series",
-            "event_occurrence",
-            "contained_feature",
-            "organization",
-            "article",
-            "region",
-            "tour",
-            "listing",
-            "other",
-          ],
+          enum: entityKinds,
         },
         display_name: nullableString,
         series_name: nullableString,
@@ -219,5 +220,46 @@ export function parseNormalizationOutput(
       "Normalization attributes/warnings/evidence must be arrays",
     );
   }
+  if (!entityKinds.includes(r.entity_kind as string))
+    throw new Error("Normalization entity_kind is invalid");
+  if (r.edition_year !== null && !Number.isSafeInteger(r.edition_year))
+    throw new Error("Normalization edition_year must be an integer or null");
+  if (
+    r.date_precision !== null &&
+    !["day", "month", "year"].includes(r.date_precision as string)
+  )
+    throw new Error("Normalization date_precision is invalid");
+  if (!r.warnings.every((v) => typeof v === "string"))
+    throw new Error("Normalization warnings must be strings");
+  if (
+    !r.attributes.every(
+      (v) =>
+        v &&
+        typeof v === "object" &&
+        !Array.isArray(v) &&
+        typeof v.key === "string" &&
+        v.key.trim().length > 0 &&
+        (typeof v.value === "string" ||
+          typeof v.value === "boolean" ||
+          (typeof v.value === "number" && Number.isFinite(v.value))),
+    )
+  )
+    throw new Error(
+      "Normalization attributes must contain keys and finite primitive values",
+    );
+  if (
+    !r.evidence.every(
+      (v) =>
+        v &&
+        typeof v === "object" &&
+        !Array.isArray(v) &&
+        typeof v.field === "string" &&
+        Array.isArray(v.paths) &&
+        v.paths.every((path: unknown) => typeof path === "string"),
+    )
+  )
+    throw new Error(
+      "Normalization evidence must contain fields and string paths",
+    );
   return value as LlmNormalizationOutput;
 }

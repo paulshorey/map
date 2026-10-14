@@ -11,6 +11,8 @@ Authority rules:
 - Dates must be real calendar dates supported by the record. Invalid dates stay null.
 - Do not infer a year that is not supported by the input.
 - Missing values stay null. Never convert missing into false, zero, or an estimate.
+- Preserve every explicitly supplied POI attribute from captured.attributes, including rating, reviews_count, numeric zero, and false values. Do not treat an explicit zero or false as missing. Cite captured attribute paths as evidence.
+- Additional attributes must cite the exact input value under evidence field "attributes.<key>"; a generic "attributes" citation does not support extra keys. Do not invent amenities or replace source values with estimates.
 - Preserve native-language names. Remove edition years/ordinal boilerplate from display and series names.
 - A record is a POI only when it describes one visitable place, event series, or event occurrence.
 - Articles, organizations, regions, tours with many independent stops, and generic listings are not POIs.

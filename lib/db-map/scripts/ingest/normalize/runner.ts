@@ -10,6 +10,7 @@ import {
   buildChatRequest,
   isUnsupportedResponseFormat,
   LlmError,
+  type ChatOptions,
   type ChatMessage,
   type ChatResult,
 } from "../providers/llm.js";
@@ -314,7 +315,7 @@ async function finishRequest(
   );
 }
 
-async function callNormalizer(
+export async function callNormalizer(
   db: Pool,
   row: NormalizeRow,
   inputHash: string,
@@ -343,6 +344,8 @@ async function callNormalizer(
       },
     },
   };
+  let effectiveResponseFormat: ChatOptions["responseFormat"] =
+    requestOptions.responseFormat;
   let requestId = await insertRequest(
     db,
     row,
@@ -352,6 +355,7 @@ async function callNormalizer(
   );
   let result: ChatResult | null = null;
   let parsed: unknown;
+  let validating = false;
   try {
     try {
       result = await completeChat({
@@ -362,9 +366,10 @@ async function callNormalizer(
       if (!isUnsupportedResponseFormat(error)) throw error;
       // The compatibility fallback is another HTTP request and must retain its own budget/audit row.
       await finishRequest(db, requestId, null, undefined, error);
+      effectiveResponseFormat = { type: "json_object" };
       const fallbackOptions = {
         ...requestOptions,
-        responseFormat: { type: "json_object" as const },
+        responseFormat: effectiveResponseFormat,
       };
       requestId = await insertRequest(
         db,
@@ -378,17 +383,22 @@ async function callNormalizer(
         ...fallbackOptions,
       });
     }
+    validating = true;
     parsed = parseJsonContent(result.content);
     const output = parseNormalizationOutput(parsed, row.id);
+    validating = false;
     await finishRequest(db, requestId, result, parsed);
     return { output, result, requestId };
   } catch (error) {
     await finishRequest(db, requestId, result, parsed, error);
-    if (!result?.content || error instanceof LlmError) throw error;
+    const incompleteOutput = error instanceof LlmError && !error.status && !error.retryable &&
+      /Completion truncated|Empty final/.test(error.message) && error.result;
+    result ??= incompleteOutput ? error.result ?? null : null;
+    if (!result || (!validating && !incompleteOutput)) throw error;
 
     const repairMessages: ChatMessage[] = [
       ...messages,
-      { role: "assistant", content: result.content },
+      ...(result.content ? [{ role: "assistant" as const, content: result.content }] : []),
       {
         role: "user",
         content:
@@ -396,12 +406,19 @@ async function callNormalizer(
           `Return one corrected JSON object matching the schema. record.record_id must be exactly ${row.id}, not source_record_id. Do not explain.`,
       },
     ];
+    const repairOptions = {
+      ...requestOptions,
+      responseFormat: effectiveResponseFormat,
+      maxTokens: incompleteOutput
+        ? NORMALIZATION_MAX_OUTPUT_TOKENS * 2
+        : requestOptions.maxTokens,
+    };
     const repairId = await insertRequest(
       db,
       row,
       inputHash,
       profileVersion,
-      buildChatRequest({ ...requestOptions, messages: repairMessages }),
+      buildChatRequest({ ...repairOptions, messages: repairMessages }),
       requestId,
     );
     let repairResult: ChatResult | null = null;
@@ -410,8 +427,8 @@ async function callNormalizer(
       repairResult = await completeChat({
         retries: currentAttempt() ? 0 : undefined,
         messages: repairMessages,
-        maxTokens: requestOptions.maxTokens,
-        responseFormat: requestOptions.responseFormat,
+        maxTokens: repairOptions.maxTokens,
+        responseFormat: repairOptions.responseFormat,
       });
       repairParsed = parseJsonContent(repairResult.content);
       const repaired = parseNormalizationOutput(repairParsed, row.id);
@@ -836,7 +853,7 @@ function prepareNormalization(
       profileVersion: profile.version,
       examplesVersion: EXAMPLES_VERSION,
       model: ingestConfig.llm.model,
-      llmMode: opts.noLlm ? "deterministic_only" : "deepseek",
+      llmMode: opts.noLlm ? "deterministic_only" : "provider",
       reprocessGeneration,
     },
     opts.noLlm,

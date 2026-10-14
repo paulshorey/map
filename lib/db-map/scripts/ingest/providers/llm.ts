@@ -68,16 +68,25 @@ export interface ChatResult {
 }
 
 /**
- * Fireworks serverless list prices for DeepSeek V4.1 Flash
- * (https://docs.fireworks.ai/serverless/pricing, checked 2026-10-05):
- * $0.30 / $0.006 / $1.20 per 1M tokens (input / cached input / output).
+ * Fireworks standard serverless prices per 1M tokens
+ * (https://docs.fireworks.ai/serverless/pricing, checked 2026-10-13).
  * Used only when the API omits `usage.estimated_cost`.
  */
-const FIREWORKS_USD_PER_MTOK = {
-  input: 0.3,
-  cachedInput: 0.006,
-  output: 1.2,
-} as const;
+const FIREWORKS_USD_PER_MTOK: Record<
+  string,
+  { input: number; cachedInput: number; output: number }
+> = {
+  "accounts/fireworks/models/glm-5p3-flash": {
+    input: 0.15,
+    cachedInput: 0.03,
+    output: 0.5,
+  },
+  "accounts/fireworks/models/deepseek-v4p1-flash": {
+    input: 0.3,
+    cachedInput: 0.006,
+    output: 1.2,
+  },
+};
 
 /** Non-secret settings shared by the request journal and normalization cache identity. */
 export function chatRequestSettings(maxTokens = 1024) {
@@ -107,7 +116,7 @@ export function chatRequestSettings(maxTokens = 1024) {
   return {
     model,
     temperature: 0,
-    // V4.1 integers >= 1024 select high thinking AND enforce a thinking-token cap.
+    // GLM accepts a positive thinking-token cap; V4.1 needs >= 1024 for a hard cap.
     // Do not also send `thinking`: Fireworks rejects both controls together.
     reasoning_effort: thinkingBudgetTokens,
     max_tokens: maxTokens + thinkingBudgetTokens,
@@ -204,6 +213,7 @@ interface ProviderUsage {
   prompt_tokens_details?: { cached_tokens?: number };
   total_tokens?: number;
   completion_tokens_details?: { reasoning_tokens?: number };
+  output_tokens_details?: { reasoning_tokens?: number };
 }
 
 function validTokens(value: unknown): value is number {
@@ -221,8 +231,11 @@ function estimateCostUsd(usage: ProviderUsage, model: string): number | null {
     usage.estimated_cost >= 0
   )
     return usage.estimated_cost;
-  // Never apply this model's rates to an override, router, or dedicated deployment.
-  if (model !== "accounts/fireworks/models/deepseek-v4p1-flash") return null;
+  // Never apply serverless rates to an unknown model, router, or deployment.
+  const rates = Object.hasOwn(FIREWORKS_USD_PER_MTOK, model)
+    ? FIREWORKS_USD_PER_MTOK[model]
+    : undefined;
+  if (!rates) return null;
   const prompt = usage.prompt_tokens;
   const completion = usage.completion_tokens;
   if (!validTokens(prompt) || !validTokens(completion)) return null;
@@ -230,9 +243,9 @@ function estimateCostUsd(usage: ProviderUsage, model: string): number | null {
   if (!validTokens(cached) || cached > prompt) return null;
   const uncached = prompt - cached;
   return (
-    (uncached * FIREWORKS_USD_PER_MTOK.input +
-      cached * FIREWORKS_USD_PER_MTOK.cachedInput +
-      completion * FIREWORKS_USD_PER_MTOK.output) /
+    (uncached * rates.input +
+      cached * rates.cachedInput +
+      completion * rates.output) /
     1_000_000
   );
 }
@@ -334,7 +347,8 @@ async function completeChatUncontrolled(
         },
         latencyMs: Date.now() - started,
         reasoningTokens: tokenCount(
-          body.usage?.completion_tokens_details?.reasoning_tokens,
+          body.usage?.completion_tokens_details?.reasoning_tokens ??
+            body.usage?.output_tokens_details?.reasoning_tokens,
         ),
       };
       if (finishReason === "length") {

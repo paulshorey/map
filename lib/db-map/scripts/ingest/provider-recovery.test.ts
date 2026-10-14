@@ -301,7 +301,7 @@ test("HTML 429 retains status and cooldown without hidden managed transport retr
   }
 });
 
-test("completeChat posts to Fireworks with bounded high thinking and current pricing", async () => {
+test("completeChat posts to Fireworks with bounded GLM thinking and current pricing", async () => {
   const original = globalThis.fetch;
   const oldKey = process.env.FIREWORKS_API_KEY;
   process.env.FIREWORKS_API_KEY = "fixture";
@@ -309,7 +309,7 @@ test("completeChat posts to Fireworks with bounded high thinking and current pri
   globalThis.fetch = async (input, init) => {
     request = { url: String(input), init: init ?? {} };
     return Response.json({
-      model: "accounts/fireworks/models/deepseek-v4p1-flash",
+      model: "accounts/fireworks/models/glm-5p3-flash",
       choices: [{ message: { content: '{"ok":true}' }, finish_reason: "stop" }],
       usage: {
         prompt_tokens: 100,
@@ -331,9 +331,9 @@ test("completeChat posts to Fireworks with bounded high thinking and current pri
       "https://api.fireworks.ai/inference/v1/chat/completions",
     );
     const body = JSON.parse(String(request.init.body));
-    assert.equal(body.model, "accounts/fireworks/models/deepseek-v4p1-flash");
-    assert.equal(body.reasoning_effort, 2048);
-    assert.equal(body.max_tokens, 3072);
+    assert.equal(body.model, "accounts/fireworks/models/glm-5p3-flash");
+    assert.equal(body.reasoning_effort, 256);
+    assert.equal(body.max_tokens, 1280);
     assert.equal(body.service_tier, "default");
     assert.equal(body.thinking, undefined);
     assert.equal(
@@ -344,7 +344,7 @@ test("completeChat posts to Fireworks with bounded high thinking and current pri
     assert.equal(result.usage.cachedTokens, 10);
     assert.equal(
       result.usage.estimatedCost,
-      (90 * 0.3 + 10 * 0.006 + 20 * 1.2) / 1_000_000,
+      (90 * 0.15 + 10 * 0.03 + 20 * 0.5) / 1_000_000,
     );
   } finally {
     globalThis.fetch = original;

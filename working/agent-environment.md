@@ -44,12 +44,21 @@ For ingestion work, also inject:
 - `JINA_API_KEY`
 - `FIREWORKS_API_KEY`
 
-The default LLM is Fireworks DeepSeek V4.1 Flash with bounded thinking. Remove old
+The default LLM is Fireworks GLM Flash with a 256-token thinking allowance. Remove old
 `LLM_PROVIDER=deepinfra`, `LLM_MODEL`, and DeepInfra `LLM_BASE_URL` overrides from the
 host's injected/persisted configuration when switching. The setup script preserves
 explicit overrides; it cannot safely guess which existing values should be replaced.
 Provider behavior and token/cost limits are documented in the
 [ingestion runbook](../data/poi-ingestion.md#fireworks-deepseek-configuration).
+
+Older generated `agent.env` files can retain the previous DeepSeek model and 2,048-token
+thinking setting. An explicit value cannot reliably be distinguished from an old default,
+so ordinary setup preserves it. To deliberately migrate just model/thinking settings to
+the current code defaults, use `bash scripts/agent-env.sh setup --reset-llm-defaults`.
+This opt-in resets `LLM_MODEL` and `LLM_THINKING_BUDGET_TOKENS`, preserves credentials and
+other provider settings, and rewrites the managed environment through normal setup. It does
+not run on this Mac during repository validation. `bash scripts/agent-env.test.sh` checks
+preservation and migration using only temporary files and fake values.
 
 Optional:
 

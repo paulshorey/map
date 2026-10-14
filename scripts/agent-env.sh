@@ -20,6 +20,7 @@
 #   --seed / AGENT_ENV_SEED=1           also seed sample map POIs (local DB only)
 #   --skip-build / AGENT_ENV_SKIP_BUILD=1
 #   --with-ingestion                    start the local ingestion dashboard too
+#   --reset-llm-defaults                 explicitly clear saved model/thinking overrides
 #   AGENT_ENV_REPO                      override repository root
 
 set -euo pipefail
@@ -43,6 +44,7 @@ LOCAL_DB=0
 SEED=0
 SKIP_BUILD=0
 WITH_INGESTION=0
+RESET_LLM_DEFAULTS=0
 COMMAND="setup"
 
 log() { printf '[agent-env] %s\n' "$*"; }
@@ -152,11 +154,15 @@ parse_args() {
       --seed) SEED=1 ;;
       --skip-build) SKIP_BUILD=1 ;;
       --with-ingestion) WITH_INGESTION=1 ;;
+      --reset-llm-defaults) RESET_LLM_DEFAULTS=1 ;;
       -h|--help) COMMAND="help" ;;
       *) die "Unknown argument: ${arg}" ;;
     esac
     shift
   done
+  if [[ "${RESET_LLM_DEFAULTS}" -eq 1 && ! "${COMMAND}" =~ ^(setup|install|bootstrap|help)$ ]]; then
+    die "--reset-llm-defaults is a setup-only migration; existing overrides are preserved otherwise."
+  fi
 }
 
 ensure_dirs() {
@@ -226,9 +232,9 @@ persist_runtime_env() {
     printf 'export EMBEDDINGS_MODEL="${EMBEDDINGS_MODEL:-jina-embeddings-v3}"\n'
     printf 'export EMBEDDINGS_DIM="${EMBEDDINGS_DIM:-384}"\n'
     printf 'export LLM_PROVIDER="${LLM_PROVIDER:-fireworks}"\n'
-    printf 'export LLM_MODEL="${LLM_MODEL:-accounts/fireworks/models/deepseek-v4p1-flash}"\n'
+    printf 'export LLM_MODEL="${LLM_MODEL:-accounts/fireworks/models/glm-5p3-flash}"\n'
     printf 'export LLM_BASE_URL="${LLM_BASE_URL:-https://api.fireworks.ai/inference/v1}"\n'
-    printf 'export LLM_THINKING_BUDGET_TOKENS="${LLM_THINKING_BUDGET_TOKENS:-2048}"\n'
+    # Persist explicit thinking overrides above; config.ts chooses model-specific defaults.
   } > "${tmp}"
   chmod 600 "${tmp}"
   mv "${tmp}" "${ENV_FILE}"
@@ -242,6 +248,12 @@ load_runtime_env() {
     # shellcheck disable=SC1090
     . "${ENV_FILE}"
     set +a
+  fi
+  if [[ "${RESET_LLM_DEFAULTS}" -eq 1 ]]; then
+    # Opt-in migration: an old generated 2048 cap is indistinguishable from an
+    # intentional override after being loaded/re-saved. Never silently overwrite it.
+    unset LLM_MODEL LLM_THINKING_BUDGET_TOKENS
+    log "Reset model/thinking overrides to the current code defaults."
   fi
 }
 
@@ -749,4 +761,6 @@ main() {
   esac
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi
