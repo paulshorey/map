@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import type { Pool } from "pg";
 import { callNormalizer } from "./runner.js";
 import { ingestConfig, readLlmConfig } from "../config.js";
+import { LlmError } from "../providers/llm.js";
+import { recordFailure } from "../record-scheduler.js";
 
 const originalFetch = globalThis.fetch,
   originalConfig = { ...ingestConfig.llm },
@@ -110,8 +112,85 @@ test("normalization retries truncated/empty output once with a bounded larger al
 });
 test("failed normalization repair cannot trigger a third request", async () => {
   respond('{"record":', "stop", "bad again");
-  await assert.rejects(callNormalizer(db, row, "hash", "generic", "v1", {}));
+  await assert.rejects(
+    callNormalizer(db, row, "hash", "generic", "v1", {}),
+    (error: unknown) => {
+      assert.ok(error instanceof LlmError);
+      assert.equal(recordFailure(error), true);
+      return true;
+    },
+  );
   assert.equal(requests.length, 2);
+});
+test("a second schema-invalid normalization is quarantinable validation failure", async () => {
+  const invalid = (changes: Record<string, unknown>) =>
+    JSON.stringify({ record: { ...output.record, ...changes } });
+  respond(
+    invalid({ entity_kind: "made_up" }),
+    "stop",
+    invalid({ attributes: [{ key: "", value: true }] }),
+  );
+  await assert.rejects(
+    callNormalizer(db, row, "hash", "generic", "v1", {}),
+    (error: unknown) => {
+      assert.ok(error instanceof LlmError);
+      assert.equal(error.retryable, false);
+      assert.equal(error.status, undefined);
+      assert.match(error.message, /attributes must contain keys/);
+      assert.equal(recordFailure(error), true);
+      return true;
+    },
+  );
+  assert.equal(requests.length, 2);
+});
+test("provider and audit failures during normalization repair are not quarantined", async () => {
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls++;
+    if (calls === 1)
+      return Response.json({
+        model: ingestConfig.llm.model,
+        choices: [
+          { message: { content: '{"record":' }, finish_reason: "stop" },
+        ],
+        usage: { prompt_tokens: 1, completion_tokens: 1 },
+      });
+    return Response.json(
+      { error: { message: "Unauthorized" } },
+      { status: 401 },
+    );
+  };
+  await assert.rejects(
+    callNormalizer(db, row, "hash", "generic", "v1", {}),
+    (error: unknown) => {
+      assert.ok(error instanceof LlmError);
+      assert.match(error.message, /Unauthorized/);
+      assert.equal(recordFailure(error), false);
+      return true;
+    },
+  );
+  assert.equal(calls, 2);
+  respond('{"record":', "stop", JSON.stringify(output));
+  let updates = 0;
+  const broken = {
+    query: async (sql: string, args: unknown[]) => {
+      if (
+        sql.includes("UPDATE research_normalization_requests") &&
+        ++updates === 2
+      )
+        throw new Error("audit database failed");
+      return db.query(sql, args);
+    },
+  } as unknown as Pool;
+  await assert.rejects(
+    callNormalizer(broken, row, "hash", "generic", "v1", {}),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.equal(error.message, "audit database failed");
+      assert.equal(recordFailure(error), false);
+      return true;
+    },
+  );
 });
 test("normalization repair retains a working JSON-object fallback and remains bounded", async () => {
   for (const [content, finish] of [
@@ -139,8 +218,13 @@ test("normalization repair retains a working JSON-object fallback and remains bo
         });
       };
       const answer = callNormalizer(db, row, "hash", "generic", "v1", {});
-      if (repairContent === "bad repair") await assert.rejects(answer);
-      else assert.equal((await answer).output.record.record_id, "fixture");
+      if (repairContent === "bad repair") {
+        await assert.rejects(answer, (error: unknown) => {
+          assert.ok(error instanceof LlmError);
+          assert.equal(recordFailure(error), true);
+          return true;
+        });
+      } else assert.equal((await answer).output.record.record_id, "fixture");
       assert.equal(requests.length, 3, "one capability fallback plus one output repair");
       assert.deepEqual(
         requests.slice(1).map((request) => request.response_format),
