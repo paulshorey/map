@@ -24,8 +24,9 @@ export function activationCoordinates(
   const keepGeocode =
     row.active_normalization_id === normalizationId &&
     row.geocode_normalization_id === normalizationId &&
-    (row.coordinate_source === "geocode" ||
-      (row.projected_lat === facts.lat && row.projected_lng === facts.lng)) &&
+    (facts.lat !== null && facts.lng !== null
+      ? row.projected_lat === facts.lat && row.projected_lng === facts.lng
+      : row.coordinate_source === "geocode") &&
     row.active_geocode_id !== null &&
     current.lat !== null &&
     current.lng !== null &&

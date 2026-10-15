@@ -138,3 +138,23 @@ test("a location enrichment artifact stays bound to an unchanged source point", 
   );
   assert.equal(activationCoordinates(source, "new", facts).keepGeocode, false);
 });
+
+test("a retained geocode never overrides a differing validated source point", () => {
+  const geocoded = {
+    ...row,
+    projected_lat: 38,
+    projected_lng: -110,
+    coordinate_source: "geocode",
+    active_geocode_id: "geo",
+    geocode_normalization_id: "current",
+  };
+  const result = activationCoordinates(geocoded, "current", {
+    lat: 39,
+    lng: -110,
+    coordinateSource: "source",
+    coordinatePrecision: "point",
+  });
+  assert.equal(result.keepGeocode, false);
+  assert.equal(result.lat, 39);
+  assert.equal(result.source, "source");
+});

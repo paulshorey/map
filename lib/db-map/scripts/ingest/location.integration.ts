@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { controlState, workerEvidence } from "../../sql/ingestion-control.js";
-import { runGeocode } from "./geocode.js";
+import { runGeocode, buildQuery } from "./geocode.js";
 import { verifyLineage } from "./verify.js";
 const token = process.argv[2];
 if (!token) throw new Error("Owned maintenance token required");
@@ -76,9 +76,13 @@ try {
       ),
     release: () => {},
   };
+  let activations = 0;
   const scoped = {
     query: client.query.bind(client),
-    connect: async () => tx,
+    connect: async () => {
+      activations++;
+      return tx;
+    },
   } as unknown as Pool;
   const opts = {
     recordId: row.id,
@@ -115,6 +119,84 @@ try {
   const second = await runGeocode(scoped, opts);
   assert.equal(second.selected, 0);
   assert.equal(calls, 1);
+  assert.equal(await verifyLineage(scoped), 0);
+  // Forward and reverse are two provider operations but ONE fenced activation/commit.
+  const captured = (
+    await client.query(
+      "SELECT captured FROM research_poi_observations WHERE id=$1",
+      [row.active_observation_id],
+    )
+  ).rows[0].captured;
+  const q = buildQuery(
+    {
+      ...row,
+      address: captured.address,
+      city: captured.city,
+      region: captured.region,
+      country_name: captured.attributes.country_name,
+      venue: captured.attributes.venue ?? captured.attributes.venue_name,
+    },
+    new Set(["art_fair"]),
+  )!;
+  await client.query(
+    "DELETE FROM research_geocode_cache WHERE query_norm=ANY($1::text[])",
+    [[q.norm, `location-v1:reverse:${row.lat}:${row.lng}`]],
+  );
+  await client.query(
+    "UPDATE research_pois SET lat=NULL,lng=NULL,coordinate_source=NULL,active_geocode_id=NULL,attributes=attributes-'location_enrichment' WHERE id=$1",
+    [row.id],
+  );
+  const before = activations;
+  let forwardCalls = 0,
+    reverseCalls = 0;
+  globalThis.fetch = async (url) => {
+    const u = new URL(String(url));
+    if (u.pathname.endsWith("/search")) {
+      forwardCalls++;
+      return Response.json([
+        {
+          lat: String(row.lat),
+          lon: String(row.lng),
+          class: "place",
+          type: "attraction",
+        },
+      ]);
+    }
+    assert.ok(u.pathname.endsWith("/reverse"));
+    reverseCalls++;
+    assert.equal(
+      (
+        await client.query("SELECT lat FROM research_pois WHERE id=$1", [
+          row.id,
+        ])
+      ).rows[0].lat,
+      null,
+      "point must not activate before reverse enrichment finishes",
+    );
+    return Response.json({
+      lat: String(row.lat),
+      lon: String(row.lng),
+      address: { country_code: "it", city: "Venice", state: "Veneto" },
+    });
+  };
+  const forward = await runGeocode(scoped, { ...opts, geocodeLimit: 2 });
+  assert.equal(forward.apiCalls, 2);
+  assert.equal(forwardCalls, 1);
+  assert.equal(reverseCalls, 1);
+  assert.equal(
+    activations - before,
+    1,
+    "one activation completes one task after both lookups",
+  );
+  const restored = (
+    await client.query("SELECT * FROM research_pois_current WHERE id=$1", [
+      row.id,
+    ])
+  ).rows[0];
+  assert.equal(restored.lat, row.lat);
+  assert.equal(restored.country_code, "IT");
+  assert.equal(restored.region, "Veneto");
+  assert.equal(restored.address, row.address);
   assert.equal(await verifyLineage(scoped), 0);
   console.log(
     "PASS source coordinates/address preserved, inferred region/canonical provenance retained, cache skips second lookup, immutable IDs and lineage preserved; rollback only",

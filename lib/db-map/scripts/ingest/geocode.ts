@@ -113,7 +113,7 @@ async function resolveSourceId(db: Pool, slug: string): Promise<string> {
  * to wrong matches. Place records (gardens, campgrounds) keep the name: it IS
  * the place name and is often the only usable signal (e.g. ArbNet).
  */
-function buildQuery(
+export function buildQuery(
   row: GeoRow,
   temporalSlugs: Set<string>,
 ): { display: string; norm: string } | null {
@@ -257,128 +257,6 @@ export async function writeRowCoords(
   await (linked ? canonicalLane.run(activate) : activate());
 }
 
-async function runForwardGeocode(
-  db: Pool,
-  opts: CliOptions,
-): Promise<GeocodeStats> {
-  const stats: GeocodeStats = {
-    selected: 0,
-    cacheHits: 0,
-    knownMisses: 0,
-    apiCalls: 0,
-    resolved: 0,
-    unresolved: 0,
-    noQuery: 0,
-    budgetHit: false,
-  };
-
-  const params: unknown[] = [];
-  let where = `(lat IS NULL OR lng IS NULL) AND is_poi`;
-  if (opts.source) {
-    params.push(await resolveSourceId(db, opts.source));
-    where += ` AND source_id = $${params.length}`;
-  }
-  if (opts.recordId) {
-    params.push(opts.recordId);
-    where += ` AND id = $${params.length}`;
-  }
-  where += " AND retired_at IS NULL";
-  let limitClause = "";
-  if (opts.limit !== undefined) {
-    params.push(opts.limit);
-    limitClause = ` LIMIT $${params.length}`;
-  }
-
-  const { rows } = await db.query<GeoRow>(
-    `SELECT id, name, attributes->>'venue' AS venue, address, city, region, country_code,
-            attributes->>'country_name' AS country_name, category_slugs
-     FROM research_pois
-     WHERE ${where}
-     ORDER BY first_seen_at${limitClause}`,
-    params,
-  );
-  stats.selected = rows.length;
-
-  const { rows: temporalRows } = await db.query<{ slug: string }>(
-    `SELECT slug FROM canonical_categories WHERE is_temporal`,
-  );
-  const temporalSlugs = new Set(temporalRows.map((r) => r.slug));
-
-  for (const row of rows) {
-    const q = buildQuery(row, temporalSlugs);
-    if (!q) {
-      stats.noQuery++;
-      console.warn(
-        `Skipped - ${row.name ?? `(id ${row.id})`} - unable to parse location (no locality fields)`,
-      );
-      continue;
-    }
-
-    const cached = await readCache(db, q.norm);
-    if (cached) {
-      if (cached.lat !== null && cached.lng !== null) {
-        if (!opts.dryRun) {
-          await writeRowCoords(
-            db,
-            row.id,
-            cached.lat,
-            cached.lng,
-            cached.precision ?? "point",
-            q.norm,
-          );
-        }
-        stats.cacheHits++;
-        stats.resolved++;
-        console.log(`✓ ${row.name} (cache: ${cached.lat}, ${cached.lng})`);
-      } else {
-        stats.knownMisses++;
-        console.warn(
-          `Skipped - ${row.name} - unable to parse location (known geocode miss)`,
-        );
-      }
-      continue;
-    }
-
-    // Cache miss → an API call is required.
-    if (
-      opts.geocodeLimit !== undefined &&
-      stats.apiCalls >= opts.geocodeLimit
-    ) {
-      stats.budgetHit = true;
-      break;
-    }
-
-    if (opts.dryRun) {
-      // Count as an intended call but do not hit the network.
-      stats.apiCalls++;
-      continue;
-    }
-
-    await sleep(opts.throttleMs);
-    let hit: GeocodeHit | null;
-    try {
-      hit = await geocode(q.display);
-    } catch (err) {
-      throw err;
-    }
-    stats.apiCalls++;
-
-    await writeCache(db, q.norm, hit);
-    if (hit) {
-      await writeRowCoords(db, row.id, hit.lat, hit.lng, hit.precision, q.norm);
-      stats.resolved++;
-      console.log(`✓ ${row.name} (${hit.lat}, ${hit.lng}, ${hit.precision})`);
-    } else {
-      stats.unresolved++;
-      console.warn(
-        `Skipped - ${row.name} - unable to parse location (geocoder found no match)`,
-      );
-    }
-  }
-
-  return stats;
-}
-
 /** Forward-resolve missing points, then source-first administrative enrichment. */
 export async function runGeocode(
   db: Pool,
@@ -398,8 +276,8 @@ export async function runGeocode(
   let where =
     "rp.is_poi AND rp.retired_at IS NULL AND rp.active_normalization_id IS NOT NULL";
   if (opts.source) {
-    params.push(opts.source);
-    where += ` AND rs.slug=$${params.length}`;
+    params.push(await resolveSourceId(db, opts.source));
+    where += ` AND rp.source_id=$${params.length}`;
   }
   if (opts.recordId) {
     params.push(opts.recordId);
@@ -419,43 +297,6 @@ export async function runGeocode(
       opts.geocodeLimit === undefined
         ? undefined
         : Math.max(0, opts.geocodeLimit - stats.apiCalls);
-    let point = (
-      await db.query("SELECT lat,lng FROM research_pois WHERE id=$1", [
-        selected.id,
-      ])
-    ).rows[0];
-    if (point.lat === null || point.lng === null) {
-      const forward = await runForwardGeocode(db, {
-        ...opts,
-        recordId: selected.id,
-        limit: 1,
-        geocodeLimit: remaining(),
-      });
-      for (const key of [
-        "apiCalls",
-        "cacheHits",
-        "knownMisses",
-        "noQuery",
-      ] as const)
-        stats[key] += forward[key];
-      if (forward.budgetHit) {
-        stats.budgetHit = true;
-        break;
-      }
-      point = (
-        await db.query("SELECT lat,lng FROM research_pois WHERE id=$1", [
-          selected.id,
-        ])
-      ).rows[0];
-      if (point.lat === null || point.lng === null) {
-        stats.unresolved++;
-        continue;
-      }
-    }
-    if (opts.dryRun) {
-      stats.apiCalls++;
-      continue;
-    }
     const row = (
       await db.query(
         `SELECT rp.*,o.captured
@@ -477,7 +318,75 @@ export async function runGeocode(
       city: textValue(captured.city),
       region: textValue(captured.region),
     };
-    const queryNorm = `${LOCATION_VERSION}:reverse:${row.lat}:${row.lng}`;
+    let lat: number | null = row.lat,
+      lng: number | null = row.lng;
+    let coordinateSource = row.coordinate_source,
+      coordinatePrecision = row.coordinate_precision;
+    let forwardQueryNorm: string | null = row.geocode_query_norm;
+    if (lat === null || lng === null) {
+      const temporal = new Set<string>(
+        (
+          await db.query(
+            "SELECT slug FROM canonical_categories WHERE is_temporal",
+          )
+        ).rows.map((r) => r.slug),
+      );
+      const q = buildQuery(
+        {
+          ...row,
+          ...source,
+          country_name: attrs.country_name ?? null,
+          venue: textValue(attrs.venue) ?? textValue(attrs.venue_name),
+        },
+        temporal,
+      );
+      if (!q) {
+        stats.noQuery++;
+        continue;
+      }
+      forwardQueryNorm = q.norm;
+      const cached = await readCache(db, q.norm);
+      let forward: GeocodeHit | null;
+      if (cached) {
+        stats.cacheHits++;
+        forward =
+          cached.lat !== null && cached.lng !== null
+            ? {
+                lat: cached.lat,
+                lng: cached.lng,
+                precision: cached.precision ?? "point",
+                provider: "locationiq",
+              }
+            : null;
+        if (!forward) stats.knownMisses++;
+      } else {
+        if (remaining() === 0) {
+          stats.budgetHit = true;
+          break;
+        }
+        if (opts.dryRun) {
+          stats.apiCalls++;
+          continue;
+        }
+        if (opts.throttleMs > 0) await sleep(opts.throttleMs);
+        forward = await geocode(q.display);
+        stats.apiCalls++;
+        await writeCache(db, q.norm, forward);
+      }
+      if (!forward) {
+        stats.unresolved++;
+        continue;
+      }
+      lat = forward.lat;
+      lng = forward.lng;
+      coordinateSource = "geocode";
+      coordinatePrecision = forward.precision;
+    }
+    if (opts.dryRun) {
+      stats.apiCalls++;
+      continue;
+    }
+    const queryNorm = `${LOCATION_VERSION}:reverse:${lat}:${lng}`;
     let hit: ReverseLocation | null = null;
     if (Object.values(source).some((value) => !value)) {
       const cache = (
@@ -495,20 +404,19 @@ export async function runGeocode(
           stats.budgetHit = true;
           break;
         }
-        hit = await reverseGeocode(row.lat, row.lng);
+        if (opts.throttleMs > 0) await sleep(opts.throttleMs);
+        hit = await reverseGeocode(lat, lng);
         stats.apiCalls++;
         await db.query(
           `INSERT INTO research_geocode_cache(query_norm,lat,lng,precision,provider,payload) VALUES($1,$2,$3,'point','locationiq',$4::jsonb)
           ON CONFLICT(query_norm) DO UPDATE SET payload=EXCLUDED.payload,fetched_at=now()`,
-          [queryNorm, row.lat, row.lng, JSON.stringify({ hit })],
+          [queryNorm, lat, lng, JSON.stringify({ hit })],
         );
       }
     }
     const resolved = resolveLocation(
       source,
-      hit && row.coordinate_precision !== "point"
-        ? { ...hit, address: null }
-        : hit,
+      hit && coordinatePrecision !== "point" ? { ...hit, address: null } : hit,
     );
     if (!hit && Object.values(source).some((value) => !value))
       resolved.warnings.push("reverse_location_incomplete");
@@ -517,7 +425,8 @@ export async function runGeocode(
     const metadata = {
       version: LOCATION_VERSION,
       normalization_id: row.active_normalization_id,
-      point: { lat: row.lat, lng: row.lng },
+      point: { lat, lng },
+      forward_query_norm: forwardQueryNorm,
       ...resolved,
       reverse: hit,
       lookup_state: hit
@@ -530,6 +439,8 @@ export async function runGeocode(
     const inputHash = stableHash({
       normalization: row.active_normalization_id,
       point: metadata.point,
+      coordinate_source: coordinateSource,
+      forward_query_norm: forwardQueryNorm,
       version: LOCATION_VERSION,
     });
     await canonicalLane.run(() =>
@@ -547,20 +458,20 @@ export async function runGeocode(
               inputHash,
               queryNorm,
               LOCATION_GEOCODER_VERSION,
-              row.lat,
-              row.lng,
-              row.coordinate_precision ?? "point",
+              lat,
+              lng,
+              coordinatePrecision ?? "point",
               JSON.stringify(metadata),
             ],
           )
         ).rows[0];
         // This artifact certifies enrichment of the original point; it never substitutes a nearby object's point.
         const activated = await client.query(
-          `UPDATE research_pois SET country_code=$2,city=$3,region=$4,address=$5,active_geocode_id=$6,
+          `UPDATE research_pois SET lat=$11,lng=$12,coordinate_source=$13,coordinate_precision=$14,geocode_query_norm=$15,country_code=$2,city=$3,region=$4,address=$5,active_geocode_id=$6,
         attributes=COALESCE(attributes,'{}'::jsonb)||jsonb_build_object('location_enrichment',$7::jsonb),
         content_embedding=CASE WHEN city IS DISTINCT FROM $3 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE content_embedding END,
         active_embedding_id=CASE WHEN city IS DISTINCT FROM $3 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE active_embedding_id END
-        WHERE id=$1 AND active_normalization_id=$8 AND lat=$9 AND lng=$10`,
+        WHERE id=$1 AND active_normalization_id=$8 AND lat IS NOT DISTINCT FROM $9::float8 AND lng IS NOT DISTINCT FROM $10::float8`,
           [
             row.id,
             resolved.fields.country_code,
@@ -572,6 +483,11 @@ export async function runGeocode(
             row.active_normalization_id,
             row.lat,
             row.lng,
+            lat,
+            lng,
+            coordinateSource,
+            coordinatePrecision,
+            forwardQueryNorm,
           ],
         );
         if (activated.rowCount !== 1)
