@@ -1,25 +1,13 @@
 import { pathToFileURL } from "node:url";
-/**
- * Geocode research_pois rows missing coordinates (M6).
- *
- * Automatic + conditional: selects only rows where lat IS NULL (the source had no
- * coordinates). Rows that already carry coordinates are never touched — existing
- * coordinates are trusted, so they cost zero API calls.
- *
- * Idempotent + resumable + budgeted:
- *   - research_geocode_cache dedupes identical queries and remembers misses.
- *   - Only cache MISSES call the API and count against --geocode-limit (default 4500).
- *   - When the budget is hit the step just stops; un-reached rows stay lat IS NULL
- *     and the same command resumes them next run.
- *
- * Usage:
- *   pnpm --filter @lib/db-map ingest:geocode [--source <slug>] [--limit N]
- *       [--geocode-limit N] [--throttle-ms N] [--dry-run]
+/** Resolve missing coordinates and enrich administrative fields with versioned provenance.
+ * Valid source points never move; supplied addresses win over approximate reverse addresses.
+ * Optional misses are cached and reported; transport/auth failures retain provider recovery.
  */
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import {
   geocode,
+  reverseGeocode,
   GeocodeError,
   type GeocodeHit,
 } from "./providers/locationiq.js";
@@ -27,6 +15,15 @@ import { artifactTransaction } from "./execution.js";
 import { canonicalLane } from "./concurrency.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { rebuildCanonicalPoi } from "./merge.js";
+import {
+  LOCATION_VERSION,
+  LOCATION_GEOCODER_VERSION,
+  locationReadySql,
+  resolveLocation,
+  textValue,
+  type ReverseLocation,
+} from "./location.js";
+import { countryToCode } from "./normalize/country.js";
 import { stableHash } from "./hash.js";
 
 const DEFAULT_GEOCODE_LIMIT = 4500;
@@ -260,7 +257,7 @@ export async function writeRowCoords(
   await (linked ? canonicalLane.run(activate) : activate());
 }
 
-export async function runGeocode(
+async function runForwardGeocode(
   db: Pool,
   opts: CliOptions,
 ): Promise<GeocodeStats> {
@@ -379,6 +376,225 @@ export async function runGeocode(
     }
   }
 
+  return stats;
+}
+
+/** Forward-resolve missing points, then source-first administrative enrichment. */
+export async function runGeocode(
+  db: Pool,
+  opts: CliOptions,
+): Promise<GeocodeStats> {
+  const stats: GeocodeStats = {
+    selected: 0,
+    cacheHits: 0,
+    knownMisses: 0,
+    apiCalls: 0,
+    resolved: 0,
+    unresolved: 0,
+    noQuery: 0,
+    budgetHit: false,
+  };
+  const params: unknown[] = [];
+  let where =
+    "rp.is_poi AND rp.retired_at IS NULL AND rp.active_normalization_id IS NOT NULL";
+  if (opts.source) {
+    params.push(opts.source);
+    where += ` AND rs.slug=$${params.length}`;
+  }
+  if (opts.recordId) {
+    params.push(opts.recordId);
+    where += ` AND rp.id=$${params.length}`;
+  }
+  where += ` AND NOT COALESCE(${locationReadySql()},false)`;
+  if (opts.limit !== undefined) params.push(opts.limit);
+  const rows = (
+    await db.query(
+      `SELECT rp.id FROM research_pois rp JOIN research_sources rs ON rs.id=rp.source_id WHERE ${where} ORDER BY rp.first_seen_at${opts.limit !== undefined ? ` LIMIT $${params.length}` : ""}`,
+      params,
+    )
+  ).rows;
+  stats.selected = rows.length;
+  for (const selected of rows) {
+    const remaining = () =>
+      opts.geocodeLimit === undefined
+        ? undefined
+        : Math.max(0, opts.geocodeLimit - stats.apiCalls);
+    let point = (
+      await db.query("SELECT lat,lng FROM research_pois WHERE id=$1", [
+        selected.id,
+      ])
+    ).rows[0];
+    if (point.lat === null || point.lng === null) {
+      const forward = await runForwardGeocode(db, {
+        ...opts,
+        recordId: selected.id,
+        limit: 1,
+        geocodeLimit: remaining(),
+      });
+      for (const key of [
+        "apiCalls",
+        "cacheHits",
+        "knownMisses",
+        "noQuery",
+      ] as const)
+        stats[key] += forward[key];
+      if (forward.budgetHit) {
+        stats.budgetHit = true;
+        break;
+      }
+      point = (
+        await db.query("SELECT lat,lng FROM research_pois WHERE id=$1", [
+          selected.id,
+        ])
+      ).rows[0];
+      if (point.lat === null || point.lng === null) {
+        stats.unresolved++;
+        continue;
+      }
+    }
+    if (opts.dryRun) {
+      stats.apiCalls++;
+      continue;
+    }
+    const row = (
+      await db.query(
+        `SELECT rp.*,o.captured
+      FROM research_pois rp JOIN research_poi_normalizations n ON n.id=rp.active_normalization_id JOIN research_poi_observations o ON o.id=rp.active_observation_id WHERE rp.id=$1`,
+        [selected.id],
+      )
+    ).rows[0];
+    const captured = row.captured ?? {},
+      attrs = captured.attributes ?? {};
+    const source = {
+      country_code:
+        countryToCode(captured.country_code) ??
+        countryToCode(attrs.country_name) ??
+        null,
+      address:
+        textValue(captured.address) ??
+        textValue(attrs.venue_address) ??
+        textValue(attrs.street_address),
+      city: textValue(captured.city),
+      region: textValue(captured.region),
+    };
+    const queryNorm = `${LOCATION_VERSION}:reverse:${row.lat}:${row.lng}`;
+    let hit: ReverseLocation | null = null;
+    if (Object.values(source).some((value) => !value)) {
+      const cache = (
+        await db.query(
+          "SELECT payload FROM research_geocode_cache WHERE query_norm=$1",
+          [queryNorm],
+        )
+      ).rows[0];
+      if (cache?.payload) {
+        hit = cache.payload.hit;
+        stats.cacheHits++;
+        if (!hit) stats.knownMisses++;
+      } else {
+        if (remaining() === 0) {
+          stats.budgetHit = true;
+          break;
+        }
+        hit = await reverseGeocode(row.lat, row.lng);
+        stats.apiCalls++;
+        await db.query(
+          `INSERT INTO research_geocode_cache(query_norm,lat,lng,precision,provider,payload) VALUES($1,$2,$3,'point','locationiq',$4::jsonb)
+          ON CONFLICT(query_norm) DO UPDATE SET payload=EXCLUDED.payload,fetched_at=now()`,
+          [queryNorm, row.lat, row.lng, JSON.stringify({ hit })],
+        );
+      }
+    }
+    const resolved = resolveLocation(
+      source,
+      hit && row.coordinate_precision !== "point"
+        ? { ...hit, address: null }
+        : hit,
+    );
+    if (!hit && Object.values(source).some((value) => !value))
+      resolved.warnings.push("reverse_location_incomplete");
+    if (Object.values(resolved.fields).some((value) => !value))
+      resolved.warnings.push("location_fields_incomplete");
+    const metadata = {
+      version: LOCATION_VERSION,
+      normalization_id: row.active_normalization_id,
+      point: { lat: row.lat, lng: row.lng },
+      ...resolved,
+      reverse: hit,
+      lookup_state: hit
+        ? "resolved"
+        : Object.values(source).some((value) => !value)
+          ? "miss"
+          : "not_needed",
+      assessed_at: new Date().toISOString(),
+    };
+    const inputHash = stableHash({
+      normalization: row.active_normalization_id,
+      point: metadata.point,
+      version: LOCATION_VERSION,
+    });
+    await canonicalLane.run(() =>
+      artifactTransaction(db, async (client) => {
+        if (row.canonical_poi_id)
+          await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [
+            CANONICAL_WRITER_LOCK,
+          ]);
+        const artifact = (
+          await client.query(
+            `INSERT INTO research_poi_geocodes(normalization_id,input_hash,query_norm,provider,provider_version,lat,lng,precision,status,validation,activated_at)
+        VALUES($1,$2,$3,'locationiq',$4,$5,$6,$7,'resolved',$8::jsonb,now()) ON CONFLICT(normalization_id,input_hash) DO UPDATE SET activated_at=now() RETURNING id`,
+            [
+              row.active_normalization_id,
+              inputHash,
+              queryNorm,
+              LOCATION_GEOCODER_VERSION,
+              row.lat,
+              row.lng,
+              row.coordinate_precision ?? "point",
+              JSON.stringify(metadata),
+            ],
+          )
+        ).rows[0];
+        // This artifact certifies enrichment of the original point; it never substitutes a nearby object's point.
+        const activated = await client.query(
+          `UPDATE research_pois SET country_code=$2,city=$3,region=$4,address=$5,active_geocode_id=$6,
+        attributes=COALESCE(attributes,'{}'::jsonb)||jsonb_build_object('location_enrichment',$7::jsonb),
+        content_embedding=CASE WHEN city IS DISTINCT FROM $3 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE content_embedding END,
+        active_embedding_id=CASE WHEN city IS DISTINCT FROM $3 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE active_embedding_id END
+        WHERE id=$1 AND active_normalization_id=$8 AND lat=$9 AND lng=$10`,
+          [
+            row.id,
+            resolved.fields.country_code,
+            resolved.fields.city,
+            resolved.fields.region,
+            resolved.fields.address,
+            artifact.id,
+            JSON.stringify(metadata),
+            row.active_normalization_id,
+            row.lat,
+            row.lng,
+          ],
+        );
+        if (activated.rowCount !== 1)
+          throw Object.assign(
+            new Error("Location input changed during activation"),
+            { code: "lineage_invalid" },
+          );
+        if (row.canonical_poi_id)
+          await rebuildCanonicalPoi(client, row.canonical_poi_id, {
+            noLlm: true,
+          });
+        return {
+          value: undefined,
+          output: {
+            status: "succeeded",
+            geocode_id: artifact.id,
+            location_warnings: resolved.warnings,
+          },
+        };
+      }),
+    );
+    stats.resolved++;
+  }
   return stats;
 }
 

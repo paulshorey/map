@@ -15,13 +15,22 @@ export interface CoordinateProjection {
 export function activationCoordinates(
   row: CoordinateProjection,
   normalizationId: string,
-  facts: Pick<DeterministicFacts, "lat" | "lng" | "coordinateSource" | "coordinatePrecision">,
+  facts: Pick<
+    DeterministicFacts,
+    "lat" | "lng" | "coordinateSource" | "coordinatePrecision"
+  >,
 ) {
   const current = fixCoordinates(row.projected_lat, row.projected_lng);
-  const keepGeocode = row.active_normalization_id === normalizationId &&
+  const keepGeocode =
+    row.active_normalization_id === normalizationId &&
     row.geocode_normalization_id === normalizationId &&
-    row.coordinate_source === "geocode" && row.active_geocode_id !== null &&
-    current.lat !== null && current.lng !== null && !current.swapped && !current.dropped;
+    (row.coordinate_source === "geocode" ||
+      (row.projected_lat === facts.lat && row.projected_lng === facts.lng)) &&
+    row.active_geocode_id !== null &&
+    current.lat !== null &&
+    current.lng !== null &&
+    !current.swapped &&
+    !current.dropped;
   const lat = keepGeocode ? row.projected_lat : facts.lat;
   const lng = keepGeocode ? row.projected_lng : facts.lng;
   const changed = row.projected_lat !== lat || row.projected_lng !== lng;
@@ -29,9 +38,12 @@ export function activationCoordinates(
     lat,
     lng,
     source: keepGeocode ? row.coordinate_source : facts.coordinateSource,
-    precision: keepGeocode ? row.coordinate_precision : facts.coordinatePrecision,
+    precision: keepGeocode
+      ? row.coordinate_precision
+      : facts.coordinatePrecision,
     keepGeocode,
     changed,
-    needsActivation: changed || (!keepGeocode && row.active_geocode_id !== null),
+    needsActivation:
+      changed || (!keepGeocode && row.active_geocode_id !== null),
   };
 }

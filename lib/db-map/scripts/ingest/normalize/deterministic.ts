@@ -63,13 +63,16 @@ function collectStringFields(
   out: Array<{ path: string; value: string }> = [],
 ): Array<{ path: string; value: string }> {
   if (Array.isArray(value)) {
-    value.forEach((child, index) => collectStringFields(child, predicate, `${path}[${index}]`, out));
+    value.forEach((child, index) =>
+      collectStringFields(child, predicate, `${path}[${index}]`, out),
+    );
     return out;
   }
   if (!value || typeof value !== "object") return out;
   for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
     const childPath = `${path}.${key}`;
-    if (typeof child === "string" && predicate(key, child)) out.push({ path: childPath, value: child });
+    if (typeof child === "string" && predicate(key, child))
+      out.push({ path: childPath, value: child });
     else collectStringFields(child, predicate, childPath, out);
   }
   return out;
@@ -139,9 +142,14 @@ export function strictDate(raw: unknown): {
   return null;
 }
 
-function candidateDate(attributes: Record<string, unknown>, raw: unknown, keys: string[]): unknown {
+function candidateDate(
+  attributes: Record<string, unknown>,
+  raw: unknown,
+  keys: string[],
+): unknown {
   for (const key of keys) {
-    if (attributes[key] !== undefined && attributes[key] !== null) return attributes[key];
+    if (attributes[key] !== undefined && attributes[key] !== null)
+      return attributes[key];
   }
   if (raw && typeof raw === "object" && !Array.isArray(raw)) {
     const record = raw as Record<string, unknown>;
@@ -156,7 +164,9 @@ function compareIso(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
-export function buildDeterministicFacts(input: DeterministicInput): DeterministicFacts {
+export function buildDeterministicFacts(
+  input: DeterministicInput,
+): DeterministicFacts {
   const warnings: string[] = [];
   const rawRecord =
     input.raw && typeof input.raw === "object" && !Array.isArray(input.raw)
@@ -168,7 +178,8 @@ export function buildDeterministicFacts(input: DeterministicInput): Deterministi
 
   let lat = fixed.lat;
   let lng = fixed.lng;
-  let coordinateSource: "source" | "url" | null = lat !== null && lng !== null ? "source" : null;
+  let coordinateSource: "source" | "url" | null =
+    lat !== null && lng !== null ? "source" : null;
 
   const urls = collectStringFields(input.raw, (_key, value) => {
     try {
@@ -178,11 +189,31 @@ export function buildDeterministicFacts(input: DeterministicInput): Deterministi
       return false;
     }
   });
-  const explicitUrls: Array<{ value: string; path: string; roleHint?: string }> = [];
-  if (input.website) explicitUrls.push({ value: input.website, path: "$.captured.website", roleHint: "official_candidate" });
-  if (input.source_url) explicitUrls.push({ value: input.source_url, path: "$.captured.source_url", roleHint: "source_listing" });
-  explicitUrls.push(...urls.map((entry) => ({ ...entry, roleHint: "unknown" })));
-  const urlCandidates = uniqueCandidates("url", explicitUrls.slice(0, 30), (value) => value.trim());
+  const explicitUrls: Array<{
+    value: string;
+    path: string;
+    roleHint?: string;
+  }> = [];
+  if (input.website)
+    explicitUrls.push({
+      value: input.website,
+      path: "$.captured.website",
+      roleHint: "official_candidate",
+    });
+  if (input.source_url)
+    explicitUrls.push({
+      value: input.source_url,
+      path: "$.captured.source_url",
+      roleHint: "source_listing",
+    });
+  explicitUrls.push(
+    ...urls.map((entry) => ({ ...entry, roleHint: "unknown" })),
+  );
+  const urlCandidates = uniqueCandidates(
+    "url",
+    explicitUrls.slice(0, 30),
+    (value) => value.trim(),
+  );
 
   if (lat === null) {
     const fromUrl = coordsFromRecordUrls({
@@ -199,27 +230,58 @@ export function buildDeterministicFacts(input: DeterministicInput): Deterministi
 
   const coordinateCandidates =
     lat !== null && lng !== null
-      ? [{ id: "coord_1", value: { lat, lng }, path: coordinateSource === "source" ? "$.captured.coordinates" : "$.captured.urls" }]
+      ? [
+          {
+            id: "coord_1",
+            value: { lat, lng },
+            path:
+              coordinateSource === "source"
+                ? "$.captured.coordinates"
+                : "$.captured.urls",
+          },
+        ]
       : [];
 
-  const rawPhones = collectStringFields(input.raw, (key) => /phone|telephone|tel/i.test(key));
+  const rawPhones = collectStringFields(input.raw, (key) =>
+    /phone|telephone|tel/i.test(key),
+  );
   const phoneValues = [
     ...(input.phone ? [{ value: input.phone, path: "$.captured.phone" }] : []),
     ...rawPhones,
   ]
     .map((entry) => ({ ...entry, value: normalizePhone(entry.value) }))
-    .filter((entry): entry is { value: string; path: string } => Boolean(entry.value));
-  const phoneCandidates = uniqueCandidates("phone", phoneValues, (value) => value);
+    .filter((entry): entry is { value: string; path: string } =>
+      Boolean(entry.value),
+    );
+  const phoneCandidates = uniqueCandidates(
+    "phone",
+    phoneValues,
+    (value) => value,
+  );
 
-  const rawEmails = collectStringFields(input.raw, (key, value) => /email/i.test(key) || value.includes("@"));
+  const rawEmails = collectStringFields(
+    input.raw,
+    (key, value) => /email/i.test(key) || value.includes("@"),
+  );
   const emailValues = [
     ...(input.email ? [{ value: input.email, path: "$.captured.email" }] : []),
     ...rawEmails,
   ].filter((entry) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(entry.value.trim()));
-  const emailCandidates = uniqueCandidates("email", emailValues, (value) => value.toLowerCase());
+  const emailCandidates = uniqueCandidates("email", emailValues, (value) =>
+    value.toLowerCase(),
+  );
 
-  const startRaw = candidateDate(input.attributes, input.raw, ["start_date", "starts_at", "date"]);
-  const endRaw = candidateDate(input.attributes, input.raw, ["end_date", "ends_at"]);
+  const startRaw = candidateDate(input.attributes, input.raw, [
+    "start_date",
+    "starts_at",
+    "startDate",
+    "date",
+  ]);
+  const endRaw = candidateDate(input.attributes, input.raw, [
+    "end_date",
+    "ends_at",
+    "endDate",
+  ]);
   let start = strictDate(startRaw);
   let end = strictDate(endRaw);
   if (startRaw && !start) warnings.push("invalid_source_start_date");
@@ -233,9 +295,9 @@ export function buildDeterministicFacts(input: DeterministicInput): Deterministi
   const countryCode =
     (input.country_code && /^[A-Za-z]{2}$/.test(input.country_code)
       ? input.country_code.toUpperCase()
-      : countryToCode(input.country_code) ??
+      : (countryToCode(input.country_code) ??
         countryToCode(stringValue(input.attributes.country_name)) ??
-        countryToCode(input.region)) ?? null;
+        countryToCode(input.region))) ?? null;
 
   return {
     normalizedName: input.name?.trim() || null,

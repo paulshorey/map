@@ -504,6 +504,11 @@
       "column": "fetched_at",
       "nullable": false,
       "type": "Date"
+    },
+    {
+      "column": "payload",
+      "nullable": true,
+      "type": "unknown"
     }
   ],
   "research_ingest_attempts": [

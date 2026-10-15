@@ -220,8 +220,16 @@ CREATE TABLE public.research_geocode_cache (
     lng double precision,
     "precision" text,
     provider text,
-    fetched_at timestamp with time zone DEFAULT now() NOT NULL
+    fetched_at timestamp with time zone DEFAULT now() NOT NULL,
+    payload jsonb
 );
+
+
+--
+-- Name: COLUMN research_geocode_cache.payload; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.research_geocode_cache.payload IS 'Versioned reverse location fields; exact point key. Null preserves legacy forward-cache entries.';
 
 
 --
@@ -932,10 +940,10 @@ CREATE VIEW public.research_pois_current AS
     rp.source_url,
     COALESCE(n.phone, rp.phone) AS phone,
     COALESCE(n.email, rp.email) AS email,
-    COALESCE(n.address, rp.address) AS address,
-    COALESCE(n.city, rp.city) AS city,
-    COALESCE(n.region, rp.region) AS region,
-    COALESCE(n.country_code, rp.country_code) AS country_code,
+    rp.address,
+    rp.city,
+    rp.region,
+    rp.country_code,
     rp.lng,
     rp.lat,
     COALESCE(n.starts_at, rp.starts_at) AS starts_at,

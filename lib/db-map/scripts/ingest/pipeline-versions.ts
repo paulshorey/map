@@ -12,10 +12,10 @@ export const PIPELINE_VERSIONS = {
   prompt: PROMPT_VERSION,
   schema: SCHEMA_VERSION,
   examples: EXAMPLES_VERSION,
-  geocode: "locationiq-v1",
+  geocode: "locationiq-location-v2",
   embedding: "jina-match-v1",
   matcher: "matcher-v1",
-  canonicalBuilder: "canonical-build-v1",
+  canonicalBuilder: "canonical-build-v2",
 } as const;
 
 /** Only reviewed checkpoint versions; older proofs also require a fresh full-run audit in inventory. */
@@ -26,9 +26,35 @@ export function compatibleCheckpointVersions(): Record<string, string>[] {
   )
     return [];
   return [
-    { ...PIPELINE_VERSIONS, normalizer: "hybrid-v3", prompt: "poi-normalize-v2" },
-    { ...PIPELINE_VERSIONS, normalizer: "hybrid-v4", prompt: "poi-normalize-v3" },
-    { ...PIPELINE_VERSIONS, normalizer: "hybrid-v5", prompt: "poi-normalize-v4" },
+    {
+      ...PIPELINE_VERSIONS,
+      normalizer: "hybrid-v3",
+      prompt: "poi-normalize-v2",
+    },
+    {
+      ...PIPELINE_VERSIONS,
+      normalizer: "hybrid-v4",
+      prompt: "poi-normalize-v3",
+    },
+    {
+      ...PIPELINE_VERSIONS,
+      normalizer: "hybrid-v5",
+      prompt: "poi-normalize-v4",
+    },
+    // Historical coordinate-only proofs remain structural evidence. Location audit is separate;
+    // a deliberate resume rechecks the exact location binding in seedTasks.
+    ...[
+      ["hybrid-v3", "poi-normalize-v2"],
+      ["hybrid-v4", "poi-normalize-v3"],
+      ["hybrid-v5", "poi-normalize-v4"],
+      ["hybrid-v6", "poi-normalize-v4"],
+    ].map(([normalizer, prompt]) => ({
+      ...PIPELINE_VERSIONS,
+      normalizer: normalizer!,
+      prompt: prompt!,
+      geocode: "locationiq-v1",
+      canonicalBuilder: "canonical-build-v1",
+    })),
   ];
 }
 
@@ -47,9 +73,7 @@ export function resumePipelineUpgrade(previous: Record<string, unknown>): {
   const compatible =
     expected.length === Object.keys(previous).length &&
     compatibleCheckpointVersions().some((versions) =>
-      Object.entries(versions).every(
-        ([key, value]) => previous[key] === value,
-      ),
+      Object.entries(versions).every(([key, value]) => previous[key] === value),
     );
   if (!compatible)
     throw new Error(

@@ -26,8 +26,15 @@ test("GLM upgrade preserves old checkpoints only for the exact reviewed version 
     to: PIPELINE_VERSIONS,
   });
   const priorGlm = { ...PIPELINE_VERSIONS, normalizer: "hybrid-v5" };
-  assert.deepEqual(resumePipelineUpgrade(priorGlm), { from: priorGlm, to: PIPELINE_VERSIONS });
-  assert.deepEqual(compatibleCheckpointVersions(), [legacy, interim, priorGlm]);
+  assert.deepEqual(resumePipelineUpgrade(priorGlm), {
+    from: priorGlm,
+    to: PIPELINE_VERSIONS,
+  });
+  assert.deepEqual(compatibleCheckpointVersions().slice(0, 3), [
+    legacy,
+    interim,
+    priorGlm,
+  ]);
   assert.equal(
     resumePipelineUpgrade(
       Object.fromEntries(Object.entries(PIPELINE_VERSIONS).reverse()),
@@ -51,4 +58,20 @@ test("GLM upgrade preserves old checkpoints only for the exact reviewed version 
       () => resumePipelineUpgrade(versions),
       /Pipeline versions changed/,
     );
+});
+
+test("location upgrade preserves historical structural proofs but reruns location binding on resume", () => {
+  const old = {
+    ...PIPELINE_VERSIONS,
+    geocode: "locationiq-v1",
+    canonicalBuilder: "canonical-build-v1",
+  };
+  assert.deepEqual(resumePipelineUpgrade(old), {
+    from: old,
+    to: PIPELINE_VERSIONS,
+  });
+  assert.throws(
+    () => resumePipelineUpgrade({ ...old, geocode: "unknown-provider" }),
+    /Pipeline versions changed/,
+  );
 });

@@ -129,6 +129,7 @@ export interface ResearchGeocodeCacheRow {
   "precision": string | null;
   "provider": string | null;
   "fetched_at": Date;
+  "payload": unknown | null;
 }
 
 export interface ResearchIngestAttemptsRow {

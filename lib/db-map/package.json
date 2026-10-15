@@ -72,11 +72,15 @@
     "ingest:test-artifacts:integration": "tsx scripts/ingest/artifact-consistency.integration.ts",
     "ingest:test-coordinates:integration": "tsx scripts/ingest/normalization-coordinates.integration.ts",
     "ingest:test-scheduler": "tsx --test scripts/ingest/database-telemetry.test.ts scripts/ingest/record-scheduler.test.ts scripts/ingest/concurrency.test.ts scripts/ingest/embedding-batcher.test.ts",
-    "ingest:quality": "tsx scripts/ingest/quality.ts"
+    "ingest:quality": "tsx scripts/ingest/quality.ts",
+    "ingest:location-audit": "tsx scripts/ingest/location-audit.ts",
+    "ingest:test-location": "tsx --test scripts/ingest/location.test.ts",
+    "ingest:test-location:integration": "tsx scripts/ingest/location.integration.ts"
   },
   "dependencies": {
     "csv-parse": "^7.0.1",
     "fast-xml-parser": "^5.8.0",
+    "i18n-iso-countries": "7.14.0",
     "pg": "^8.16.3",
     "stream-chain": "^4.2.5",
     "stream-json": "^3.4.0"
