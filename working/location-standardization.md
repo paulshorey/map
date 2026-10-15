@@ -105,7 +105,7 @@ at 2026-10-15T16:07:14Z, after successful fresh GLM normalization. Its pool evid
 max16/total3/idle1/waiting0 with only the source-lock holder recorded. Three subsequent
 read-only fresh-connection probes succeeded in190–271ms; server reported9connections
 against max500. This does not prove the network/proxy root cause or justify an unchanged
-resume. No reverse-geocoding request was established by this failed sample.
+resume. The exact provider ledger records an attempted reverse request aborted with the database error before any HTTP status or usable cache entry was recorded. This does not establish reverse-provider health or a successful live location validation.
 
 Per the human's serious-stop instruction, all ingestion is stopped, admission is held
 under owned maintenance, and the two-hour heartbeat is PAUSED pending human restart/review.
