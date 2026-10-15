@@ -31,6 +31,7 @@ import {
 import { fewShotMessages } from "./examples.js";
 import { getNormalizationProfile } from "./profiles.js";
 import { NORMALIZATION_SYSTEM_PROMPT } from "./prompt.js";
+import { activationCoordinates, type CoordinateProjection } from "./activation-coordinates.js";
 import { resolveNormalization, type ResolvedNormalization } from "./resolve.js";
 import {
   normalizationInputHash,
@@ -67,7 +68,7 @@ export interface NormalizeRunStats {
   stoppedByBudget: boolean;
 }
 
-interface NormalizeRow {
+interface NormalizeRow extends CoordinateProjection {
   id: string;
   source_slug: string;
   source_record_id: string;
@@ -204,7 +205,9 @@ async function fetchRows(
        active.observation_id AS normalization_observation_id,
        active.input_hash AS active_input_hash,
        active.match_fingerprint AS active_match_fingerprint,
-       rp.canonical_poi_id, rp.coordinate_source,
+       rp.canonical_poi_id, rp.coordinate_source, rp.coordinate_precision,
+       rp.lat AS projected_lat, rp.lng AS projected_lng, rp.active_geocode_id,
+       geo.normalization_id AS geocode_normalization_id,
        o.captured->>'name' AS name,
        o.captured->>'description' AS description,
        o.captured->>'website' AS website,
@@ -224,6 +227,7 @@ async function fetchRows(
      JOIN research_sources rs ON rs.id = rp.source_id
      JOIN research_poi_observations o ON o.id = rp.active_observation_id
      LEFT JOIN research_poi_normalizations active ON active.id = rp.active_normalization_id
+     LEFT JOIN research_poi_geocodes geo ON geo.id = rp.active_geocode_id
      WHERE rp.retired_at IS NULL
        AND rp.ingest_category IS NOT NULL
        ${sourceClause}
@@ -709,6 +713,7 @@ async function activateNormalization(
   normalizationId: string,
   inputHash: string,
   resolved: ResolvedNormalization,
+  deterministic: ReturnType<typeof buildDeterministicFacts>,
   shadow: boolean,
 ): Promise<void> {
   if (shadow) return;
@@ -718,7 +723,8 @@ async function activateNormalization(
         await client.query("SELECT pg_advisory_xact_lock($1)", [
           CANONICAL_WRITER_LOCK,
         ]);
-      const shouldRematch =
+      const coordinates = activationCoordinates(row, normalizationId, deterministic);
+      const shouldRematch = coordinates.changed ||
         (row.active_match_fingerprint !== null &&
           row.active_match_fingerprint !== resolved.matchFingerprint) ||
         (row.active_normalization_id !== normalizationId &&
@@ -745,12 +751,12 @@ async function activateNormalization(
          starts_at = $18,
          ends_at = $19,
          date_precision = $20,
-         lat = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid AND coordinate_source='geocode' THEN NULL ELSE COALESCE($21,lat) END,
-         lng = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid AND coordinate_source='geocode' THEN NULL ELSE COALESCE($22,lng) END,
-         coordinate_source = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid AND coordinate_source='geocode' THEN NULL ELSE COALESCE($23,coordinate_source) END,
-         coordinate_precision = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid AND coordinate_source='geocode' THEN NULL ELSE COALESCE($24,coordinate_precision) END,
+         lat = $21,
+         lng = $22,
+         coordinate_source = $23,
+         coordinate_precision = $24,
          content_embedding = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid THEN NULL ELSE content_embedding END,
-         active_geocode_id = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid THEN NULL ELSE active_geocode_id END,
+         active_geocode_id = CASE WHEN $27 THEN active_geocode_id ELSE NULL END,
          active_embedding_id = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid THEN NULL ELSE active_embedding_id END,
          canonical_poi_id = CASE WHEN $25 THEN NULL ELSE canonical_poi_id END,
          matched_normalization_id = CASE WHEN $25 THEN NULL ELSE $2::uuid END,
@@ -781,10 +787,10 @@ async function activateNormalization(
           resolved.startsAt,
           resolved.endsAt,
           resolved.datePrecision,
-          null,
-          null,
-          null,
-          null,
+          coordinates.lat,
+          coordinates.lng,
+          coordinates.source,
+          coordinates.precision,
           shouldRematch,
           JSON.stringify({
             ...resolved.attributes,
@@ -795,6 +801,7 @@ async function activateNormalization(
               warnings: resolved.warnings,
             },
           }),
+          coordinates.keepGeocode,
         ],
       );
       await client.query(
@@ -902,8 +909,10 @@ export async function findReusableNormalizations(
       !["accepted", "degraded", "rejected"].includes(row.active_status ?? "")
     )
       return [];
-    const { inputHash } = prepareNormalization(row, opts, generation ?? null);
+    const { inputHash, deterministic } = prepareNormalization(row, opts, generation ?? null);
     if (inputHash !== row.active_input_hash) return [];
+    // Reuse the immutable normalization, but repair its projection before downstream reuse.
+    if (activationCoordinates(row, row.active_normalization_id, deterministic).needsActivation) return [];
     return [
       {
         research_poi_id: row.id,
@@ -954,6 +963,7 @@ export async function runHybridNormalize(
             cached.id,
             inputHash,
             cached.resolved,
+            deterministic,
             opts.shadow || (opts.noLlm && row.active_normalization_id !== null),
           );
           stats.artifactId = cached.id;
@@ -1039,6 +1049,7 @@ export async function runHybridNormalize(
         normalizationId,
         inputHash,
         resolved,
+        deterministic,
         opts.shadow || (opts.noLlm && row.active_normalization_id !== null),
       );
       await finishJob(

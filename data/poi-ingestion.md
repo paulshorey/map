@@ -95,6 +95,14 @@ append new attempts. Completed record attempts are skipped on resume while their
 The JSON output from an attempt identifies its normalization, geocode, embedding, canonical,
 or build artifact where applicable. Existing source coordinates need no geocode artifact.
 
+Normalization activation persists the deterministic coordinate result, including clearing
+invalid `(0,0)` or out-of-range pairs and applying detected swaps or URL coordinates.
+A geocode is retained only for the same normalization artifact with a valid coordinate pair
+and a matching geocode artifact. A changed point retires the old membership before matching
+again. Exact normalization-cache reuse checks this projection too: a mismatched projection
+reactivates the saved normalization without another LLM call. This repairs activation rather
+than changing the immutable model-output contract or invalidating all older normalizations.
+
 `research_pois` holds current projections and active artifact pointers. Immutable observations,
 normalizations, geocodes and embeddings preserve provenance. Active
 `research_canonical_memberships` are authoritative; `canonical_poi_id` is a lookup cache.
