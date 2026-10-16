@@ -1,5 +1,43 @@
 # Location standardization and rollout
 
+## Post-merge checkpoint repair — 2026-10-16
+
+PR #47 merged as `20ec60a3222ffeceb8a25ac974f561e98f4c15a9`. Two subsequent review
+findings were confirmed against that main revision:
+
+- Compatible older-geocoder resumes could seed only geocode pending while completed
+  downstream checkpoints still matched the old artifacts. Geocode activation then changed
+  the embedding/build without requeueing those checkpoints. Successful/reused managed geocode
+  completion now requeues only later completed tasks in the same fenced transaction as
+  activation. Unchanged artifacts remain reusable; earlier normalization is left completed.
+- Region-only enrichment changed `buildEmbedText` but retained the old vector and active
+  embedding ID. Both are now invalidated for region changes, as for city/country changes.
+  Address-only changes and unchanged locality retain the embedding.
+
+Database-free regressions exercise the real scheduler, activation transaction and task
+completion against an in-memory database boundary, plus cached `runGeocode` activation.
+The original implementation fails both targeted cases. The repaired suite checks completion
+order, fresh build input IDs, preservation of prior attempt evidence and address/point
+preservation. These mocked checks are not live PostgreSQL or provider validation.
+
+The follow-up branch is `codex/location-downstream-requeue`, based on fetched main, separate
+from the completed location branch and the diagnostic branch. PR #48's diagnostic patch
+remains independent. It still targets `codex/location-standardization`; retarget it to main
+and synchronize main into its own branch before merge. A read-only trial merge reports a
+conflict in `providers/locationiq.ts` caused by the squash ancestry. At this inspection,
+main's file is identical to the old location branch's file, so resolution must preserve the
+diagnostic changes, including error origins and provider phases; review/retest the actual
+resolved head. Do not modify or force-push that separately owned branch from this task.
+
+The serious operational hold remains. Fresh control at 2026-10-16T09:05:26Z was quiescent
+with no workers/source locks/admitted scripts/claims. The gate belongs to the completed
+diagnosis; it was not reopened or replaced here. Both ingestion heartbeats remain paused.
+No full restart is authorized.
+Historical baseline and rollout notes below describe the earlier investigation; subsequent
+diagnosis supplied successful Taipei/JamBase sample receipts but did not prove the cause of
+the intermittent DB connection failure. This repair requires later controlled integration
+validation when the human authorizes restarting; no database rollback test was run here.
+
 Owner chat: `01a139a6-1dec-73e3-a8fa-46d8c4e14a56`. Human request: 2026-10-15.
 
 ## Baseline audit

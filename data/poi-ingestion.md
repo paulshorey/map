@@ -606,6 +606,10 @@ legacy attempt records.
   memberships/builds according to match changes. Prompt output must retain the input UUID.
 - **Geocode:** missing points use forward lookup; missing administrative fields can use reverse lookup. Queries and misses are
   cached. Missing locality or a remembered miss is `blocked`; rerunning cannot fix bad input.
+  Successful/reused managed geocode completion requeues completed embed/match/canonical/verify
+  checkpoints in the activation transaction, including on compatible older-geocoder resumes.
+  Unchanged artifacts may be reused on reevaluation. City, region or country changes clear both
+  the embedding vector and active embedding ID; address-only enrichment preserves them.
 - **Embed:** normalized POIs need a stored embedding in the managed pipeline. Current managed
   execution uses one-record requests for precise checkpointing. Standalone embedding supports
   batches, but does not provide the managed execution ledger.
