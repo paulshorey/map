@@ -169,6 +169,10 @@ health checks. No AI turn should stay alive to monitor a healthy import.
 - Full imports use `--unlimited`, including resumed historically capped runs, preserve original
   cohort/stages/checkpoints and have no required overall deadline. Spending/unknown-cost telemetry
   is informational; do not ask for an allowance, ETA or deadline for the standing backlog.
+- Run one full import process at a time. Queue separately approved files for later launch;
+  the database-wide matching lock rejects a second matcher rather than waiting. Concurrency
+  settings serialize work within one Node process, not across separate import processes.
+  See the runbook's operating model before proposing concurrent full-file workers.
 - Record the exact job/run/execution IDs and return after launch. Reconcile existing human and
   automated workers before starting anything. Never stop a healthy worker merely to assume
   ownership. Verified whole-file/database completion, not exit zero, permits advancement.

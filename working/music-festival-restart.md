@@ -63,8 +63,9 @@ regression passed the v2-to-v3/same-raw transition, idempotent repeat and change
   and conflicting-country examples. Distinct hypotheses, not a backlog-draining loop.
 - Verify HTTP/diagnostic evidence, source fields, point/country/provenance, tasks and zero
   lineage violations. Preserve captured dates/status; they are not promises of availability.
-- After successful source acceptance, launch exactly the two approved files with category
-  `music_festival`, `--unlimited`, distinct source locks and no overall deadline. Ordinary
+- After successful source acceptance, queue exactly the two approved files with category
+  `music_festival`, `--unlimited` and no overall deadline. Run one full process at a time,
+  verifying scope completion and process/lock exit before admitting the next file. Ordinary
   Node owns workers, sleep assertions, logs, hourly health checks and terminal receipts.
   One two-hour AI coordinator owns bounded decisions; never keep a model alive waiting.
 - A repeated DB failure, provider degradation, lost lock, lineage fault or widespread bad
@@ -74,6 +75,40 @@ regression passed the v2-to-v3/same-raw transition, idempotent repeat and change
 Exact sample/run/job IDs, quality acceptance, launch receipts and current maintenance state
 belong to private `.ingest-jobs/music-restart-20261016T1825/` and automation memory. This
 document is the plan; it does not assert successful live validation or full-file completion.
+
+## Matching collision and sequential recovery — 2026-10-16
+
+Both approved files were launched simultaneously at 19:06Z after successful bounded source
+validation. At 19:22:11Z That Festival Site's first match collided with the global matching
+advisory lock held by JamBase. The process-local `canonicalLane` cannot serialize separate
+workers; `pg_try_advisory_lock` intentionally fails fast. The launch strategy missed this
+constraint. This failure does not establish a Fireworks outage or recurrence of the earlier
+database checkout timeout. The protective lock remains in place.
+
+The Node group watcher detected the terminal failure at 19:22:19Z, requested both exact job
+stops, entered maintenance and confirmed quiescence by 19:22:29Z. Both workers, their Node
+supervisors and the group watcher exited; both source locks were released. The two-hour
+heartbeat was paused for review. Journal timestamps identify JamBase's overlapping match
+and the expected fail-fast guard, so the orchestrator can correct this routine launch
+coordination error within the standing restart authorization. Unexplained lock conflicts,
+provider/database/lineage faults and necessary developer decisions retain the serious
+hold rule; the watcher alone cannot authorize a restart.
+Original observations, frozen cohorts and successful artifacts remain available:
+
+| Source | Original run | Scope | Committed normalization | Record verification |
+| --- | --- | ---: | ---: | ---: |
+| JamBase | `227309cd-941e-43ad-a6cc-6281c08aee12` | 1,257 | 50 | 37 |
+| That Festival Site | `8eb9009b-f697-4e74-8b84-671128ae742f` | 1,415 | 7 | 0 |
+
+Neither run has whole-file verification. After reconciling the stopped jobs, released locks
+and owned maintenance, resume JamBase
+with `--resume 227309cd-941e-43ad-a6cc-6281c08aee12 --unlimited` through the approved runner.
+Only after verified completion and worker/lock exit, resume That Festival Site with
+`--resume 8eb9009b-f697-4e74-8b84-671128ae742f --unlimited`. Use new supervisor job receipts
+for resumed executions; the old two-job group watcher must not be restarted with terminal IDs.
+No unchanged simultaneous relaunch, model change, pool tuning or source reset is indicated.
+Private evidence and terminal-consumption records live in
+`.ingest-jobs/music-match-conflict-20261016T1923/`.
 
 ## Historical location repair recommendation
 

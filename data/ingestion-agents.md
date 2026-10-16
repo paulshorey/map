@@ -35,6 +35,11 @@ supported). Do not assume a subagent is cheap: unspecified models inherit the pa
 
 Supply a small, concrete handoff:
 
+Delegate one full file or resume at a time. Several approved files form a queue; do not start
+separate full workers concurrently. The matcher has a database-wide fail-fast lock even when
+source locks differ. Within-file record/provider concurrency remains available. See the
+[operating model](poi-ingestion.md#operating-model) for the concurrency boundary and recovery.
+
 ```text
 Repository: /absolute/path/to/map
 Parent task UUID: <actual current orchestrator task ID>
