@@ -36,6 +36,14 @@ labels back from raw text with evidence paths. Both model and deterministic admi
 proposals stay null until lookup; source street addresses still win. Captured policy
 revision 1 changes observation/cache identity so earlier policy artifacts cannot be reused.
 
+Live record 273 exposed a separate output-size failure: GLM echoed the 1,867-artist
+lineup into a scalar attribute and both bounded outputs ended with `length`. HTTP
+transport succeeded. The source registry now omits only this opaque collection from
+model context (raw and captured attributes); its count, identity, venue, dates and
+location evidence remain. Full raw/captured lineups stay stored unchanged. The curated
+packet changes the normalization cache key, and the failed attempts remain auditable.
+This is a diagnosed source repair, not a provider/model or output-budget increase.
+
 PR51 review found that version-2 observations could remain active after a version-3
 mapping change because raw JSON alone owned their identity. Observation identity now
 also includes a generated hash of captured JSONB and the source POI hint. Raw SHA,

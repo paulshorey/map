@@ -894,6 +894,10 @@ The captured policy revision participates in observation and normalization cache
 A label such as `California`
 is not asserted as a country, and `Australia` is not asserted as a city. Source points,
 supplied street addresses, natural IDs and captured edition dates remain unchanged.
+Its code-owned normalization context omits the opaque `lineup` array from raw and
+captured attributes while retaining `lineup_count`. The full lineup stays in immutable
+observations/research attributes. This prevents thousands of performer names being
+echoed into a scalar response; the actual curated packet participates in cache identity.
 Use `pnpm --silent --filter @lib/db-map ingest:location-audit --json` for a read-only current
 completeness/conflict/inference audit. See [location rollout](../working/location-standardization.md)
 for the baseline findings, field contract, limitations and staged historical repair plan.

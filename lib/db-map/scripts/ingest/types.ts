@@ -55,6 +55,9 @@ export interface SourceDefinition {
   extractor?: Extractor;
   files?: SourceFileDefinition[];
   normalizationProfile?: string;
+  /** Code-owned top-level raw/attribute fields omitted only from model context.
+   * Original captured observations and deterministic activation retain them. */
+  normalizationOmitFields?: string[];
   /** Identity policy for generic/capture-spec sources. */
   identity?: { field?: string; editioned?: boolean };
 }

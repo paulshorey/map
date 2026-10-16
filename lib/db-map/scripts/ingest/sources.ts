@@ -217,6 +217,7 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
   {
     meta: { slug: "thatfestivalsite", name: "That Festival Site", trust: 60 },
     extractor: thatFestivalSiteExtractor,
+    normalizationOmitFields: ["lineup"],
     files: [
       {
         pattern:

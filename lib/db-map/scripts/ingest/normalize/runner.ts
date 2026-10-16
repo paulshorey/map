@@ -139,11 +139,16 @@ function deterministicInput(row: NormalizeRow): DeterministicInput {
   };
 }
 
-function requestPacket(
+export function requestPacket(
   row: NormalizeRow,
   profileId: string,
   deterministic: ReturnType<typeof buildDeterministicFacts>,
 ): Record<string, unknown> {
+  const omitted = getSourceDefinition(row.source_slug)?.normalizationOmitFields ?? [];
+  const context = (value: unknown): unknown =>
+    omitted.length && value && typeof value === "object" && !Array.isArray(value)
+      ? Object.fromEntries(Object.entries(value).filter(([key]) => !omitted.includes(key)))
+      : value;
   return {
     record_id: row.id,
     source: {
@@ -166,9 +171,10 @@ function requestPacket(
       lat: row.lat,
       lng: row.lng,
       raw_category: row.raw_category,
-      attributes: row.attributes,
+      attributes: context(row.attributes),
     },
-    raw: row.raw,
+    raw: context(row.raw),
+    ...(omitted.length ? { omitted_context_fields: omitted } : {}),
     deterministic,
     allowed_category_slugs: [row.ingest_category],
   };

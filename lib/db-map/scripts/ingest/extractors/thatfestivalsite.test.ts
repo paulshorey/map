@@ -8,6 +8,7 @@ import { buildDeterministicFacts, type DeterministicInput } from "../normalize/d
 import type { LlmNormalizationOutput } from "../normalize/contracts.js";
 import { getNormalizationProfile } from "../normalize/profiles.js";
 import { resolveNormalization } from "../normalize/resolve.js";
+import { requestPacket } from "../normalize/runner.js";
 
 test("country-as-city and state-as-country survive as hints, not authoritative fields", () => {
   const raw = {
@@ -100,6 +101,23 @@ test("registered source preserves every natural ID, raw value and coordinate in 
       (record.attributes!.source_location_hints as any).country,
       raw.country,
     );
+    if (record.source_record_id === "273") {
+      const row = {...record, id: "fixture", source_slug: "thatfestivalsite"} as Parameters<typeof requestPacket>[0];
+      const packet = requestPacket(row, "event", {} as Parameters<typeof requestPacket>[2]);
+      const view = packet as {raw: typeof raw; captured: {attributes: Record<string, unknown>}};
+      assert.equal(raw.lineup.length, 1867);
+      assert.equal((record.attributes!.lineup as unknown[]).length, 1867);
+      assert.equal(view.raw.lineup, undefined);
+      assert.equal(view.captured.attributes.lineup, undefined);
+      assert.equal(view.raw.lineup_count, 1867);
+      assert.equal(view.raw.country, raw.country);
+      assert.equal(view.raw.start_date, raw.start_date);
+      assert.equal(view.raw.latitude, raw.latitude);
+      assert.deepEqual(packet.omitted_context_fields, ["lineup"]);
+      const generic = requestPacket({...row, source_slug: "jambase"}, "event", {} as Parameters<typeof requestPacket>[2]);
+      assert.equal((generic.raw as any).lineup, raw.lineup);
+      assert.ok(JSON.stringify(packet).length < JSON.stringify(generic).length / 2);
+    }
     records++;
   }
   assert.equal(records, 1415);
