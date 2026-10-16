@@ -78,12 +78,14 @@ export async function sampleLocationReview(
           c.verify_output, c.verify_attempt_id,
           c.verified_observation_id,c.verified_normalization_id,
           CASE
+            WHEN NOT binding.reverse_comparable THEN 0
             WHEN COALESCE(g.validation->'warnings','[]') ? 'coordinate_country_conflict' THEN 3
             WHEN COALESCE(g.validation->'warnings','[]') ?| ARRAY['coordinate_region_conflict','reverse_result_too_distant'] THEN 2
             WHEN g.validation->'reverse'->>'city' IS NOT NULL AND n.city IS NOT NULL
               AND lower(trim(n.city))<>lower(trim(g.validation->'reverse'->>'city')) THEN 1
             ELSE 0 END priority,
           CASE
+            WHEN NOT binding.reverse_comparable THEN 'no_bound_reverse'
             WHEN COALESCE(g.validation->'warnings','[]') ?| ARRAY['coordinate_country_conflict','coordinate_region_conflict','reverse_result_too_distant']
               OR (g.validation->'reverse'->>'city' IS NOT NULL AND n.city IS NOT NULL
                 AND lower(trim(n.city))<>lower(trim(g.validation->'reverse'->>'city')))
@@ -97,6 +99,19 @@ export async function sampleLocationReview(
         JOIN research_poi_normalizations n ON n.id=bi.normalization_id AND n.research_poi_id=rp.id
         JOIN completed c ON c.source_id=rp.source_id AND c.source_record_id=rp.source_record_id
         LEFT JOIN research_poi_geocodes g ON g.id=bi.geocode_id
+        CROSS JOIN LATERAL (
+          SELECT COALESCE(
+            g.status='resolved'
+            AND g.normalization_id=bi.normalization_id
+            AND g.validation->>'normalization_id'=bi.normalization_id::text
+            AND jsonb_typeof(g.validation->'reverse'->'country_code')='string'
+            AND btrim(g.validation->'reverse'->>'country_code')<>''
+            AND g.lat BETWEEN -90 AND 90 AND g.lng BETWEEN -180 AND 180
+            AND NOT (g.lat=0 AND g.lng=0)
+            AND g.validation->'point'->'lat'=to_jsonb(g.lat)
+            AND g.validation->'point'->'lng'=to_jsonb(g.lng), false
+          ) reverse_comparable
+        ) binding
         WHERE cp.status='published' AND ($2::text IS NULL OR rs.slug=$2)
       ), ranked AS (
         SELECT *, row_number() OVER (PARTITION BY source,stratum

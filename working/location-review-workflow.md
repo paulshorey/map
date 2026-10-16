@@ -6,6 +6,12 @@ lookup limitations, and an incorrect canonical merge. The implementation and com
 contract live in the [ingestion runbook](../data/poi-ingestion.md#reviewing-location-evidence-on-completed-records).
 The existing `ingest:location-audit` remains the aggregate completeness report.
 
+Sampling and rendering must agree about reverse evidence binding. Only resolved
+geocodes tied to the build's normalization and the saved valid query point can
+occupy risk or baseline slots. Unbound evidence remains in the no-bound-reverse
+group even when it carries old country/city warnings. Country disagreement
+findings must name the actual raw or captured fallback fields used in comparison.
+
 ## What to trust before we have reviewed labels
 
 Neither listed text nor reverse output is universal ground truth. Treat an official,

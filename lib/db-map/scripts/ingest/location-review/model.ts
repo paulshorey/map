@@ -299,13 +299,15 @@ export function makeReviewCase(row: LocationReviewRow): ReviewCase {
     note("listed_country_not_recognized", "difference", "listed.country");
   const lc =
     countryToCode(listed.country_code) ?? countryToCode(listed.country);
-  const rawCountryField = text(value("listed.country_code"))
+  const countryCodeField = text(value("listed.country_code"))
     ? "listed.country_code"
-    : text(value("captured.country_code"))
-      ? "captured.country_code"
-      : text(value("listed.country"))
-        ? "listed.country"
-        : "captured.country_name";
+    : "captured.country_code";
+  const countryNameField = text(value("listed.country"))
+    ? "listed.country"
+    : "captured.country_name";
+  const rawCountryField = countryToCode(listed.country_code)
+    ? countryCodeField
+    : countryNameField;
   if (
     lc &&
     countryToCode(listed.country) &&
@@ -314,8 +316,8 @@ export function makeReviewCase(row: LocationReviewRow): ReviewCase {
     note(
       "listed_country_fields_disagree",
       "conflict",
-      "listed.country",
-      "listed.country_code",
+      countryNameField,
+      countryCodeField,
     );
   if (reverseComparable) {
     if (lc && lc !== countryToCode(text(reverse.country_code)))

@@ -171,6 +171,39 @@ test("an artifact belonging to another normalization cannot certify the point", 
     "normalization_id",
   );
 });
+test("country disagreements identify the captured fallback fields that supplied the values", () => {
+  for (const rawCountry of [true, false]) {
+    const r = row();
+    r.raw.venue = rawCountry ? { country: "Switzerland" } : {};
+    r.captured.country_code = "NG";
+    r.captured.attributes = { country_name: "Switzerland" };
+    const c = packet(r).cases[0]!;
+    assert.deepEqual(
+      c.findings.find((f) => f.code === "listed_country_fields_disagree")
+        ?.fields,
+      [
+        rawCountry ? "listed.country" : "captured.country_name",
+        "captured.country_code",
+      ],
+    );
+    assert.equal(c.fields["captured.country_code"]!.value, "NG");
+    assert.equal(c.fields["listed.country_code"]!.value, null);
+  }
+});
+test("an unrecognized country code falls back to the recognized country name's field", () => {
+  const r = row();
+  r.raw.venue = { country: "Switzerland", countryCode: "invalid" };
+  r.canonical.attributes = { country_code: "NG" };
+  const c = packet(r).cases[0]!;
+  for (const code of [
+    "listed_country_vs_reverse",
+    "listed_country_vs_canonical",
+  ])
+    assert.equal(
+      c.findings.find((f) => f.code === code)?.fields[0],
+      "listed.country",
+    );
+});
 test("zero-pair canonical points are conflicts; missing optional fields remain coverage gaps", () => {
   const r = row();
   r.canonical.lat = 0;
@@ -389,3 +422,153 @@ test("database diagnostic enforces read-only snapshot, scope parameters, timeout
   assert.equal(released, true);
   assert.ok(!queries.some((q) => /\b(INSERT|UPDATE|DELETE)\b/.test(q.sql)));
 });
+
+test(
+  "SQL sampling strata agree with rendered reverse binding",
+  {
+    skip: !process.env.LOCATION_REVIEW_TEST_DATABASE_URL,
+  },
+  async () => {
+    const url = new URL(process.env.LOCATION_REVIEW_TEST_DATABASE_URL!);
+    assert.ok(["localhost", "127.0.0.1"].includes(url.hostname));
+    assert.equal(url.pathname, "/map_location_review_test");
+    const { Pool } = await import("pg");
+    const { randomUUID } = await import("node:crypto");
+    const db = new Pool({ connectionString: url.href, max: 1 });
+    try {
+      // Session-local fixtures: the production query runs unchanged, with no shared tables.
+      await db.query(`
+      CREATE TEMP TABLE research_sources (id uuid, slug text);
+      CREATE TEMP TABLE research_ingest_runs (id uuid, source_id uuid, verified_at timestamptz, options jsonb, status text);
+      CREATE TEMP TABLE research_ingest_tasks (run_id uuid, source_record_id text, input jsonb, output jsonb, attempt_id uuid, stage text, state text);
+      CREATE TEMP TABLE canonical_pois (id uuid, active_build_id uuid, status text, name text, description text, website text, lat float8, lng float8, address text, attributes jsonb, starts_at text, ends_at text, field_provenance jsonb);
+      CREATE TEMP TABLE canonical_poi_build_inputs (build_id uuid, research_poi_id uuid, normalization_id uuid, geocode_id uuid);
+      CREATE TEMP TABLE research_pois (id uuid, source_id uuid, source_record_id text, lat float8, lng float8, country_code text, city text, region text, address text, active_normalization_id uuid, active_geocode_id uuid);
+      CREATE TEMP TABLE research_poi_normalizations (id uuid, research_poi_id uuid, observation_id uuid, display_name text, description text, website text, address text, city text, region text, country_code text, starts_at text, ends_at text, field_evidence jsonb, normalizer_version text);
+      CREATE TEMP TABLE research_poi_geocodes (id uuid, normalization_id uuid, lat float8, lng float8, precision text, status text, provider text, provider_version text, query_norm text, validation jsonb, created_at timestamptz);
+      CREATE TEMP TABLE research_poi_observations (id uuid, source_file_version_id uuid, raw_content_hash text, capture_hash text, captured jsonb, raw jsonb);
+      CREATE TEMP TABLE research_source_file_versions (id uuid, source_file_id uuid);
+      CREATE TEMP TABLE research_source_files (id uuid, logical_path text);
+    `);
+      const source = randomUUID(),
+        run = randomUUID();
+      await db.query("INSERT INTO research_sources VALUES ($1,'fixture')", [
+        source,
+      ]);
+      await db.query(
+        "INSERT INTO research_ingest_runs VALUES ($1,$2,now(),'{}','succeeded')",
+        [run, source],
+      );
+      const expected = new Map<string, string>();
+      for (const kind of [
+        "baseline",
+        "risk",
+        "artifact_norm",
+        "saved_norm",
+        "point",
+        "status",
+        "zero",
+        "range",
+        "missing_country",
+        "missing_geo",
+      ]) {
+        const research = randomUUID(),
+          build = randomUUID(),
+          norm = randomUUID(),
+          obs = randomUUID(),
+          geo = randomUUID();
+        const lat = kind === "zero" ? 0 : kind === "range" ? 100 : 46.9;
+        const lng = kind === "zero" ? 0 : 7.4;
+        const validation = {
+          normalization_id: kind === "saved_norm" ? randomUUID() : norm,
+          point: { lat: kind === "point" ? 47 : lat, lng },
+          reverse: {
+            country_code: kind === "missing_country" ? null : "CH",
+            city: "Bern",
+          },
+          warnings: kind === "baseline" ? [] : ["coordinate_country_conflict"],
+        };
+        await db.query(
+          "INSERT INTO research_ingest_tasks VALUES ($1,$2,$3,$4,$5,'verify','succeeded')",
+          [
+            run,
+            kind,
+            { observation_id: obs },
+            { normalization_id: norm },
+            randomUUID(),
+          ],
+        );
+        await db.query(
+          "INSERT INTO canonical_pois (id,active_build_id,status,lat,lng,attributes) VALUES ($1,$2,'published',$3,$4,'{}')",
+          [randomUUID(), build, lat, lng],
+        );
+        await db.query(
+          "INSERT INTO canonical_poi_build_inputs VALUES ($1,$2,$3,$4)",
+          [build, research, norm, geo],
+        );
+        await db.query(
+          "INSERT INTO research_pois (id,source_id,source_record_id,lat,lng,active_normalization_id,active_geocode_id) VALUES ($1,$2,$3,$4,$5,$6,$7)",
+          [research, source, kind, lat, lng, norm, geo],
+        );
+        await db.query(
+          "INSERT INTO research_poi_normalizations (id,research_poi_id,observation_id,city,country_code) VALUES ($1,$2,$3,'Bern','CH')",
+          [norm, research, obs],
+        );
+        await db.query(
+          "INSERT INTO research_poi_observations (id,raw_content_hash,capture_hash,captured,raw) VALUES ($1,'raw','capture','{}','{}')",
+          [obs],
+        );
+        if (kind !== "missing_geo")
+          await db.query(
+            "INSERT INTO research_poi_geocodes (id,normalization_id,lat,lng,status,validation) VALUES ($1,$2,$3,$4,$5,$6)",
+            [
+              geo,
+              kind === "artifact_norm" ? randomUUID() : norm,
+              lat,
+              lng,
+              kind === "status" ? "rejected" : "resolved",
+              validation,
+            ],
+          );
+        expected.set(
+          kind,
+          kind === "baseline"
+            ? "baseline"
+            : kind === "risk"
+              ? "risk"
+              : "no_bound_reverse",
+        );
+      }
+      const sample = await sampleLocationReview(db, {
+        limit: 100,
+        seed: "binding-regression",
+      });
+      assert.equal(sample.rows.length, expected.size);
+      for (const r of sample.rows) {
+        assert.equal(
+          r.stratum,
+          expected.get(r.source_record_id),
+          r.source_record_id,
+        );
+        const c = packet(r).cases[0]!;
+        assert.equal(
+          c.reverse_comparable,
+          r.stratum !== "no_bound_reverse",
+          r.source_record_id,
+        );
+      }
+      assert.deepEqual(
+        Object.fromEntries(
+          sample.population.map((p) => [p.stratum, p.records]),
+        ),
+        {
+          baseline: 1,
+          risk: 1,
+          no_bound_reverse: 8,
+        },
+      );
+    } finally {
+      await db.end();
+    }
+  },
+);
