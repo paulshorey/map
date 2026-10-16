@@ -703,6 +703,46 @@ command. A successful sample must be described as a sample.
 
 ## Troubleshooting and optimization
 
+### Database connection acquisition evidence
+
+`pnpm --silent --filter @lib/db-map ingest:database-probe` runs a fixed read-only
+matrix: three fresh `pg.Client` connections and nine instrumented pool acquisitions,
+including callbacks, three simultaneous clients and two actual 30-second idle expiry
+cycles. It requires the reviewed 10-second connection/30-second idle defaults, allows
+at most three clients at once, has a 120-second deadline, closes handles on failure,
+and calls no providers. Redirect its JSON output to a private ignored receipt. It
+does not open maintenance or modify server/network settings. A successful matrix
+does not prove prolonged availability or resolve an intermittent failure.
+
+Managed database errors retain their original identity/code/cause. Pool acquisition
+metadata adds elapsed time, counts at request start, a caller stack, a code-owned
+operation label and the last 64 lifecycle events (no SQL, parameters or endpoints).
+`pool_wait` identifies pg-pool's pending-item timeout; it does **not** prove pool or
+server saturation. A queued item can subsequently start a new connection.
+`connection_establishment` identifies its new-client timeout. Public `connect`
+events mean connection establishment finished; these diagnostics do not measure
+DNS/TCP/TLS/authentication individually. Event counts are instantaneous: `release`
+fires before the driver returns a client to its idle list. Source-lock leases are
+expected for the invocation's lifetime, including provider waits.
+
+The private execution journal's `provider_lifecycle` events distinguish preflight
+ledger writes, request invocation, observed HTTP response and terminal bookkeeping.
+Forward/reverse LocationIQ calls record these HTTP boundaries. Other adapters may
+have `request_started=null`, meaning unobserved rather than unsent. Invocation is
+not proof of remote delivery or billing. A scheduler DB failure can cancel an active
+HTTP call with the same error; inspect the original database caller/label before
+attributing a failed provider row to the provider or to its bookkeeping.
+Failed terminal bookkeeping is attempted once; its first DB error and any preceding
+provider error/HTTP status survive locally. No SQL or provider request is automatically
+replayed. A partial preflight/unknown terminal commit requires read/reconciliation.
+
+Use `ingest:test-database` and `ingest:test-scheduler` for provider-free injection of
+pool waiting, actual stalled connection establishment, idle disconnect/removal,
+callback/promise cleanup, preflight/result failure and cross-operation cancellation.
+Keep systemic holds in place until the diagnostic owner deliberately opens a bounded
+validation window. Successful connection probes or one record never authorize a full
+import or certify a source/category.
+
 | Evidence                                | Action                                                                                                                                                         |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Extraction collision or wrong count     | Check parser, wrapper shape, source identity, ordinal and file hash; fix before normalization.                                                                 |

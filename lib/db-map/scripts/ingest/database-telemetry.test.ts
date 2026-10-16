@@ -1,10 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
+import { createServer, type Socket } from "node:net";
 import { Pool } from "pg";
 import {
   measureDatabase,
   labelDatabaseConnection,
+  withDatabaseOperation,
 } from "./database-telemetry.js";
 import {
   withAttemptContext,
@@ -53,9 +55,23 @@ class FixtureClient extends EventEmitter {
   connect(callback: (error?: Error) => void) {
     queueMicrotask(() => callback());
   }
-  end() {
+  end(callback?: () => void) {
     this._ending = true;
     this.emit("end");
+    callback?.();
+  }
+  queryCalls = 0;
+  query(text: any, values: any, callback: any) {
+    this.queryCalls++;
+    const cb = typeof values === "function" ? values : callback;
+    queueMicrotask(() =>
+      cb(
+        text === "fail"
+          ? Object.assign(new Error("query failed"), { code: "XX000" })
+          : null,
+        { rows: [] },
+      ),
+    );
   }
   ref() {}
   unref() {}
@@ -86,6 +102,9 @@ test("real pg-pool checkout saturation records holders without replaying a query
         const details = errorDetails(error) as any;
         assert.equal(details.code, "database_pool_checkout_timeout");
         assert.equal(details.database.operation, "checkout");
+        assert.equal(details.database.acquisition.timeout_kind, "pool_wait");
+        assert.equal(details.database.acquisition.before.total, 2);
+        assert.ok(details.database.acquisition.elapsed_ms >= 15);
         assert.equal(details.database.pool.total, 2);
         assert.equal(details.database.pool.idle, 0);
         assert.equal(details.database.pool.holders.length, 2);
@@ -127,4 +146,179 @@ test("real pg-pool checkout saturation records holders without replaying a query
     }
     await db.end();
   }
+});
+
+test("real pg connection establishment stalls differ from waiting for a pool slot, for both APIs", async () => {
+  const sockets = new Set<Socket>();
+  const server = createServer((socket) => {
+    sockets.add(socket);
+    socket.on("close", () => sockets.delete(socket));
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const db = new Pool({
+    host: "127.0.0.1",
+    port: (server.address() as any).port,
+    user: "fixture",
+    database: "fixture",
+    connectionTimeoutMillis: 50,
+    max: 2,
+  });
+  measureDatabase(db);
+  try {
+    for (const callback of [false, true]) {
+      const acquire = () =>
+        callback
+          ? new Promise((resolve, reject) =>
+              db.connect((error, client, release) => {
+                if (error) reject(error);
+                else {
+                  release();
+                  resolve(client);
+                }
+              }),
+            )
+          : db.connect();
+      await assert.rejects(
+        withDatabaseOperation("provider_preflight_call", acquire),
+        (error: any) => {
+          const detail = errorDetails(error);
+          assert.equal(detail.code, "database_connection_timeout");
+          assert.equal(
+            (detail.database as any).acquisition.timeout_kind,
+            "connection_establishment",
+          );
+          assert.equal((detail.database as any).acquisition.before.total, 0);
+          assert.equal(
+            (detail.database as any).label,
+            "provider_preflight_call",
+          );
+          assert.ok(
+            (detail.database as any).acquisition.origin.includes(
+              "database-telemetry.test",
+            ),
+          );
+          assert.equal((detail.database as any).pool.holders.length, 0);
+          assert.ok(error.cause instanceof Error);
+          assert.equal(detail.cause?.name, error.cause.name);
+          return true;
+        },
+      );
+      assert.equal(db.totalCount, 0);
+      assert.equal(db.waitingCount, 0);
+    }
+  } finally {
+    await db.end();
+    for (const socket of sockets) socket.destroy();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+});
+
+test("connection rejection preserves error identity/code/cause and never submits a query", async () => {
+  const cause = Object.assign(new Error("fixture root"), {
+    code: "ECONNRESET",
+  });
+  const failure: any = Object.assign(
+    new Error("fixture rejection", { cause }),
+    {
+      code: "28P01",
+    },
+  );
+  class RejectClient extends FixtureClient {
+    override connect(callback: (error?: Error) => void) {
+      queueMicrotask(() => callback(failure));
+    }
+  }
+  const db = new Pool({
+    Client: RejectClient,
+    connectionTimeoutMillis: 50,
+  } as any);
+  measureDatabase(db);
+  try {
+    await assert.rejects(
+      db.query("secret_sql", ["secret_parameter"]),
+      (error: any) => {
+        assert.equal(error, failure);
+        assert.equal(error.code, "28P01");
+        assert.equal(error.cause, cause);
+        assert.equal(errorDetails(error).cause?.code, "ECONNRESET");
+        assert.ok(!JSON.stringify(error.database).includes("secret_"));
+        return true;
+      },
+    );
+    assert.equal(db.totalCount, 0);
+    assert.equal(db.waitingCount, 0);
+  } finally {
+    await db.end();
+  }
+});
+
+test("idle errors, destroyed releases and failed queries remove clients without replay or stale holders", async () => {
+  const db = new Pool({
+    Client: FixtureClient,
+    max: 1,
+    idleTimeoutMillis: 0,
+  } as any);
+  measureDatabase(db);
+  try {
+    const first = await db.connect();
+    first.release();
+    first.emit(
+      "error",
+      Object.assign(new Error("fixture idle disconnect"), {
+        code: "ECONNRESET",
+      }),
+    );
+    assert.equal(db.totalCount, 0);
+    const second = await db.connect();
+    assert.notEqual(first, second);
+    second.release(true);
+    assert.throws(() => second.release(), /already been released/);
+    const third = await db.connect();
+    third.release();
+    await assert.rejects(db.query("fail"), (error: any) => {
+      assert.equal(error.code, "XX000");
+      assert.equal(error.database.operation, "query");
+      // The client query callback observes its lease before pool.query releases it.
+      assert.equal(error.database.pool.holders.length, 1);
+      assert.equal(error.database.pool.holders[0].role, "pool_query");
+      assert.ok(
+        error.database.recent_events.some((e: any) => e.event === "idle_error"),
+      );
+      return true;
+    });
+    assert.equal((third as any).queryCalls, 1);
+    assert.equal(db.totalCount, 0);
+    await new Promise<void>((resolve, reject) =>
+      db.query("healthy callback", (error) =>
+        error ? reject(error) : resolve(),
+      ),
+    );
+    assert.equal(db.waitingCount, 0);
+    assert.equal(db.idleCount, 1);
+    for (let i = 0; i < 30; i++) await db.query("healthy");
+    await assert.rejects(db.query("fail"), (error: any) => {
+      assert.equal(error.database.recent_events.length, 64);
+      return true;
+    });
+  } finally {
+    await db.end();
+  }
+});
+
+test("submittable query objects retain identity, prototype, callback and return value", () => {
+  class Submittable {
+    callback() {}
+    submit() {}
+  }
+  const input = new Submittable(),
+    callback = input.callback;
+  const db = Object.assign(new EventEmitter(), {
+    query(q: Submittable) {
+      assert.equal(q, input);
+      return q;
+    },
+  });
+  measureDatabase(db as unknown as Pool);
+  assert.equal(db.query(input), input);
+  assert.equal(input.callback, callback);
 });

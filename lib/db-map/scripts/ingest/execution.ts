@@ -83,10 +83,14 @@ export const errorDetails = (error: unknown) => ({
   retryAfterMs: (error as { retryAfterMs?: number })?.retryAfterMs,
   reason: (error as { reason?: string })?.reason,
   database: (error as { database?: unknown })?.database,
+  provider_call: (error as { provider_call?: unknown })?.provider_call,
+  provider_error: (error as { provider_error?: unknown })?.provider_error,
   cause:
     error instanceof Error && error.cause instanceof Error
       ? {
           message: error.cause.message,
+          name: error.cause.name,
+          code: (error.cause as { code?: string }).code,
           status: (error.cause as { status?: number }).status,
         }
       : undefined,
@@ -179,10 +183,18 @@ export class Execution {
   }
   /** Raw unusable model output stays in the private ignored execution journal. */
   recordProviderOutputFailure(details: {
-    operation: string; pass: number; provider_call_id?: string;
-    content: string; finish_reason: string | null; error: string;
+    operation: string;
+    pass: number;
+    provider_call_id?: string;
+    content: string;
+    finish_reason: string | null;
+    error: string;
   }) {
     this.journal("provider_output_invalid", details);
+  }
+  /** No URLs, request bodies, SQL or credentials; survives database bookkeeping failure. */
+  recordProviderLifecycle(details: Record<string, unknown>) {
+    this.journal("provider_lifecycle", details);
   }
 
   static async start(

@@ -7,7 +7,12 @@ import { textValue, type ReverseLocation } from "../location.js";
 import { ingestConfig } from "../config.js";
 import { LlmError, retryAfterMs } from "./llm.js";
 import { currentAttempt } from "../execution.js";
-import { beginProviderCall, endProviderCall } from "../provider-telemetry.js";
+import {
+  beginProviderCall,
+  endProviderCall,
+  providerRequestStarted,
+  providerResponseReceived,
+} from "../provider-telemetry.js";
 let nextStart = 0;
 
 export interface GeocodeHit {
@@ -77,6 +82,7 @@ export async function geocode(query: string): Promise<GeocodeHit | null> {
     started = Date.now();
     let res: Response;
     try {
+      providerRequestStarted(call);
       res = await fetch(
         `${BASE_URL}?key=${encodeURIComponent(key)}&q=${encodeURIComponent(query)}&format=json&limit=1&normalizeaddress=1`,
         {
@@ -89,6 +95,8 @@ export async function geocode(query: string): Promise<GeocodeHit | null> {
         },
       );
     } catch (error) {
+      if (ctx?.execution.abortController.signal.aborted)
+        throw ctx.execution.abortController.signal.reason;
       throw new GeocodeError(
         `Network error: ${(error as Error).message}`,
         true,
@@ -96,6 +104,7 @@ export async function geocode(query: string): Promise<GeocodeHit | null> {
     }
     headers = res.headers;
     status = res.status;
+    providerResponseReceived(call, status);
     if (status !== 404 && !res.ok)
       throw new GeocodeError(
         `Geocoder status ${status}`,
@@ -182,6 +191,7 @@ export async function reverseGeocode(
     });
     let response: Response;
     try {
+      providerRequestStarted(call);
       response = await fetch(
         `https://us1.locationiq.com/v1/reverse?${params}`,
         {
@@ -200,6 +210,7 @@ export async function reverseGeocode(
     }
     status = response.status;
     headers = response.headers;
+    providerResponseReceived(call, status);
     if (status !== 404 && !response.ok)
       throw new GeocodeError(
         `Reverse geocoder status ${status}`,

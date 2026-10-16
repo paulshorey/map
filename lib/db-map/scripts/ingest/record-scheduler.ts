@@ -11,6 +11,7 @@ import {
 } from "../../sql/ingestion-tasks.js";
 import { Execution, errorDetails, type AttemptResult } from "./execution.js";
 import { LlmError } from "./providers/llm.js";
+import { withDatabaseOperation } from "./database-telemetry.js";
 export function recordFailure(error: unknown) {
   // Unknown code/database/provider-shape failures stop globally. Only recognized record validation is isolated.
   if (error instanceof LlmError)
@@ -129,7 +130,10 @@ export async function runRecordScheduler(options: {
           const set = active.get(stage)!;
           const available = capacity[stage] - set.size;
           if (available <= 0) continue;
-          const claims = await claimTasks(db, run, ex.id, stage, available);
+          const claims = await withDatabaseOperation(
+            `scheduler_claim_${stage}`,
+            () => claimTasks(db, run, ex.id, stage, available),
+          );
           for (const claim of claims) {
             launched++;
             const work = options

@@ -173,6 +173,53 @@ test("configuration/database failures stop globally and drain active work", asyn
   assert.equal(f.ex.stopped, true);
   assert.equal(finished, true);
 });
+test("a scheduler database failure aborts active provider work with the original error", async () => {
+  const f = fixture(["one"]),
+    query = f.db.query.bind(f.db);
+  let providerStarted = false,
+    aborted = false;
+  const failure = Object.assign(new Error("fixture checkout timeout"), {
+    code: "database_pool_checkout_timeout",
+  });
+  f.db.query = (async (...args: any[]) => {
+    if (providerStarted && String(args[0]).startsWith("WITH selected"))
+      throw failure;
+    return (query as any)(...args);
+  }) as any;
+  await assert.rejects(
+    runRecordScheduler({
+      ...f,
+      run: "run",
+      shadow: false,
+      concurrency: 1,
+      finiteBudget: false,
+      execute: async (claim) => {
+        if (claim.stage === "normalize") {
+          f.done(claim);
+          return { status: "succeeded" };
+        }
+        providerStarted = true;
+        await new Promise<void>((_resolve, reject) =>
+          f.ex.abortController.signal.addEventListener(
+            "abort",
+            () => {
+              aborted = true;
+              reject(f.ex.abortController.signal.reason);
+            },
+            { once: true },
+          ),
+        );
+      },
+    }),
+    (error) => error === failure,
+  );
+  assert.equal(aborted, true);
+  assert.equal(f.ex.abortController.signal.reason, failure);
+  assert.equal(f.ex.stopped, true);
+  assert.ok(
+    !f.tasks.some((t) => t.stage === "verify" && t.state === "succeeded"),
+  );
+});
 test("source-specific blocked data differs from transport and unexpected schema failures", () => {
   assert.equal(recordFailure(new LlmError("Rate limited", true, 429)), false);
   assert.equal(recordFailure(new Error("database unavailable")), false);
