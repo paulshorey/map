@@ -59,6 +59,9 @@ for (const event of [
 const lag = monitorEventLoopDelay({ resolution: 20 });
 lag.enable();
 const controller = new AbortController();
+// The deadline and normal finally must await the same pool shutdown.
+let closing: Promise<void> | undefined;
+const closePool = () => (closing ??= closeDb());
 const deadline = setTimeout(() => {
   expired = true;
   controller.abort();
@@ -67,9 +70,10 @@ const deadline = setTimeout(() => {
     client.release(true);
     leased.delete(client);
   }
-  void closeDb();
+  void closePool();
 }, 120_000);
 const query = async (client: Client | PoolClient) => {
+  if (expired) throw new Error("Diagnostic deadline exceeded");
   const at = performance.now();
   await client.query("SELECT 1");
   return Math.round(performance.now() - at);
@@ -88,6 +92,7 @@ async function fresh(label: string, inspect = false) {
     const queryMs = await query(client);
     let server: unknown;
     if (inspect) {
+      if (expired) throw new Error("Diagnostic deadline exceeded");
       const { rows } =
         await client.query(`SELECT current_setting('server_version') AS version,
         current_setting('max_connections')::int AS max_connections,
@@ -110,8 +115,8 @@ async function fresh(label: string, inspect = false) {
     trials.push({ label, path: "direct", error: safeError(error) });
     throw error;
   } finally {
-    direct.delete(client);
     await client.end().catch(() => undefined);
+    direct.delete(client);
   }
 }
 async function pooled(label: string, callback = false) {
@@ -141,7 +146,7 @@ async function pooled(label: string, callback = false) {
     trials.push({ label, path: "pool", before, error: safeError(error) });
     throw error;
   } finally {
-    if (client && leased.delete(client)) client.release();
+    if (client && leased.delete(client)) client.release(expired);
   }
 }
 let failure: unknown;
@@ -174,7 +179,7 @@ try {
   failure = safeError(error);
   process.exitCode = 1;
 } finally {
-  await closeDb();
+  await closePool();
   clearTimeout(deadline);
   lag.disable();
   const require = createRequire(import.meta.url),
