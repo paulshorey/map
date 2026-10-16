@@ -857,7 +857,8 @@ CREATE TABLE public.research_poi_observations (
     source_is_poi_hint boolean,
     redacted_paths text[] DEFAULT '{}'::text[] NOT NULL,
     first_seen_at timestamp with time zone DEFAULT now() NOT NULL,
-    last_seen_at timestamp with time zone DEFAULT now() NOT NULL
+    last_seen_at timestamp with time zone DEFAULT now() NOT NULL,
+    capture_hash text GENERATED ALWAYS AS (md5((((captured)::text || ':'::text) || COALESCE((source_is_poi_hint)::text, 'null'::text)))) STORED
 );
 
 
@@ -1443,19 +1444,19 @@ ALTER TABLE ONLY public.research_poi_normalizations
 
 
 --
+-- Name: research_poi_observations research_poi_observations_input_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_observations
+    ADD CONSTRAINT research_poi_observations_input_key UNIQUE (research_poi_id, raw_content_hash, capture_hash);
+
+
+--
 -- Name: research_poi_observations research_poi_observations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.research_poi_observations
     ADD CONSTRAINT research_poi_observations_pkey PRIMARY KEY (id);
-
-
---
--- Name: research_poi_observations research_poi_observations_research_poi_id_raw_content_hash_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.research_poi_observations
-    ADD CONSTRAINT research_poi_observations_research_poi_id_raw_content_hash_key UNIQUE (research_poi_id, raw_content_hash);
 
 
 --

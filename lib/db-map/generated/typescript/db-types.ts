@@ -545,6 +545,7 @@ export interface ResearchPoiObservationsRow {
   "redacted_paths": Array<string>;
   "first_seen_at": Date;
   "last_seen_at": Date;
+  "capture_hash": string | null;
 }
 
 export interface ResearchPoisRow {
