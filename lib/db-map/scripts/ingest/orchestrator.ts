@@ -1,3 +1,4 @@
+import { locationReadySql } from "./location.js";
 import { measureDatabase } from "./database-telemetry.js";
 import { runRecordScheduler } from "./record-scheduler.js";
 import { EmbeddingBatcher } from "./embedding-batcher.js";
@@ -16,7 +17,10 @@ import type { Pool, PoolClient } from "pg";
 import { parseGenericRecords } from "./extractors/generic.js";
 import { rawContentHash } from "./hash.js";
 import { runHybridNormalize } from "./normalize/runner.js";
-import { PIPELINE_VERSIONS, resumePipelineUpgrade } from "./pipeline-versions.js";
+import {
+  PIPELINE_VERSIONS,
+  resumePipelineUpgrade,
+} from "./pipeline-versions.js";
 import {
   hashSourceFile,
   resolveSourceFile,
@@ -879,6 +883,7 @@ async function recordState(db: Pool, item: RunItem) {
   const { rows } = await db.query(
     `SELECT rp.id,rp.active_observation_id,rp.active_normalization_id,
     rp.normalization_state,rp.is_poi,rp.lat,rp.lng,rp.name_normalized,rp.category_slugs,
+    COALESCE(${locationReadySql()},false) AS location_ready,
     (rp.content_embedding IS NOT NULL) AS has_embedding,rp.active_embedding_id,rp.active_geocode_id,
     rp.canonical_poi_id,rp.retired_at,cp.active_build_id,cp.status AS canonical_status,
     EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id) AS membership_valid,
@@ -965,7 +970,8 @@ export async function runOrchestration(
       previous.id,
       previous.logical_path,
     );
-    if (previous.managed) pipelineUpgrade = resumePipelineUpgrade(previous.pipeline_versions);
+    if (previous.managed)
+      pipelineUpgrade = resumePipelineUpgrade(previous.pipeline_versions);
   }
   if (
     (opts.fromStage === "consolidate" || opts.stopAfter === "consolidate") &&
@@ -1053,10 +1059,17 @@ export async function runOrchestration(
         ],
       );
     }
-    execution = await Execution.start(db, ctx.runId, {
-      ...opts,
-      ...(pipelineUpgrade ? { pipeline_version_upgrade: pipelineUpgrade } : {}),
-    }, lock);
+    execution = await Execution.start(
+      db,
+      ctx.runId,
+      {
+        ...opts,
+        ...(pipelineUpgrade
+          ? { pipeline_version_upgrade: pipelineUpgrade }
+          : {}),
+      },
+      lock,
+    );
   } catch (error) {
     lock.release(true);
     throw error;
@@ -1212,10 +1225,10 @@ export async function runOrchestration(
                 normalization_id: state.active_normalization_id,
               };
             if (stage === "geocode") {
-              if (state.lat !== null && state.lng !== null)
+              if (state.location_ready)
                 return {
                   status: "reused",
-                  reason: "coordinates_present",
+                  reason: "location_enrichment_current",
                   geocode_id: state.active_geocode_id,
                 };
               const stats = await runGeocode(db, {

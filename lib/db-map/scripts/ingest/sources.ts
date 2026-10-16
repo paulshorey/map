@@ -214,6 +214,19 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
 /** Festival sources use generic captures or an explicit record-array wrapper. */
 const FESTIVAL_SOURCES: SourceDefinition[] = [
   {
+    meta: { slug: "thatfestivalsite", name: "That Festival Site", trust: 60 },
+    files: [
+      {
+        pattern:
+          "data/poi/music-festivals/directories/thatfestivalsite_festivals.json",
+        category: "music_festival",
+        wrapperPath: "festivals",
+        extractorVersion: "2",
+      },
+    ],
+    normalizationProfile: "event",
+  },
+  {
     meta: { slug: "musicbrainz", name: "MusicBrainz", trust: 85 },
     files: [
       {
@@ -282,6 +295,8 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
       {
         pattern: "data/poi/music-festivals/apis/jambase_festivals.json",
         category: "music_festival",
+        wrapperPath: "festivals",
+        extractorVersion: "2",
       },
     ],
     normalizationProfile: "event",

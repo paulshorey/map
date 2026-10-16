@@ -1,3 +1,4 @@
+import { canonicalLocation } from "./canonical-location.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { currentAttempt } from "./execution.js";
 import type { PoolClient } from "pg";
@@ -21,6 +22,9 @@ interface MergeRow {
   website: string | null;
   phone: string | null;
   address: string | null;
+  city: string | null;
+  region: string | null;
+  country_code: string | null;
   lng: number | null;
   lat: number | null;
   coordinate_precision: string | null;
@@ -351,7 +355,12 @@ function mergeAttributes(rows: MergeRow[]): Record<string, unknown> {
   for (const row of ordered) {
     const attrs = asRecord(row.attributes);
     for (const [key, value] of Object.entries(attrs)) {
-      if (value === undefined || value === null || key.startsWith("_"))
+      if (
+        value === undefined ||
+        value === null ||
+        key.startsWith("_") ||
+        key === "location_enrichment"
+      )
         continue;
       if (Array.isArray(value)) {
         const current = Array.isArray(merged[key])
@@ -507,12 +516,14 @@ export async function rebuildCanonicalPoi(
   canonicalId: string,
   opts: RebuildOptions,
 ): Promise<void> {
-  await client.query("SELECT pg_advisory_xact_lock($1)",[CANONICAL_WRITER_LOCK]);
+  await client.query("SELECT pg_advisory_xact_lock($1)", [
+    CANONICAL_WRITER_LOCK,
+  ]);
   const { rows } = await client.query<MergeRow>(
     `SELECT
        rp.id, m.id AS membership_id, rp.active_normalization_id, rp.active_geocode_id,
        rp.active_embedding_id, rp.source_id, rs.slug AS source_slug, rs.trust AS source_trust,
-       rp.name, rp.description, rp.website, rp.phone, rp.address,
+       rp.name, rp.description, rp.website, rp.phone, rp.address, rp.city, rp.region, rp.country_code,
        rp.lng, rp.lat, rp.coordinate_precision,
        COALESCE(rp.attributes->>'opening_hours', rp.attributes->>'hours') AS hours,
        COALESCE(rp.attributes->>'photo_url', rp.attributes->>'image') AS photo_url,
@@ -542,17 +553,21 @@ export async function rebuildCanonicalPoi(
   const description = await chooseDescription(rows, opts.noLlm, name.value);
   const website = chooseText(rows, (row) => row.website);
   const phone = chooseText(rows, (row) => row.phone);
-  const address = chooseText(rows, (row) => row.address, {
-    preferLonger: true,
-  });
+
   const hours = chooseText(rows, (row) => row.hours);
   const photo = chooseText(rows, (row) => row.photo_url);
   const coords = chooseCoordinates(rows);
+  const location = canonicalLocation(rows, coords.row);
+  const address = location.address;
   const occurrences = await syncOccurrences(client, canonicalId, rows);
   const dates = chooseRepresentativeOccurrence(occurrences);
   const primaryCategoryId = await syncCategories(client, canonicalId, rows);
   const popularity = new Set(rows.map((row) => row.source_id)).size;
   const attributes = mergeAttributes(rows);
+  for (const field of ["country_code", "city", "region"] as const) {
+    if (location[field].value) attributes[field] = location[field].value;
+    else delete attributes[field];
+  }
   const features = containedFeatureNames(rows, name.value);
   if (features.length > 0) attributes.contained_features = features;
 
@@ -561,7 +576,10 @@ export async function rebuildCanonicalPoi(
     description: description.provenance,
     website: provenance(website.row),
     phone: provenance(phone.row),
-    address: provenance(address.row),
+    address: address.provenance,
+    country_code: location.country_code.provenance,
+    city: location.city.provenance,
+    region: location.region.provenance,
     hours: provenance(hours.row),
     photo_url: provenance(photo.row),
     coordinates: provenance(coords.row),
@@ -658,7 +676,7 @@ export async function rebuildCanonicalPoi(
     date_precision: dates?.date_precision ?? null,
   };
   const buildHash = stableHash({
-    builder: "canonical-build-v1",
+    builder: "canonical-build-v2",
     research_ids: rows.map((row) => row.id).sort(),
     inputs: rows
       .map((row) => ({
@@ -675,7 +693,7 @@ export async function rebuildCanonicalPoi(
     `INSERT INTO canonical_poi_builds (
        canonical_poi_id, input_hash, builder_version, status,
        fields, field_provenance, activated_at
-     ) VALUES ($1,$2,'canonical-build-v1','accepted',$3::jsonb,$4::jsonb,now())
+     ) VALUES ($1,$2,'canonical-build-v2','accepted',$3::jsonb,$4::jsonb,now())
      ON CONFLICT (canonical_poi_id, input_hash) DO UPDATE SET
        activated_at = now()
      RETURNING id`,

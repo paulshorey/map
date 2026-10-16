@@ -2,6 +2,8 @@
  * LocationIQ forward-geocode client (M6). Provider is isolated so it can be
  * swapped for self-hosted Nominatim later without touching the geocode loop.
  */
+import { countryToCode } from "../normalize/country.js";
+import { textValue, type ReverseLocation } from "../location.js";
 import { ingestConfig } from "../config.js";
 import { LlmError, retryAfterMs } from "./llm.js";
 import { currentAttempt } from "../execution.js";
@@ -137,4 +139,146 @@ export async function geocode(query: string): Promise<GeocodeHit | null> {
     });
     throw error;
   }
+}
+
+/** Reverse lookup never moves the supplied POI point or claims an official address. */
+export async function reverseGeocode(
+  lat: number,
+  lng: number,
+): Promise<ReverseLocation | null> {
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    Math.abs(lat) > 90 ||
+    Math.abs(lng) > 180 ||
+    (lat === 0 && lng === 0)
+  )
+    throw new GeocodeError("Invalid reverse geocode point");
+  const call = await beginProviderCall(PROVIDER, "reverse_geocode", null);
+  const queued = Date.now();
+  let started = queued,
+    status: number | undefined,
+    headers: Headers | undefined;
+  try {
+    await new Promise((r) =>
+      setTimeout(r, Math.max(0, nextStart - Date.now())),
+    );
+    const ctx = currentAttempt();
+    if (ctx?.execution.stopped)
+      throw Object.assign(new Error("Geocode admission stopped"), {
+        code: "ingest_paused",
+      });
+    nextStart = Date.now() + 1000;
+    started = Date.now();
+    const params = new URLSearchParams({
+      key: ingestConfig.geocoder.apiKey(),
+      lat: String(lat),
+      lon: String(lng),
+      format: "json",
+      addressdetails: "1",
+      normalizeaddress: "1",
+      statecode: "1",
+      zoom: "18",
+    });
+    let response: Response;
+    try {
+      response = await fetch(
+        `https://us1.locationiq.com/v1/reverse?${params}`,
+        {
+          signal: ctx
+            ? AbortSignal.any([
+                AbortSignal.timeout(60000),
+                ctx.execution.abortController.signal,
+              ])
+            : AbortSignal.timeout(60000),
+        },
+      );
+    } catch {
+      if (ctx?.execution.abortController.signal.aborted)
+        throw ctx.execution.abortController.signal.reason;
+      throw new GeocodeError("Reverse geocoder network error", true);
+    }
+    status = response.status;
+    headers = response.headers;
+    if (status !== 404 && !response.ok)
+      throw new GeocodeError(
+        `Reverse geocoder status ${status}`,
+        status === 429 || status >= 500,
+        status,
+        retryAfterMs(headers.get("retry-after")),
+      );
+    const hit =
+      status === 404
+        ? null
+        : parseReverseLocation(await response.json(), lat, lng);
+    await endProviderCall(call, {
+      queueMs: started - queued,
+      latencyMs: Date.now() - started,
+      status,
+      headers,
+    });
+    return hit;
+  } catch (error) {
+    await endProviderCall(call, {
+      queueMs: started - queued,
+      latencyMs: Date.now() - started,
+      status,
+      headers,
+      error,
+    });
+    throw error;
+  }
+}
+export function parseReverseLocation(
+  body: unknown,
+  lat: number,
+  lng: number,
+): ReverseLocation | null {
+  if (!body || typeof body !== "object" || Array.isArray(body))
+    throw new GeocodeError("Invalid reverse geocoder response");
+  const row = body as Record<string, unknown>;
+  if (row.error === "Unable to geocode") return null;
+  const a = row.address as Record<string, unknown> | undefined;
+  const rlat = Number(row.lat),
+    rlng = Number(row.lon);
+  if (
+    !a ||
+    typeof a !== "object" ||
+    Array.isArray(a) ||
+    row.lat === null ||
+    row.lon === null ||
+    row.lat === "" ||
+    row.lon === "" ||
+    !Number.isFinite(rlat) ||
+    !Number.isFinite(rlng) ||
+    Math.abs(rlat) > 90 ||
+    Math.abs(rlng) > 180
+  )
+    throw new GeocodeError("Invalid reverse geocoder address");
+  const rad = Math.PI / 180,
+    dlat = (rlat - lat) * rad,
+    dlng = (rlng - lng) * rad;
+  const hav =
+    Math.sin(dlat / 2) ** 2 +
+    Math.cos(lat * rad) * Math.cos(rlat * rad) * Math.sin(dlng / 2) ** 2;
+  const country = countryToCode(textValue(a.country_code)) ?? null;
+  const stateCode = textValue(a.state_code);
+  return {
+    country_code: country,
+    city: textValue(a.city) ?? textValue(a.town) ?? textValue(a.village),
+    region: textValue(a.state),
+    region_code:
+      stateCode && country
+        ? stateCode.startsWith(country + "-")
+          ? stateCode
+          : `${country}-${stateCode}`
+        : null,
+    address: textValue(a.road)
+      ? [textValue(a.house_number), textValue(a.road)].filter(Boolean).join(" ")
+      : null,
+    postcode: textValue(a.postcode),
+    distance_m: 2 * 6371000 * Math.asin(Math.sqrt(Math.min(1, hav))),
+    provider: PROVIDER,
+    attribution: textValue(row.licence),
+  };
 }

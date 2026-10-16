@@ -1,3 +1,4 @@
+import { locationReadySql } from "../scripts/ingest/location.js";
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import type { AttemptResult } from "../scripts/ingest/execution.js";
@@ -58,6 +59,7 @@ export async function seedTasks(
     AND NOT EXISTS(SELECT 1 FROM research_ingest_issues x WHERE x.run_id=t.run_id AND x.source_record_id=t.source_record_id AND x.status='excluded')
     AND t.state IN ('succeeded','reused') AND ((t.stage='normalize' AND (rp.normalization_state IN ('failed','pending','active_stale')
       OR t.output->>'normalization_id' IS DISTINCT FROM rp.active_normalization_id::text))
+      OR (t.stage='geocode' AND rp.is_poi AND NOT COALESCE(${locationReadySql()},false))
       OR (t.stage='embed' AND rp.is_poi AND t.output->>'embedding_id' IS DISTINCT FROM rp.active_embedding_id::text)
       OR (t.stage IN ('match','canonical','verify') AND rp.is_poi AND
         (t.output->>'canonical_id' IS DISTINCT FROM rp.canonical_poi_id::text OR EXISTS(
@@ -65,13 +67,12 @@ export async function seedTasks(
     [run, fromRank],
   );
   await db.query(
-    `UPDATE research_ingest_tasks t SET state='reused',output=jsonb_build_object('status','reused','geocode_id',rp.active_geocode_id,'reason','coordinates_present'),finished_at=now()
+    `UPDATE research_ingest_tasks t SET state='reused',output=jsonb_build_object('status','reused','geocode_id',rp.active_geocode_id,'reason','location_enrichment_current'),finished_at=now()
     FROM research_ingest_run_items i JOIN research_pois rp ON rp.id=i.research_poi_id
     JOIN research_ingest_tasks n ON n.run_id=i.run_id AND n.source_record_id=i.source_record_id AND n.stage='normalize'
     WHERE t.run_id=$1 AND i.run_id=t.run_id AND i.source_record_id=t.source_record_id AND t.stage='geocode' AND t.state='pending'
       AND n.state IN ('succeeded','reused') AND rp.is_poi AND rp.active_observation_id=i.observation_id
-      AND rp.lat IS NOT NULL AND rp.lng IS NOT NULL AND (rp.coordinate_source IS DISTINCT FROM 'geocode' OR EXISTS(
-        SELECT 1 FROM research_poi_geocodes g WHERE g.id=rp.active_geocode_id AND g.normalization_id=rp.active_normalization_id))`,
+      AND rp.lat IS NOT NULL AND rp.lng IS NOT NULL AND COALESCE(${locationReadySql()},false)`,
     [run],
   );
   await db.query(

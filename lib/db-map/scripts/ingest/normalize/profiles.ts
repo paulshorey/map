@@ -13,6 +13,8 @@ const PROFILES: Record<string, NormalizationProfile> = {
     version: "event-v1",
     kind: "event",
     listingDomains: [
+      "jambase.com",
+      "thatfestivalsite.com",
       "ra.co",
       "residentadvisor.net",
       "musicfestivalwizard.com",
@@ -28,7 +30,13 @@ const PROFILES: Record<string, NormalizationProfile> = {
     id: "garden",
     version: "garden-v1",
     kind: "place",
-    listingDomains: ["bgci.org", "arbnet.org", "wikidata.org", "wikipedia.org", "openstreetmap.org"],
+    listingDomains: [
+      "bgci.org",
+      "arbnet.org",
+      "wikidata.org",
+      "wikipedia.org",
+      "openstreetmap.org",
+    ],
     hardFalsePaths: [],
     descriptionLimit: 3000,
   },
@@ -50,11 +58,18 @@ const PROFILES: Record<string, NormalizationProfile> = {
   },
 };
 
-export function getNormalizationProfile(id: string | undefined): NormalizationProfile {
+export function getNormalizationProfile(
+  id: string | undefined,
+): NormalizationProfile {
   return PROFILES[id ?? "place"] ?? PROFILES.place!;
 }
 
-export function isListingDomain(domain: string | null, profile: NormalizationProfile): boolean {
+export function isListingDomain(
+  domain: string | null,
+  profile: NormalizationProfile,
+): boolean {
   if (!domain) return false;
-  return profile.listingDomains.some((listed) => domain === listed || domain.endsWith(`.${listed}`));
+  return profile.listingDomains.some(
+    (listed) => domain === listed || domain.endsWith(`.${listed}`),
+  );
 }

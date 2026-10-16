@@ -1,0 +1,42 @@
+-- Location projections are source-first and may be enriched independently of LLM normalization.
+CREATE OR REPLACE VIEW public.research_pois_current AS
+ SELECT rp.id,
+    rp.source_id,
+    rp.source_record_id,
+    rp.ingest_category,
+    rp.active_observation_id,
+    rp.active_normalization_id,
+    rp.normalization_state,
+    rp.canonical_poi_id,
+    COALESCE(n.display_name, rp.name) AS name,
+    COALESCE(n.match_name, rp.name_normalized) AS name_normalized,
+    COALESCE(n.description, rp.description) AS description,
+    COALESCE(n.website, rp.website) AS website,
+    COALESCE(n.website_domain, rp.website_domain) AS website_domain,
+    rp.source_url,
+    COALESCE(n.phone, rp.phone) AS phone,
+    COALESCE(n.email, rp.email) AS email,
+    rp.address,
+    rp.city,
+    rp.region,
+    rp.country_code,
+    rp.lng,
+    rp.lat,
+    COALESCE(n.starts_at, rp.starts_at) AS starts_at,
+    COALESCE(n.ends_at, rp.ends_at) AS ends_at,
+    COALESCE(n.date_precision, rp.date_precision) AS date_precision,
+    rp.raw_category,
+    COALESCE(n.category_slugs, rp.category_slugs) AS category_slugs,
+    COALESCE(n.is_poi, rp.is_poi) AS is_poi,
+    o.raw,
+    (COALESCE((o.captured -> 'attributes'::text), '{}'::jsonb) || COALESCE(n.attributes, '{}'::jsonb)) AS attributes,
+    rp.content_embedding,
+    rp.coordinate_source,
+    rp.coordinate_precision,
+    rp.geocode_query_norm,
+    rp.first_seen_at,
+    rp.last_seen_at
+   FROM ((public.research_pois rp
+     LEFT JOIN public.research_poi_observations o ON ((o.id = rp.active_observation_id)))
+     LEFT JOIN public.research_poi_normalizations n ON ((n.id = rp.active_normalization_id)))
+  WHERE (rp.retired_at IS NULL);

@@ -93,7 +93,7 @@ Attempts are inserted as `running` before work. They finish as `succeeded`, `reu
 owns the source lock, unfinished attempts of the resumed run become `interrupted` and retries
 append new attempts. Completed record attempts are skipped on resume while their outputs remain valid; missing or changed downstream outputs are checked again, then recomputed where supported or reported as blocked. Report/verify rerun.
 The JSON output from an attempt identifies its normalization, geocode, embedding, canonical,
-or build artifact where applicable. Existing source coordinates need no geocode artifact.
+or build artifact where applicable. Location enrichment binds an artifact to the exact normalized source point, including when no provider call is needed.
 
 Normalization activation persists the deterministic coordinate result, including clearing
 invalid `(0,0)` or out-of-range pairs and applying detected swaps or URL coordinates.
@@ -604,7 +604,7 @@ legacy attempt records.
   Failed refresh keeps prior valid output and marks it stale. Accepted changes clear derived
   embeddings/geocode pointers, invalidate old geocoded coordinates, and refresh or retire
   memberships/builds according to match changes. Prompt output must retain the input UUID.
-- **Geocode:** only records missing latitude or longitude need lookup. Queries and misses are
+- **Geocode:** missing points use forward lookup; missing administrative fields can use reverse lookup. Queries and misses are
   cached. Missing locality or a remembered miss is `blocked`; rerunning cannot fix bad input.
 - **Embed:** normalized POIs need a stored embedding in the managed pipeline. Current managed
   execution uses one-record requests for precise checkpointing. Standalone embedding supports
@@ -818,3 +818,23 @@ Colliding source IDs are grouped: cleanup removes the coalesced database lineage
 stored observation under it, reporting coalesced input counts. Shared source-file/run metadata
 and the shared geocode cache remain. Cleanup does **not** filter by category; its compatibility
 `--category` argument is ignored. Do not use it expecting a category-only deletion.
+
+
+## Standardized location enrichment
+
+The managed geocode stage also fills missing administrative/address fields for valid points.
+Source addresses/locality win; country values use the pinned ISO country dataset. Reverse
+LocationIQ fields are approximate, cached by exact point and policy version, and never move
+valid source coordinates. Country/region conflicts, distant results and missing fields remain
+visible in `research_pois.attributes.location_enrichment` and the bound geocode artifact.
+A definitive optional reverse miss does not quarantine a coordinate-bearing POI; API failures
+retain normal bounded recovery and systemic stop behavior. Source-precision centroids do not
+receive inferred street addresses. Forward and reverse calls share `--geocode-limit`.
+
+Canonical builds publish selected `attributes.country_code`, `city`, and `region` with
+member/derivation provenance. A versioned location artifact binds normalization and point;
+old coordinate-only geocode checkpoints do not establish enrichment. Existing completed
+cohorts are preserved; deploying this code does not mass-backfill historical records.
+Use `pnpm --silent --filter @lib/db-map ingest:location-audit --json` for a read-only current
+completeness/conflict/inference audit. See [location rollout](../working/location-standardization.md)
+for the baseline findings, field contract, limitations and staged historical repair plan.
