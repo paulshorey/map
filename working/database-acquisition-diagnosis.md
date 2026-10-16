@@ -175,3 +175,17 @@ or extended read-only network/server correlation. Stop at the first database/que
 source-lock fault, exhausted provider recovery or output/lineage error; preserve
 the exact IDs and return to maintenance. Do not automatically unpause, launch full
 files, or repeat these now-warm samples as proof of fresh-provider reliability.
+
+## Independent review synchronization — 2026-10-16
+
+PR #47 and checkpoint repair PR #49 are now merged into `main`. The diagnostic
+branch still targeted the old location feature branch. A separate review fix
+merges current `main` into the diagnostic branch, retaining its provider lifecycle
+markers and abort-reason preservation while taking main's region invalidation,
+downstream checkpoint requeue, and location resume tests. The old location rollout
+notes remain historical. No operational maintenance state or schedule was changed.
+
+The fix targets the original diagnostic branch for independent review; after that
+fix is merged, retarget PR #48 to `main` and review the resulting diagnostic-only
+diff. The intermittent connection failure remains unexplained; the diagnostics
+are observability changes, not evidence that a sustained import is safe to restart.
