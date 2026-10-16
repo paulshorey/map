@@ -223,7 +223,7 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
           "data/poi/music-festivals/directories/thatfestivalsite_festivals.json",
         category: "music_festival",
         wrapperPath: "festivals",
-        extractorVersion: "3",
+        extractorVersion: "4",
       },
     ],
     normalizationProfile: "event",

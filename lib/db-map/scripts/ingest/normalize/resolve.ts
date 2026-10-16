@@ -96,6 +96,13 @@ export function resolveNormalization(input: {
   const proposed = output?.record ?? null;
   const evidence = output ? evidenceMap(output) : {};
   const warnings = [...deterministic.warnings, ...(proposed?.warnings ?? [])];
+  const coordinateOwnedAdmin = captured.attributes.location_admin_policy === "coordinate_lookup";
+  if (coordinateOwnedAdmin) {
+    warnings.push("administrative_fields_deferred_to_coordinate_lookup");
+    // Listing labels remain available as original source evidence, but neither
+    // model proposals nor deterministic fallbacks may promote them to authority.
+    for (const field of ["city", "region", "country_code"]) delete evidence[field];
+  }
 
   const isPoi =
     deterministic.hardIsPoi === false
@@ -176,10 +183,10 @@ export function resolveNormalization(input: {
     attributes.edition_year = proposed.edition_year;
   }
 
-  const city = proposed
+  const city = coordinateOwnedAdmin ? null : proposed
     ? supportedText(proposed.city, "city", evidence, warnings) ?? captured.city
     : captured.city;
-  const region = proposed
+  const region = coordinateOwnedAdmin ? null : proposed
     ? supportedText(proposed.region, "region", evidence, warnings) ?? captured.region
     : captured.region;
   const address = proposed
@@ -215,7 +222,7 @@ export function resolveNormalization(input: {
     venue,
     city: city ?? null,
     region: region ?? null,
-    countryCode: deterministic.countryCode ?? proposedCountry,
+    countryCode: coordinateOwnedAdmin ? null : deterministic.countryCode ?? proposedCountry,
     categorySlugs: [ingestCategory],
     startsAt: startDate,
     endsAt: endDate,

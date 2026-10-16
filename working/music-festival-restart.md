@@ -23,12 +23,18 @@ No manifest/version upgrade is needed to repair those installed links.
 JamBase has 1,257 records. That Festival Site has 1,415 unique natural records, all with
 captured venue coordinates. Its city field equals its country field in 104 records; other
 country labels include states, and some listing countries disagree with venue geography.
-These are split display-location labels, not reliable administrative data. The version-3
+These are split display-location labels, not reliable administrative data. The version-4
 source adapter retains city/region/country as `source_location_hints`, retaining the raw
 observation, point, source URL, name, natural ID and historical edition fields unchanged.
 The existing coordinate lookup supplies standardized administrative fields. This also
 allows New Zealand venue coordinates to receive NZ despite a listing hint of Australia.
 Optional misses remain explicit rather than inventing a country/address.
+
+The normalization resolver also enforces this source's coordinate-owned administrative
+policy. Clearing extractor columns alone is insufficient: a model can copy unreliable
+labels back from raw text with evidence paths. Both model and deterministic administrative
+proposals stay null until lookup; source street addresses still win. Captured policy
+revision 1 changes observation/cache identity so earlier policy artifacts cannot be reused.
 
 PR51 review found that version-2 observations could remain active after a version-3
 mapping change because raw JSON alone owned their identity. Observation identity now

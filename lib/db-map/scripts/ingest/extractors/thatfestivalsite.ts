@@ -20,6 +20,9 @@ export function mapFestivalLocation(raw: unknown): RawRecord | null {
     venue: str(value.venue_full) ?? str(value.venue) ?? null,
   };
   attributes.location_admin_policy = "coordinate_lookup";
+  // Included in captured observation + normalization cache identity. A resolver
+  // policy change must not reactivate an artifact that accepted listing labels.
+  attributes.location_admin_policy_version = 1;
   return {
     ...record,
     city: undefined,

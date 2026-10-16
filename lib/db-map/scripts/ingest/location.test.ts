@@ -183,7 +183,7 @@ test("both new music captures resolve their explicit array wrapper", async () =>
     assert.equal(source.file.wrapperPath, "festivals");
     assert.equal(
       source.extractorVersion,
-      name.includes("thatfestivalsite") ? "3" : "2",
+      name.includes("thatfestivalsite") ? "4" : "2",
     );
   }
 });
