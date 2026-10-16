@@ -879,6 +879,11 @@ Canonical builds publish selected `attributes.country_code`, `city`, and `region
 member/derivation provenance. A versioned location artifact binds normalization and point;
 old coordinate-only geocode checkpoints do not establish enrichment. Existing completed
 cohorts are preserved; deploying this code does not mass-backfill historical records.
+That Festival Site's split listing labels mix cities, regions and countries. Its version-3
+extractor retains them in `source_location_hints` and the original observation, while
+leaving administrative columns for the coordinate lookup. A label such as `California`
+is not asserted as a country, and `Australia` is not asserted as a city. Source points,
+supplied street addresses, natural IDs and captured edition dates remain unchanged.
 Use `pnpm --silent --filter @lib/db-map ingest:location-audit --json` for a read-only current
 completeness/conflict/inference audit. See [location rollout](../working/location-standardization.md)
 for the baseline findings, field contract, limitations and staged historical repair plan.

@@ -10,6 +10,7 @@ import { gardenologyExtractor } from "./extractors/gardenology.js";
 import { globalCarnivalistExtractor } from "./extractors/global-carnivalist.js";
 import { roughGuidesExtractor } from "./extractors/rough-guides.js";
 import { artFairsListExtractor } from "./extractors/artfairslist.js";
+import { thatFestivalSiteExtractor } from "./extractors/thatfestivalsite.js";
 import {
   ridbFacilitiesExtractor,
   osmCampgroundsExtractor,
@@ -215,13 +216,14 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
 const FESTIVAL_SOURCES: SourceDefinition[] = [
   {
     meta: { slug: "thatfestivalsite", name: "That Festival Site", trust: 60 },
+    extractor: thatFestivalSiteExtractor,
     files: [
       {
         pattern:
           "data/poi/music-festivals/directories/thatfestivalsite_festivals.json",
         category: "music_festival",
         wrapperPath: "festivals",
-        extractorVersion: "2",
+        extractorVersion: "3",
       },
     ],
     normalizationProfile: "event",

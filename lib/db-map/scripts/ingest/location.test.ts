@@ -181,7 +181,10 @@ test("both new music captures resolve their explicit array wrapper", async () =>
   ]) {
     const source = await resolveSourceFile(name, "music_festival");
     assert.equal(source.file.wrapperPath, "festivals");
-    assert.equal(source.extractorVersion, "2");
+    assert.equal(
+      source.extractorVersion,
+      name.includes("thatfestivalsite") ? "3" : "2",
+    );
   }
 });
 
