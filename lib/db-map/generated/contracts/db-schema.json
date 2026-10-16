@@ -2233,6 +2233,11 @@
       "column": "last_seen_at",
       "nullable": false,
       "type": "Date"
+    },
+    {
+      "column": "capture_hash",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "research_pois": [

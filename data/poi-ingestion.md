@@ -598,6 +598,12 @@ legacy attempt records.
   Each record commits separately and is replayable. Missing IDs/collisions/write failures stop
   advancement. Snapshot removals retire only after an unlimited successful extraction, never
   a sample or interrupted pass. File completion is recorded after retirement/finalization.
+  Observation identity includes the raw SHA and a database-generated captured-field/POI-hint
+  hash. An extractor mapping change creates a new immutable observation even when raw JSON is
+  unchanged, refreshes staging and invalidates normalization. Identical mappings reuse their
+  existing observation; old captured snapshots remain available. Bump the extractor version
+  for a new extraction pass. Apply the mapping-identity migration only under quiescent
+  maintenance and synchronize its matching INSERT conflict target before opening admission.
 - **Normalize:** deterministic facts plus evidence-validated model interpretation. Source/URL
   coordinates are authoritative; models cannot invent coordinates, contacts, or identifiers.
   Cache inputs come from immutable captured evidence, never derived projections. Keys include model, prompt/schema/examples/profile/normalizer versions.

@@ -334,7 +334,7 @@ async function upsertRunRecord(
   return rows[0]!.id;
 }
 
-async function observeRecord(
+export async function observeRecord(
   client: PoolClient,
   ctx: RunContext,
   record: RawRecord,
@@ -350,13 +350,15 @@ async function observeRecord(
     active_observation_id: string | null;
     raw_content_hash: string | null;
     active_normalization_id: string | null;
+    mapping_current: boolean;
   }>(
-    `SELECT rp.id, rp.active_observation_id, o.raw_content_hash, rp.active_normalization_id
+    `SELECT rp.id, rp.active_observation_id, o.raw_content_hash, rp.active_normalization_id,
+       (o.captured=$3::jsonb AND o.source_is_poi_hint IS NOT DISTINCT FROM $4::boolean) AS mapping_current
      FROM research_pois rp
      LEFT JOIN research_poi_observations o ON o.id = rp.active_observation_id
      WHERE rp.source_id = $1 AND rp.source_record_id = $2
      FOR UPDATE OF rp`,
-    [ctx.sourceId, record.source_record_id],
+    [ctx.sourceId, record.source_record_id, JSON.stringify(capturedRecord(record)), sourceIsPoi],
   );
 
   let poiId: string;
@@ -404,7 +406,7 @@ async function observeRecord(
     state = "inserted";
   } else {
     poiId = prior.id;
-    state = prior.raw_content_hash === rawHash.hash ? "unchanged" : "changed";
+    state = prior.raw_content_hash === rawHash.hash && prior.mapping_current ? "unchanged" : "changed";
   }
 
   const observation = await client.query<{ id: string }>(
@@ -412,7 +414,7 @@ async function observeRecord(
        research_poi_id, source_file_version_id, raw_content_hash, raw,
        captured, source_is_poi_hint, redacted_paths
      ) VALUES ($1,$2,$3,$4::jsonb,$5::jsonb,$6,$7)
-     ON CONFLICT (research_poi_id, raw_content_hash) DO UPDATE SET
+     ON CONFLICT (research_poi_id, raw_content_hash, capture_hash) DO UPDATE SET
        source_file_version_id = EXCLUDED.source_file_version_id,
        last_seen_at = now()
      RETURNING id`,

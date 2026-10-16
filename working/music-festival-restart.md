@@ -30,6 +30,15 @@ The existing coordinate lookup supplies standardized administrative fields. This
 allows New Zealand venue coordinates to receive NZ despite a listing hint of Australia.
 Optional misses remain explicit rather than inventing a country/address.
 
+PR51 review found that version-2 observations could remain active after a version-3
+mapping change because raw JSON alone owned their identity. Observation identity now
+also includes a generated hash of captured JSONB and the source POI hint. Raw SHA,
+raw observations and prior captured snapshots remain intact; mapping changes create
+new observation IDs and refresh staging/normalization, while identical mappings reuse
+their existing observation. This migration and its INSERT conflict target must be
+deployed together behind maintenance. A real one-record rollback-only PostgreSQL
+regression passed the v2-to-v3/same-raw transition, idempotent repeat and changed-hint case.
+
 ## Validation and launch gates
 
 - Database-free tests: all original IDs/points/raw values preserved; hints do not become
