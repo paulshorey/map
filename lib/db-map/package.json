@@ -68,6 +68,8 @@
     "ingest:test-supervisor:integration": "tsx scripts/ingest/supervisor.integration.ts",
     "ingest:overview": "tsx scripts/ingest/overview.ts",
     "ingest:doctor": "tsx scripts/ingest/doctor.ts",
+    "ingest:database-probe": "tsx scripts/ingest/database-probe.ts",
+    "ingest:test-database": "tsx --test scripts/ingest/database-telemetry.test.ts scripts/ingest/provider-telemetry.test.ts scripts/ingest/database-source-controls.test.ts",
     "ingest:issues": "tsx scripts/ingest/issues.ts",
     "ingest:test-artifacts:integration": "tsx scripts/ingest/artifact-consistency.integration.ts",
     "ingest:test-coordinates:integration": "tsx scripts/ingest/normalization-coordinates.integration.ts",
