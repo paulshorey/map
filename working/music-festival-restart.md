@@ -101,7 +101,8 @@ Original observations, frozen cohorts and successful artifacts remain available:
 | That Festival Site | `8eb9009b-f697-4e74-8b84-671128ae742f` | 1,415 | 7 | 0 |
 
 Neither run has whole-file verification. After reconciling the stopped jobs, released locks
-and owned maintenance, resume JamBase
+and owned maintenance, explicitly reopen admission with that maintenance token before handing
+the resume to the approved runner (see the runbook's process-control workflow). Then resume JamBase
 with `--resume 227309cd-941e-43ad-a6cc-6281c08aee12 --unlimited` through the approved runner.
 Only after verified completion and worker/lock exit, resume That Festival Site with
 `--resume 8eb9009b-f697-4e74-8b84-671128ae742f --unlimited`. Use new supervisor job receipts
