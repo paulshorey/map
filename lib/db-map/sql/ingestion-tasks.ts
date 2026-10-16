@@ -152,13 +152,17 @@ export async function finishTask(
       JSON.stringify(output),
     ],
   );
+  // A resumed geocode may activate new location/build inputs after seedTasks has
+  // already accepted the old embedding and downstream checkpoints. Re-evaluate
+  // those checkpoints in the same transaction as activation, before they can be
+  // claimed or mistaken for current verification. Current artifacts remain reusable.
   if (
-    claim.stage === "normalize" &&
+    ["normalize", "geocode"].includes(claim.stage) &&
     ["succeeded", "reused"].includes(output.status)
   )
     await client.query(
-      `UPDATE research_ingest_tasks SET state='pending',output=NULL,updated_at=now() WHERE run_id=$1 AND source_record_id=$2 AND rank>0 AND state IN ('succeeded','reused','skipped')`,
-      [claim.run_id, claim.source_record_id],
+      `UPDATE research_ingest_tasks SET state='pending',output=NULL,finished_at=NULL,updated_at=now() WHERE run_id=$1 AND source_record_id=$2 AND rank>$3 AND state IN ('succeeded','reused','skipped')`,
+      [claim.run_id, claim.source_record_id, claim.rank],
     );
   if (output.status === "blocked")
     await recordIssue(

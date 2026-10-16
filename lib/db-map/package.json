@@ -74,7 +74,7 @@
     "ingest:test-scheduler": "tsx --test scripts/ingest/database-telemetry.test.ts scripts/ingest/record-scheduler.test.ts scripts/ingest/concurrency.test.ts scripts/ingest/embedding-batcher.test.ts",
     "ingest:quality": "tsx scripts/ingest/quality.ts",
     "ingest:location-audit": "tsx scripts/ingest/location-audit.ts",
-    "ingest:test-location": "tsx --test scripts/ingest/location.test.ts",
+    "ingest:test-location": "tsx --test scripts/ingest/location.test.ts scripts/ingest/location-resume.test.ts",
     "ingest:test-location:integration": "tsx scripts/ingest/location.integration.ts"
   },
   "dependencies": {
