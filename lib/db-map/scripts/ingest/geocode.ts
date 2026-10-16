@@ -469,8 +469,8 @@ export async function runGeocode(
         const activated = await client.query(
           `UPDATE research_pois SET lat=$11,lng=$12,coordinate_source=$13,coordinate_precision=$14,geocode_query_norm=$15,country_code=$2,city=$3,region=$4,address=$5,active_geocode_id=$6,
         attributes=COALESCE(attributes,'{}'::jsonb)||jsonb_build_object('location_enrichment',$7::jsonb),
-        content_embedding=CASE WHEN city IS DISTINCT FROM $3 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE content_embedding END,
-        active_embedding_id=CASE WHEN city IS DISTINCT FROM $3 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE active_embedding_id END
+        content_embedding=CASE WHEN city IS DISTINCT FROM $3 OR region IS DISTINCT FROM $4 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE content_embedding END,
+        active_embedding_id=CASE WHEN city IS DISTINCT FROM $3 OR region IS DISTINCT FROM $4 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE active_embedding_id END
         WHERE id=$1 AND active_normalization_id=$8 AND lat IS NOT DISTINCT FROM $9::float8 AND lng IS NOT DISTINCT FROM $10::float8`,
           [
             row.id,
