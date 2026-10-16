@@ -32,6 +32,16 @@ defaults to four requests in flight (`--llm-concurrency 1..16`), across normaliz
 and fusion. The selected normalization model, prompt and thinking mode are unchanged: every
 eligible POI still uses the LLM. Explicit `--no-llm` remains a diagnostic option.
 
+Run **one full import process at a time**, queuing additional files. Record concurrency and
+provider admission operate inside that process. `canonicalLane` is a process-local semaphore;
+the matcher separately uses a database-wide, fail-fast advisory lock. Two full workers with
+different source locks can therefore both extract/normalize, then collide at matching with
+`Another ingest:match process is already running.` This is a coordination failure, not evidence
+of a provider outage or a pool checkout timeout. Preserve both cohorts/artifacts and diagnose
+before resuming. Queue the next file until the first run is verified and its process/locks exit.
+Cross-process waiting/serialization would require a separate stop-aware implementation and
+multi-process validation; removing the matching guard is unsafe.
+
 Recognized record validation failures are quarantined with durable issues; independent records
 continue and the run ends partial. Ten consecutive validation failures in one stage trip a
 systemic circuit breaker. Authentication, billing, unexpected provider shapes, database, schema,
