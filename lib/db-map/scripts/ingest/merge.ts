@@ -30,6 +30,7 @@ interface MergeRow {
   lng: number | null;
   lat: number | null;
   coordinate_precision: string | null;
+  coordinate_source: string | null;
   hours: string | null;
   photo_url: string | null;
   starts_at: Date | null;
@@ -528,7 +529,7 @@ export async function rebuildCanonicalPoi(
        rp.id, m.id AS membership_id, rp.active_normalization_id, rp.active_geocode_id,
        rp.active_embedding_id, rp.source_id, rs.slug AS source_slug, rs.trust AS source_trust,
        rp.name, rp.description, rp.website, rp.phone, rp.address, rp.city, rp.region, rp.country_code,
-       rp.lng, rp.lat, rp.coordinate_precision,
+       rp.lng, rp.lat, rp.coordinate_precision, rp.coordinate_source,
        COALESCE(rp.attributes->>'opening_hours', rp.attributes->>'hours') AS hours,
        COALESCE(rp.attributes->>'photo_url', rp.attributes->>'image') AS photo_url,
        rp.starts_at, rp.ends_at, rp.date_precision,

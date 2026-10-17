@@ -208,7 +208,13 @@ export function PoiDrawer({ poi, onClose }: Props) {
                         {" · "}
                         {location.origin === "listed_address_geocode"
                           ? "From listed location"
-                          : "Source coordinates"}
+                          : location.origin === "source_coordinates"
+                            ? "Source coordinates"
+                            : location.origin === "geocode"
+                              ? "Geocoded coordinates"
+                              : location.origin === "legacy_coordinates"
+                                ? "Legacy coordinates"
+                                : `Origin: ${location.origin || "unknown"}`}
                         {location.precision !== "point"
                           ? ` · Approximate ${location.precision}`
                           : ""}

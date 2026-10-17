@@ -343,3 +343,23 @@ test("single-location pipeline checkpoints remain structurally compatible withou
     /Pipeline versions changed/,
   );
 });
+
+
+test("legacy canonical points retain known coordinate provenance without inventing evidence", () => {
+  const row = {
+    id: "legacy", source_id: "source", source_slug: "source", source_trust: 10,
+    lat: 46, lng: 7, coordinate_precision: "city", active_normalization_id: "n",
+    active_geocode_id: "g", location_validation: null,
+  };
+  for (const [coordinate_source, origin] of [
+    ["geocode", "geocode"], ["source", "source_coordinates"],
+    ["url", "source_coordinates"], [null, "legacy_coordinates"],
+    ["unknown", "legacy_coordinates"],
+  ]) {
+    const member = { ...row, coordinate_source };
+    const points = canonicalPoints([member], member);
+    assert.equal(points[0]!.origin, origin);
+    assert.equal(points[0]!.precision, "city");
+    assert.equal(points[0]!.query, null, "legacy geocodes have no validated listed-address query");
+  }
+});
