@@ -71,13 +71,13 @@ source45.433,12.3597. That established locality agreement, not an entrance asser
 Original receipts remain in primary `.ingest-jobs/two-locations-20261017/`.
 
 Current revision validation covers fixed slot selection, source-only/inferred-only
-records, exact equality without evidence loss, invalid origins, additional raw source
+records, exact equality without evidence loss, invalid origins, retained legacy geocode hit/miss attribution, additional raw source
 points not displacing inference, provider budgets/cache reuse and exact artifact
 binding. Real rolled-back SQL checks cover canonical activation/build provenance,
 legacy fallback, stable kind IDs and inferred-only viewport retrieval. Current test
 and bounded smoke receipts are recorded in the ignored operational handoff.
 
-Current revision: 35 focused tests pass; one optional dedicated loopback cache test
+Current revision: 37 focused tests pass; one optional dedicated loopback cache test
 is skipped without its explicit URL. Both real PostgreSQL rollback integrations,
 database/map type and generated-contract checks, and production app build pass.
 

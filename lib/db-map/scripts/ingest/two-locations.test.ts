@@ -419,3 +419,50 @@ test("legacy canonical points retain known coordinate provenance without inventi
     );
   }
 });
+
+for (const found of [true, false])
+  test(`retained legacy geocode never inherits a different new query (forward ${found ? "hit" : "miss"})`, async () => {
+    const f = fixture({ ...source, region: "Bern" });
+    f.row.coordinate_source = "geocode";
+    const q = listedQuery(
+      f.row as any,
+      f.row.captured,
+      new Set(["music_festival"]),
+    )!;
+    f.cache.set(
+      forwardCacheKey(q.norm, "CH"),
+      found
+        ? { lat: 46.9, lng: 7.4, precision: "city" }
+        : { lat: null, lng: null, precision: null, payload: { hit: null } },
+    );
+    await runGeocode(f.db, { ...opts, geocodeLimit: 0 });
+    const evidence = f.activated.coordinate_evidence;
+    assert.equal(evidence.source_coordinates, null);
+    assert.equal(
+      f.activated.point.lat,
+      6.9185,
+      "the historical primary remains separately identified",
+    );
+    if (found) {
+      assert.equal(evidence.inferred_coordinates.lat, 46.9);
+      assert.equal(evidence.inferred_coordinates.query, q.display);
+    } else {
+      assert.equal(
+        evidence.inferred_coordinates,
+        null,
+        "a miss cannot certify the old point with a new query",
+      );
+      const row = {
+        ...f.row,
+        id: "legacy",
+        source_id: "s",
+        source_slug: "source",
+        source_trust: 10,
+        location_validation: f.activated,
+        active_geocode_id: "current-artifact",
+      };
+      const old = canonicalPoints([row], row)[0]!;
+      assert.equal(old.origin, "geocode");
+      assert.equal(old.query, null);
+    }
+  });
