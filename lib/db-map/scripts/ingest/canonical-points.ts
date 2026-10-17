@@ -14,6 +14,7 @@ export interface LocationMember {
   lat: number | null;
   lng: number | null;
   coordinate_precision: string | null;
+  coordinate_source?: string | null;
   active_normalization_id: string | null;
   active_geocode_id: string | null;
   location_validation: Record<string, unknown> | null;
@@ -72,7 +73,11 @@ export function canonicalPoints(
   ) ?? {
     lat: anchor.lat!,
     lng: anchor.lng!,
-    origin: "source_coordinates",
+    origin: anchor.coordinate_source === "geocode"
+      ? "geocode"
+      : ["source", "url"].includes(anchor.coordinate_source ?? "")
+        ? "source_coordinates"
+        : "legacy_coordinates",
     role: "primary",
     precision: anchor.coordinate_precision ?? "point",
     label: null,
