@@ -63,7 +63,9 @@ export async function seedTasks(
       OR (t.stage='embed' AND rp.is_poi AND t.output->>'embedding_id' IS DISTINCT FROM rp.active_embedding_id::text)
       OR (t.stage IN ('match','canonical','verify') AND rp.is_poi AND
         (t.output->>'canonical_id' IS DISTINCT FROM rp.canonical_poi_id::text OR EXISTS(
-          SELECT 1 FROM canonical_pois cp WHERE cp.id=rp.canonical_poi_id AND t.output->>'build_id' IS DISTINCT FROM cp.active_build_id::text))))`,
+          SELECT 1 FROM canonical_pois cp WHERE cp.id=rp.canonical_poi_id AND t.output->>'build_id' IS DISTINCT FROM cp.active_build_id::text) OR NOT EXISTS(
+          SELECT 1 FROM canonical_pois cp JOIN canonical_poi_builds cb ON cb.id=cp.active_build_id
+          WHERE cp.id=rp.canonical_poi_id AND cb.builder_version='${PIPELINE_VERSIONS.canonicalBuilder}'))))`,
     [run, fromRank],
   );
   await db.query(

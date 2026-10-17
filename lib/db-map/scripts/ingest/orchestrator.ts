@@ -891,7 +891,9 @@ async function recordState(db: Pool, item: RunItem) {
     EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id) AS membership_valid,
     EXISTS(SELECT 1 FROM research_canonical_memberships m JOIN canonical_poi_build_inputs b ON b.membership_id=m.id
       WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
-        AND b.build_id=cp.active_build_id AND b.normalization_id=rp.active_normalization_id
+        AND b.build_id=cp.active_build_id AND EXISTS(SELECT 1 FROM canonical_poi_builds cb
+          WHERE cb.id=b.build_id AND cb.builder_version='${PIPELINE_VERSIONS.canonicalBuilder}')
+        AND b.normalization_id=rp.active_normalization_id
         AND b.embedding_id IS NOT DISTINCT FROM rp.active_embedding_id AND b.geocode_id IS NOT DISTINCT FROM rp.active_geocode_id) AS lineage_ready,
     rp.city,rp.region
     FROM research_pois rp LEFT JOIN canonical_pois cp ON cp.id=rp.canonical_poi_id WHERE rp.id=$1`,
@@ -1388,6 +1390,7 @@ export async function runOrchestration(
             return (
               !!state.canonical_poi_id &&
               !!state.active_build_id &&
+              state.lineage_ready &&
               previous.canonical_id === state.canonical_poi_id &&
               previous.build_id === state.active_build_id
             );
