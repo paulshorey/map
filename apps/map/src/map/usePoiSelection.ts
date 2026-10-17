@@ -2,7 +2,10 @@ import { useState, useCallback, useEffect, type RefObject } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { MapRef } from "react-map-gl/maplibre";
 import { apiUrl } from "@/lib/config";
-import type { PoiLocationRecord } from "@lib/db-map/contracts/map-app";
+import type {
+  PoiLocationRecord,
+  PoiCoordinateEvidenceRecord,
+} from "@lib/db-map/contracts/map-app";
 
 export interface PoiDetail {
   id: string;
@@ -21,6 +24,7 @@ export interface PoiDetail {
   lng?: number;
   geometry: GeoJSON.Point;
   locations?: PoiLocationRecord[];
+  coordinate_evidence?: PoiCoordinateEvidenceRecord;
 }
 
 export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
@@ -42,7 +46,7 @@ export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
     if (!map || !selectedId) return;
 
     try {
-      for (const slot of [1, 2])
+      for (const slot of ["source", "inferred", "legacy"])
         map.setFeatureState(
           { source: "pois", id: `${selectedId}:${slot}` },
           { selected: true },
@@ -53,7 +57,7 @@ export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
 
     return () => {
       try {
-        for (const slot of [1, 2])
+        for (const slot of ["source", "inferred", "legacy"])
           map.removeFeatureState({
             source: "pois",
             id: `${selectedId}:${slot}`,

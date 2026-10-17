@@ -2,11 +2,14 @@ import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import type { Pool } from "pg";
 import {
-  capturedPoints,
-  twoPoints,
+  readCoordinateEvidence,
+  validPoint,
 } from "../../lib/ingestion/location-points.js";
 import { mapGenericRecord } from "./extractors/generic.js";
-import { canonicalPoints } from "./canonical-points.js";
+import {
+  canonicalPoints,
+  canonicalCoordinateEvidence,
+} from "./canonical-points.js";
 import { listedQuery, runGeocode, forwardCacheKey } from "./geocode.js";
 import { LOCATION_VERSION } from "./location.js";
 import {
@@ -95,44 +98,29 @@ function fixture(captured: any = source) {
 }
 const opts = { recordId: "poi", limit: 1, throttleMs: 0, dryRun: false };
 
-test("explicit launch/landing survive; malformed/duplicate/excess points cannot add markers", () => {
-  const points = [
+test("raw source locations remain raw evidence and do not occupy either typed slot", () => {
+  const locations = [
     { lat: 46, lng: 7, role: "launch" },
-    { lat: 46, lng: 7 },
-    { lat: 0, lng: 0 },
-    { lat: "46", lng: 7 },
     { lat: 46.1, lng: 7.1, role: "landing" },
-    { lat: 47, lng: 8 },
   ];
-  assert.deepEqual(
-    capturedPoints(points).map((p) => p.role),
-    ["launch", "landing"],
-  );
-  assert.equal(
-    twoPoints([
-      { lat: Infinity, lng: 1 },
-      { lat: 91, lng: 2 },
-    ]).length,
-    0,
-  );
   const r = mapGenericRecord({
     id: "flying",
     name: "Site",
-    locations: points,
+    lat: 47,
+    lng: 8,
+    locations,
   })!;
-  assert.deepEqual([r.lat, r.lng], [46, 7]);
-  assert.equal(r.attributes?.locations, points);
-  const partial = mapGenericRecord({
-    id: "partial",
+  assert.deepEqual([r.lat, r.lng], [47, 8]);
+  assert.equal(r.attributes?.locations, locations);
+  const unclassified = mapGenericRecord({
+    id: "unclassified",
     name: "Site",
-    lat: 12,
-    locations: points,
+    locations,
   })!;
-  assert.deepEqual(
-    [partial.lat, partial.lng],
-    [46, 7],
-    "never splice two unrelated coordinate pairs",
-  );
+  assert.equal(unclassified.lat, undefined);
+  assert.equal(unclassified.lng, undefined);
+  assert.equal(validPoint({ lat: 0, lng: 0 }), false);
+  assert.equal(validPoint({ lat: Infinity, lng: 7 }), false);
 });
 
 test("address query is based on captured text/hints, never reverse-generated projection", () => {
@@ -213,9 +201,13 @@ test("contradictory source/address points both activate atomically; budget resum
   assert.equal(second.cacheHits, 1);
   assert.equal(second.apiCalls, 1);
   const activated = f.activated as any;
-  assert.equal(activated.locations.length, 2);
+  assert.ok(activated.coordinate_evidence.source_coordinates);
+  assert.ok(activated.coordinate_evidence.inferred_coordinates);
   assert.deepEqual(
-    activated.locations.map((p: any) => [p.lat, p.lng]),
+    Object.values(activated.coordinate_evidence).map((p: any) => [
+      p.lat,
+      p.lng,
+    ]),
     [
       [6.9185, 7.4402],
       [46.9185, 7.4402],
@@ -236,17 +228,18 @@ test("forward miss does not discard an existing source point; known miss is cach
   const result = await runGeocode(f.db, { ...opts, geocodeLimit: 1 });
   assert.equal(result.resolved, 1);
   assert.equal(f.activated.forward.state, "miss");
-  assert.equal(f.activated.locations.length, 1);
+  assert.ok(f.activated.coordinate_evidence.source_coordinates);
+  assert.equal(f.activated.coordinate_evidence.inferred_coordinates, null);
 });
 
-test("explicit second location outranks a third address candidate; all original evidence remains", async () => {
+test("a second source point cannot displace the independently inferred point", async () => {
   const f = fixture({
     ...source,
     region: "Bern",
     attributes: {
       locations: [
-        { lat: 6.9185, lng: 7.4402, role: "launch" },
-        { lat: 6.9, lng: 7.4, role: "landing" },
+        { lat: 6.9185, lng: 7.4402 },
+        { lat: 6.9, lng: 7.4 },
       ],
     },
   });
@@ -265,13 +258,58 @@ test("explicit second location outranks a third address candidate; all original 
     0,
   );
   assert.deepEqual(
-    f.activated.locations.map((p: any) => p.role),
-    ["launch", "landing"],
+    [
+      f.activated.coordinate_evidence.source_coordinates.lat,
+      f.activated.coordinate_evidence.inferred_coordinates.lat,
+    ],
+    [6.9185, 46.9],
   );
-  assert.equal(f.activated.forward.result.lat, 46.9);
+  assert.equal(
+    f.activated.coordinate_evidence.inferred_coordinates.kind,
+    "inferred",
+  );
 });
 
-test("canonical location selection requires active artifact binding and caps mixed-source candidates", () => {
+test("address-only input keeps the source slot empty", async () => {
+  const f = fixture({ ...source, region: "Bern" });
+  Object.assign(f.row, {
+    lat: null,
+    lng: null,
+    coordinate_source: null,
+    coordinate_precision: null,
+  });
+  const q = listedQuery(
+    f.row as any,
+    f.row.captured,
+    new Set(["music_festival"]),
+  )!;
+  f.cache.set(forwardCacheKey(q.norm, "CH"), {
+    lat: 46.9,
+    lng: 7.4,
+    precision: "city",
+  });
+  await runGeocode(f.db, { ...opts, geocodeLimit: 0 });
+  assert.equal(f.activated.coordinate_evidence.source_coordinates, null);
+  assert.equal(f.activated.coordinate_evidence.inferred_coordinates.lat, 46.9);
+});
+
+test("canonical buckets are selected independently by provenance, with exact artifact binding", () => {
+  const sourcePoint = {
+    lat: 46,
+    lng: 7,
+    kind: "source",
+    origin: "source_coordinates",
+    precision: "point",
+    label: null,
+    query: null,
+  };
+  const inferredPoint = {
+    ...sourcePoint,
+    lat: 46.1,
+    kind: "inferred",
+    origin: "listed_address_geocode",
+    query: "Listed locality",
+  };
   const row = {
     id: "r",
     source_id: "s",
@@ -279,6 +317,7 @@ test("canonical location selection requires active artifact binding and caps mix
     source_trust: 10,
     lat: 46,
     lng: 7,
+    coordinate_source: "source",
     coordinate_precision: "point",
     active_normalization_id: "n",
     active_geocode_id: "g",
@@ -286,48 +325,53 @@ test("canonical location selection requires active artifact binding and caps mix
       version: LOCATION_VERSION,
       normalization_id: "n",
       point: { lat: 46, lng: 7 },
-      locations: [
-        {
-          lat: 46,
-          lng: 7,
-          origin: "source_coordinates",
-          role: "launch",
-          precision: "point",
-        },
-        {
-          lat: 46.1,
-          lng: 7.1,
-          origin: "listed_address_geocode",
-          role: "alternate",
-          precision: "city",
-          query: "Locality",
-        },
-      ],
+      coordinate_evidence: {
+        source_coordinates: sourcePoint,
+        inferred_coordinates: inferredPoint,
+      },
     },
   };
-  assert.equal(canonicalPoints([row], row).length, 2);
-  assert.equal(
-    canonicalPoints([row], row)[1]!.origin,
-    "listed_address_geocode",
-  );
+  const e = canonicalCoordinateEvidence([row], row);
+  assert.equal(e.source_coordinates!.lat, 46);
+  assert.equal(e.inferred_coordinates!.lat, 46.1);
   for (const bad of [
     { ...row, active_normalization_id: "other" },
     { ...row, active_geocode_id: null },
     { ...row, lat: 45 },
-  ])
-    assert.equal(canonicalPoints([bad], bad).length, 1);
-  const legacy = { ...row, location_validation: null };
-  assert.equal(canonicalPoints([legacy], legacy).length, 1);
-  const legacyAnchor = { ...legacy, id: "legacy-anchor", lat: 45.999 };
-  assert.equal(
-    canonicalPoints([legacyAnchor, row], legacyAnchor)[1]!.lat,
-    46.1,
-    "address/explicit second location outranks another member's competing primary",
+  ]) {
+    const invalid = canonicalCoordinateEvidence([bad], bad);
+    assert.equal(invalid.inferred_coordinates, null);
+    assert.equal(invalid.source_coordinates!.kind, "source");
+  }
+  const other = {
+    ...row,
+    id: "other",
+    source_trust: 100,
+    location_validation: null,
+  };
+  const combined = canonicalCoordinateEvidence([row, other], other);
+  assert.equal(combined.source_coordinates!.research_id, "other");
+  assert.equal(combined.inferred_coordinates!.research_id, "r");
+  const geocoded = { ...other, coordinate_source: "geocode" };
+  const legacy = canonicalCoordinateEvidence([geocoded], geocoded);
+  assert.deepEqual(legacy, {
+    source_coordinates: null,
+    inferred_coordinates: null,
+  });
+  assert.equal(canonicalPoints([geocoded], geocoded)[0]!.origin, "geocode");
+  const equal = readCoordinateEvidence({
+    source_coordinates: sourcePoint,
+    inferred_coordinates: { ...inferredPoint, lat: 46 },
+  });
+  assert.ok(
+    equal.source_coordinates && equal.inferred_coordinates,
+    "equal numeric points retain both provenance records",
   );
   assert.equal(
-    canonicalPoints([row, { ...row, id: "another", source_trust: 100 }], row)
-      .length,
-    2,
+    readCoordinateEvidence({ source_coordinates: inferredPoint })
+      .source_coordinates,
+    null,
+    "slot kind must match origin",
   );
 });
 
@@ -344,22 +388,34 @@ test("single-location pipeline checkpoints remain structurally compatible withou
   );
 });
 
-
 test("legacy canonical points retain known coordinate provenance without inventing evidence", () => {
   const row = {
-    id: "legacy", source_id: "source", source_slug: "source", source_trust: 10,
-    lat: 46, lng: 7, coordinate_precision: "city", active_normalization_id: "n",
-    active_geocode_id: "g", location_validation: null,
+    id: "legacy",
+    source_id: "source",
+    source_slug: "source",
+    source_trust: 10,
+    lat: 46,
+    lng: 7,
+    coordinate_precision: "city",
+    active_normalization_id: "n",
+    active_geocode_id: "g",
+    location_validation: null,
   };
   for (const [coordinate_source, origin] of [
-    ["geocode", "geocode"], ["source", "source_coordinates"],
-    ["url", "source_coordinates"], [null, "legacy_coordinates"],
+    ["geocode", "geocode"],
+    ["source", "source_coordinates"],
+    ["url", "source_coordinates"],
+    [null, "legacy_coordinates"],
     ["unknown", "legacy_coordinates"],
   ]) {
     const member = { ...row, coordinate_source };
     const points = canonicalPoints([member], member);
     assert.equal(points[0]!.origin, origin);
     assert.equal(points[0]!.precision, "city");
-    assert.equal(points[0]!.query, null, "legacy geocodes have no validated listed-address query");
+    assert.equal(
+      points[0]!.query,
+      null,
+      "legacy geocodes have no validated listed-address query",
+    );
   }
 });

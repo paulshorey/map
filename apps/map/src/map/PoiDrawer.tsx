@@ -2,7 +2,10 @@
 
 import { HtmlDescription } from "@/components/HtmlDescription";
 import { useEffect, useRef } from "react";
-import type { PoiLocationRecord } from "@lib/db-map/contracts/map-app";
+import type {
+  PoiLocationRecord,
+  PoiCoordinateEvidenceRecord,
+} from "@lib/db-map/contracts/map-app";
 
 interface Props {
   poi: {
@@ -20,6 +23,7 @@ interface Props {
     lat?: number;
     lng?: number;
     locations?: PoiLocationRecord[];
+    coordinate_evidence?: PoiCoordinateEvidenceRecord;
   };
   onClose: () => void;
 }
@@ -84,6 +88,12 @@ export function PoiDrawer({ poi, onClose }: Props) {
     poi.date_precision,
   );
   const status = poi.status ?? undefined;
+  const namedLocations = Object.values(poi.coordinate_evidence ?? {}).filter(
+    (p): p is PoiLocationRecord => !!p,
+  );
+  const locations = namedLocations.length
+    ? namedLocations
+    : (poi.locations ?? []);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -195,19 +205,16 @@ export function PoiDrawer({ poi, onClose }: Props) {
               </DetailRow>
             )}
 
-            {poi.locations?.length ? (
+            {locations.length ? (
               <DetailRow icon={<CoordIcon />} label="Map locations">
                 <div className="space-y-2">
-                  {poi.locations.map((location, index) => (
-                    <div key={`${location.lat},${location.lng}`}>
+                  {locations.map((location) => (
+                    <div
+                      key={`${location.kind}:${location.lat},${location.lng}`}
+                    >
                       <p className="text-xs">
-                        {location.role === "primary" ||
-                        location.role === "alternate"
-                          ? `Location ${index + 1}`
-                          : location.role.replaceAll("_", " ")}
-                        {" · "}
                         {location.origin === "listed_address_geocode"
-                          ? "From listed location"
+                          ? "Inferred from listing text"
                           : location.origin === "source_coordinates"
                             ? "Source coordinates"
                             : location.origin === "geocode"

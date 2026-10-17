@@ -29,10 +29,13 @@ Interactive MapLibre map — basemap, clustered POI overlay, click-to-detail dra
 Source id: `pois`. Interactive layers: `clusters`, `poi-points`. Feature state `selected` drives opacity on the active point.
 
 Each POI has one or two Point features. `properties.id` is the shared detail/POI ID;
-`properties.marker_id` (`<POI>:1` / `<POI>:2`) is the unique promoted feature-state ID.
+`properties.marker_id` (`<POI>:source` / `<POI>:inferred` / `<POI>:legacy`) is the unique promoted feature-state ID.
 Never use the shared POI ID as a feature ID. Both locations open the same drawer;
 the API filters each location by viewport. Entity limits expand to up to two markers,
-and cluster counts are marker counts. Details retain origin/role/precision for both.
+and cluster counts are marker counts. Details retain fixed source/inferred origin and precision for both.
+`coordinate_evidence` contains independently nullable source_coordinates and
+inferred_coordinates; location order is not provenance. Equal values retain both
+evidence records while one marker is rendered. Physical roles are not assumed.
 
 ## Quirks
 

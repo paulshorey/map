@@ -5,7 +5,7 @@ import { getDb } from "../../lib/db/postgres.js";
 import { controlState, workerEvidence } from "../../sql/ingestion-control.js";
 import { runGeocode, listedQuery, forwardCacheKey } from "./geocode.js";
 import { verifyLineage } from "./verify.js";
-import { LOCATION_VERSION } from "./location.js";
+import { LOCATION_CACHE_VERSION } from "./location.js";
 const token = process.argv[2];
 if (!token) throw new Error("Owned maintenance token required");
 const db = getDb(),
@@ -41,7 +41,7 @@ try {
     [row.id],
   );
   await client.query("DELETE FROM research_geocode_cache WHERE query_norm=$1", [
-    `${LOCATION_VERSION}:reverse:${row.lat}:${row.lng}`,
+    `${LOCATION_CACHE_VERSION}:reverse:${row.lat}:${row.lng}`,
   ]);
   process.env.LOCATIONIQ_API_KEY = "fixture";
   globalThis.fetch = async (url) => {
@@ -134,21 +134,22 @@ try {
   assert.equal(cp.attributes.city, "Venice");
   assert.equal(cp.address, row.address);
   assert.equal(cp.field_provenance.address.derivation, "source");
-  assert.equal(cp.attributes.map_locations.length, 2);
+  const evidence = cp.attributes.coordinate_evidence;
   assert.deepEqual(
-    cp.attributes.map_locations.map((p: any) => [p.lat, p.lng]),
-    [
-      [row.lat, row.lng],
-      [row.lat + 0.001, row.lng],
-    ],
+    [evidence.source_coordinates.lat, evidence.source_coordinates.lng],
+    [row.lat, row.lng],
   );
-  assert.ok(
-    cp.attributes.map_locations.some(
-      (p: any) =>
-        p.research_id === row.id &&
-        p.geocode_id === after.active_geocode_id &&
-        p.normalization_id === row.active_normalization_id,
-    ),
+  assert.deepEqual(
+    [evidence.inferred_coordinates.lat, evidence.inferred_coordinates.lng],
+    [row.lat + 0.001, row.lng],
+  );
+  assert.equal(
+    evidence.inferred_coordinates.geocode_id,
+    after.active_geocode_id,
+  );
+  assert.equal(
+    evidence.inferred_coordinates.normalization_id,
+    row.active_normalization_id,
   );
   const second = await runGeocode(scoped, opts);
   assert.equal(second.selected, 0);
@@ -167,7 +168,7 @@ try {
     [
       [
         forwardCacheKey(q.norm, captured.country_code ?? "IT"),
-        `${LOCATION_VERSION}:reverse:${row.lat}:${row.lng}`,
+        `${LOCATION_CACHE_VERSION}:reverse:${row.lat}:${row.lng}`,
       ],
     ],
   );

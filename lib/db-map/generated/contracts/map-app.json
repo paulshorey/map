@@ -24,7 +24,7 @@
           "nullable": false
         },
         {
-          "name": "location_role",
+          "name": "coordinate_kind",
           "optional": false,
           "kind": "scalar",
           "type": "string",
@@ -119,7 +119,7 @@
           "nullable": false
         },
         {
-          "name": "role",
+          "name": "kind",
           "optional": false,
           "kind": "scalar",
           "type": "string",
@@ -144,6 +144,24 @@
           "optional": false,
           "kind": "scalar",
           "type": "string",
+          "nullable": true
+        }
+      ]
+    },
+    "PoiCoordinateEvidenceRecord": {
+      "fields": [
+        {
+          "name": "source_coordinates",
+          "optional": false,
+          "kind": "model",
+          "type": "PoiLocationRecord",
+          "nullable": true
+        },
+        {
+          "name": "inferred_coordinates",
+          "optional": false,
+          "kind": "model",
+          "type": "PoiLocationRecord",
           "nullable": true
         }
       ]
@@ -304,6 +322,13 @@
             "kind": "model",
             "type": "PoiLocationRecord"
           },
+          "nullable": false
+        },
+        {
+          "name": "coordinate_evidence",
+          "optional": false,
+          "kind": "model",
+          "type": "PoiCoordinateEvidenceRecord",
           "nullable": false
         }
       ]

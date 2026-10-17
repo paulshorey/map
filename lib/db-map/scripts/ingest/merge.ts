@@ -1,5 +1,8 @@
 import { canonicalLocation } from "./canonical-location.js";
-import { canonicalPoints } from "./canonical-points.js";
+import {
+  canonicalPoints,
+  canonicalCoordinateEvidence,
+} from "./canonical-points.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { currentAttempt } from "./execution.js";
@@ -364,7 +367,8 @@ function mergeAttributes(rows: MergeRow[]): Record<string, unknown> {
         value === null ||
         key.startsWith("_") ||
         key === "location_enrichment" ||
-        key === "map_locations"
+        key === "map_locations" ||
+        key === "coordinate_evidence"
       )
         continue;
       if (Array.isArray(value)) {
@@ -562,7 +566,15 @@ export async function rebuildCanonicalPoi(
 
   const hours = chooseText(rows, (row) => row.hours);
   const photo = chooseText(rows, (row) => row.photo_url);
-  const coords = chooseCoordinates(rows);
+  let coords = chooseCoordinates(rows);
+  const evidence = canonicalCoordinateEvidence(rows, coords.row);
+  const preferred =
+    evidence.source_coordinates ?? evidence.inferred_coordinates;
+  if (preferred)
+    coords = {
+      value: { lat: preferred.lat, lng: preferred.lng },
+      row: rows.find((r) => r.id === preferred.research_id) ?? null,
+    };
   const points = canonicalPoints(rows, coords.row);
   const location = canonicalLocation(rows, coords.row);
   const address = location.address;
@@ -571,7 +583,7 @@ export async function rebuildCanonicalPoi(
   const primaryCategoryId = await syncCategories(client, canonicalId, rows);
   const popularity = new Set(rows.map((row) => row.source_id)).size;
   const attributes = mergeAttributes(rows);
-  attributes.map_locations = points;
+  attributes.coordinate_evidence = evidence;
   for (const field of ["country_code", "city", "region"] as const) {
     if (location[field].value) attributes[field] = location[field].value;
     else delete attributes[field];
@@ -591,8 +603,23 @@ export async function rebuildCanonicalPoi(
     hours: provenance(hours.row),
     photo_url: provenance(photo.row),
     coordinates: provenance(coords.row),
-    map_locations: points.map(({ lat, lng, ...evidence }) => evidence),
+    coordinate_evidence: Object.fromEntries(
+      Object.entries(evidence).map(([slot, p]) => [
+        slot,
+        p
+          ? {
+              research_id: p.research_id,
+              source_id: p.source_id,
+              normalization_id: p.normalization_id,
+              geocode_id: p.geocode_id,
+              kind: p.kind,
+              origin: p.origin,
+            }
+          : null,
+      ]),
+    ),
     coordinate_precision: coords.row?.coordinate_precision ?? null,
+    coordinate_source: coords.row?.coordinate_source ?? null,
     starts_at: provenance(dates?.row ?? null),
     occurrences: {
       count: occurrences.length,

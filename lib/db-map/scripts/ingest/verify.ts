@@ -1,7 +1,7 @@
 import type { Pool } from "pg";
 import { pathToFileURL } from "node:url";
 import { getDb } from "../../lib/db/postgres.js";
-import { mapLocationsSql } from "../../sql/map-locations.js";
+import { coordinateEvidenceSql } from "../../sql/map-locations.js";
 
 export async function verifyLineage(db: Pool): Promise<number> {
   const checks: Array<[string, string]> = [
@@ -22,17 +22,17 @@ export async function verifyLineage(db: Pool): Promise<number> {
       `SELECT count(*)::int AS count FROM research_pois rp WHERE (rp.active_geocode_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM research_poi_geocodes g WHERE g.id=rp.active_geocode_id AND g.normalization_id=rp.active_normalization_id)) OR (rp.active_embedding_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM research_poi_embeddings e WHERE e.id=rp.active_embedding_id AND e.normalization_id=rp.active_normalization_id))`,
     ],
     [
-      "canonical map locations",
-      `SELECT count(*)::int AS count FROM canonical_pois p
-      WHERE p.origin='research' AND p.status='published' AND p.attributes ? 'map_locations'
-      AND p.attributes->'map_locations' IS DISTINCT FROM ${mapLocationsSql()}`,
+      "canonical coordinate evidence",
+      `SELECT count(*)::int AS count FROM canonical_pois p WHERE p.origin='research' AND p.status='published'
+       AND p.attributes ? 'coordinate_evidence'
+       AND p.attributes->'coordinate_evidence' IS DISTINCT FROM ${coordinateEvidenceSql()}`,
     ],
     [
-      "map location build provenance",
+      "coordinate evidence build provenance",
       `SELECT count(*)::int AS count FROM canonical_pois p
-      CROSS JOIN LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(p.attributes->'map_locations')='array'
-        THEN p.attributes->'map_locations' ELSE '[]'::jsonb END) loc
-      WHERE p.origin='research' AND p.status='published' AND NOT EXISTS (
+      CROSS JOIN LATERAL jsonb_each(CASE WHEN jsonb_typeof(p.attributes->'coordinate_evidence')='object'
+        THEN p.attributes->'coordinate_evidence' ELSE '{}'::jsonb END) AS e(slot,loc)
+      WHERE p.origin='research' AND p.status='published' AND loc <> 'null'::jsonb AND NOT EXISTS (
         SELECT 1 FROM canonical_poi_build_inputs i WHERE i.build_id=p.active_build_id
         AND i.research_poi_id::text=loc->>'research_id'
         AND i.normalization_id::text IS NOT DISTINCT FROM loc->>'normalization_id'

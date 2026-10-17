@@ -881,41 +881,54 @@ and the shared geocode cache remain. Cleanup does **not** filter by category; it
 
 ## Standardized location enrichment
 
-For future processing, the geocode stage resolves original captured address/locality
-even when a source point exists. It retains **one or two map locations per canonical**:
-the existing selected point, then an explicit second source point (launch/landing/
-entrance) or an independently forward-geocoded listed location. Exact duplicate
-pairs collapse. Disagreement, distance and near-duplicates are retained without
-averaging or hiding both markers; they are evidence for a later human review policy.
-An address-only record can obtain its primary point through the same lookup. A
-record without any resolved valid point remains unpublished.
+Future processing stores a fixed `coordinate_evidence` object with two independently
+nullable fields:
+
+- `source_coordinates`: one validated coordinate pair extracted from the listing
+  (including a source URL coordinate when that is the source's evidence).
+- `inferred_coordinates`: one coordinate pair generated from the original listed
+  country/region/city/address text by forward geocoding.
+
+These are provenance categories, not physical roles or two arbitrary candidates.
+A second original/source point cannot occupy the inferred field. Source-native
+multiple points/roles remain raw evidence; choosing physical launch/landing/entrance
+locations is outside this contract. With several linked sources, canonical selection
+chooses one value independently per evidence category using the existing anchor/trust
+ordering, preserving each selected member/artifact's identity.
+
+Either slot can be absent. A record with only an address-derived point keeps
+`source_coordinates=null`. Equal coordinate pairs retain **both named observations**;
+only duplicate rendered markers collapse. Different pairs are mapped separately,
+without averaging or distance-based suppression. One usable point is required to
+publish. Legacy points with insufficient origin evidence keep their existing point
+and an explicit legacy/unknown classification rather than an invented source claim.
 
 Forward queries use immutable captured text and source location hints, never fields
-derived from reverse lookup or model coordinate proposals. Supplied addresses take
-precedence over combined venue names in lookup queries; a recognized listed country
-constrains the search. Forward hits and misses
-are cached in a versioned namespace. One provider budget covers forward and reverse;
-if it expires between calls, no partial geocode artifact activates and resume reuses
-the cached lookup. A forward miss preserves a usable source point. API failures keep
-the existing recovery/stop rules. Additional lookups add geocoder traffic, not LLM calls.
+filled by reverse lookup or model coordinate proposals. Supplied address/locality
+wins over composite venue names for lookup; recognized listed countries constrain
+search. Hits and misses are cached by query policy/country. Forward and reverse share
+provider budgets and recovery. If the budget expires between calls, activation waits
+and resume reuses cached results; a miss preserves a usable source point.
 
-The `location-v2` / `locationiq-location-v3` geocode artifact and `listed-location-v1`
-query policy preserve `validation.listed`,
-`forward` (query, state, complete parsed hit), `reverse`, and `locations`. Canonical
-builder `canonical-build-v3` writes one/two `attributes.map_locations`, each with
-precision, role, derivation, query and source/research/normalization/geocode IDs.
-The existing canonical lat/lng remains the primary coordinate; immutable build inputs
-pin both locations' provenance. Raw `attributes.map_locations` cannot publish markers.
-JSONB storage already supports this, so no schema migration or completed-cohort
-backfill is performed. Old builds fall back to their single stored point.
+The `location-v3` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
+to its normalization/primary point, alongside separate listed text, forward query/result
+and reverse lookup. Canonical builder `canonical-build-v5` writes
+`attributes.coordinate_evidence` with source/research/normalization/geocode IDs for
+each value. Legacy lat/lng is the selected source point when available, otherwise the
+inferred point or retained legacy point. Raw/model attributes cannot publish these
+reserved fields. The query policy remains `listed-location-v1`; unchanged provider
+queries reuse the `location-v2` cache namespace, so a representation upgrade does
+not repeat already-paid geocoding. No migration or automatic historical sweep occurs.
 
-The map API emits individual Point features with unique `marker_id` values and the
-same POI `id`. Each point is filtered by viewport, including secondary-only matches;
-the entity limit is applied before marker expansion (up to twice as many markers).
-Both markers open the same detail and highlight together. Details list both origins,
-queries and precision. Locality centroids are approximate discovery markers; neither
-the provider's `point` precision nor two agreeing points prove entrance accuracy.
-Cluster counts count markers, not distinct POIs. Existing category/date filters remain.
+The map API exposes `coordinate_evidence` plus a rendered `locations` array. Markers
+use stable `<POI>:source`, `<POI>:inferred`, or `<POI>:legacy` IDs and a shared POI detail
+ID. Missing source data never renumbers an inferred marker into the source identity.
+Each point is filtered by viewport; entity limits precede marker expansion. Details
+show both named evidence values (even if equal), their origin, query and precision.
+The ordinal `location_index` is presentation order, not provenance. Cluster counts
+count markers. Approximate locality points do not establish venue/entrance precision.
+A future source/inferred/both display policy can select these fields without rerunning
+ingestion or losing the other observation.
 
 The managed geocode stage also fills missing administrative/address fields for valid points.
 Source addresses/locality win; country values use the pinned ISO country dataset. Reverse
@@ -1015,7 +1028,7 @@ variable unset, the SQL test is explicitly skipped; no shared database is used.
 
 ### Canonical origin repair and resume
 
-`canonical-build-v4` preserves legacy coordinate provenance. Deploying it does not
+`canonical-build-v5` preserves fixed source/inferred coordinate provenance and legacy origins. Deploying it does not
 rewrite historical data. On an explicitly selected new run or compatible resume,
 completed downstream tasks and batch/attempt caches reject older builders. The
 match stage rebuilds the existing canonical from its active members when its build

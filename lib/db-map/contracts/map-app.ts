@@ -2,7 +2,7 @@ export interface PoiFeatureProperties {
   id: string;
   marker_id: string;
   location_index: number;
-  location_role: string | null;
+  coordinate_kind: string | null;
   location_origin: string | null;
   location_precision: string | null;
   name: string;
@@ -18,10 +18,15 @@ export interface PoiLocationRecord {
   lat: number;
   lng: number;
   origin: string;
-  role: string;
+  kind: string;
   precision: string;
   label: string | null;
   query: string | null;
+}
+
+export interface PoiCoordinateEvidenceRecord {
+  source_coordinates: PoiLocationRecord | null;
+  inferred_coordinates: PoiLocationRecord | null;
 }
 
 export interface PoiDetailRecord {
@@ -46,6 +51,7 @@ export interface PoiDetailRecord {
   lat: number;
   geometry: unknown;
   locations: Array<PoiLocationRecord>;
+  coordinate_evidence: PoiCoordinateEvidenceRecord;
 }
 
 export interface UserPreferencesRecord {

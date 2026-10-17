@@ -17,6 +17,7 @@ import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { rebuildCanonicalPoi } from "./merge.js";
 import {
   LOCATION_VERSION,
+  LOCATION_CACHE_VERSION,
   LOCATION_GEOCODER_VERSION,
   LOCATION_QUERY_VERSION,
   locationReadySql,
@@ -27,9 +28,8 @@ import {
 import { countryToCode } from "./normalize/country.js";
 import { stableHash } from "./hash.js";
 import {
-  capturedPoints,
-  twoPoints,
   validPoint,
+  type CoordinateEvidence,
   type MapLocation,
 } from "../../lib/ingestion/location-points.js";
 
@@ -202,7 +202,7 @@ export function listedQuery(
 }
 
 export const forwardCacheKey = (norm: string, country: string | null) =>
-  `${LOCATION_VERSION}:forward:${LOCATION_QUERY_VERSION}:${country ?? "any"}:${norm}`;
+  `${LOCATION_CACHE_VERSION}:forward:${LOCATION_QUERY_VERSION}:${country ?? "any"}:${norm}`;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -378,17 +378,10 @@ export async function runGeocode(
       city: textValue(captured.city),
       region: textValue(captured.region),
     };
-    const explicit = capturedPoints(attrs.locations);
     let lat: number | null = row.lat,
       lng: number | null = row.lng;
     let coordinateSource = row.coordinate_source,
       coordinatePrecision = row.coordinate_precision;
-    if (!validPoint({ lat, lng }) && explicit[0]) {
-      lat = explicit[0].lat;
-      lng = explicit[0].lng;
-      coordinateSource = "source";
-      coordinatePrecision = explicit[0].precision;
-    }
     const temporal = new Set<string>(
       (
         await db.query(
@@ -445,36 +438,33 @@ export async function runGeocode(
       coordinatePrecision = forward.precision;
     }
     if (opts.dryRun) continue;
-    const original = explicit.find((p) => p.lat === lat && p.lng === lng);
-    const locations = twoPoints<MapLocation>([
-      {
-        lat: lat!,
-        lng: lng!,
-        origin:
-          coordinateSource === "geocode"
-            ? "listed_address_geocode"
-            : "source_coordinates",
-        role: original?.role ?? "primary",
-        precision: coordinatePrecision ?? "point",
-        label: original?.label ?? null,
-        query: coordinateSource === "geocode" ? (q?.display ?? null) : null,
-      },
-      ...explicit,
-      ...(forward
-        ? [
-            {
-              lat: forward.lat,
-              lng: forward.lng,
-              origin: "listed_address_geocode",
-              role: "alternate",
-              precision: forward.precision,
-              label: forward.label ?? null,
-              query: q?.display ?? null,
-            },
-          ]
-        : []),
-    ]);
-    const queryNorm = `${LOCATION_VERSION}:reverse:${lat}:${lng}`;
+    const coordinateEvidence: CoordinateEvidence = {
+      source_coordinates:
+        validPoint({ lat: row.lat, lng: row.lng }) &&
+        ["source", "url"].includes(row.coordinate_source)
+          ? {
+              lat: row.lat,
+              lng: row.lng,
+              kind: "source",
+              origin: "source_coordinates",
+              precision: row.coordinate_precision ?? "point",
+              label: null,
+              query: null,
+            }
+          : null,
+      inferred_coordinates: forward
+        ? {
+            lat: forward.lat,
+            lng: forward.lng,
+            kind: "inferred",
+            origin: "listed_address_geocode",
+            precision: forward.precision,
+            label: forward.label ?? null,
+            query: q?.display ?? null,
+          }
+        : null,
+    };
+    const queryNorm = `${LOCATION_CACHE_VERSION}:reverse:${lat}:${lng}`;
     let hit: ReverseLocation | null = null;
     if (Object.values(source).some((value) => !value)) {
       const cache = (
@@ -530,7 +520,7 @@ export async function runGeocode(
         state: !q ? "no_query" : forward ? "resolved" : "miss",
         result: forward,
       },
-      locations,
+      coordinate_evidence: coordinateEvidence,
       ...resolved,
       reverse: hit,
       lookup_state: hit
@@ -546,7 +536,7 @@ export async function runGeocode(
       coordinate_source: coordinateSource,
       forward_query_norm: forwardQueryNorm,
       version: LOCATION_VERSION,
-      locations,
+      coordinate_evidence: coordinateEvidence,
     });
     await canonicalLane.run(() =>
       artifactTransaction(db, async (client) => {
@@ -610,7 +600,9 @@ export async function runGeocode(
             status: "succeeded",
             geocode_id: artifact.id,
             location_warnings: resolved.warnings,
-            locations: locations.length,
+            coordinate_kinds: Object.values(coordinateEvidence)
+              .filter(Boolean)
+              .map((p) => p!.kind),
             forward_lookup_state: metadata.forward.state,
           },
         };

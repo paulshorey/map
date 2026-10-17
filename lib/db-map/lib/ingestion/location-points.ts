@@ -1,12 +1,17 @@
-/** Coordinate evidence, not a claim that two points are two verified venues. */
+/** Fixed provenance slots; these are not physical roles such as launch/landing. */
 export interface MapLocation {
   lat: number;
   lng: number;
+  kind: string;
   origin: string;
-  role: string;
   precision: string;
   label: string | null;
   query: string | null;
+}
+
+export interface CoordinateEvidence<T extends MapLocation = MapLocation> {
+  source_coordinates: T | null;
+  inferred_coordinates: T | null;
 }
 
 export function validPoint(
@@ -25,40 +30,41 @@ export function validPoint(
   );
 }
 
-/** Collapse exact duplicates only. Nearby/conflicting candidates are deliberately retained. */
-export function twoPoints<T extends { lat: number; lng: number }>(
-  points: T[],
-): T[] {
-  const result: T[] = [];
-  for (const p of points) {
-    if (
-      !validPoint(p) ||
-      result.some((r) => r.lat === p.lat && r.lng === p.lng)
-    )
-      continue;
-    result.push(p);
-    if (result.length === 2) break;
-  }
-  return result;
-}
-
-/** Only explicit captured coordinates qualify; never consume model-proposed locations. */
-export function capturedPoints(value: unknown): MapLocation[] {
-  if (!Array.isArray(value)) return [];
-  return twoPoints(
-    value.filter(validPoint).map((p) => {
-      const row = p as Record<string, unknown>;
-      return {
-        lat: p.lat,
-        lng: p.lng,
-        origin: "source_coordinates",
-        role: typeof row.role === "string" ? row.role : "alternate",
-        precision: ["point", "city", "region"].includes(String(row.precision))
-          ? String(row.precision)
-          : "point",
-        label: typeof row.label === "string" ? row.label : null,
-        query: null,
-      };
-    }),
-  );
+/** Preserve both independent observations, including when their numeric values agree. */
+export function readCoordinateEvidence(value: unknown): CoordinateEvidence {
+  const obj =
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : {};
+  const read = (
+    key: "source_coordinates" | "inferred_coordinates",
+    kind: string,
+    origin: string,
+  ): MapLocation | null => {
+    const p = obj[key];
+    if (!validPoint(p)) return null;
+    const row = p as Record<string, unknown>;
+    if (row.kind !== kind || row.origin !== origin) return null;
+    return {
+      lat: p.lat,
+      lng: p.lng,
+      kind,
+      origin,
+      precision: typeof row.precision === "string" ? row.precision : "point",
+      label: typeof row.label === "string" ? row.label : null,
+      query: typeof row.query === "string" ? row.query : null,
+    };
+  };
+  return {
+    source_coordinates: read(
+      "source_coordinates",
+      "source",
+      "source_coordinates",
+    ),
+    inferred_coordinates: read(
+      "inferred_coordinates",
+      "inferred",
+      "listed_address_geocode",
+    ),
+  };
 }

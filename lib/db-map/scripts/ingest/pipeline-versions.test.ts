@@ -87,6 +87,7 @@ for (const [normalizer, prompt] of [
       ...PIPELINE_VERSIONS,
       normalizer,
       prompt,
+      geocode: "locationiq-location-v3",
       canonicalBuilder: "canonical-build-v3",
     };
     assert.deepEqual(resumePipelineUpgrade(old), {

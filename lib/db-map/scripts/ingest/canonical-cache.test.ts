@@ -50,21 +50,22 @@ test(
       INSERT INTO research_poi_embeddings VALUES('embedding','normalization');
       INSERT INTO research_canonical_memberships VALUES('membership','poi','normalization','canonical',true);
       INSERT INTO canonical_pois VALUES('canonical','build','published');
-      INSERT INTO canonical_poi_builds VALUES('build','canonical-build-v3');
+      INSERT INTO canonical_poi_builds VALUES('build','canonical-build-v4');
       INSERT INTO canonical_poi_build_inputs VALUES('build','membership','normalization','embedding','geocode');
     `);
-      const locations = [
-        {
+      const coordinate_evidence = {
+        source_coordinates: {
           lat: 30,
           lng: -97,
+          kind: "source",
           origin: "source_coordinates",
-          role: "primary",
           precision: "point",
         },
-      ];
+        inferred_coordinates: null,
+      };
       await client.query(
         "INSERT INTO research_poi_geocodes VALUES('geocode','normalization',$1,$2)",
-        [LOCATION_GEOCODER_VERSION, { locations }],
+        [LOCATION_GEOCODER_VERSION, { coordinate_evidence }],
       );
       await client.query(
         `INSERT INTO research_pois VALUES('poi','observation','normalization','geocode','embedding','canonical','active',NULL,true,30,-97,$1,'vector')`,
@@ -75,7 +76,7 @@ test(
               normalization_id: "normalization",
               point: { lat: 30, lng: -97 },
               forward: { query_version: LOCATION_QUERY_VERSION },
-              locations,
+              coordinate_evidence,
             },
           },
         ],
@@ -141,7 +142,8 @@ test(
       assert.equal((await pendingStageItems(db, "run", "embed")).length, 0);
       const old = {
         ...PIPELINE_VERSIONS,
-        canonicalBuilder: "canonical-build-v3",
+        geocode: "locationiq-location-v3",
+        canonicalBuilder: "canonical-build-v4",
       };
       assert.deepEqual(resumePipelineUpgrade(old)?.to, PIPELINE_VERSIONS);
       // Simulate publication by the existing match-stage rebuild path, retaining all input IDs.

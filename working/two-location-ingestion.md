@@ -1,89 +1,115 @@
-# Up to two map locations per POI
+# Source-supplied and text-inferred coordinate evidence
 
-Human decision, 2026-10-17: collect a supplied point and a point resolved from listed
-location text, preserving both even when they disagree. Publish one or two markers
-that open the same POI. Do not average, suppress distant alternatives, or infer which
-is correct. Those decisions belong to a later review workflow. Completed imports do
-not need a backfill.
+The human's latest correction on 2026-10-17 replaces the earlier arbitrary two-point /
+physical-role design. The two canonical fields have fixed meanings, independent of
+whether a category knows launch, landing or entrance roles:
 
-Implementation plan:
+```json
+{
+  "coordinate_evidence": {
+    "source_coordinates": {
+      "lat": 46.5,
+      "lng": 7.5,
+      "kind": "source",
+      "origin": "source_coordinates"
+    },
+    "inferred_coordinates": {
+      "lat": 46.49,
+      "lng": 7.51,
+      "kind": "inferred",
+      "origin": "listed_address_geocode"
+    }
+  }
+}
+```
 
-1. Extend the existing managed geocode stage: forward lookup of original captured
-   locality even when coordinates exist, plus the existing reverse enrichment.
-   Cache hits/misses, provider budgets, recovery, exact normalization binding and one
-   fenced activation remain intact. Never forward-geocode reverse-generated text.
-2. Preserve original listed text, reverse evidence, forward query/result and up to two
-   validated points in the versioned geocode artifact. Explicit source locations
-   (launch/landing/entrance) take the second slot before an address-derived candidate.
-   Retain excess evidence in the observation/forward result, without extra markers.
-3. Build canonical `attributes.map_locations` (one or two points) and per-point input
-   provenance. Keep legacy lat/lng as the primary point. Existing JSONB storage and
-   immutable build inputs suffice; no migration or historical sweep is required.
-4. Emit separate Point features with unique marker IDs and a shared POI ID, filter
-   each point by viewport, and show both locations in the detail drawer. Keep marker
-   count distinct from entity identity. Legacy rows fall back to their existing point.
-5. Validate exact duplicate collapse, launch/landing, contradictory countries, coarse
-   precision, misses, budget resume, cache reuse, artifact binding and secondary-only
-   viewport selection. Use offline fixtures, rolled-back SQL and a bounded live smoke.
+Each field can be null. An inferred-only record must keep the source field null.
+Equal coordinate pairs keep both observations; duplicate map markers collapse.
+Different pairs map separately and open the same detail. No role assumptions,
+point averaging or distance suppression are introduced. A second supplied source
+point cannot replace the text-inferred value. Extra source-native points and labels
+remain raw evidence; a richer physical-location model is a later design.
 
-Operational ownership: this chat 01a139a6-1dec-73e3-a8fa-46d8c4e14a56, branch
-`codex/two-location-ingestion`. Before runtime edits, primary discovery found no
-workers, source locks or unresolved claims. Owned maintenance entered with token
-`e47135e6-4e1e-4c19-acf8-7aa700dab1b4`; quiescence confirmed. Do not restart old
-completed imports or change paused supervisor schedules for this implementation.
+## Storage and selection
 
-## Validation
+The managed geocode stage stores the two named values in its immutable artifact's
+`validation.coordinate_evidence`, plus original listed text/hints, forward query,
+country filter, result, reverse evidence and precision. Canonical builds select one
+source value and one inferred value independently from linked members, with each
+value's source/research/normalization/geocode IDs. A known source/URL point can retain
+its source origin through legacy rebuilding; unavailable provenance stays legacy.
 
-- 29 focused tests pass: existing location/source binding, checkpoint compatibility,
-  captured launch/landing mapping, exact duplicate and range checks, canonical
-  artifact binding, forward miss, partial-budget/cache resume and conflicting points.
-- Real PostgreSQL rollback-only activation integration passes, including two canonical
-  points with their actual mixed-source provenance, exact cache reuse, one fenced
-  activation for forward/reverse, and zero global lineage violations.
-- Real PostgreSQL temporary-table list/detail integration passes: separate world-view
-  features, secondary-only viewport, shared detail ID, unique marker IDs, entity limits,
-  legacy fallback, stale/malformed/duplicate/excess point protection. No production
-  fixture rows remain.
-- Database/map type and generated contract checks pass. Production Next.js build passes.
+The reserved canonical field is `attributes.coordinate_evidence`. API detail exposes
+it directly; rendered points additionally have stable source/inferred/legacy marker
+IDs, shared POI ID and per-point viewport filtering. Details display the named values,
+including equality, without requiring roles or array-index interpretation. The
+existing primary lat/lng projection uses the source value when available, otherwise
+inferred/legacy; future display preferences can select either named field at read time.
 
-The first supervised one-record Venice Biennale smoke (job
-`3bdfffb7-a765-49a2-8de6-a91a8de71cf1`, run
-`3a5aa36f-9018-45da-8ad0-735936b9f685`, execution
-`5a963764-3b15-486b-b21a-71f189aa4f2c`) structurally verified at
-2026-10-17T16:50:02.956Z but exposed a semantic query problem: combined venue names
-`Giardini and Arsenale` steered lookup to an unrelated Italian business at
-44.003116,8.070929. Its immutable artifact/evidence is retained; this was not accepted
-as an alternate venue. No backlog drain or unchanged retry was performed.
+Format `location-v3`, geocoder artifact `locationiq-location-v4`, canonical builder
+`canonical-build-v5`. Query semantics remain `listed-location-v1`; forward/reverse
+provider cache namespace remains `location-v2` to preserve already-paid results.
+New format readiness invalidates old array proofs only on a deliberate selected
+run/resume. No schema migration, file-wide restart or historical mass repair.
 
-Repair: prefer supplied address/locality over a composite venue string; constrain
-search to recognized captured country, including country hints; preserve result
-country/locality, provider label/type and attribution. Cache/readiness includes the
-query policy and country filter. No distance or averaging rule was introduced.
+## Integrated review fixes
 
-The same one-record scope then passed a new bounded smoke (job
-`d804798d-6890-49cf-942f-a6fbb616f72a`, run
-`80db45fc-e7d5-4008-bce4-de2b8a2d48b4`, execution
-`d78de678-bec5-45f8-b173-06dda8a1b234`), verified
-2026-10-17T16:52:53.129Z. Supplied point 45.433,12.3597 was preserved; the revised
-`Castello, Venice, Venice, Italy` / IT-filtered lookup returned
-45.4346809,12.3509152, labelled Castello/Venezia/Italia. This is locality agreement,
-not proof of an exact entrance. Real API queries around each point returned the
-corresponding unique marker with shared POI 9ee28140-a256-4981-94a5-9cc8c5b61fc5.
-Normalization and matching reused prior accepted artifacts; GLM was not called.
-Both smoke deadlines were 60 seconds; neither timed out. Other completed records
-were not swept. The one tested shared canonical now has two locations.
+PR58 (stale canonical checkpoint/cache invalidation) was independently checked and
+merged into PR57, then PR57 (legacy/source/geocoded origin correction) into PR56.
+Their exact combined code passed 30 tests plus type/contracts; the optional dedicated
+loopback database test was skipped without its explicit URL. Neither contribution
+was merged into main. This revision keeps that invalidation and legacy-origin work.
 
-Private original/corrected job, query and control receipts are retained in primary
-`lib/db-map/.ingest-jobs/two-locations-20261017/`. No schema migration, provider/model
-switch, full launch, schedule restart, historical bulk repair or global consolidation.
+## Validation history
 
-## Handoff
+The earlier prototype's one-record Venice live sample exposed an unrelated Italian
+business match from combined venue names. The query was repaired to prefer the
+supplied address/locality and constrain a recognized listed country. Immutable bad
+artifact df9bf61e-7294-4b50-9096-d0c07ca8e287 and original source point were preserved.
+The corrected query returned Castello/Venezia/IT at45.4346809,12.3509152, compared with
+source45.433,12.3597. That established locality agreement, not an entrance assertion.
+Original receipts remain in primary `.ingest-jobs/two-locations-20261017/`.
 
-Code is on `codex/two-location-ingestion`; primary main remains unchanged pending PR
-review. The old e47135e6 and b2fd004e validation gates were released by their owner.
-Final implementation gate 77aafc07-99c1-4fa8-b3e3-36e402aaf696 is owned by this chat
-and will be released after checks; inspect the private final receipt for actual state.
-Both ingestion-specific automations stay paused. A future nonstandard gliding source
-still needs its own raw-field adapter/preflight; JSON/JSONL captures already support
-explicit numeric `locations` with launch/landing roles. Later review can decide
-distance withholding, averaging or preferred evidence; no such policy is applied now.
+Current revision validation covers fixed slot selection, source-only/inferred-only
+records, exact equality without evidence loss, invalid origins, additional raw source
+points not displacing inference, provider budgets/cache reuse and exact artifact
+binding. Real rolled-back SQL checks cover canonical activation/build provenance,
+legacy fallback, stable kind IDs and inferred-only viewport retrieval. Current test
+and bounded smoke receipts are recorded in the ignored operational handoff.
+
+Current revision: 35 focused tests pass; one optional dedicated loopback cache test
+is skipped without its explicit URL. Both real PostgreSQL rollback integrations,
+database/map type and generated-contract checks, and production app build pass.
+
+One new supervised 1-record smoke (jobf25d3347-a992-4058-91f1-0c0d984d8cd8,
+run a9242aa0-7de9-4d47-9466-b418ab0de229, execution3965f6a0-f389-431f-9733-0aaee0cb7d74)
+verified at2026-10-17T22:37:19.020Z. Its geocoder budget was0; both provider results
+were reused and the provider ledger confirms0new requests of any kind. New artifact
+and canonical output preserve source45.433,12.3597 and inferred45.4346809,12.3509152
+in their named fields with independent provenance. Tight viewport probes return stable
+`:source` and `:inferred` marker IDs with the same POI ID. Zero lineage violations;
+normalization, embedding and match adjudication reused. This is one-record contract
+validation, not a whole-file reimport or precise venue-quality assertion.
+
+A bounded read-query check exposed a viewport regression from expanding all evidence
+for every legacy row (5s statement deadline exceeded; estimated plan cost573848 with
+JIT optimization). Candidate filtering now tests stored/named points first and
+materializes the limited entity set before marker expansion. The same real viewport
+returned in224ms (detail64ms), with no pool/timeout/server-setting change. SQL regression
+fixtures also cover malformed and very large numeric coordinates without unsafe casts.
+Original and corrected timings are retained in the private receipts.
+
+Private current receipts: primary `.ingest-jobs/coordinate-origins-20261017/`.
+
+## Operational ownership
+
+Owner chat01a139a6-1dec-73e3-a8fa-46d8c4e14a56, branch codex/two-location-ingestion,
+PR56. Primary main is unchanged pending independent review. Initial snapshot once
+confirmed no workers/locks/claims. Owned maintenance tokenbcaa82e4-ee4e-43bb-aa0e-5df387e2048b was released for the
+bounded validation and is obsolete. Final fresh control is maintenanceOFF/quiescent,
+with0workers/source locks; exact smoke worker and supervisor processes have exited.
+Follow-up owned gate549ee0bb-5b1c-434b-8e1d-c5d94ea941bd protected the viewport repair;
+its release and fresh control are recorded in the final private receipt.
+Both ingestion schedules remain paused. No full import or source-file rewrite is
+part of this change. Previous role-based plan and validation are historical evidence,
+not current contract or permission to restart completed sample/file scopes.
