@@ -6,6 +6,21 @@ lookup limitations, and an incorrect canonical merge. The implementation and com
 contract live in the [ingestion runbook](../data/poi-ingestion.md#reviewing-location-evidence-on-completed-records).
 The existing `ingest:location-audit` remains the aggregate completeness report.
 
+## Follow-up: complete field evidence — 2026-10-17
+
+Verified two additional PR #53 findings against merged main after PR #54. Reverse
+binding failures now cite the predicate that failed, including the artifact's own
+normalization and newly exported status field; point mismatches cite both artifact
+coordinates and the saved query point. Unrecognized country-name findings use the
+same actual raw/captured name supplier as country conflicts. Focused fixtures first
+reproduced both defects and cover each binding predicate, invalid points, multiple
+failures, and absent/blank raw country-name fallbacks.
+
+This is a read-only diagnostic repair. Original packets and human judgments are
+preserved; re-export into a new directory after integration to get corrected locators.
+Ingestion and its monitoring remain complete/paused for human location review. No
+runtime, source, prompt, schema, data or trust-policy change is part of this repair.
+
 Sampling and rendering must agree about reverse evidence binding. Only resolved
 geocodes tied to the build's normalization and the saved valid query point can
 occupy risk or baseline slots. Unbound evidence remains in the no-bound-reverse

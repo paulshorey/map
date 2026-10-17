@@ -234,7 +234,14 @@ export function makeReviewCase(row: LocationReviewRow): ReviewCase {
       [],
       geo.normalization_id,
     );
-    for (const key of ["lat", "lng", "precision", "provider", "query_norm"])
+    for (const key of [
+      "lat",
+      "lng",
+      "precision",
+      "provider",
+      "query_norm",
+      "status",
+    ])
       add(
         `geocode.${key}`,
         "geocode",
@@ -271,21 +278,29 @@ export function makeReviewCase(row: LocationReviewRow): ReviewCase {
         reverse[key],
       );
   }
+  const failedBindingFields = [
+    ...(geo.normalization_id !== row.normalization_id
+      ? ["geocode.artifact_normalization_id"]
+      : []),
+    ...(validation.normalization_id !== row.normalization_id
+      ? ["geocode.normalization_id"]
+      : []),
+    ...(distance(geo, object(validation.point)) !== 0
+      ? ["geocode.lat", "geocode.lng", "geocode.point"]
+      : []),
+    ...(geo.status !== "resolved" ? ["geocode.status"] : []),
+  ];
   const reverseComparable =
     !!row.geocode_id &&
     !!text(reverse.country_code) &&
-    geo.normalization_id === row.normalization_id &&
-    validation.normalization_id === row.normalization_id &&
-    distance(geo, object(validation.point)) === 0 &&
-    geo.status === "resolved";
-  if (!text(reverse.country_code))
+    failedBindingFields.length === 0;
+  if (!row.geocode_id || !text(reverse.country_code))
     note("reverse_not_available", "coverage", "canonical.lat", "canonical.lng");
   else if (!reverseComparable)
     note(
       "reverse_lineage_or_point_unbound",
       "coverage",
-      "geocode.point",
-      "geocode.normalization_id",
+      ...failedBindingFields,
     );
   const value = (id: string) => fields[id]?.value;
   const listed: Record<string, string | null> = {};
@@ -294,17 +309,17 @@ export function makeReviewCase(row: LocationReviewRow): ReviewCase {
     listed[key] =
       text(value(`listed.${key}`)) ?? text(value(`captured.${key}`));
   }
-  listed.country ??= text(at(row.captured, ["attributes", "country_name"]));
+  listed.country ??= text(value("captured.country_name"));
+  const countryNameField = text(value("listed.country"))
+    ? "listed.country"
+    : "captured.country_name";
   if (listed.country && !countryToCode(listed.country))
-    note("listed_country_not_recognized", "difference", "listed.country");
+    note("listed_country_not_recognized", "difference", countryNameField);
   const lc =
     countryToCode(listed.country_code) ?? countryToCode(listed.country);
   const countryCodeField = text(value("listed.country_code"))
     ? "listed.country_code"
     : "captured.country_code";
-  const countryNameField = text(value("listed.country"))
-    ? "listed.country"
-    : "captured.country_name";
   const rawCountryField = countryToCode(listed.country_code)
     ? countryCodeField
     : countryNameField;

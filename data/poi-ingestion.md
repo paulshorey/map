@@ -963,6 +963,14 @@ field and scope. They reject stale evidence/unknown fields/duplicate judgments, 
 dated decisions, and never change precedence or write a repair. See the
 [review workflow](../working/location-review-workflow.md) for human review and follow-up.
 
+Unbound reverse findings identify the failed binding fields: artifact normalization,
+saved validation normalization, status, or the artifact/saved query-point comparison.
+`geocode.status` includes its physical table/row/column locator. Country-name findings
+likewise cite the raw field or captured country-name fallback that supplied the value.
+Existing packets and decisions remain immutable; after integrating a diagnostic fix,
+export into a new directory to obtain corrected evidence references. Keep prior human
+judgments with their original packet ID and evidence hash.
+
 Run `pnpm --filter @lib/db-map ingest:test-location-review` for the offline tests.
 To include the SQL sampling regression, set `LOCATION_REVIEW_TEST_DATABASE_URL` to
 an isolated PostgreSQL database named `map_location_review_test` on `127.0.0.1` or
