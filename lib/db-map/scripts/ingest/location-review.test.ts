@@ -171,6 +171,116 @@ test("an artifact belonging to another normalization cannot certify the point", 
     "normalization_id",
   );
 });
+test("unbound reverse findings identify each failed binding predicate", async (t) => {
+  const scenarios: Array<{
+    name: string;
+    change: (r: LocationReviewRow) => void;
+    fields: string[];
+  }> = [
+    {
+      name: "artifact normalization",
+      change: (r) => {
+        r.geocode!.normalization_id = "other-artifact";
+      },
+      fields: ["geocode.artifact_normalization_id"],
+    },
+    {
+      name: "validation normalization",
+      change: (r) => {
+        (r.geocode!.validation as any).normalization_id = "other-validation";
+      },
+      fields: ["geocode.normalization_id"],
+    },
+    {
+      name: "unresolved artifact status",
+      change: (r) => {
+        r.geocode!.status = "rejected";
+      },
+      fields: ["geocode.status"],
+    },
+    {
+      name: "different saved query point",
+      change: (r) => {
+        (r.geocode!.validation as any).point = { lat: 47, lng: 8 };
+      },
+      fields: ["geocode.lat", "geocode.lng", "geocode.point"],
+    },
+    {
+      name: "invalid artifact point",
+      change: (r) => {
+        r.geocode!.lat = null;
+      },
+      fields: ["geocode.lat", "geocode.lng", "geocode.point"],
+    },
+    {
+      name: "multiple failed predicates",
+      change: (r) => {
+        r.geocode!.normalization_id = "other-artifact";
+        r.geocode!.status = "miss";
+      },
+      fields: ["geocode.artifact_normalization_id", "geocode.status"],
+    },
+  ];
+  for (const scenario of scenarios)
+    await t.test(scenario.name, () => {
+      const r = row();
+      scenario.change(r);
+      const p = packet(r),
+        c = p.cases[0]!;
+      const finding = c.findings.find(
+        (f) => f.code === "reverse_lineage_or_point_unbound",
+      );
+      assert.equal(c.reverse_comparable, false);
+      assert.deepEqual(finding?.fields, scenario.fields);
+      assert.ok(finding!.fields.every((id) => Object.hasOwn(c.fields, id)));
+      assert.ok(
+        !c.findings.some((f) => f.code === "listed_country_vs_reverse"),
+      );
+      const rendered = renderPacket(p);
+      for (const id of scenario.fields) assert.ok(rendered.includes(id));
+      if (scenario.name === "artifact normalization") {
+        assert.equal(
+          c.fields["geocode.artifact_normalization_id"]!.value,
+          "other-artifact",
+        );
+        assert.equal(c.fields["geocode.normalization_id"]!.value, "norm");
+      }
+      if (scenario.name === "unresolved artifact status")
+        assert.deepEqual(c.fields["geocode.status"], {
+          stage: "geocode",
+          table: "research_poi_geocodes",
+          row_id: "geo",
+          column: "status",
+          path: [],
+          value: "rejected",
+        });
+    });
+});
+test("unrecognized country findings cite the raw or captured field that supplied the name", () => {
+  for (const rawCountry of ["Atlantis", "", undefined]) {
+    const r = row();
+    r.raw.venue = rawCountry === undefined ? {} : { country: rawCountry };
+    r.captured.attributes = { country_name: "Atlantis" };
+    const p = packet(r),
+      c = p.cases[0]!;
+    const id = rawCountry ? "listed.country" : "captured.country_name";
+    assert.equal(c.listed.country, "Atlantis");
+    assert.deepEqual(
+      c.findings.find((f) => f.code === "listed_country_not_recognized")
+        ?.fields,
+      [id],
+    );
+    assert.equal(c.fields[id]!.value, "Atlantis");
+    assert.equal(c.fields[id]!.table, "research_poi_observations");
+    assert.equal(c.fields[id]!.row_id, "obs");
+    assert.equal(c.fields[id]!.column, rawCountry ? "raw" : "captured");
+    assert.deepEqual(
+      c.fields[id]!.path,
+      rawCountry ? ["venue", "country"] : ["attributes", "country_name"],
+    );
+    assert.ok(renderPacket(p).includes(id));
+  }
+});
 test("country disagreements identify the captured fallback fields that supplied the values", () => {
   for (const rawCountry of [true, false]) {
     const r = row();
