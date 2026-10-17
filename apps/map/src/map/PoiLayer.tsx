@@ -47,7 +47,7 @@ export function PoiLayer({ bbox, zoom, category }: Props) {
       clusterRadius={20}
       clusterMaxZoom={10}
       clusterMinPoints={3}
-      promoteId="id"
+      promoteId="marker_id"
     >
       <Layer
         id="clusters"

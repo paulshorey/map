@@ -13,6 +13,7 @@ import type { Extractor } from "../types.js";
 import { streamRecords } from "../io.js";
 import { synthSourceRecordId } from "../hash.js";
 import { str, num } from "./utils.js";
+import { capturedPoints } from "../../../lib/ingestion/location-points.js";
 
 export interface GenericIdentityOptions {
   sourceSlug: string;
@@ -148,8 +149,17 @@ export function mapGenericRecord(
 
   const sourceUrl = str(r.source_url) ?? str(r.detail_url) ?? str(r.url);
   const name = str(r.name) ?? str(r.title);
-  const lat = num(r.lat ?? r.latitude);
-  const lng = num(r.lng ?? r.lon ?? r.longitude);
+  // A conformant multi-location capture may omit the legacy top-level point.
+  const first = capturedPoints(
+    r.locations ??
+      (r.attributes as Record<string, unknown> | undefined)?.locations,
+  )[0];
+  const suppliedLat = num(r.lat ?? r.latitude),
+    suppliedLng = num(r.lng ?? r.lon ?? r.longitude);
+  const useExplicit =
+    (suppliedLat === undefined || suppliedLng === undefined) && first;
+  const lat = useExplicit ? first.lat : suppliedLat;
+  const lng = useExplicit ? first.lng : suppliedLng;
   const identity = identityFor(r, sourceUrl, name, lat, lng, options);
 
   let countryCode = str(r.country_code);

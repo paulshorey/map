@@ -1,4 +1,5 @@
 import type { Pool } from "pg";
+import { mapLocationsSql } from "./map-locations";
 
 export interface NewPoi {
   name: string;
@@ -140,6 +141,11 @@ export interface ListPoisInBboxParams {
 // falls back to the junction lateral if it is not set.
 const FEATURE_PROPERTIES = `jsonb_build_object(
   'id', p.id,
+  'marker_id', p.id::text || ':' || loc.location_index::text,
+  'location_index', loc.location_index,
+  'location_role', loc.location->>'role',
+  'location_origin', loc.location->>'origin',
+  'location_precision', loc.location->>'precision',
   'name', p.name,
   'category', COALESCE(pcat.display_name, (
     SELECT c.display_name FROM canonical_poi_categories pc
@@ -182,56 +188,40 @@ export async function listPoisGeoJson(
   const from = params.from ?? null;
   const to = params.to ?? null;
 
-  if (isWorldView) {
-    const { rows } = await db.query(
-      `
-      SELECT jsonb_build_object(
-        'type', 'FeatureCollection',
-        'features', COALESCE(jsonb_agg(feature), '[]'::jsonb)
-      ) AS geojson
-      FROM (
-        SELECT jsonb_build_object(
-          'type', 'Feature',
-          'id', p.id,
-          'geometry', jsonb_build_object('type','Point','coordinates', jsonb_build_array(p.lng, p.lat)),
-          'properties', ${FEATURE_PROPERTIES}
-        ) AS feature
-        FROM canonical_pois p
-        LEFT JOIN canonical_categories pcat ON pcat.id = p.primary_category_id
-        WHERE p.status = 'published'
-          AND ${CATEGORY_FILTER("$1")}
-          AND ${DATE_FILTER("$3", "$4")}
-        LIMIT $2
-      ) sub`,
-      [category, limit, from, to],
-    );
-    return rows[0]?.geojson ?? { type: "FeatureCollection", features: [] };
-  }
-
+  const inBbox = `(loc.location->>'lng')::float8 >= $1 AND (loc.location->>'lat')::float8 >= $2
+    AND (loc.location->>'lng')::float8 <= $3 AND (loc.location->>'lat')::float8 <= $4`;
+  // Limit entities before expanding markers: both locations share one detail record.
+  // Secondary-only viewport matches must admit the entity even when the primary is elsewhere.
   const { rows } = await db.query(
     `
-    SELECT jsonb_build_object(
-      'type', 'FeatureCollection',
-      'features', COALESCE(jsonb_agg(feature), '[]'::jsonb)
-    ) AS geojson
-    FROM (
-      SELECT jsonb_build_object(
-        'type', 'Feature',
-        'id', p.id,
-        'geometry', jsonb_build_object('type','Point','coordinates', jsonb_build_array(p.lng, p.lat)),
-        'properties', ${FEATURE_PROPERTIES}
-      ) AS feature
-      FROM canonical_pois p
-      LEFT JOIN canonical_categories pcat ON pcat.id = p.primary_category_id
-      WHERE p.status = 'published'
-        AND p.lng >= $1 AND p.lat >= $2 AND p.lng <= $3 AND p.lat <= $4
+    WITH selected AS (
+      SELECT p.* FROM canonical_pois p
+      WHERE p.status='published'
         AND ${CATEGORY_FILTER("$5")}
         AND ${DATE_FILTER("$7", "$8")}
+        AND ($9::boolean OR EXISTS (
+          SELECT 1 FROM jsonb_array_elements(${mapLocationsSql()}) AS loc(location)
+          WHERE ${inBbox}
+        ))
+      ORDER BY p.popularity DESC,p.id
       LIMIT $6
-    ) sub`,
-    [west, south, east, north, category, limit, from, to],
+    )
+    SELECT jsonb_build_object('type','FeatureCollection',
+      'features',COALESCE(jsonb_agg(feature ORDER BY poi_id,location_index),'[]'::jsonb)) AS geojson
+    FROM (
+      SELECT p.id AS poi_id,loc.location_index,jsonb_build_object(
+        'type','Feature','id',p.id::text || ':' || loc.location_index::text,
+        'geometry',jsonb_build_object('type','Point','coordinates',
+          jsonb_build_array((loc.location->>'lng')::float8,(loc.location->>'lat')::float8)),
+        'properties',${FEATURE_PROPERTIES}
+      ) AS feature
+      FROM selected p
+      LEFT JOIN canonical_categories pcat ON pcat.id=p.primary_category_id
+      CROSS JOIN LATERAL jsonb_array_elements(${mapLocationsSql()}) WITH ORDINALITY AS loc(location,location_index)
+      WHERE $9::boolean OR (${inBbox})
+    ) markers`,
+    [west, south, east, north, category, limit, from, to, isWorldView],
   );
-
   return rows[0]?.geojson ?? { type: "FeatureCollection", features: [] };
 }
 
@@ -251,6 +241,7 @@ export async function getPoiById(db: Pool, id: string) {
     `SELECT
         p.id, p.name, p.description, p.address, p.website, p.hours, p.phone, p.photo_url,
         p.lng, p.lat, p.attributes, p.popularity,
+        ${mapLocationsSql()} AS locations,
         p.starts_at, p.ends_at, p.date_precision,
         CASE
           WHEN p.starts_at IS NULL THEN NULL

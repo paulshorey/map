@@ -21,6 +21,13 @@ export interface GeocodeHit {
   /** Coarse precision so the matcher can down-weight centroids (overview §14.6). */
   precision: "point" | "city" | "region";
   provider: string;
+  label?: string | null;
+  attribution?: string | null;
+  country_code?: string | null;
+  city?: string | null;
+  region?: string | null;
+  provider_class?: string | null;
+  provider_type?: string | null;
 }
 
 interface LocationIqRow {
@@ -29,6 +36,8 @@ interface LocationIqRow {
   class?: string;
   type?: string;
   display_name?: string;
+  licence?: string;
+  address?: Record<string, unknown>;
 }
 
 const BASE_URL = "https://us1.locationiq.com/v1/search";
@@ -37,8 +46,7 @@ const PROVIDER = "locationiq";
 function precisionFrom(row: LocationIqRow): GeocodeHit["precision"] {
   const type = (row.type ?? "").toLowerCase();
   const cls = (row.class ?? "").toLowerCase();
-  if (type === "country" || type === "state" || cls === "boundary")
-    return "region";
+  if (type === "country" || type === "state") return "region";
   if (
     [
       "city",
@@ -52,6 +60,7 @@ function precisionFrom(row: LocationIqRow): GeocodeHit["precision"] {
   ) {
     return "city";
   }
+  if (cls === "boundary") return "region";
   return "point";
 }
 
@@ -62,7 +71,10 @@ export class GeocodeError extends LlmError {}
  * (a remembered miss). Throws GeocodeError for transient/unexpected failures so
  * the caller can stop rather than cache a false miss.
  */
-export async function geocode(query: string): Promise<GeocodeHit | null> {
+export async function geocode(
+  query: string,
+  countryCode?: string | null,
+): Promise<GeocodeHit | null> {
   const key = ingestConfig.geocoder.apiKey();
   const call = await beginProviderCall(PROVIDER, "geocode", null),
     queued = Date.now();
@@ -82,18 +94,25 @@ export async function geocode(query: string): Promise<GeocodeHit | null> {
     started = Date.now();
     let res: Response;
     try {
+      const params = new URLSearchParams({
+        key,
+        q: query,
+        format: "json",
+        limit: "1",
+        normalizeaddress: "1",
+        addressdetails: "1",
+      });
+      const country = countryToCode(countryCode);
+      if (country) params.set("countrycodes", country.toLowerCase());
       providerRequestStarted(call);
-      res = await fetch(
-        `${BASE_URL}?key=${encodeURIComponent(key)}&q=${encodeURIComponent(query)}&format=json&limit=1&normalizeaddress=1`,
-        {
-          signal: ctx
-            ? AbortSignal.any([
-                AbortSignal.timeout(60000),
-                ctx.execution.abortController.signal,
-              ])
-            : AbortSignal.timeout(60000),
-        },
-      );
+      res = await fetch(`${BASE_URL}?${params}`, {
+        signal: ctx
+          ? AbortSignal.any([
+              AbortSignal.timeout(60000),
+              ctx.execution.abortController.signal,
+            ])
+          : AbortSignal.timeout(60000),
+      });
     } catch (error) {
       if (ctx?.execution.abortController.signal.aborted)
         throw ctx.execution.abortController.signal.reason;
@@ -122,13 +141,31 @@ export async function geocode(query: string): Promise<GeocodeHit | null> {
         const lat = Number(row.lat),
           lng = Number(row.lon);
         if (
+          row.lat === null ||
+          row.lat === "" ||
+          row.lon === null ||
+          row.lon === "" ||
+          (lat === 0 && lng === 0) ||
           !Number.isFinite(lat) ||
           !Number.isFinite(lng) ||
           Math.abs(lat) > 90 ||
           Math.abs(lng) > 180
         )
           throw new GeocodeError("Invalid geocoder coordinates");
-        hit = { lat, lng, precision: precisionFrom(row), provider: PROVIDER };
+        hit = {
+          lat,
+          lng,
+          precision: precisionFrom(row),
+          provider: PROVIDER,
+          label: textValue(row.display_name),
+          attribution: textValue(row.licence),
+          country_code:
+            countryToCode(textValue(row.address?.country_code)) ?? null,
+          city: textValue(row.address?.city) ?? textValue(row.address?.town),
+          region: textValue(row.address?.state),
+          provider_class: textValue(row.class),
+          provider_type: textValue(row.type),
+        };
       }
     }
     await endProviderCall(call, {

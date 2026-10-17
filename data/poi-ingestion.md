@@ -881,6 +881,42 @@ and the shared geocode cache remain. Cleanup does **not** filter by category; it
 
 ## Standardized location enrichment
 
+For future processing, the geocode stage resolves original captured address/locality
+even when a source point exists. It retains **one or two map locations per canonical**:
+the existing selected point, then an explicit second source point (launch/landing/
+entrance) or an independently forward-geocoded listed location. Exact duplicate
+pairs collapse. Disagreement, distance and near-duplicates are retained without
+averaging or hiding both markers; they are evidence for a later human review policy.
+An address-only record can obtain its primary point through the same lookup. A
+record without any resolved valid point remains unpublished.
+
+Forward queries use immutable captured text and source location hints, never fields
+derived from reverse lookup or model coordinate proposals. Supplied addresses take
+precedence over combined venue names in lookup queries; a recognized listed country
+constrains the search. Forward hits and misses
+are cached in a versioned namespace. One provider budget covers forward and reverse;
+if it expires between calls, no partial geocode artifact activates and resume reuses
+the cached lookup. A forward miss preserves a usable source point. API failures keep
+the existing recovery/stop rules. Additional lookups add geocoder traffic, not LLM calls.
+
+The `location-v2` / `locationiq-location-v3` geocode artifact and `listed-location-v1`
+query policy preserve `validation.listed`,
+`forward` (query, state, complete parsed hit), `reverse`, and `locations`. Canonical
+builder `canonical-build-v3` writes one/two `attributes.map_locations`, each with
+precision, role, derivation, query and source/research/normalization/geocode IDs.
+The existing canonical lat/lng remains the primary coordinate; immutable build inputs
+pin both locations' provenance. Raw `attributes.map_locations` cannot publish markers.
+JSONB storage already supports this, so no schema migration or completed-cohort
+backfill is performed. Old builds fall back to their single stored point.
+
+The map API emits individual Point features with unique `marker_id` values and the
+same POI `id`. Each point is filtered by viewport, including secondary-only matches;
+the entity limit is applied before marker expansion (up to twice as many markers).
+Both markers open the same detail and highlight together. Details list both origins,
+queries and precision. Locality centroids are approximate discovery markers; neither
+the provider's `point` precision nor two agreeing points prove entrance accuracy.
+Cluster counts count markers, not distinct POIs. Existing category/date filters remain.
+
 The managed geocode stage also fills missing administrative/address fields for valid points.
 Source addresses/locality win; country values use the pinned ISO country dataset. Reverse
 LocationIQ fields are approximate, cached by exact point and policy version, and never move
