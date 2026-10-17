@@ -15,7 +15,7 @@ export const PIPELINE_VERSIONS = {
   geocode: "locationiq-location-v3",
   embedding: "jina-match-v1",
   matcher: "matcher-v1",
-  canonicalBuilder: "canonical-build-v3",
+  canonicalBuilder: "canonical-build-v4",
 } as const;
 
 /** Only reviewed checkpoint versions; older proofs also require a fresh full-run audit in inventory. */
@@ -41,6 +41,19 @@ export function compatibleCheckpointVersions(): Record<string, string>[] {
       normalizer: "hybrid-v5",
       prompt: "poi-normalize-v4",
     },
+    // The provenance repair changes canonical output only. Resume preserves paid
+    // artifacts, but checkpoint/reuse predicates require a current builder.
+    ...[
+      ["hybrid-v3", "poi-normalize-v2"],
+      ["hybrid-v4", "poi-normalize-v3"],
+      ["hybrid-v5", "poi-normalize-v4"],
+      ["hybrid-v6", "poi-normalize-v4"],
+    ].map(([normalizer, prompt]) => ({
+      ...PIPELINE_VERSIONS,
+      normalizer: normalizer!,
+      prompt: prompt!,
+      canonicalBuilder: "canonical-build-v3",
+    })),
     // Historical coordinate-only proofs remain structural evidence. Location audit is separate;
     // a deliberate resume rechecks the exact location binding in seedTasks.
     ...[

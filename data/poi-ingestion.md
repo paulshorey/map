@@ -1012,3 +1012,23 @@ To include the SQL sampling regression, set `LOCATION_REVIEW_TEST_DATABASE_URL` 
 an isolated PostgreSQL database named `map_location_review_test` on `127.0.0.1` or
 `localhost`. It uses only session-local temporary fixture tables. With that
 variable unset, the SQL test is explicitly skipped; no shared database is used.
+
+### Canonical origin repair and resume
+
+`canonical-build-v4` preserves legacy coordinate provenance. Deploying it does not
+rewrite historical data. On an explicitly selected new run or compatible resume,
+completed downstream tasks and batch/attempt caches reject older builders. The
+match stage rebuilds the existing canonical from its active members when its build
+is stale; it retains memberships and does not repeat match adjudication. Current
+normalization, geocodes and embeddings remain reusable. Canonical/verify tasks then
+record the new build, and a second resume reuses it. Existing location-version
+upgrades still follow their own readiness rules. Use the normal managed scope and
+maintenance procedure for any deliberate repair; this is not a background backfill.
+
+Validation: `MAP_CANONICAL_TEST_URL` may explicitly select a disposable loopback
+PostgreSQL database named `map_canonical_cache_test` for
+`pnpm --filter @lib/db-map ingest:test-canonical-cache`. The test creates temporary
+tables only, refuses other hosts/database names and ignores `DB_MAP_URL`; without
+that dedicated variable the SQL test is skipped. It exercises stale task/checkpoint
+and batch-reuse rejection, retained geocode/embedding checkpoints, and reuse after
+a fixture builder refresh. It does not execute a live repair or assert provider quality.
