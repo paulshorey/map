@@ -879,7 +879,6 @@ stored observation under it, reporting coalesced input counts. Shared source-fil
 and the shared geocode cache remain. Cleanup does **not** filter by category; its compatibility
 `--category` argument is ignored. Do not use it expecting a category-only deletion.
 
-
 ## Standardized location enrichment
 
 The managed geocode stage also fills missing administrative/address fields for valid points.
@@ -911,3 +910,61 @@ echoed into a scalar response; the actual curated packet participates in cache i
 Use `pnpm --silent --filter @lib/db-map ingest:location-audit --json` for a read-only current
 completeness/conflict/inference audit. See [location rollout](../working/location-standardization.md)
 for the baseline findings, field contract, limitations and staged historical repair plan.
+
+### Reviewing location evidence on completed records
+
+`ingest:location-review` is a separate read-only diagnostic. It neither repairs data nor
+imports the ingestion worker/provider clients, and can run while an import is healthy.
+Export defaults to **40 current published canonical-build/source-member pairs**, capped at
+100, with a repeatable seed and optional source/run filters. A source/record must have a
+successful record-verification checkpoint in a succeeded, verified run. The packet states
+whether that checkpoint binds the current normalization, observation, or record identity
+only; a newer build is not claimed to have been verified by an older checkpoint. Manual
+canonicals without managed completion evidence are outside this sample.
+
+From `lib/db-map` (or through `pnpm --filter @lib/db-map`):
+
+```sh
+pnpm ingest:location-review export --limit 40 --seed first-location-review \
+  --out .ingest-jobs/location-review-first
+# Optional narrower scope: --source jambase --run <completed-run-uuid>
+
+# Copy decisions.template.json to a dated file, enter field judgments, then:
+pnpm ingest:location-review summarize \
+  --packet .ingest-jobs/location-review-first/packet.json \
+  --decisions .ingest-jobs/location-review-first/decisions.YYYYMMDD.json \
+  --out .ingest-jobs/location-review-first-summary
+```
+
+The single repeatable-read database snapshot has a 10-second statement timeout, 1-second
+lock timeout, and no provider calls or database writes. Each output directory must be new.
+`review.md` lists candidate inconsistencies and comparison/coverage cases: event/edition,
+listed country, listed address/locality, and stored reverse address. `field-lineage.md` and
+`packet.json` add context, raw/captured/normalized/canonical values, exact artifact IDs,
+physical tables/columns/JSON paths, point binding, canonical field provenance and hashes.
+Missing bound reverse evidence stays unassessed. No extra lookup is silently performed.
+
+Selection alternates source/stratum slots across prioritized risk cases, baseline cases,
+and records with no bound reverse evidence. It surfaces existing country/region/distance
+warnings and city differences only when the resolved geocode and saved reverse point
+bind the build's normalization and valid coordinates. Stale, rejected, missing or
+otherwise unbound evidence enters the no-bound-reverse group with no risk priority.
+Baseline cases can reveal new address or extraction
+differences. Country disagreement, lexical city/address differences, and missing evidence
+are distinct findings, not adjudicated errors. This diagnostic sample is deliberately
+biased toward useful cases; its counts must not be presented as population error rates.
+
+Field judgments bind packet ID, case ID and the saved evidence hash. Use `correct`,
+`incorrect`, `uncertain` or `not_applicable`; record a note or evidence URL for positive
+correct/incorrect judgments. Review scope is `event_location`, or `coordinate_lookup`
+for a reverse field. A reverse result can be right for the query point and wrong for
+the event. Offline summaries group judgments by source, sampling stratum, step, physical
+field and scope. They reject stale evidence/unknown fields/duplicate judgments, preserve
+dated decisions, and never change precedence or write a repair. See the
+[review workflow](../working/location-review-workflow.md) for human review and follow-up.
+
+Run `pnpm --filter @lib/db-map ingest:test-location-review` for the offline tests.
+To include the SQL sampling regression, set `LOCATION_REVIEW_TEST_DATABASE_URL` to
+an isolated PostgreSQL database named `map_location_review_test` on `127.0.0.1` or
+`localhost`. It uses only session-local temporary fixture tables. With that
+variable unset, the SQL test is explicitly skipped; no shared database is used.
