@@ -4,12 +4,12 @@ Interactive MapLibre map — basemap, clustered POI overlay, click-to-detail dra
 
 ## Files
 
-| File | Role |
-| --- | --- |
-| `MapView.tsx` | Main map component — controls, layers, click handling, viewport persistence |
-| `PoiLayer.tsx` | GeoJSON source with clustering; fetches POIs for current bbox |
-| `PoiDrawer.tsx` | Right-side panel showing selected POI details |
-| `usePoiSelection.ts` | Selected POI state, detail fetch, MapLibre feature-state highlight |
+| File                 | Role                                                                        |
+| -------------------- | --------------------------------------------------------------------------- |
+| `MapView.tsx`        | Main map component — controls, layers, click handling, viewport persistence |
+| `PoiLayer.tsx`       | GeoJSON source with clustering; fetches POIs for current bbox               |
+| `PoiDrawer.tsx`      | Right-side panel showing selected POI details                               |
+| `usePoiSelection.ts` | Selected POI state, detail fetch, MapLibre feature-state highlight          |
 
 ## Stack
 
@@ -27,6 +27,12 @@ Interactive MapLibre map — basemap, clustered POI overlay, click-to-detail dra
 ## MapLibre layers
 
 Source id: `pois`. Interactive layers: `clusters`, `poi-points`. Feature state `selected` drives opacity on the active point.
+
+Each POI has one or two Point features. `properties.id` is the shared detail/POI ID;
+`properties.marker_id` (`<POI>:1` / `<POI>:2`) is the unique promoted feature-state ID.
+Never use the shared POI ID as a feature ID. Both locations open the same drawer;
+the API filters each location by viewport. Entity limits expand to up to two markers,
+and cluster counts are marker counts. Details retain origin/role/precision for both.
 
 ## Quirks
 

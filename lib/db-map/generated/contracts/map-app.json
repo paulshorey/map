@@ -10,6 +10,41 @@
           "nullable": false
         },
         {
+          "name": "marker_id",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "location_index",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "location_role",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "location_origin",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "location_precision",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
           "name": "name",
           "optional": false,
           "kind": "scalar",
@@ -53,6 +88,59 @@
         },
         {
           "name": "date_precision",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        }
+      ]
+    },
+    "PoiLocationRecord": {
+      "fields": [
+        {
+          "name": "lat",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "lng",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "origin",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "role",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "precision",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "label",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "query",
           "optional": false,
           "kind": "scalar",
           "type": "string",
@@ -206,6 +294,16 @@
           "optional": false,
           "kind": "model",
           "type": "unknown",
+          "nullable": false
+        },
+        {
+          "name": "locations",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "model",
+            "type": "PoiLocationRecord"
+          },
           "nullable": false
         }
       ]

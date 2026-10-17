@@ -1,5 +1,10 @@
 export interface PoiFeatureProperties {
   id: string;
+  marker_id: string;
+  location_index: number;
+  location_role: string | null;
+  location_origin: string | null;
+  location_precision: string | null;
   name: string;
   category: string | null;
   photo_url: string | null;
@@ -7,6 +12,16 @@ export interface PoiFeatureProperties {
   starts_at: string | null;
   ends_at: string | null;
   date_precision: string | null;
+}
+
+export interface PoiLocationRecord {
+  lat: number;
+  lng: number;
+  origin: string;
+  role: string;
+  precision: string;
+  label: string | null;
+  query: string | null;
 }
 
 export interface PoiDetailRecord {
@@ -30,6 +45,7 @@ export interface PoiDetailRecord {
   lng: number;
   lat: number;
   geometry: unknown;
+  locations: Array<PoiLocationRecord>;
 }
 
 export interface UserPreferencesRecord {

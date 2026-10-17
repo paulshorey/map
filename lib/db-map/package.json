@@ -79,6 +79,8 @@
     "ingest:location-review": "tsx scripts/ingest/location-review.ts",
     "ingest:test-location-review": "tsx --test scripts/ingest/location-review.test.ts",
     "ingest:test-location": "tsx --test scripts/ingest/location.test.ts scripts/ingest/location-resume.test.ts scripts/ingest/extractors/thatfestivalsite.test.ts",
+    "ingest:test-two-locations": "tsx --test scripts/ingest/two-locations.test.ts",
+    "ingest:test-two-locations:integration": "tsx scripts/ingest/two-locations.integration.ts",
     "ingest:test-observation-mapping:integration": "tsx scripts/ingest/observation-mapping.integration.ts",
     "ingest:test-location:integration": "tsx scripts/ingest/location.integration.ts"
   },

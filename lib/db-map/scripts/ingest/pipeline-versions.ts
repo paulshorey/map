@@ -12,10 +12,10 @@ export const PIPELINE_VERSIONS = {
   prompt: PROMPT_VERSION,
   schema: SCHEMA_VERSION,
   examples: EXAMPLES_VERSION,
-  geocode: "locationiq-location-v2",
+  geocode: "locationiq-location-v3",
   embedding: "jina-match-v1",
   matcher: "matcher-v1",
-  canonicalBuilder: "canonical-build-v2",
+  canonicalBuilder: "canonical-build-v3",
 } as const;
 
 /** Only reviewed checkpoint versions; older proofs also require a fresh full-run audit in inventory. */
@@ -54,6 +54,20 @@ export function compatibleCheckpointVersions(): Record<string, string>[] {
       prompt: prompt!,
       geocode: "locationiq-v1",
       canonicalBuilder: "canonical-build-v1",
+    })),
+    // Existing single-location imports stay valid. A deliberate new run/resume can
+    // collect two locations; deploying the code does not rewrite old builds.
+    ...[
+      ["hybrid-v3", "poi-normalize-v2"],
+      ["hybrid-v4", "poi-normalize-v3"],
+      ["hybrid-v5", "poi-normalize-v4"],
+      ["hybrid-v6", "poi-normalize-v4"],
+    ].map(([normalizer, prompt]) => ({
+      ...PIPELINE_VERSIONS,
+      normalizer: normalizer!,
+      prompt: prompt!,
+      geocode: "locationiq-location-v2",
+      canonicalBuilder: "canonical-build-v2",
     })),
   ];
 }

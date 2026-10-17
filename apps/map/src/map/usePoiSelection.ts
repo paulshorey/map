@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect, type RefObject } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import type { MapRef } from 'react-map-gl/maplibre';
-import { apiUrl } from '@/lib/config';
+import { useState, useCallback, useEffect, type RefObject } from "react";
+import { useQuery } from "@tanstack/react-query";
+import type { MapRef } from "react-map-gl/maplibre";
+import { apiUrl } from "@/lib/config";
+import type { PoiLocationRecord } from "@lib/db-map/contracts/map-app";
 
 export interface PoiDetail {
   id: string;
@@ -19,16 +20,17 @@ export interface PoiDetail {
   lat?: number;
   lng?: number;
   geometry: GeoJSON.Point;
+  locations?: PoiLocationRecord[];
 }
 
 export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data: selectedPoi, isLoading } = useQuery({
-    queryKey: ['poi-detail', selectedId],
+    queryKey: ["poi-detail", selectedId],
     queryFn: async () => {
       const r = await fetch(apiUrl(`/api/pois/${selectedId}`));
-      if (!r.ok) throw new Error('POI detail fetch failed');
+      if (!r.ok) throw new Error("POI detail fetch failed");
       return r.json() as Promise<PoiDetail>;
     },
     enabled: !!selectedId,
@@ -40,17 +42,22 @@ export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
     if (!map || !selectedId) return;
 
     try {
-      map.setFeatureState(
-        { source: 'pois', id: selectedId },
-        { selected: true },
-      );
+      for (const slot of [1, 2])
+        map.setFeatureState(
+          { source: "pois", id: `${selectedId}:${slot}` },
+          { selected: true },
+        );
     } catch {
       // source may not exist yet
     }
 
     return () => {
       try {
-        map.removeFeatureState({ source: 'pois', id: selectedId });
+        for (const slot of [1, 2])
+          map.removeFeatureState({
+            source: "pois",
+            id: `${selectedId}:${slot}`,
+          });
       } catch {
         // source may have been removed
       }
@@ -58,7 +65,8 @@ export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
   }, [mapRef, selectedId]);
 
   const selectPoi = useCallback((id: string) => {
-    setSelectedId((prev) => (prev === id ? null : id));
+    // Either marker opens the shared record, including when its other marker is selected.
+    setSelectedId(id);
   }, []);
 
   const clearSelection = useCallback(() => {
