@@ -1,5 +1,5 @@
 import { pathToFileURL } from "node:url";
-/** Resolve missing coordinates and enrich administrative fields with versioned provenance.
+/** Collect source and listed-text coordinates plus administrative evidence with versioned provenance.
  * Valid source points never move; supplied addresses win over approximate reverse addresses.
  * Optional misses are cached and reported; transport/auth failures retain provider recovery.
  */
@@ -17,7 +17,9 @@ import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { rebuildCanonicalPoi } from "./merge.js";
 import {
   LOCATION_VERSION,
+  LOCATION_CACHE_VERSION,
   LOCATION_GEOCODER_VERSION,
+  LOCATION_QUERY_VERSION,
   locationReadySql,
   resolveLocation,
   textValue,
@@ -25,6 +27,11 @@ import {
 } from "./location.js";
 import { countryToCode } from "./normalize/country.js";
 import { stableHash } from "./hash.js";
+import {
+  validPoint,
+  type CoordinateEvidence,
+  type MapLocation,
+} from "../../lib/ingestion/location-points.js";
 
 const DEFAULT_GEOCODE_LIMIT = 4500;
 const DEFAULT_THROTTLE_MS = 1000; // LocationIQ free tier: stay comfortably under 2 req/s.
@@ -61,6 +68,8 @@ interface GeoRow {
   country_code: string | null;
   country_name: string | null;
   category_slugs: string[] | null;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 function parseArgs(argv: string[]): CliOptions {
@@ -147,6 +156,54 @@ export function buildQuery(
   return { display, norm };
 }
 
+/** The address candidate must be independent of reverse enrichment and LLM guesses. */
+export function listedQuery(
+  row: GeoRow,
+  captured: Record<string, any>,
+  temporal: Set<string>,
+) {
+  const attrs = captured.attributes ?? {};
+  const hints = attrs.source_location_hints ?? {};
+  const queryRow = {
+    ...row,
+    name: textValue(captured.name),
+    venue:
+      textValue(attrs.venue) ??
+      textValue(attrs.venue_name) ??
+      textValue(hints.venue),
+    address:
+      textValue(captured.address) ??
+      textValue(attrs.venue_address) ??
+      textValue(attrs.street_address) ??
+      textValue(hints.location),
+    city: textValue(captured.city) ?? textValue(hints.city),
+    region: textValue(captured.region) ?? textValue(hints.region),
+    country_code: textValue(captured.country_code),
+    country_name: textValue(attrs.country_name) ?? textValue(hints.country),
+  };
+  if (
+    validPoint(row) &&
+    ![
+      queryRow.venue,
+      queryRow.address,
+      queryRow.city,
+      queryRow.region,
+      queryRow.country_code,
+      queryRow.country_name,
+    ].some(Boolean)
+  )
+    return null;
+  // Multiple venue names can steer free-form lookup to an unrelated business.
+  // A supplied address/locality is the better query when available.
+  return buildQuery(
+    queryRow.address ? { ...queryRow, name: null, venue: null } : queryRow,
+    temporal,
+  );
+}
+
+export const forwardCacheKey = (norm: string, country: string | null) =>
+  `${LOCATION_CACHE_VERSION}:forward:${LOCATION_QUERY_VERSION}:${country ?? "any"}:${norm}`;
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function readCache(
@@ -157,6 +214,7 @@ async function readCache(
       lat: number | null;
       lng: number | null;
       precision: GeocodeHit["precision"] | null;
+      payload?: { hit?: GeocodeHit | null };
     }
   | undefined
 > {
@@ -164,8 +222,9 @@ async function readCache(
     lat: number | null;
     lng: number | null;
     precision: GeocodeHit["precision"] | null;
+    payload?: { hit?: GeocodeHit | null };
   }>(
-    `SELECT lat, lng, precision FROM research_geocode_cache WHERE query_norm = $1`,
+    `SELECT lat, lng, precision, payload FROM research_geocode_cache WHERE query_norm = $1`,
     [norm],
   );
   return rows[0];
@@ -177,11 +236,11 @@ async function writeCache(
   hit: GeocodeHit | null,
 ): Promise<void> {
   await db.query(
-    `INSERT INTO research_geocode_cache (query_norm, lat, lng, precision, provider)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO research_geocode_cache (query_norm, lat, lng, precision, provider, payload)
+     VALUES ($1, $2, $3, $4, $5, $6::jsonb)
      ON CONFLICT (query_norm) DO UPDATE SET
        lat = EXCLUDED.lat, lng = EXCLUDED.lng,
-       precision = EXCLUDED.precision, provider = EXCLUDED.provider,
+       precision = EXCLUDED.precision, provider = EXCLUDED.provider, payload = EXCLUDED.payload,
        fetched_at = now()`,
     [
       norm,
@@ -189,6 +248,7 @@ async function writeCache(
       hit?.lng ?? null,
       hit?.precision ?? null,
       hit?.provider ?? "locationiq",
+      JSON.stringify({ hit }),
     ],
   );
 }
@@ -257,7 +317,7 @@ export async function writeRowCoords(
   await (linked ? canonicalLane.run(activate) : activate());
 }
 
-/** Forward-resolve missing points, then source-first administrative enrichment. */
+/** Collect an independent listed-location candidate, then source-first reverse enrichment. */
 export async function runGeocode(
   db: Pool,
   opts: CliOptions,
@@ -322,42 +382,35 @@ export async function runGeocode(
       lng: number | null = row.lng;
     let coordinateSource = row.coordinate_source,
       coordinatePrecision = row.coordinate_precision;
-    let forwardQueryNorm: string | null = row.geocode_query_norm;
-    if (lat === null || lng === null) {
-      const temporal = new Set<string>(
-        (
-          await db.query(
-            "SELECT slug FROM canonical_categories WHERE is_temporal",
-          )
-        ).rows.map((r) => r.slug),
-      );
-      const q = buildQuery(
-        {
-          ...row,
-          ...source,
-          country_name: attrs.country_name ?? null,
-          venue: textValue(attrs.venue) ?? textValue(attrs.venue_name),
-        },
-        temporal,
-      );
-      if (!q) {
-        stats.noQuery++;
-        continue;
-      }
-      forwardQueryNorm = q.norm;
-      const cached = await readCache(db, q.norm);
-      let forward: GeocodeHit | null;
+    const temporal = new Set<string>(
+      (
+        await db.query(
+          "SELECT slug FROM canonical_categories WHERE is_temporal",
+        )
+      ).rows.map((r) => r.slug),
+    );
+    const q = listedQuery(row, captured, temporal);
+    const forwardCountry =
+      source.country_code ??
+      countryToCode(textValue(attrs.source_location_hints?.country)) ??
+      null;
+    let forward: GeocodeHit | null = null;
+    let forwardQueryNorm: string | null = null;
+    if (q) {
+      // Separate policy namespace; do not reuse historical name/reverse-derived queries.
+      forwardQueryNorm = forwardCacheKey(q.norm, forwardCountry);
+      const cached = await readCache(db, forwardQueryNorm);
       if (cached) {
         stats.cacheHits++;
-        forward =
-          cached.lat !== null && cached.lng !== null
-            ? {
-                lat: cached.lat,
-                lng: cached.lng,
-                precision: cached.precision ?? "point",
-                provider: "locationiq",
-              }
-            : null;
+        forward = validPoint(cached)
+          ? {
+              ...cached.payload?.hit,
+              lat: cached.lat!,
+              lng: cached.lng!,
+              precision: cached.precision ?? "point",
+              provider: "locationiq",
+            }
+          : null;
         if (!forward) stats.knownMisses++;
       } else {
         if (remaining() === 0) {
@@ -369,10 +422,12 @@ export async function runGeocode(
           continue;
         }
         if (opts.throttleMs > 0) await sleep(opts.throttleMs);
-        forward = await geocode(q.display);
+        forward = await geocode(q.display, forwardCountry);
         stats.apiCalls++;
-        await writeCache(db, q.norm, forward);
+        await writeCache(db, forwardQueryNorm, forward);
       }
+    } else stats.noQuery++;
+    if (!validPoint({ lat, lng })) {
       if (!forward) {
         stats.unresolved++;
         continue;
@@ -382,11 +437,34 @@ export async function runGeocode(
       coordinateSource = "geocode";
       coordinatePrecision = forward.precision;
     }
-    if (opts.dryRun) {
-      stats.apiCalls++;
-      continue;
-    }
-    const queryNorm = `${LOCATION_VERSION}:reverse:${lat}:${lng}`;
+    if (opts.dryRun) continue;
+    const coordinateEvidence: CoordinateEvidence = {
+      source_coordinates:
+        validPoint({ lat: row.lat, lng: row.lng }) &&
+        ["source", "url"].includes(row.coordinate_source)
+          ? {
+              lat: row.lat,
+              lng: row.lng,
+              kind: "source",
+              origin: "source_coordinates",
+              precision: row.coordinate_precision ?? "point",
+              label: null,
+              query: null,
+            }
+          : null,
+      inferred_coordinates: forward
+        ? {
+            lat: forward.lat,
+            lng: forward.lng,
+            kind: "inferred",
+            origin: "listed_address_geocode",
+            precision: forward.precision,
+            label: forward.label ?? null,
+            query: q?.display ?? null,
+          }
+        : null,
+    };
+    const queryNorm = `${LOCATION_CACHE_VERSION}:reverse:${lat}:${lng}`;
     let hit: ReverseLocation | null = null;
     if (Object.values(source).some((value) => !value)) {
       const cache = (
@@ -405,7 +483,7 @@ export async function runGeocode(
           break;
         }
         if (opts.throttleMs > 0) await sleep(opts.throttleMs);
-        hit = await reverseGeocode(lat, lng);
+        hit = await reverseGeocode(lat!, lng!);
         stats.apiCalls++;
         await db.query(
           `INSERT INTO research_geocode_cache(query_norm,lat,lng,precision,provider,payload) VALUES($1,$2,$3,'point','locationiq',$4::jsonb)
@@ -418,6 +496,12 @@ export async function runGeocode(
       source,
       hit && coordinatePrecision !== "point" ? { ...hit, address: null } : hit,
     );
+    if (
+      forwardCountry &&
+      forward?.country_code &&
+      forwardCountry !== forward.country_code
+    )
+      resolved.warnings.push("forward_country_conflict");
     if (!hit && Object.values(source).some((value) => !value))
       resolved.warnings.push("reverse_location_incomplete");
     if (Object.values(resolved.fields).some((value) => !value))
@@ -427,6 +511,16 @@ export async function runGeocode(
       normalization_id: row.active_normalization_id,
       point: { lat, lng },
       forward_query_norm: forwardQueryNorm,
+      listed: { ...source, hints: attrs.source_location_hints ?? null },
+      forward: {
+        query_version: LOCATION_QUERY_VERSION,
+        country_filter: forwardCountry,
+        query: q?.display ?? null,
+        query_norm: forwardQueryNorm,
+        state: !q ? "no_query" : forward ? "resolved" : "miss",
+        result: forward,
+      },
+      coordinate_evidence: coordinateEvidence,
       ...resolved,
       reverse: hit,
       lookup_state: hit
@@ -442,6 +536,7 @@ export async function runGeocode(
       coordinate_source: coordinateSource,
       forward_query_norm: forwardQueryNorm,
       version: LOCATION_VERSION,
+      coordinate_evidence: coordinateEvidence,
     });
     await canonicalLane.run(() =>
       artifactTransaction(db, async (client) => {
@@ -505,6 +600,10 @@ export async function runGeocode(
             status: "succeeded",
             geocode_id: artifact.id,
             location_warnings: resolved.warnings,
+            coordinate_kinds: Object.values(coordinateEvidence)
+              .filter(Boolean)
+              .map((p) => p!.kind),
+            forward_lookup_state: metadata.forward.state,
           },
         };
       }),

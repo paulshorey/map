@@ -1,7 +1,9 @@
 /** Shared location policy; the geocode stage owns optional coordinate enrichment. */
 import { countryToCode } from "./normalize/country.js";
-export const LOCATION_VERSION = "location-v1";
-export const LOCATION_GEOCODER_VERSION = "locationiq-location-v2";
+export const LOCATION_VERSION = "location-v3";
+export const LOCATION_GEOCODER_VERSION = "locationiq-location-v4";
+export const LOCATION_CACHE_VERSION = "location-v2";
+export const LOCATION_QUERY_VERSION = "listed-location-v1";
 export interface LocationFields {
   country_code: string | null;
   city: string | null;
@@ -21,8 +23,11 @@ export function locationReadySql(alias = "rp"): string {
   return `(${alias}.attributes->'location_enrichment'->>'version'='${LOCATION_VERSION}'
     AND ${alias}.attributes->'location_enrichment'->>'normalization_id'=${alias}.active_normalization_id::text
     AND ${alias}.attributes->'location_enrichment'->'point'=jsonb_build_object('lat',${alias}.lat,'lng',${alias}.lng)
+    AND ${alias}.attributes->'location_enrichment'->'forward'->>'query_version'='${LOCATION_QUERY_VERSION}'
     AND EXISTS(SELECT 1 FROM research_poi_geocodes lg WHERE lg.id=${alias}.active_geocode_id
-      AND lg.normalization_id=${alias}.active_normalization_id AND lg.provider_version='${LOCATION_GEOCODER_VERSION}'))`;
+      AND lg.normalization_id=${alias}.active_normalization_id AND lg.provider_version='${LOCATION_GEOCODER_VERSION}'
+      AND lg.validation->'coordinate_evidence'=${alias}.attributes->'location_enrichment'->'coordinate_evidence'
+      AND jsonb_typeof(lg.validation->'coordinate_evidence')='object'))`;
 }
 /** Never replace official text, and never apply a conflicting reverse address. */
 export function resolveLocation(

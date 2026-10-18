@@ -25,7 +25,7 @@ export async function auditLocations(db: Pool) {
  count(*) FILTER(WHERE rp.attributes->'location_enrichment'->'warnings' ? 'location_fields_incomplete')::int incomplete_lookups,
  count(*) FILTER(WHERE rp.attributes->'location_enrichment'->'warnings' ? 'coordinate_region_conflict')::int region_conflicts,
  count(*) FILTER(WHERE rp.attributes->'location_enrichment'->'warnings' ? 'reverse_result_too_distant')::int distant_results,
- count(*) FILTER(WHERE rp.attributes->'location_enrichment'->>'version'='location-v1')::int enriched,
+ count(*) FILTER(WHERE rp.attributes->'location_enrichment'->>'version' IN ('location-v1','location-v2','location-v3'))::int enriched,
  count(*) FILTER(WHERE rp.attributes->'location_enrichment'->'provenance'->>'address'='reverse_geocode')::int inferred_addresses
  FROM research_pois rp JOIN research_sources rs ON rs.id=rp.source_id WHERE rp.is_poi AND rp.retired_at IS NULL GROUP BY rs.slug ORDER BY records DESC`)
     ).rows;

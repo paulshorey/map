@@ -3,8 +3,9 @@ import assert from "node:assert/strict";
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { controlState, workerEvidence } from "../../sql/ingestion-control.js";
-import { runGeocode, buildQuery } from "./geocode.js";
+import { runGeocode, listedQuery, forwardCacheKey } from "./geocode.js";
 import { verifyLineage } from "./verify.js";
+import { LOCATION_CACHE_VERSION } from "./location.js";
 const token = process.argv[2];
 if (!token) throw new Error("Owned maintenance token required");
 const db = getDb(),
@@ -40,7 +41,7 @@ try {
     [row.id],
   );
   await client.query("DELETE FROM research_geocode_cache WHERE query_norm=$1", [
-    `location-v1:reverse:${row.lat}:${row.lng}`,
+    `${LOCATION_CACHE_VERSION}:reverse:${row.lat}:${row.lng}`,
   ]);
   process.env.LOCATIONIQ_API_KEY = "fixture";
   globalThis.fetch = async (url) => {
@@ -86,10 +87,27 @@ try {
   } as unknown as Pool;
   const opts = {
     recordId: row.id,
-    geocodeLimit: 1,
+    geocodeLimit: 2,
     throttleMs: 0,
     dryRun: false,
   };
+  // Seed the independent forward lookup; this first assertion exercises reverse only.
+  const capturedInput = (
+    await client.query(
+      "SELECT captured FROM research_poi_observations WHERE id=$1",
+      [row.active_observation_id],
+    )
+  ).rows[0].captured;
+  const forwardQuery = listedQuery(row, capturedInput, new Set(["art_fair"]))!;
+  await client.query(
+    `INSERT INTO research_geocode_cache(query_norm,lat,lng,precision,provider)
+    VALUES($1,$2,$3,'point','locationiq') ON CONFLICT(query_norm) DO UPDATE SET lat=EXCLUDED.lat,lng=EXCLUDED.lng`,
+    [
+      forwardCacheKey(forwardQuery.norm, capturedInput.country_code ?? "IT"),
+      row.lat + 0.001,
+      row.lng,
+    ],
+  );
   const first = await runGeocode(scoped, opts);
   assert.equal(first.apiCalls, 1);
   assert.equal(calls, 1);
@@ -116,6 +134,23 @@ try {
   assert.equal(cp.attributes.city, "Venice");
   assert.equal(cp.address, row.address);
   assert.equal(cp.field_provenance.address.derivation, "source");
+  const evidence = cp.attributes.coordinate_evidence;
+  assert.deepEqual(
+    [evidence.source_coordinates.lat, evidence.source_coordinates.lng],
+    [row.lat, row.lng],
+  );
+  assert.deepEqual(
+    [evidence.inferred_coordinates.lat, evidence.inferred_coordinates.lng],
+    [row.lat + 0.001, row.lng],
+  );
+  assert.equal(
+    evidence.inferred_coordinates.geocode_id,
+    after.active_geocode_id,
+  );
+  assert.equal(
+    evidence.inferred_coordinates.normalization_id,
+    row.active_normalization_id,
+  );
   const second = await runGeocode(scoped, opts);
   assert.equal(second.selected, 0);
   assert.equal(calls, 1);
@@ -127,20 +162,15 @@ try {
       [row.active_observation_id],
     )
   ).rows[0].captured;
-  const q = buildQuery(
-    {
-      ...row,
-      address: captured.address,
-      city: captured.city,
-      region: captured.region,
-      country_name: captured.attributes.country_name,
-      venue: captured.attributes.venue ?? captured.attributes.venue_name,
-    },
-    new Set(["art_fair"]),
-  )!;
+  const q = listedQuery(row, captured, new Set(["art_fair"]))!;
   await client.query(
     "DELETE FROM research_geocode_cache WHERE query_norm=ANY($1::text[])",
-    [[q.norm, `location-v1:reverse:${row.lat}:${row.lng}`]],
+    [
+      [
+        forwardCacheKey(q.norm, captured.country_code ?? "IT"),
+        `${LOCATION_CACHE_VERSION}:reverse:${row.lat}:${row.lng}`,
+      ],
+    ],
   );
   await client.query(
     "UPDATE research_pois SET lat=NULL,lng=NULL,coordinate_source=NULL,active_geocode_id=NULL,attributes=attributes-'location_enrichment' WHERE id=$1",

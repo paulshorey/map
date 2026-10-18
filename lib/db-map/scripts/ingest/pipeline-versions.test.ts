@@ -75,3 +75,27 @@ test("location upgrade preserves historical structural proofs but reruns locatio
     /Pipeline versions changed/,
   );
 });
+
+for (const [normalizer, prompt] of [
+  ["hybrid-v3", "poi-normalize-v2"],
+  ["hybrid-v4", "poi-normalize-v3"],
+  ["hybrid-v5", "poi-normalize-v4"],
+  ["hybrid-v6", "poi-normalize-v4"],
+])
+  test(`canonical origin upgrade accepts reviewed ${normalizer} v3 checkpoint`, () => {
+    const old = {
+      ...PIPELINE_VERSIONS,
+      normalizer,
+      prompt,
+      geocode: "locationiq-location-v3",
+      canonicalBuilder: "canonical-build-v3",
+    };
+    assert.deepEqual(resumePipelineUpgrade(old), {
+      from: old,
+      to: PIPELINE_VERSIONS,
+    });
+    assert.throws(
+      () => resumePipelineUpgrade({ ...old, geocode: "unknown" }),
+      /Pipeline versions changed/,
+    );
+  });

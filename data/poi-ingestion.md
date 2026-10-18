@@ -881,6 +881,55 @@ and the shared geocode cache remain. Cleanup does **not** filter by category; it
 
 ## Standardized location enrichment
 
+Future processing stores a fixed `coordinate_evidence` object with two independently
+nullable fields:
+
+- `source_coordinates`: one validated coordinate pair extracted from the listing
+  (including a source URL coordinate when that is the source's evidence).
+- `inferred_coordinates`: one coordinate pair generated from the original listed
+  country/region/city/address text by forward geocoding.
+
+These are provenance categories, not physical roles or two arbitrary candidates.
+A second original/source point cannot occupy the inferred field. Source-native
+multiple points/roles remain raw evidence; choosing physical launch/landing/entrance
+locations is outside this contract. With several linked sources, canonical selection
+chooses one value independently per evidence category using the existing anchor/trust
+ordering, preserving each selected member/artifact's identity.
+
+Either slot can be absent. A record with only an address-derived point keeps
+`source_coordinates=null`. Equal coordinate pairs retain **both named observations**;
+only duplicate rendered markers collapse. Different pairs are mapped separately,
+without averaging or distance-based suppression. One usable point is required to
+publish. Legacy points with insufficient origin evidence keep their existing point
+and an explicit legacy/unknown classification rather than an invented source claim.
+
+Forward queries use immutable captured text and source location hints, never fields
+filled by reverse lookup or model coordinate proposals. Supplied address/locality
+wins over composite venue names for lookup; recognized listed countries constrain
+search. Hits and misses are cached by query policy/country. Forward and reverse share
+provider budgets and recovery. If the budget expires between calls, activation waits
+and resume reuses cached results; a miss preserves a usable source point.
+
+The `location-v3` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
+to its normalization/primary point, alongside separate listed text, forward query/result
+and reverse lookup. Canonical builder `canonical-build-v5` writes
+`attributes.coordinate_evidence` with source/research/normalization/geocode IDs for
+each value. Legacy lat/lng is the selected source point when available, otherwise the
+inferred point or retained legacy point. Raw/model attributes cannot publish these
+reserved fields. The query policy remains `listed-location-v1`; unchanged provider
+queries reuse the `location-v2` cache namespace, so a representation upgrade does
+not repeat already-paid geocoding. No migration or automatic historical sweep occurs.
+
+The map API exposes `coordinate_evidence` plus a rendered `locations` array. Markers
+use stable `<POI>:source`, `<POI>:inferred`, or `<POI>:legacy` IDs and a shared POI detail
+ID. Missing source data never renumbers an inferred marker into the source identity.
+Each point is filtered by viewport; entity limits precede marker expansion. Details
+show both named evidence values (even if equal), their origin, query and precision.
+The ordinal `location_index` is presentation order, not provenance. Cluster counts
+count markers. Approximate locality points do not establish venue/entrance precision.
+A future source/inferred/both display policy can select these fields without rerunning
+ingestion or losing the other observation.
+
 The managed geocode stage also fills missing administrative/address fields for valid points.
 Source addresses/locality win; country values use the pinned ISO country dataset. Reverse
 LocationIQ fields are approximate, cached by exact point and policy version, and never move
@@ -976,3 +1025,23 @@ To include the SQL sampling regression, set `LOCATION_REVIEW_TEST_DATABASE_URL` 
 an isolated PostgreSQL database named `map_location_review_test` on `127.0.0.1` or
 `localhost`. It uses only session-local temporary fixture tables. With that
 variable unset, the SQL test is explicitly skipped; no shared database is used.
+
+### Canonical origin repair and resume
+
+`canonical-build-v5` preserves fixed source/inferred coordinate provenance and legacy origins. Deploying it does not
+rewrite historical data. On an explicitly selected new run or compatible resume,
+completed downstream tasks and batch/attempt caches reject older builders. The
+match stage rebuilds the existing canonical from its active members when its build
+is stale; it retains memberships and does not repeat match adjudication. Current
+normalization, geocodes and embeddings remain reusable. Canonical/verify tasks then
+record the new build, and a second resume reuses it. Existing location-version
+upgrades still follow their own readiness rules. Use the normal managed scope and
+maintenance procedure for any deliberate repair; this is not a background backfill.
+
+Validation: `MAP_CANONICAL_TEST_URL` may explicitly select a disposable loopback
+PostgreSQL database named `map_canonical_cache_test` for
+`pnpm --filter @lib/db-map ingest:test-canonical-cache`. The test creates temporary
+tables only, refuses other hosts/database names and ignores `DB_MAP_URL`; without
+that dedicated variable the SQL test is skipped. It exercises stale task/checkpoint
+and batch-reuse rejection, retained geocode/embedding checkpoints, and reuse after
+a fixture builder refresh. It does not execute a live repair or assert provider quality.

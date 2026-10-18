@@ -262,6 +262,10 @@ for (const changed of [
         if (sql.startsWith("SELECT rp.id")) return { rows: [{ id: row.id }] };
         if (sql.startsWith("SELECT rp.*,o.captured"))
           return { rows: [{ ...row }] };
+        if (sql.startsWith("SELECT slug FROM canonical_categories"))
+          return { rows: [] };
+        if (sql.startsWith("SELECT lat, lng, precision"))
+          return { rows: [{ lat: row.lat, lng: row.lng, precision: "point" }] };
         if (sql.startsWith("SELECT payload"))
           return {
             rows: [
@@ -326,7 +330,7 @@ for (const changed of [
       dryRun: false,
     });
     assert.equal(stats.apiCalls, 0);
-    assert.equal(stats.cacheHits, 1);
+    assert.equal(stats.cacheHits, 2);
     assert.equal(stats.resolved, 1);
     assert.equal(row.active_geocode_id, "geocode-new");
     assert.equal(row.region, "Texas");

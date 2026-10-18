@@ -1,4 +1,9 @@
 import { canonicalLocation } from "./canonical-location.js";
+import {
+  canonicalPoints,
+  canonicalCoordinateEvidence,
+} from "./canonical-points.js";
+import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { currentAttempt } from "./execution.js";
 import type { PoolClient } from "pg";
@@ -28,6 +33,7 @@ interface MergeRow {
   lng: number | null;
   lat: number | null;
   coordinate_precision: string | null;
+  coordinate_source: string | null;
   hours: string | null;
   photo_url: string | null;
   starts_at: Date | null;
@@ -35,6 +41,7 @@ interface MergeRow {
   date_precision: string | null;
   category_slugs: string[] | null;
   attributes: Record<string, unknown> | null;
+  location_validation: Record<string, unknown> | null;
 }
 
 interface FieldChoice<T> {
@@ -359,7 +366,9 @@ function mergeAttributes(rows: MergeRow[]): Record<string, unknown> {
         value === undefined ||
         value === null ||
         key.startsWith("_") ||
-        key === "location_enrichment"
+        key === "location_enrichment" ||
+        key === "map_locations" ||
+        key === "coordinate_evidence"
       )
         continue;
       if (Array.isArray(value)) {
@@ -524,14 +533,15 @@ export async function rebuildCanonicalPoi(
        rp.id, m.id AS membership_id, rp.active_normalization_id, rp.active_geocode_id,
        rp.active_embedding_id, rp.source_id, rs.slug AS source_slug, rs.trust AS source_trust,
        rp.name, rp.description, rp.website, rp.phone, rp.address, rp.city, rp.region, rp.country_code,
-       rp.lng, rp.lat, rp.coordinate_precision,
+       rp.lng, rp.lat, rp.coordinate_precision, rp.coordinate_source,
        COALESCE(rp.attributes->>'opening_hours', rp.attributes->>'hours') AS hours,
        COALESCE(rp.attributes->>'photo_url', rp.attributes->>'image') AS photo_url,
        rp.starts_at, rp.ends_at, rp.date_precision,
-       rp.category_slugs, rp.attributes
+       rp.category_slugs, rp.attributes, g.validation AS location_validation
      FROM research_canonical_memberships m
      JOIN research_pois rp ON rp.id = m.research_poi_id
      JOIN research_sources rs ON rs.id = rp.source_id
+     LEFT JOIN research_poi_geocodes g ON g.id=rp.active_geocode_id AND g.normalization_id=rp.active_normalization_id AND g.status='resolved'
      WHERE m.canonical_poi_id = $1 AND m.active AND rp.is_poi AND rp.retired_at IS NULL
      ORDER BY rs.trust DESC, rp.last_seen_at DESC`,
     [canonicalId],
@@ -556,7 +566,16 @@ export async function rebuildCanonicalPoi(
 
   const hours = chooseText(rows, (row) => row.hours);
   const photo = chooseText(rows, (row) => row.photo_url);
-  const coords = chooseCoordinates(rows);
+  let coords = chooseCoordinates(rows);
+  const evidence = canonicalCoordinateEvidence(rows, coords.row);
+  const preferred =
+    evidence.source_coordinates ?? evidence.inferred_coordinates;
+  if (preferred)
+    coords = {
+      value: { lat: preferred.lat, lng: preferred.lng },
+      row: rows.find((r) => r.id === preferred.research_id) ?? null,
+    };
+  const points = canonicalPoints(rows, coords.row);
   const location = canonicalLocation(rows, coords.row);
   const address = location.address;
   const occurrences = await syncOccurrences(client, canonicalId, rows);
@@ -564,6 +583,7 @@ export async function rebuildCanonicalPoi(
   const primaryCategoryId = await syncCategories(client, canonicalId, rows);
   const popularity = new Set(rows.map((row) => row.source_id)).size;
   const attributes = mergeAttributes(rows);
+  attributes.coordinate_evidence = evidence;
   for (const field of ["country_code", "city", "region"] as const) {
     if (location[field].value) attributes[field] = location[field].value;
     else delete attributes[field];
@@ -583,7 +603,23 @@ export async function rebuildCanonicalPoi(
     hours: provenance(hours.row),
     photo_url: provenance(photo.row),
     coordinates: provenance(coords.row),
+    coordinate_evidence: Object.fromEntries(
+      Object.entries(evidence).map(([slot, p]) => [
+        slot,
+        p
+          ? {
+              research_id: p.research_id,
+              source_id: p.source_id,
+              normalization_id: p.normalization_id,
+              geocode_id: p.geocode_id,
+              kind: p.kind,
+              origin: p.origin,
+            }
+          : null,
+      ]),
+    ),
     coordinate_precision: coords.row?.coordinate_precision ?? null,
+    coordinate_source: coords.row?.coordinate_source ?? null,
     starts_at: provenance(dates?.row ?? null),
     occurrences: {
       count: occurrences.length,
@@ -646,11 +682,8 @@ export async function rebuildCanonicalPoi(
       JSON.stringify(attributes),
       JSON.stringify(fieldProvenance),
       popularity,
-      primaryCategoryId &&
-      coords.row?.coordinate_precision !== "region" &&
-      coords.row?.coordinate_precision !== "city"
-        ? "published"
-        : "hidden",
+      // Coarse locality results are usable discovery markers; retain their precision.
+      primaryCategoryId && points.length > 0 ? "published" : "hidden",
       primaryCategoryId,
       dates?.starts_at ?? null,
       dates?.ends_at ?? null,
@@ -676,7 +709,7 @@ export async function rebuildCanonicalPoi(
     date_precision: dates?.date_precision ?? null,
   };
   const buildHash = stableHash({
-    builder: "canonical-build-v2",
+    builder: PIPELINE_VERSIONS.canonicalBuilder,
     research_ids: rows.map((row) => row.id).sort(),
     inputs: rows
       .map((row) => ({
@@ -693,7 +726,7 @@ export async function rebuildCanonicalPoi(
     `INSERT INTO canonical_poi_builds (
        canonical_poi_id, input_hash, builder_version, status,
        fields, field_provenance, activated_at
-     ) VALUES ($1,$2,'canonical-build-v2','accepted',$3::jsonb,$4::jsonb,now())
+     ) VALUES ($1,$2,$5,'accepted',$3::jsonb,$4::jsonb,now())
      ON CONFLICT (canonical_poi_id, input_hash) DO UPDATE SET
        activated_at = now()
      RETURNING id`,
@@ -702,6 +735,7 @@ export async function rebuildCanonicalPoi(
       buildHash,
       JSON.stringify(buildFields),
       JSON.stringify(fieldProvenance),
+      PIPELINE_VERSIONS.canonicalBuilder,
     ],
   );
   await client.query(
