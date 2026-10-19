@@ -29,6 +29,80 @@ class MapControls(unittest.TestCase):
 
     def tearDown(self):
         self.paths.stop();self.tmp.cleanup()
+
+    def journal(self, directory, job_id, status='finished'):
+        path=m.job_directory()/directory/'job.json'
+        m.private_json(path,{'id':job_id,'status':status,'run_id':ident(),'execution_id':ident(),
+                             'started_at':'2026-10-17T22:00:00Z'})
+        if status=='finished':
+            m.private_json(path.parent/'result.json',{'outcome':'succeeded','exit_code':0})
+        return path
+
+    def test_snapshot_ignores_diagnostic_copies_without_promoting_them(self):
+        job,copied_only=ident(),ident()
+        actual=self.journal(job,job)
+        copy=self.journal('coordinate-origins-20261017',copied_only)
+        malformed=m.job_directory()/'other-diagnostics/job.json'
+        malformed.parent.mkdir();malformed.write_text('not JSON')
+        before={p:p.read_bytes() for p in m.job_directory().glob('*/*.json')}
+        controls={'quiescent':True,'workers':[],'maintenance':{'maintenance':False}}
+        with patch.object(m,'command',return_value=controls):
+            current=m.snapshot()
+        self.assertEqual([row['id'] for row in current['jobs']],[job])
+        self.assertEqual(current['jobs'][0]['journal'],str(actual))
+        self.assertEqual(current['jobs'][0]['result_path'],str(actual.parent/'result.json'))
+        self.assertEqual(current['jobs'][0]['terminal']['outcome'],'succeeded')
+        self.assertEqual(current['claims'],[])
+        self.assertEqual(before,{p:p.read_bytes() for p in before})
+        self.assertTrue(copy.exists())
+
+    def test_uuid_journal_identity_mismatches_still_block_snapshot(self):
+        job=ident()
+        self.journal('diagnostic-copy',job)
+        controls={'quiescent':True,'workers':[]}
+        for recorded in (ident(),'not-a-uuid',None):
+            with self.subTest(recorded=recorded):
+                self.journal(job,recorded)
+                with patch.object(m,'command',return_value=controls):
+                    with self.assertRaisesRegex(ValueError,'Supervisor journal identity mismatch'):
+                        m.snapshot()
+
+    def test_malformed_uuid_journal_still_blocks_discovery(self):
+        path=self.journal(ident(),ident())
+        path.write_text('not JSON')
+        with self.assertRaises(ValueError): m.jobs()
+
+    def test_finished_copy_cannot_hide_unresolved_job_or_allow_launch(self):
+        job=ident()
+        actual=self.journal(job,job,status='running')
+        self.journal('diagnostic-copy',job,status='finished')
+        m.private_json(m.state()/'ingestion-acceptance.json',{'status':'verified'})
+        controls={'quiescent':True,'workers':[],'maintenance':{'maintenance':False}}
+        with patch.object(m,'command',return_value=controls) as command:
+            with self.assertRaisesRegex(ValueError,'Unresolved supervisor journal exists'):
+                m.start(self.owner,['--resume',ident()])
+        command.assert_called_once_with(['ingest:control','list','--json'],require=('DB_MAP_URL',))
+        self.assertEqual(m.read_json(actual)['status'],'running')
+        self.assertFalse((m.state()/'imports/active.claim').exists())
+        intents=list((m.state()/'imports').glob('*/intent.json'))
+        self.assertEqual(len(intents),1)
+        self.assertEqual(m.read_json(intents[0])['status'],'not_submitted')
+
+    def test_copied_terminal_evidence_cannot_release_claim_without_actual_job(self):
+        intent,job=ident(),ident()
+        self.journal('diagnostic-copy',job)
+        directory=m.state()/'imports'
+        path=directory/intent/'intent.json'
+        row={'id':intent,'job_id':job,'status':'started'}
+        m.private_json(path,row)
+        lease=directory/'active.claim';lease.write_text(intent+'\n')
+        controls={'quiescent':True,'workers':[]}
+        with patch.object(m,'command',return_value=controls):
+            with self.assertRaisesRegex(ValueError,'Exact terminal journal and database quiescence required'):
+                m.release(intent,'copied terminal evidence alone')
+        self.assertEqual(lease.read_text(),intent+'\n')
+        self.assertEqual(m.read_json(path),row)
+
     def test_map_resume_uncapped_and_scope_preserved(self):
             run=ident()
             self.assertEqual(m.run_arguments(['--resume',run]),['--resume',run,'--unlimited'])

@@ -123,7 +123,10 @@ def jobs():
     result = []
     directory = job_directory()
     for path in sorted(directory.glob('*/job.json')):
-        identifier(path.parent.name)
+        # Named diagnostic packets can contain copied journals. Only UUID directories
+        # are authoritative jobs; never promote a copy by its embedded job ID.
+        if not UUID.fullmatch(path.parent.name):
+            continue
         row = read_json(path)
         if row.get('id') != path.parent.name:
             raise ValueError('Supervisor journal identity mismatch')
