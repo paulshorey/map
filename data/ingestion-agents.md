@@ -120,7 +120,11 @@ Existing injected values win. DB_MAP_URL is required for database discovery; ful
 runs also require the existing pipeline keys. Values stay in the child environment.
 
 `snapshot` joins current database controls with `.ingest-jobs/UUID/job.json` and
-result.json evidence. Private admission observations and intent claims live in
+result.json evidence. Named diagnostic directories may retain copied journals; discovery
+leaves them untouched and excludes them from the authoritative job inventory. A copied
+journal cannot substitute for a missing UUID job or override an unresolved one. Malformed
+journals and directory/ID mismatches inside UUID job directories still block discovery.
+Private admission observations and intent claims live in
 `lib/db-map/.ingest-jobs/.coordinator/`, already ignored by Git. Two different native
 scheduled owners can `accept` the same pinned job/run/execution to verify later-run
 discovery; the existing verified receipt was retained during the helper relocation.
