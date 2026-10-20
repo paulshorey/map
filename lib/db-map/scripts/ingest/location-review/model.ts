@@ -76,7 +76,7 @@ export interface ReviewCase {
   reverse_comparable: boolean;
 }
 export interface ReviewPacket {
-  version: "location-review-v1";
+  version: "location-review-v1" | "location-review-v2";
   packet_id: string;
   observed_at: string;
   selection: LocationReviewOptions;
@@ -221,6 +221,85 @@ export function makeReviewCase(row: LocationReviewRow): ReviewCase {
     [],
     row.canonical.field_provenance,
   );
+  add(
+    "canonical.builder_version",
+    "canonical",
+    "canonical_poi_builds",
+    row.build_id,
+    "builder_version",
+    [],
+    row.builder_version,
+  );
+  for (const slot of ["source_coordinates", "inferred_coordinates"]) {
+    add(
+      `canonical.coordinate_evidence.${slot}`,
+      "canonical",
+      "canonical_pois",
+      row.canonical_id,
+      "attributes",
+      ["coordinate_evidence", slot],
+      at(row.canonical, ["attributes", "coordinate_evidence", slot]),
+    );
+    if (row.geocode_id)
+      add(
+        `geocode.coordinate_evidence.${slot}`,
+        "geocode",
+        "research_poi_geocodes",
+        row.geocode_id,
+        "validation",
+        ["coordinate_evidence", slot],
+        at(row.geocode, ["validation", "coordinate_evidence", slot]),
+      );
+  }
+  for (const key of [
+    "normalizer_version",
+    "venue",
+    "edition_year",
+    "attributes",
+    "display_name",
+    "description",
+    "website",
+    "starts_at",
+    "ends_at",
+  ])
+    add(
+      `normalized.${key}`,
+      "normalization",
+      "research_poi_normalizations",
+      row.normalization_id,
+      key,
+      [],
+      row.normalized[key],
+    );
+  for (const key of ["name", "description", "website", "starts_at", "ends_at"])
+    add(
+      `canonical.${key}`,
+      "canonical",
+      "canonical_pois",
+      row.canonical_id,
+      key,
+      [],
+      row.canonical[key],
+    );
+  if (
+    !at(row.canonical, [
+      "attributes",
+      "coordinate_evidence",
+      "source_coordinates",
+    ]) &&
+    !at(row.canonical, [
+      "attributes",
+      "coordinate_evidence",
+      "inferred_coordinates",
+    ])
+  )
+    note(
+      "named_coordinate_evidence_not_stored",
+      "coverage",
+      "canonical.coordinate_evidence.source_coordinates",
+      "canonical.coordinate_evidence.inferred_coordinates",
+      "canonical.builder_version",
+    );
   const geo = object(row.geocode),
     validation = object(geo.validation),
     reverse = object(validation.reverse);
@@ -241,6 +320,7 @@ export function makeReviewCase(row: LocationReviewRow): ReviewCase {
       "provider",
       "query_norm",
       "status",
+      "provider_version",
     ])
       add(
         `geocode.${key}`,
@@ -257,6 +337,10 @@ export function makeReviewCase(row: LocationReviewRow): ReviewCase {
       "lookup_state",
       "provenance",
       "warnings",
+      "version",
+      "listed",
+      "forward",
+      "forward_query_norm",
     ])
       add(
         `geocode.${key}`,
@@ -450,6 +534,7 @@ export function makeReviewCase(row: LocationReviewRow): ReviewCase {
     research_id: row.research_id,
     canonical_id: row.canonical_id,
     build_id: row.build_id,
+    builder_version: row.builder_version ?? null,
     normalization_id: row.normalization_id,
     observation_id: row.observation_id,
     geocode_id: row.geocode_id,
@@ -459,7 +544,7 @@ export function makeReviewCase(row: LocationReviewRow): ReviewCase {
     capture_hash: row.capture_hash,
     completion: row.completion,
     completion_scope:
-      "This source/record passed verification in a completed run. binding states whether it certifies this normalization, observation, or record identity only. The current canonical build may be newer than that verification.",
+      "binding states whether a successful checkpoint certifies this normalization, observation, or record identity only. missing_verification is an explicitly selected build member without that proof; the current build may be newer than any verification.",
   };
   const context = {
     name:
@@ -513,7 +598,7 @@ export function makePacket(
   selection: LocationReviewOptions,
 ): ReviewPacket {
   return {
-    version: "location-review-v1",
+    version: "location-review-v2",
     packet_id: randomUUID(),
     observed_at: sample.observed_at,
     selection,
@@ -525,7 +610,9 @@ export function makePacket(
       "Zero provider calls. Missing bound reverse evidence stays unassessed; no cache lookup, forward lookup, LLM call or repair is performed.",
       "Priority-ranked risk cases plus seed-ordered baseline/no-reverse cases are balanced across source/stratum. This is a diagnostic sample, not an unbiased estimate of source error rates. A baseline case can have newly detected differences.",
       "One case is one current canonical-build/source-member pair. Multi-source canonicals can appear more than once; source observations must not be counted as independent geocoder evidence.",
-      "Completion evidence can bind the current normalization, observation, or only source/record identity. record_identity_only cases are not proof that today's artifacts were verified. Legacy/manual canonicals without a succeeded managed record checkpoint are outside this sample.",
+      "Completion evidence can bind the current normalization, observation, or only source/record identity. record_identity_only cases do not prove today's artifacts were verified. Seeded sampling excludes members without a succeeded managed record checkpoint.",
+      "Explicit canonical selection includes linked build members without verification and marks them missing_verification. Named coordinate slots remain null when historical artifacts did not store them; this alone is not an ingestion defect.",
+      "For explicit selection, population counts describe the selected canonical IDs only. The source/build member cap is enforced without silent truncation.",
     ],
   };
 }
@@ -545,7 +632,7 @@ export function renderPacket(packet: ReviewPacket, details = true): string {
   const lines = [
     "# Location evidence review",
     "",
-    `Packet: ${packet.packet_id}. Snapshot: ${packet.observed_at}. Selected ${packet.cases.length} source/build pairs.`,
+    `Packet: ${packet.packet_id}. Snapshot: ${packet.observed_at}. Selected ${packet.cases.length} source/build pairs for ${new Set(packet.cases.map((c) => c.lineage.canonical_id)).size} distinct POIs.`,
     "",
     ...packet.limitations.map((s) => `- ${s}`),
     "",
@@ -619,7 +706,7 @@ export function decisionTemplate(packet: ReviewPacket) {
 export function summarizeReviews(packet: ReviewPacket, input: unknown) {
   const decisions = object(input);
   if (
-    packet.version !== "location-review-v1" ||
+    !["location-review-v1", "location-review-v2"].includes(packet.version) ||
     decisions.version !== packet.version ||
     decisions.packet_id !== packet.packet_id
   )
