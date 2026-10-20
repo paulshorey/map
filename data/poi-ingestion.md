@@ -978,6 +978,11 @@ pnpm ingest:location-review export --limit 40 --seed first-location-review \
   --out .ingest-jobs/location-review-first
 # Optional narrower scope: --source jambase --run <completed-run-uuid>
 
+# Pin mandatory POIs and include every linked build member (up to 100 rows).
+# Manifest: {"version":"location-review-selection-v1","canonical_ids":["<uuid>"]}
+pnpm ingest:location-review export --selection /absolute/selection.json --limit 100 \
+  --seed coordinate-review --out .ingest-jobs/location-review-selected
+
 # Copy decisions.template.json to a dated file, enter field judgments, then:
 pnpm ingest:location-review summarize \
   --packet .ingest-jobs/location-review-first/packet.json \
@@ -992,6 +997,28 @@ listed country, listed address/locality, and stored reverse address. `field-line
 `packet.json` add context, raw/captured/normalized/canonical values, exact artifact IDs,
 physical tables/columns/JSON paths, point binding, canonical field provenance and hashes.
 Missing bound reverse evidence stays unassessed. No extra lookup is silently performed.
+
+New exports use `location-review-v2`. They include independently nullable source/inferred
+coordinate evidence from geocode validation and canonical attributes, each point's saved
+owner/query/precision, builder/provider versions, listed/forward evidence, and normalization
+venue/edition context. These values participate in the evidence hash. Equal points retain
+both records. Missing historical slots are coverage gaps, not automatic repair instructions.
+Offline summarization still accepts immutable v1 packets and their original labels.
+
+`--selection` accepts 1–100 unique canonical UUIDs and cannot combine with `--source` or
+`--run`, which could hide another member's provenance. Its default member limit is 100;
+the limit counts source/build pairs, not unique POIs. Export fails rather than truncating
+members, omitting unavailable requested POIs, or silently losing a member with missing
+normalization/observation evidence. Explicitly selected members without a successful
+managed checkpoint are marked `missing_verification`; they are not presented as verified.
+In this mode population counts describe only the selected canonical IDs. Seeded sampling
+retains its original verified-record eligibility and source/stratum balancing.
+
+For a read-only browser review, use the merged-main app with read-only database sessions.
+Intercept mutation requests: map movement normally saves guest viewport preferences.
+Use a local/cached basemap and block external provider requests. Keep live API responses,
+browser evidence and isolated SQL/browser fixtures separately identified; unavailable
+live equal-point or single-slot examples must not be replaced by shared-database writes.
 
 Selection alternates source/stratum slots across prioritized risk cases, baseline cases,
 and records with no bound reverse evidence. It surfaces existing country/region/distance

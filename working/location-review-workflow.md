@@ -6,6 +6,16 @@ lookup limitations, and an incorrect canonical merge. The implementation and com
 contract live in the [ingestion runbook](../data/poi-ingestion.md#reviewing-location-evidence-on-completed-records).
 The existing `ingest:location-audit` remains the aggregate completeness report.
 
+## Current review after the coordinate-model merge
+
+The [2026-10-20 read-only review](location-review-20261020.md) covers 80 distinct
+POIs and 94 source/build members from merged main. It records actual API/map
+behavior, explicit legacy/missing-evidence limits, the narrow overlapping-marker
+follow-up and a proposed next bounded scope. Its local searchable gallery and
+immutable packet paths are listed there. New diagnostic exports use v2 evidence
+fields and support a bounded canonical-ID manifest; see the runbook for syntax.
+Earlier packets and their human judgments remain bound to their original hashes.
+
 ## Follow-up: complete field evidence — 2026-10-17
 
 Verified two additional PR #53 findings against merged main after PR #54. Reverse

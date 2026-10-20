@@ -11,7 +11,7 @@ import {
   decisionTemplate,
   summarizeReviews,
 } from "./location-review/model.js";
-import { parseReviewArgs } from "./location-review.js";
+import { parseReviewArgs, parseSelectionManifest } from "./location-review.js";
 
 function row(): LocationReviewRow {
   return {
@@ -526,7 +526,7 @@ test("database diagnostic enforces read-only snapshot, scope parameters, timeout
   assert.ok(queries.some((q) => q.sql.includes("statement_timeout")));
   assert.deepEqual(
     queries.find((q) => q.sql.startsWith("WITH completed"))!.values,
-    [null, "fixture", "fixed", 3],
+    [null, "fixture", "fixed", 3, null],
   );
   assert.equal(queries.at(-1)!.sql, "ROLLBACK");
   assert.equal(released, true);
@@ -552,9 +552,10 @@ test(
       CREATE TEMP TABLE research_ingest_runs (id uuid, source_id uuid, verified_at timestamptz, options jsonb, status text);
       CREATE TEMP TABLE research_ingest_tasks (run_id uuid, source_record_id text, input jsonb, output jsonb, attempt_id uuid, stage text, state text);
       CREATE TEMP TABLE canonical_pois (id uuid, active_build_id uuid, status text, name text, description text, website text, lat float8, lng float8, address text, attributes jsonb, starts_at text, ends_at text, field_provenance jsonb);
+      CREATE TEMP TABLE canonical_poi_builds (id uuid, builder_version text);
       CREATE TEMP TABLE canonical_poi_build_inputs (build_id uuid, research_poi_id uuid, normalization_id uuid, geocode_id uuid);
       CREATE TEMP TABLE research_pois (id uuid, source_id uuid, source_record_id text, lat float8, lng float8, country_code text, city text, region text, address text, active_normalization_id uuid, active_geocode_id uuid);
-      CREATE TEMP TABLE research_poi_normalizations (id uuid, research_poi_id uuid, observation_id uuid, display_name text, description text, website text, address text, city text, region text, country_code text, starts_at text, ends_at text, field_evidence jsonb, normalizer_version text);
+      CREATE TEMP TABLE research_poi_normalizations (id uuid, research_poi_id uuid, observation_id uuid, display_name text, description text, website text, address text, city text, region text, country_code text, starts_at text, ends_at text, field_evidence jsonb, normalizer_version text, attributes jsonb, venue text, edition_year int);
       CREATE TEMP TABLE research_poi_geocodes (id uuid, normalization_id uuid, lat float8, lng float8, precision text, status text, provider text, provider_version text, query_norm text, validation jsonb, created_at timestamptz);
       CREATE TEMP TABLE research_poi_observations (id uuid, source_file_version_id uuid, raw_content_hash text, capture_hash text, captured jsonb, raw jsonb);
       CREATE TEMP TABLE research_source_file_versions (id uuid, source_file_id uuid);
@@ -677,8 +678,166 @@ test(
           no_bound_reverse: 8,
         },
       );
+      const selectedId = sample.rows[0]!.canonical_id;
+      // A second source member with no completed checkpoint must remain visible.
+      await db.query(
+        "DELETE FROM research_ingest_tasks WHERE source_record_id=$1",
+        [sample.rows[0]!.source_record_id],
+      );
+      const explicit = await sampleLocationReview(db, {
+        limit: 100,
+        seed: "explicit",
+        canonical_ids: [selectedId],
+      });
+      assert.equal(explicit.rows.length, 1);
+      assert.equal(
+        explicit.rows[0]!.completion.binding,
+        "missing_verification",
+      );
+      await assert.rejects(
+        () =>
+          sampleLocationReview(db, {
+            limit: 100,
+            seed: "missing",
+            canonical_ids: [randomUUID()],
+          }),
+        /lack published/,
+      );
+      await assert.rejects(
+        () =>
+          sampleLocationReview(db, {
+            limit: 1,
+            seed: "overflow",
+            canonical_ids: sample.rows.slice(0, 2).map((r) => r.canonical_id),
+          }),
+        /exceed limit/,
+      );
+      await db.query(
+        "INSERT INTO canonical_poi_build_inputs VALUES ($1,$2,NULL,NULL)",
+        [explicit.rows[0]!.build_id, randomUUID()],
+      );
+      await assert.rejects(
+        () =>
+          sampleLocationReview(db, {
+            limit: 100,
+            seed: "incomplete-member",
+            canonical_ids: [selectedId],
+          }),
+        /lack normalization\/observation/,
+      );
     } finally {
       await db.end();
     }
   },
 );
+
+test("coordinate evidence, owners and forward query are rendered and hash-bound without filling missing slots", () => {
+  const r = row();
+  const source = {
+    lat: 46,
+    lng: 7,
+    kind: "source",
+    origin: "source_coordinates",
+    research_id: "source-owner",
+  };
+  const inferred = {
+    lat: 46,
+    lng: 7,
+    kind: "inferred",
+    origin: "listed_address_geocode",
+    research_id: "inferred-owner",
+    query: "Venue address",
+  };
+  r.builder_version = "canonical-build-v5";
+  r.canonical.attributes = {
+    coordinate_evidence: {
+      source_coordinates: source,
+      inferred_coordinates: inferred,
+    },
+  };
+  (r.geocode!.validation as any).coordinate_evidence = {
+    source_coordinates: null,
+    inferred_coordinates: inferred,
+  };
+  (r.geocode!.validation as any).forward = {
+    query: "Venue address",
+    country_filter: "CH",
+  };
+  const a = packet(r),
+    c = a.cases[0]!;
+  assert.equal(a.version, "location-review-v2");
+  assert.deepEqual(
+    c.fields["canonical.coordinate_evidence.source_coordinates"]!.value,
+    source,
+  );
+  assert.deepEqual(
+    c.fields["canonical.coordinate_evidence.inferred_coordinates"]!.value,
+    inferred,
+  );
+  assert.equal(
+    c.fields["geocode.coordinate_evidence.source_coordinates"]!.value,
+    null,
+  );
+  assert.deepEqual(c.fields["geocode.forward"]!.path, ["forward"]);
+  assert.ok(renderPacket(a).includes("inferred-owner"));
+  assert.equal(c.fields["canonical.name"]!.table, "canonical_pois");
+  assert.equal(c.fields["normalized.starts_at"]!.value, r.normalized.starts_at);
+  assert.equal(c.fields["canonical.starts_at"]!.value, null);
+  inferred.query = "Changed query";
+  assert.notEqual(packet(r).cases[0]!.evidence_hash, c.evidence_hash);
+  const legacy = packet().cases[0]!;
+  assert.equal(
+    legacy.fields["canonical.coordinate_evidence.inferred_coordinates"]!.value,
+    null,
+  );
+  assert.ok(
+    legacy.findings.some(
+      (f) =>
+        f.code === "named_coordinate_evidence_not_stored" &&
+        f.kind === "coverage",
+    ),
+  );
+});
+
+test("explicit manifests are bounded, unique and incompatible with partial source filters", () => {
+  const id = "00000000-0000-4000-8000-000000000001";
+  assert.deepEqual(
+    parseSelectionManifest({
+      version: "location-review-selection-v1",
+      canonical_ids: [id],
+    }),
+    [id],
+  );
+  for (const canonical_ids of [[], [id, id], ["invalid"], Array(101).fill(id)])
+    assert.throws(
+      () =>
+        parseSelectionManifest({
+          version: "location-review-selection-v1",
+          canonical_ids,
+        }),
+      /Selection/,
+    );
+  assert.throws(
+    () => parseSelectionManifest({ version: "old", canonical_ids: [id] }),
+    /Expected/,
+  );
+  assert.throws(
+    () =>
+      parseReviewArgs([
+        "export",
+        "--out",
+        "folder",
+        "--selection",
+        "manifest.json",
+        "--source",
+        "jambase",
+      ]),
+    /cannot combine/,
+  );
+});
+
+test("offline summary continues to accept immutable v1 packets", () => {
+  const p = packet();
+  p.version = "location-review-v1";
+  assert.equal(summarizeReviews(p, judgments(p)).reviewed_fields, 3);
+});

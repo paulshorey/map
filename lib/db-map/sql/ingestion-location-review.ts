@@ -5,6 +5,7 @@ export interface LocationReviewOptions {
   seed: string;
   source?: string;
   run?: string;
+  canonical_ids?: string[];
 }
 export interface LocationReviewRow {
   source: string;
@@ -12,6 +13,7 @@ export interface LocationReviewRow {
   research_id: string;
   canonical_id: string;
   build_id: string;
+  builder_version?: string | null;
   normalization_id: string;
   observation_id: string;
   geocode_id: string | null;
@@ -47,6 +49,13 @@ export async function sampleLocationReview(
     throw new Error("Review limit must be 1–100 source/build pairs");
   if (!options.seed || options.seed.length > 100)
     throw new Error("A reproducible seed of 1–100 characters is required");
+  if (options.canonical_ids) {
+    validateCanonicalSelection(options.canonical_ids);
+    if (options.source || options.run)
+      throw new Error(
+        "Explicit canonical selection cannot combine with source/run filters",
+      );
+  }
   const client = await db.connect();
   try {
     await client.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
@@ -72,7 +81,7 @@ export async function sampleLocationReview(
         ORDER BY r.source_id,t.source_record_id,r.verified_at DESC,r.id
       ), eligible AS MATERIALIZED (
         SELECT rs.slug source, rp.source_record_id, rp.id research_id,
-          cp.id canonical_id, cp.active_build_id build_id,
+          cp.id canonical_id, cp.active_build_id build_id, b.builder_version,
           bi.normalization_id, n.observation_id, bi.geocode_id,
           c.run_id, c.verified_at, c.options run_options,
           c.verify_output, c.verify_attempt_id,
@@ -93,11 +102,12 @@ export async function sampleLocationReview(
             WHEN g.validation->'reverse'->>'country_code' IS NULL THEN 'no_bound_reverse'
             ELSE 'baseline' END stratum
         FROM canonical_pois cp
+        LEFT JOIN canonical_poi_builds b ON b.id=cp.active_build_id
         JOIN canonical_poi_build_inputs bi ON bi.build_id=cp.active_build_id
         JOIN research_pois rp ON rp.id=bi.research_poi_id
         JOIN research_sources rs ON rs.id=rp.source_id
         JOIN research_poi_normalizations n ON n.id=bi.normalization_id AND n.research_poi_id=rp.id
-        JOIN completed c ON c.source_id=rp.source_id AND c.source_record_id=rp.source_record_id
+        LEFT JOIN completed c ON c.source_id=rp.source_id AND c.source_record_id=rp.source_record_id
         LEFT JOIN research_poi_geocodes g ON g.id=bi.geocode_id
         CROSS JOIN LATERAL (
           SELECT COALESCE(
@@ -113,14 +123,16 @@ export async function sampleLocationReview(
           ) reverse_comparable
         ) binding
         WHERE cp.status='published' AND ($2::text IS NULL OR rs.slug=$2)
+          AND ($5::uuid[] IS NULL OR cp.id=ANY($5))
+          AND (c.run_id IS NOT NULL OR $5::uuid[] IS NOT NULL)
       ), ranked AS (
         SELECT *, row_number() OVER (PARTITION BY source,stratum
           ORDER BY priority DESC,md5($3 || ':' || research_id::text || ':' || build_id::text)) slot
         FROM eligible
       ), selected AS MATERIALIZED (
-        SELECT * FROM ranked ORDER BY slot,
+        SELECT * FROM ranked ORDER BY array_position($5::uuid[],canonical_id),slot,
           CASE stratum WHEN 'risk' THEN 0 WHEN 'baseline' THEN 1 ELSE 2 END,
-          source, research_id, build_id LIMIT $4
+          source, research_id, build_id LIMIT CASE WHEN $5::uuid[] IS NULL THEN $4 ELSE $4+1 END
       )
       SELECT jsonb_build_object(
         'observed_at',transaction_timestamp(),
@@ -129,19 +141,21 @@ export async function sampleLocationReview(
         ) x),'[]'::jsonb),
         'rows',COALESCE((SELECT jsonb_agg(jsonb_build_object(
           'source',s.source,'source_record_id',s.source_record_id,'research_id',s.research_id,
-          'canonical_id',s.canonical_id,'build_id',s.build_id,
+          'canonical_id',s.canonical_id,'build_id',s.build_id,'builder_version',s.builder_version,
           'normalization_id',s.normalization_id,'observation_id',s.observation_id,'geocode_id',s.geocode_id,
           'source_file_version_id',o.source_file_version_id,'logical_path',sf.logical_path,
           'raw_content_hash',o.raw_content_hash,'capture_hash',o.capture_hash,
           'completion',jsonb_build_object('run_id',s.run_id,'verified_at',s.verified_at,
             'options',s.run_options,'verify_attempt_id',s.verify_attempt_id,'verify_output',s.verify_output,
-            'binding',CASE WHEN s.verified_normalization_id=s.normalization_id::text THEN 'exact_normalization'
+            'binding',CASE WHEN s.run_id IS NULL THEN 'missing_verification'
+              WHEN s.verified_normalization_id=s.normalization_id::text THEN 'exact_normalization'
               WHEN s.verified_observation_id=s.observation_id::text THEN 'exact_observation' ELSE 'record_identity_only' END),
           'stratum',s.stratum,'captured',o.captured,'raw',o.raw,
           'normalized',jsonb_build_object('display_name',n.display_name,'description',n.description,
             'website',n.website,'address',n.address,'city',n.city,'region',n.region,
             'country_code',n.country_code,'starts_at',n.starts_at,'ends_at',n.ends_at,
-            'field_evidence',n.field_evidence,'normalizer_version',n.normalizer_version),
+            'field_evidence',n.field_evidence,'attributes',n.attributes,'normalizer_version',n.normalizer_version,
+            'venue',n.venue,'edition_year',n.edition_year),
           'geocode',CASE WHEN g.id IS NULL THEN NULL ELSE jsonb_build_object(
             'lat',g.lat,'lng',g.lng,'normalization_id',g.normalization_id,'precision',g.precision,'status',g.status,
             'provider',g.provider,'provider_version',g.provider_version,
@@ -167,14 +181,61 @@ export async function sampleLocationReview(
         options.source ?? null,
         options.seed,
         options.limit,
+        options.canonical_ids ?? null,
       ],
     );
+    const sample = rows[0]!.sample;
+    if (options.canonical_ids) {
+      if (sample.rows.length > options.limit)
+        throw new Error(
+          "Selected build members exceed limit; increase limit up to 100 or split the manifest",
+        );
+      const found = new Set(sample.rows.map((r) => r.canonical_id));
+      const missing = options.canonical_ids.filter((id) => !found.has(id));
+      if (missing.length)
+        throw new Error(
+          `Selected POIs lack published build/normalization evidence: ${missing.join(", ")}`,
+        );
+      const expected = await client.query<{ id: string; members: number }>(
+        `SELECT cp.id,count(bi.research_poi_id)::int members FROM canonical_pois cp
+         JOIN canonical_poi_build_inputs bi ON bi.build_id=cp.active_build_id
+         WHERE cp.id=ANY($1::uuid[]) GROUP BY cp.id`,
+        [options.canonical_ids],
+      );
+      if (
+        expected.rows.some(
+          (r) =>
+            sample.rows.filter((s) => s.canonical_id === r.id).length !==
+            r.members,
+        )
+      )
+        throw new Error(
+          "Selected build members lack normalization/observation evidence; inspect them separately",
+        );
+    }
     await client.query("COMMIT");
-    return rows[0]!.sample;
+    return sample;
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     throw error;
   } finally {
     client.release();
   }
+}
+
+export function validateCanonicalSelection(
+  value: unknown,
+): asserts value is string[] {
+  if (
+    !Array.isArray(value) ||
+    value.length < 1 ||
+    value.length > 100 ||
+    value.some(
+      (id) =>
+        typeof id !== "string" ||
+        !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(id),
+    ) ||
+    new Set(value.map((id) => String(id).toLowerCase())).size !== value.length
+  )
+    throw new Error("Selection requires 1–100 unique canonical UUIDs");
 }
