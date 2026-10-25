@@ -1,3 +1,4 @@
+import { acceptedLocationSql } from "../../sql/location-assessments.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
 import type { Pool } from "pg";
 import { Execution, type AttemptResult } from "./execution.js";
@@ -21,7 +22,8 @@ SELECT i.source_record_id,i.research_poi_id,i.observation_id,
     WHEN NOT rp.is_poi THEN a.status='skipped'
     WHEN $2='geocode' THEN rp.lat IS NOT NULL AND rp.lng IS NOT NULL AND a.output->>'geocode_id' IS NOT DISTINCT FROM rp.active_geocode_id::text
     WHEN $2='embed' THEN rp.content_embedding IS NOT NULL AND rp.active_embedding_id IS NOT NULL AND a.output->>'embedding_id'=rp.active_embedding_id::text
-    ELSE rp.canonical_poi_id IS NOT NULL AND cp.active_build_id IS NOT NULL
+    ELSE ${acceptedLocationSql()} AND rp.canonical_poi_id IS NOT NULL AND cp.active_build_id IS NOT NULL
+      AND EXISTS(SELECT 1 FROM canonical_poi_build_inputs bi WHERE bi.build_id=cp.active_build_id AND bi.research_poi_id=rp.id AND bi.location_assessment_id=rp.active_location_assessment_id)
       AND EXISTS(SELECT 1 FROM canonical_poi_builds cb WHERE cb.id=cp.active_build_id AND cb.builder_version='${PIPELINE_VERSIONS.canonicalBuilder}')
       AND a.output->>'canonical_id'=rp.canonical_poi_id::text AND a.output->>'build_id'=cp.active_build_id::text
   END,false) AS done
@@ -78,8 +80,9 @@ async function reusableDownstream(
       AND (NOT rp.is_poi OR CASE
         WHEN $2='geocode' THEN rp.lat IS NOT NULL AND rp.lng IS NOT NULL AND (rp.active_geocode_id IS NULL OR g.id IS NOT NULL)
         WHEN $2='embed' THEN rp.content_embedding IS NOT NULL AND em.id IS NOT NULL
-        ELSE b.id IS NOT NULL AND b.builder_version='${PIPELINE_VERSIONS.canonicalBuilder}' AND EXISTS(SELECT 1 FROM canonical_poi_build_inputs bi WHERE bi.build_id=b.id
+        ELSE ${acceptedLocationSql()} AND b.id IS NOT NULL AND b.builder_version='${PIPELINE_VERSIONS.canonicalBuilder}' AND EXISTS(SELECT 1 FROM canonical_poi_build_inputs bi WHERE bi.build_id=b.id
           AND bi.membership_id=m.id AND bi.normalization_id=n.id
+          AND bi.location_assessment_id=rp.active_location_assessment_id
           AND bi.embedding_id IS NOT DISTINCT FROM rp.active_embedding_id
           AND bi.geocode_id IS NOT DISTINCT FROM rp.active_geocode_id)
       END)`,

@@ -935,14 +935,54 @@ Source addresses/locality win; country values use the pinned ISO country dataset
 LocationIQ fields are approximate, cached by exact point and policy version, and never move
 valid source coordinates. Country/region conflicts, distant results and missing fields remain
 visible in `research_pois.attributes.location_enrichment` and the bound geocode artifact.
-A definitive optional reverse miss does not quarantine a coordinate-bearing POI; API failures
-retain normal bounded recovery and systemic stop behavior. Source-precision centroids do not
+A definitive optional reverse miss does not fail the geocode stage for a coordinate-bearing
+POI; the downstream location assessment can still require review for insufficient evidence.
+API failures retain normal bounded recovery and systemic stop behavior. Source-precision centroids do not
 receive inferred street addresses. Forward and reverse calls share `--geocode-limit`.
 
 Canonical builds publish selected `attributes.country_code`, `city`, and `region` with
 member/derivation provenance. A versioned location artifact binds normalization and point;
 old coordinate-only geocode checkpoints do not establish enrichment. Existing completed
 cohorts are preserved; deploying this code does not mass-backfill historical records.
+
+### Location assessment and publication gate
+
+`location-assessment-v1` adds a deterministic decision after location evidence exists.
+It appends an input-hashed assessment bound to the exact observation, normalization,
+geocode and point/provenance snapshot; `research_pois.active_location_assessment_id`
+selects the current assessment. Outcomes are `accepted`, `needs_review` and `unlocated`.
+The snapshot and reasons remain available through `ingest:trace`. This is separate from
+the file-level quality review and from venue/edition ground truth.
+
+The policy accepts precise source/inferred candidates within 250 m with a listed
+country and no country/region conflict. A single precise candidate requires bound
+reverse evidence agreeing with the listed country/city within the 1 km reverse guard.
+Inferred candidates must match their forward artifact and retain the listed-text query.
+Coarse results, conflicts, absent evidence and stale bindings require review. A constrained
+forward lookup is not independent confirmation of its country filter. Accepted means a
+usable discovery point; venue and edition verification stay false.
+
+`matcher-v2` generates/scores candidates using the accepted point. Unresolved records
+are quarantined before identity/membership changes, with assessment ID and reasons.
+Existing canonical members must also have current accepted assessments before a merge.
+`canonical-build-v6` gates all current members before publication and retains each
+assessment ID in build inputs and hash. Disagreeing accepted member points block the
+build. Both original coordinate slots remain visible through the API; equal values
+retain two evidence records and one marker.
+
+An uncertain refresh retains the previous accepted serving build. A new unresolved
+record remains unpublished. Explicit retirement/exclusion/cleanup still withdraws
+affected output. Assessment binding and build-input checks invalidate successful
+downstream checkpoints and batch reuse; paid provider query caches stay reusable.
+Deploy the additive migration before running the changed ingestion code. There is
+no automatic historical reassessment or backfill. A future assessment policy change
+must also bump matcher/builder versions so file completion proofs become stale.
+
+The [implementation and evaluation record](../working/location-assessments.md) links
+the 94-case packet regression, read-only preview and rollout boundaries. Resolve a
+quarantine only after evidence or its responsible code changes, through the existing
+owned-maintenance issue retry workflow. Do not re-run unchanged conflicts in a loop.
+
 That Festival Site's split listing labels mix cities, regions and countries. Its version-4
 extractor retains them in `source_location_hints` and the original observation, while
 leaving administrative columns for the coordinate lookup. The normalization resolver

@@ -94,3 +94,32 @@ Source files and research notes live under `data/poi/`. Folder-specific instruct
   binaries. Cloud agent hosts should run `bash scripts/agent-env.sh setup`.
 - Before launch, baseline-style migrations may still be rewritten for a greenfield DB. After
   launch, migrations should be append-only.
+
+## Location assessment regression and preview
+
+Use the [ingestion runbook](../../data/poi-ingestion.md#location-assessment-and-publication-gate)
+for the policy, publication behavior, cache identity and rollout rules. These checks
+use the committed review evidence and do not call providers:
+
+```bash
+pnpm --filter @lib/db-map ingest:test-location-assessment
+pnpm --filter @lib/db-map check-types
+```
+
+Database integration requires an explicitly named, disposable local PostgreSQL database.
+It refuses other database names/hosts, rolls its fixtures back, and fails any network
+provider request. Use a database with this checkout's migrations:
+
+```bash
+DB_MAP_URL=postgresql://127.0.0.1:55440/map_location_assessment_test pnpm --filter @lib/db-map db:migrate
+MAP_LOCATION_ASSESSMENT_TEST_URL=postgresql://127.0.0.1:55440/map_location_assessment_test pnpm --filter @lib/db-map ingest:test-location-assessment:integration
+```
+
+Preview the current policy for 1–100 explicit research POI IDs. The command uses a
+read-only repeatable snapshot, returns JSON with missing IDs/status/reasons, and does
+not activate assessments, alter publication or make provider calls. It also works
+before the new assessment migration, using the existing source artifacts:
+
+```bash
+pnpm --silent --filter @lib/db-map ingest:location-assess --records <UUID,UUID,...>
+```

@@ -1,3 +1,5 @@
+import { locationAssessmentInputSql } from "../../sql/location-assessments.js";
+import { LOCATION_ASSESSMENT_VERSION } from "./location-assessment.js";
 /** Run with an explicitly named disposable PostgreSQL database; never DB_MAP_URL. */
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -33,25 +35,28 @@ test(
       CREATE TEMP TABLE research_ingest_executions(id text PRIMARY KEY,scheduler_version int);
       CREATE TEMP TABLE research_ingest_run_items(run_id text,source_record_id text,research_poi_id text,observation_id text,source_ordinal int);
       CREATE TEMP TABLE research_ingest_attempts(id text,run_id text,target_key text,stage text,status text,output jsonb,started_at timestamptz DEFAULT now());
-      CREATE TEMP TABLE research_pois(id text,active_observation_id text,active_normalization_id text,active_geocode_id text,active_embedding_id text,canonical_poi_id text,normalization_state text,retired_at timestamptz,is_poi boolean,lat real,lng real,attributes jsonb,content_embedding text);
-      CREATE TEMP TABLE research_poi_normalizations(id text,observation_id text);
-      CREATE TEMP TABLE research_poi_geocodes(id text,normalization_id text,provider_version text,validation jsonb);
+      CREATE TEMP TABLE research_pois(active_location_assessment_id text,coordinate_source text,coordinate_precision text,country_code text,city text,region text,address text,id text,active_observation_id text,active_normalization_id text,active_geocode_id text,active_embedding_id text,canonical_poi_id text,normalization_state text,retired_at timestamptz,is_poi boolean,lat real,lng real,attributes jsonb,content_embedding text);
+      CREATE TEMP TABLE research_poi_normalizations(id text,observation_id text,research_poi_id text);
+      CREATE TEMP TABLE research_poi_observations(id text,research_poi_id text,captured jsonb);
+      CREATE TEMP TABLE research_poi_location_assessments(id text,research_poi_id text,policy_version text,status text,input_snapshot jsonb);
+      CREATE TEMP TABLE research_poi_geocodes(id text,normalization_id text,provider_version text,validation jsonb,status text,lat real,lng real);
       CREATE TEMP TABLE research_poi_embeddings(id text,normalization_id text);
       CREATE TEMP TABLE research_canonical_memberships(id text,research_poi_id text,normalization_id text,canonical_poi_id text,active boolean);
       CREATE TEMP TABLE canonical_pois(id text,active_build_id text,status text);
       CREATE TEMP TABLE canonical_poi_builds(id text,builder_version text);
-      CREATE TEMP TABLE canonical_poi_build_inputs(build_id text,membership_id text,normalization_id text,embedding_id text,geocode_id text);
+      CREATE TEMP TABLE canonical_poi_build_inputs(build_id text,membership_id text,normalization_id text,embedding_id text,geocode_id text,research_poi_id text,location_assessment_id text);
       CREATE TEMP TABLE research_ingest_tasks(run_id text,source_record_id text,stage text,rank int,input jsonb,state text,output jsonb,claim_token text,execution_id text,updated_at timestamptz,finished_at timestamptz,PRIMARY KEY(run_id,source_record_id,stage));
       CREATE TEMP TABLE research_ingest_issues(run_id text,source_record_id text,status text);
       INSERT INTO research_ingest_runs(id) VALUES('run');
       INSERT INTO research_ingest_executions(id) VALUES('execution');
       INSERT INTO research_ingest_run_items VALUES('run','record','poi','observation',1);
-      INSERT INTO research_poi_normalizations VALUES('normalization','observation');
+      INSERT INTO research_poi_normalizations VALUES('normalization','observation','poi');
+      INSERT INTO research_poi_observations VALUES('observation','poi','{}');
       INSERT INTO research_poi_embeddings VALUES('embedding','normalization');
       INSERT INTO research_canonical_memberships VALUES('membership','poi','normalization','canonical',true);
       INSERT INTO canonical_pois VALUES('canonical','build','published');
       INSERT INTO canonical_poi_builds VALUES('build','canonical-build-v4');
-      INSERT INTO canonical_poi_build_inputs VALUES('build','membership','normalization','embedding','geocode');
+      INSERT INTO canonical_poi_build_inputs VALUES('build','membership','normalization','embedding','geocode','poi','assessment');
     `);
       const coordinate_evidence = {
         source_coordinates: {
@@ -64,11 +69,11 @@ test(
         inferred_coordinates: null,
       };
       await client.query(
-        "INSERT INTO research_poi_geocodes VALUES('geocode','normalization',$1,$2)",
+        "INSERT INTO research_poi_geocodes VALUES('geocode','normalization',$1,$2,'resolved',30,-97)",
         [LOCATION_GEOCODER_VERSION, { coordinate_evidence }],
       );
       await client.query(
-        `INSERT INTO research_pois VALUES('poi','observation','normalization','geocode','embedding','canonical','active',NULL,true,30,-97,$1,'vector')`,
+        `INSERT INTO research_pois VALUES('assessment','source','point',NULL,NULL,NULL,NULL,'poi','observation','normalization','geocode','embedding','canonical','active',NULL,true,30,-97,$1,'vector')`,
         [
           {
             location_enrichment: {
@@ -146,6 +151,11 @@ test(
         canonicalBuilder: "canonical-build-v4",
       };
       assert.deepEqual(resumePipelineUpgrade(old)?.to, PIPELINE_VERSIONS);
+      await client.query(
+        `INSERT INTO research_poi_location_assessments
+        SELECT 'assessment','poi',$1,'accepted',${locationAssessmentInputSql()} FROM research_pois rp`,
+        [LOCATION_ASSESSMENT_VERSION],
+      );
       // Simulate publication by the existing match-stage rebuild path, retaining all input IDs.
       await client.query("UPDATE canonical_poi_builds SET builder_version=$1", [
         PIPELINE_VERSIONS.canonicalBuilder,

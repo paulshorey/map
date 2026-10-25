@@ -831,7 +831,8 @@ async function activateNormalization(
           [row.id, normalizationId, currentAttempt()?.runId ?? null],
         );
       }
-      if (row.canonical_poi_id) {
+      // Hold the previous serving snapshot until the refreshed location is assessed.
+      if (row.canonical_poi_id && !resolved.isPoi) {
         await rebuildCanonicalPoi(client as PoolClient, row.canonical_poi_id, {
           noLlm: true,
         });

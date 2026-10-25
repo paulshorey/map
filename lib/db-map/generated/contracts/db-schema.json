@@ -86,6 +86,11 @@
       "column": "membership_id",
       "nullable": true,
       "type": "string"
+    },
+    {
+      "column": "location_assessment_id",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "canonical_poi_builds": [
@@ -1954,6 +1959,78 @@
       "type": "Date"
     }
   ],
+  "research_poi_location_assessments": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "research_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "observation_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "normalization_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "geocode_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "policy_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "input_hash",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "input_snapshot",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "accepted_kind",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "accepted_point",
+      "nullable": true,
+      "type": "unknown"
+    },
+    {
+      "column": "reasons",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "evidence",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
   "research_poi_normalization_occurrences": [
     {
       "column": "id",
@@ -2463,6 +2540,11 @@
     },
     {
       "column": "active_embedding_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "active_location_assessment_id",
       "nullable": true,
       "type": "string"
     }

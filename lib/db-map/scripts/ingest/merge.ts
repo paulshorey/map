@@ -1,3 +1,13 @@
+import {
+  ensureLocationAssessment,
+  publicationAwaitingLocationSql,
+} from "../../sql/location-assessments.js";
+import { haversineMeters } from "./match/geo.js";
+import { countryToCode } from "./normalize/country.js";
+import {
+  LOCATION_ASSESSMENT_VERSION,
+  POINT_AGREEMENT_METERS,
+} from "./location-assessment.js";
 import { canonicalLocation } from "./canonical-location.js";
 import {
   canonicalPoints,
@@ -16,6 +26,7 @@ import { stableHash } from "./hash.js";
 interface MergeRow {
   id: string;
   membership_id: string;
+  active_location_assessment_id?: string;
   active_normalization_id: string | null;
   active_geocode_id: string | null;
   active_embedding_id: string | null;
@@ -524,10 +535,19 @@ export async function rebuildCanonicalPoi(
   client: PoolClient,
   canonicalId: string,
   opts: RebuildOptions,
-): Promise<void> {
+): Promise<{ published: boolean; reason?: string }> {
   await client.query("SELECT pg_advisory_xact_lock($1)", [
     CANONICAL_WRITER_LOCK,
   ]);
+  // Explicit retirement/exclusion/cleanup must not keep serving removed members.
+  // An uncertain refresh of a live member retains its previous accepted snapshot.
+  await client.query(
+    `UPDATE canonical_pois cp SET status='hidden',updated_at=now()
+    WHERE cp.id=$1 AND cp.status<>'hidden' AND (cp.active_build_id IS NULL OR EXISTS(
+      SELECT 1 FROM canonical_poi_build_inputs bi JOIN research_pois rp ON rp.id=bi.research_poi_id
+      WHERE bi.build_id=cp.active_build_id AND (rp.retired_at IS NOT NULL OR NOT rp.is_poi)))`,
+    [canonicalId],
+  );
   const { rows } = await client.query<MergeRow>(
     `SELECT
        rp.id, m.id AS membership_id, rp.active_normalization_id, rp.active_geocode_id,
@@ -548,6 +568,12 @@ export async function rebuildCanonicalPoi(
   );
 
   if (rows.length === 0) {
+    const held = await client.query(
+      `SELECT ${publicationAwaitingLocationSql()} AS held FROM canonical_pois cp WHERE cp.id=$1`,
+      [canonicalId],
+    );
+    if (held.rows[0]?.held)
+      return { published: false, reason: "location_refresh_pending" };
     await client.query(
       `DELETE FROM canonical_poi_occurrences WHERE poi_id = $1`,
       [canonicalId],
@@ -556,8 +582,49 @@ export async function rebuildCanonicalPoi(
       `UPDATE canonical_pois SET status = 'hidden', updated_at = now() WHERE id = $1`,
       [canonicalId],
     );
-    return;
+    return { published: false, reason: "no_active_members" };
   }
+
+  // Assess and fence every member before touching any published fields or children.
+  const acceptedRows: MergeRow[] = [];
+  for (const row of [...rows].sort((a, b) => a.id.localeCompare(b.id))) {
+    const assessment = await ensureLocationAssessment(client, row.id);
+    if (assessment.status !== "accepted" || !assessment.accepted_point)
+      return {
+        published: false,
+        reason: "location_assessment_" + assessment.status,
+      };
+    row.active_location_assessment_id = assessment.id;
+    acceptedRows.push({
+      ...row,
+      lat: assessment.accepted_point.lat,
+      lng: assessment.accepted_point.lng,
+      coordinate_precision: assessment.accepted_point.precision,
+      coordinate_source: assessment.accepted_kind,
+    });
+  }
+  if (
+    new Set(
+      acceptedRows
+        .map((row) => countryToCode(row.country_code))
+        .filter(Boolean),
+    ).size > 1
+  )
+    return { published: false, reason: "canonical_country_conflict" };
+  if (
+    acceptedRows.some((r, index) =>
+      acceptedRows
+        .slice(index + 1)
+        .some(
+          (other) =>
+            haversineMeters(
+              { lat: r.lat!, lng: r.lng! },
+              { lat: other.lat!, lng: other.lng! },
+            ) > POINT_AGREEMENT_METERS,
+        ),
+    )
+  )
+    return { published: false, reason: "canonical_location_conflict" };
 
   const name = chooseText(rows, (row) => row.name, { preferShorter: true });
   const description = await chooseDescription(rows, opts.noLlm, name.value);
@@ -566,17 +633,11 @@ export async function rebuildCanonicalPoi(
 
   const hours = chooseText(rows, (row) => row.hours);
   const photo = chooseText(rows, (row) => row.photo_url);
-  let coords = chooseCoordinates(rows);
-  const evidence = canonicalCoordinateEvidence(rows, coords.row);
-  const preferred =
-    evidence.source_coordinates ?? evidence.inferred_coordinates;
-  if (preferred)
-    coords = {
-      value: { lat: preferred.lat, lng: preferred.lng },
-      row: rows.find((r) => r.id === preferred.research_id) ?? null,
-    };
-  const points = canonicalPoints(rows, coords.row);
-  const location = canonicalLocation(rows, coords.row);
+  const coords = chooseCoordinates(acceptedRows);
+  const anchor = rows.find((r) => r.id === coords.row?.id) ?? null;
+  const evidence = canonicalCoordinateEvidence(rows, anchor);
+  const points = canonicalPoints(rows, anchor);
+  const location = canonicalLocation(acceptedRows, coords.row);
   const address = location.address;
   const occurrences = await syncOccurrences(client, canonicalId, rows);
   const dates = chooseRepresentativeOccurrence(occurrences);
@@ -584,6 +645,16 @@ export async function rebuildCanonicalPoi(
   const popularity = new Set(rows.map((row) => row.source_id)).size;
   const attributes = mergeAttributes(rows);
   attributes.coordinate_evidence = evidence;
+  attributes.location_assessment = {
+    status: "accepted",
+    policy_version: LOCATION_ASSESSMENT_VERSION,
+    accepted_kind: coords.row?.coordinate_source,
+    assessment_id: anchor?.active_location_assessment_id,
+    research_id: anchor?.id,
+    accepted_point: coords.value,
+    venue_verified: false,
+    edition_verified: false,
+  };
   for (const field of ["country_code", "city", "region"] as const) {
     if (location[field].value) attributes[field] = location[field].value;
     else delete attributes[field];
@@ -644,7 +715,7 @@ export async function rebuildCanonicalPoi(
        WHERE id = $1`,
       [canonicalId, finalName, popularity, JSON.stringify(fieldProvenance)],
     );
-    return;
+    return { published: false, reason: "missing_accepted_point" };
   }
 
   await client.query(
@@ -718,6 +789,7 @@ export async function rebuildCanonicalPoi(
         geocode_id: row.active_geocode_id,
         embedding_id: row.active_embedding_id,
         membership_id: row.membership_id,
+        location_assessment_id: row.active_location_assessment_id,
       }))
       .sort((a, b) => a.research_id.localeCompare(b.research_id)),
     fields: buildFields,
@@ -745,8 +817,8 @@ export async function rebuildCanonicalPoi(
   for (const row of rows) {
     await client.query(
       `INSERT INTO canonical_poi_build_inputs (
-         build_id, research_poi_id, normalization_id, geocode_id, embedding_id, membership_id
-       ) VALUES ($1,$2,$3,$4,$5,$6)`,
+         build_id, research_poi_id, normalization_id, geocode_id, embedding_id, membership_id, location_assessment_id
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
       [
         builds[0]!.id,
         row.id,
@@ -754,6 +826,7 @@ export async function rebuildCanonicalPoi(
         row.active_geocode_id,
         row.active_embedding_id,
         row.membership_id,
+        row.active_location_assessment_id,
       ],
     );
   }
@@ -761,4 +834,5 @@ export async function rebuildCanonicalPoi(
     `UPDATE canonical_pois SET active_build_id = $2 WHERE id = $1`,
     [canonicalId, builds[0]!.id],
   );
+  return { published: !!primaryCategoryId && points.length > 0 };
 }

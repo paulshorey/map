@@ -1,3 +1,5 @@
+import { acceptedLocationSql } from "../../../sql/location-assessments.js";
+import { CANONICAL_WRITER_LOCK } from "../../../lib/ingestion/locks.js";
 import { currentAttempt, type AttemptResult } from "../execution.js";
 import type { PoolClient } from "pg";
 import { rebuildCanonicalPoi } from "../merge.js";
@@ -148,6 +150,9 @@ async function loadCanonicals(client: PoolClient): Promise<CanonicalRow[]> {
      LEFT JOIN research_pois rp ON rp.canonical_poi_id = cp.id AND rp.is_poi
      LEFT JOIN research_sources rs ON rs.id = rp.source_id
      WHERE cp.status <> 'hidden'
+       AND EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.canonical_poi_id=cp.id AND m.active)
+       AND NOT EXISTS(SELECT 1 FROM research_canonical_memberships m JOIN research_pois rp ON rp.id=m.research_poi_id
+         WHERE m.canonical_poi_id=cp.id AND m.active AND NOT (${acceptedLocationSql()}))
      GROUP BY cp.id, primary_cat.slug
      ORDER BY cp.popularity DESC, cp.id`,
   );
@@ -422,7 +427,8 @@ async function applyPlans(
   client: PoolClient,
   plans: MergePlan[],
   opts: ConsolidateOptions,
-): Promise<void> {
+): Promise<number> {
+  let applied = 0;
   const byTarget = new Map<string, MergePlan[]>();
   for (const plan of plans)
     byTarget.set(plan.targetId, [...(byTarget.get(plan.targetId) ?? []), plan]);
@@ -432,6 +438,9 @@ async function applyPlans(
     const apply = async (): Promise<AttemptResult> => {
       await client.query("BEGIN");
       try {
+        await client.query("SELECT pg_advisory_xact_lock($1)", [
+          CANONICAL_WRITER_LOCK,
+        ]);
         for (const plan of targetPlans) {
           await collapseDuplicateCanonicals(
             client,
@@ -440,7 +449,17 @@ async function applyPlans(
             plan.consolidationDecisionId,
           );
         }
-        await rebuildCanonicalPoi(client, targetId, { noLlm: opts.noLlm });
+        const publication = await rebuildCanonicalPoi(client, targetId, {
+          noLlm: opts.noLlm,
+        });
+        if (!publication.published) {
+          await client.query("ROLLBACK");
+          return {
+            status: "blocked",
+            reason: publication.reason,
+            canonical_id: targetId,
+          };
+        }
         await client.query("COMMIT");
         for (const plan of targetPlans) {
           console.log(
@@ -449,6 +468,12 @@ async function applyPlans(
         }
       } catch (err) {
         await client.query("ROLLBACK");
+        if ((err as { code?: string }).code === "location_assessment_required")
+          return {
+            status: "blocked",
+            reason: "location_assessment_required",
+            canonical_id: targetId,
+          };
         throw err;
       }
       return {
@@ -458,16 +483,18 @@ async function applyPlans(
       };
     };
     const ex = currentAttempt()?.execution;
-    if (ex)
-      await ex.attempt(
-        "consolidate",
-        `group:${targetId}`,
-        { plans: targetPlans },
-        apply,
-        false,
-      );
-    else await apply();
+    const result = ex
+      ? await ex.attempt(
+          "consolidate",
+          `group:${targetId}`,
+          { plans: targetPlans },
+          apply,
+          false,
+        )
+      : await apply();
+    if (result.status === "succeeded") applied += targetPlans.length;
   }
+  return applied;
 }
 
 export async function runConsolidation(
@@ -489,8 +516,9 @@ export async function runConsolidation(
       return plans.length;
     }
 
-    await applyPlans(client, plans, opts);
-    total += plans.length;
+    const applied = await applyPlans(client, plans, opts);
+    total += applied;
+    if (applied === 0) return total;
   }
   if (!opts.shouldStop?.())
     throw new Error(
