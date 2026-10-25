@@ -1,5 +1,11 @@
 # Read-only coordinate and presentation review — 2026-10-20 UTC
 
+The 2026-10-25 decision keeps this packet's coordinate contract and makes the
+two-record Biennale.com preflight the next ingestion action. The overlap
+chooser remains a separate map defect. See
+[ingestion-next-decision.md](ingestion-next-decision.md). A same-day read-only
+recount still shows one `canonical-build-v5` canonical and one named-slot row.
+
 Baseline: merged main `0824b9db41a80bde6fb0f58475ca364048ed07b0`.
 The app, POI API queries and map coordinate SQL were unchanged during validation.
 Diagnostic exporter changes are on `codex/location-review-v2`.

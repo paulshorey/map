@@ -1,5 +1,11 @@
 # Source-supplied and text-inferred coordinate evidence
 
+PR #56 is on main (`0d3dbaa`). The slot contract below is current. The
+2026-10-25 decision is to keep it and next run the two-record Biennale.com
+preflight: [ingestion-next-decision.md](ingestion-next-decision.md). The
+validation history and old ownership notes further down are evidence from the
+introduction of the contract.
+
 The human's latest correction on 2026-10-17 replaces the earlier arbitrary two-point /
 physical-role design. The two canonical fields have fixed meanings, independent of
 whether a category knows launch, landing or entrance roles:

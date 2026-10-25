@@ -11,7 +11,10 @@ The existing `ingest:location-audit` remains the aggregate completeness report.
 The [2026-10-20 read-only review](location-review-20261020.md) covers 80 distinct
 POIs and 94 source/build members from merged main. It records actual API/map
 behavior, explicit legacy/missing-evidence limits, the narrow overlapping-marker
-follow-up and a proposed next bounded scope. Its local searchable gallery and
+follow-up and a proposed next bounded scope. The
+[2026-10-25 decision](ingestion-next-decision.md) keeps the two coordinate slots,
+leaves the overlap chooser on a separate map change, and runs the Biennale.com
+preflight before any repair or backfill. The review's local searchable gallery and
 immutable packet paths are listed there. New diagnostic exports use v2 evidence
 fields and support a bounded canonical-ID manifest; see the runbook for syntax.
 Earlier packets and their human judgments remain bound to their original hashes.
