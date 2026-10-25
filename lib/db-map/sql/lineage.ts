@@ -12,6 +12,7 @@ export async function traceResearchRecord(
        'observations', COALESCE((SELECT jsonb_agg(to_jsonb(o) ORDER BY o.last_seen_at DESC) FROM research_poi_observations o WHERE o.research_poi_id=rp.id), '[]'::jsonb),
        'normalizations', COALESCE((SELECT jsonb_agg(to_jsonb(n) ORDER BY n.created_at DESC) FROM research_poi_normalizations n WHERE n.research_poi_id=rp.id), '[]'::jsonb),
        'geocodes', COALESCE((SELECT jsonb_agg(to_jsonb(g) ORDER BY g.created_at DESC) FROM research_poi_geocodes g JOIN research_poi_normalizations n ON n.id=g.normalization_id WHERE n.research_poi_id=rp.id), '[]'::jsonb),
+       'location_assessments', COALESCE((SELECT jsonb_agg(to_jsonb(la) ORDER BY la.created_at DESC) FROM research_poi_location_assessments la WHERE la.research_poi_id=rp.id), '[]'::jsonb),
        'embeddings', COALESCE((SELECT jsonb_agg(to_jsonb(e) ORDER BY e.created_at DESC) FROM research_poi_embeddings e JOIN research_poi_normalizations n ON n.id=e.normalization_id WHERE n.research_poi_id=rp.id), '[]'::jsonb),
        'memberships', COALESCE((SELECT jsonb_agg(to_jsonb(m) ORDER BY m.assigned_at DESC) FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id), '[]'::jsonb),
        'ingest_attempts', COALESCE((SELECT jsonb_agg(to_jsonb(a) ORDER BY a.started_at DESC) FROM research_ingest_attempts a WHERE a.research_poi_id=rp.id), '[]'::jsonb),

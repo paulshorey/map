@@ -14,8 +14,8 @@ export const PIPELINE_VERSIONS = {
   examples: EXAMPLES_VERSION,
   geocode: "locationiq-location-v4",
   embedding: "jina-match-v1",
-  matcher: "matcher-v1",
-  canonicalBuilder: "canonical-build-v5",
+  matcher: "matcher-v2",
+  canonicalBuilder: "canonical-build-v6",
 } as const;
 
 /** Only reviewed checkpoint versions; older proofs also require a fresh full-run audit in inventory. */
@@ -25,7 +25,7 @@ export function compatibleCheckpointVersions(): Record<string, string>[] {
     PIPELINE_VERSIONS.prompt !== "poi-normalize-v4"
   )
     return [];
-  return [
+  const reviewed = [
     {
       ...PIPELINE_VERSIONS,
       normalizer: "hybrid-v3",
@@ -86,6 +86,24 @@ export function compatibleCheckpointVersions(): Record<string, string>[] {
       geocode: "locationiq-location-v2",
       canonicalBuilder: "canonical-build-v2",
     })),
+  ];
+  return [
+    ...reviewed,
+    ...reviewed.map((v) => ({ ...v, matcher: "matcher-v1" })),
+    ...["hybrid-v3", "hybrid-v4", "hybrid-v5", "hybrid-v6"].map(
+      (normalizer) => ({
+        ...PIPELINE_VERSIONS,
+        normalizer,
+        prompt:
+          normalizer === "hybrid-v3"
+            ? "poi-normalize-v2"
+            : normalizer === "hybrid-v4"
+              ? "poi-normalize-v3"
+              : "poi-normalize-v4",
+        matcher: "matcher-v1",
+        canonicalBuilder: "canonical-build-v5",
+      }),
+    ),
   ];
 }
 

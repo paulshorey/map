@@ -22,6 +22,7 @@ export interface CanonicalPoiBuildInputsRow {
   "geocode_id": string | null;
   "embedding_id": string | null;
   "membership_id": string | null;
+  "location_assessment_id": string | null;
 }
 
 export interface CanonicalPoiBuildsRow {
@@ -483,6 +484,23 @@ export interface ResearchPoiGeocodesRow {
   "activated_at": Date | null;
 }
 
+export interface ResearchPoiLocationAssessmentsRow {
+  "id": string;
+  "research_poi_id": string;
+  "observation_id": string;
+  "normalization_id": string;
+  "geocode_id": string | null;
+  "policy_version": string;
+  "input_hash": string;
+  "input_snapshot": unknown;
+  "status": string;
+  "accepted_kind": string | null;
+  "accepted_point": unknown | null;
+  "reasons": Array<string>;
+  "evidence": unknown;
+  "created_at": Date;
+}
+
 export interface ResearchPoiNormalizationOccurrencesRow {
   "id": string;
   "normalization_id": string;
@@ -594,6 +612,7 @@ export interface ResearchPoisRow {
   "identity_inputs": unknown | null;
   "active_geocode_id": string | null;
   "active_embedding_id": string | null;
+  "active_location_assessment_id": string | null;
 }
 
 export interface ResearchPoisCurrentRow {
@@ -726,6 +745,7 @@ export interface PostgresDbSchema {
   "research_pipeline_jobs": ResearchPipelineJobsRow;
   "research_poi_embeddings": ResearchPoiEmbeddingsRow;
   "research_poi_geocodes": ResearchPoiGeocodesRow;
+  "research_poi_location_assessments": ResearchPoiLocationAssessmentsRow;
   "research_poi_normalization_occurrences": ResearchPoiNormalizationOccurrencesRow;
   "research_poi_normalizations": ResearchPoiNormalizationsRow;
   "research_poi_observations": ResearchPoiObservationsRow;

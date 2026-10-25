@@ -1,3 +1,7 @@
+import {
+  acceptedLocationSql,
+  assessLocationRecord,
+} from "../../sql/location-assessments.js";
 import { locationReadySql } from "./location.js";
 import { measureDatabase } from "./database-telemetry.js";
 import { runRecordScheduler } from "./record-scheduler.js";
@@ -358,7 +362,12 @@ export async function observeRecord(
      LEFT JOIN research_poi_observations o ON o.id = rp.active_observation_id
      WHERE rp.source_id = $1 AND rp.source_record_id = $2
      FOR UPDATE OF rp`,
-    [ctx.sourceId, record.source_record_id, JSON.stringify(capturedRecord(record)), sourceIsPoi],
+    [
+      ctx.sourceId,
+      record.source_record_id,
+      JSON.stringify(capturedRecord(record)),
+      sourceIsPoi,
+    ],
   );
 
   let poiId: string;
@@ -406,7 +415,10 @@ export async function observeRecord(
     state = "inserted";
   } else {
     poiId = prior.id;
-    state = prior.raw_content_hash === rawHash.hash && prior.mapping_current ? "unchanged" : "changed";
+    state =
+      prior.raw_content_hash === rawHash.hash && prior.mapping_current
+        ? "unchanged"
+        : "changed";
   }
 
   const observation = await client.query<{ id: string }>(
@@ -886,6 +898,7 @@ async function recordState(db: Pool, item: RunItem) {
     `SELECT rp.id,rp.active_observation_id,rp.active_normalization_id,
     rp.normalization_state,rp.is_poi,rp.lat,rp.lng,rp.name_normalized,rp.category_slugs,
     COALESCE(${locationReadySql()},false) AS location_ready,
+    ${acceptedLocationSql()} AS location_accepted,
     (rp.content_embedding IS NOT NULL) AS has_embedding,rp.active_embedding_id,rp.active_geocode_id,
     rp.canonical_poi_id,rp.retired_at,cp.active_build_id,cp.status AS canonical_status,
     EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id) AS membership_valid,
@@ -893,6 +906,8 @@ async function recordState(db: Pool, item: RunItem) {
       WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
         AND b.build_id=cp.active_build_id AND EXISTS(SELECT 1 FROM canonical_poi_builds cb
           WHERE cb.id=b.build_id AND cb.builder_version='${PIPELINE_VERSIONS.canonicalBuilder}')
+        AND ${acceptedLocationSql()}
+        AND b.location_assessment_id=rp.active_location_assessment_id
         AND b.normalization_id=rp.active_normalization_id
         AND b.embedding_id IS NOT DISTINCT FROM rp.active_embedding_id AND b.geocode_id IS NOT DISTINCT FROM rp.active_geocode_id) AS lineage_ready,
     rp.city,rp.region
@@ -1248,6 +1263,10 @@ export async function runOrchestration(
               if (stats.budgetHit)
                 return { status: "waiting_budget", ...stats };
               const after = await recordState(db, item);
+              const assessment = await assessLocationRecord(
+                db,
+                item.research_poi_id!,
+              );
               return {
                 status:
                   after.lat !== null && after.lng !== null
@@ -1256,6 +1275,8 @@ export async function runOrchestration(
                 reason: stats.noQuery ? "missing_locality" : "geocode_result",
                 ...stats,
                 geocode_id: after.active_geocode_id,
+                location_assessment_id: assessment.id,
+                location_reasons: assessment.reasons,
               };
             }
             if (stage === "embed") {
@@ -1280,11 +1301,22 @@ export async function runOrchestration(
               };
             }
             if (stage === "match") {
+              const assessment = await assessLocationRecord(
+                db,
+                item.research_poi_id!,
+              );
+              if (assessment.status !== "accepted")
+                return {
+                  status: "blocked",
+                  reason: "location_assessment_" + assessment.status,
+                  location_assessment_id: assessment.id,
+                  location_reasons: assessment.reasons,
+                };
               if (state.canonical_poi_id && state.membership_valid) {
-                if (!state.lineage_ready)
-                  await canonicalLane.run(() =>
+                if (!(await recordState(db, item)).lineage_ready) {
+                  const publication = await canonicalLane.run(() =>
                     artifactTransaction(db, async (client) => {
-                      await rebuildCanonicalPoi(
+                      const publication = await rebuildCanonicalPoi(
                         client,
                         state.canonical_poi_id,
                         { noLlm: opts.noLlm },
@@ -1296,18 +1328,32 @@ export async function runOrchestration(
                         )
                       ).rows[0];
                       return {
-                        value: undefined,
+                        value: publication,
                         output: {
-                          status: "succeeded",
+                          status: publication.published
+                            ? "succeeded"
+                            : "blocked",
+                          reason: publication.reason,
                           canonical_id: state.canonical_poi_id,
                           build_id: build.active_build_id,
                         },
                       };
                     }),
                   );
+                  if (!publication.published)
+                    return {
+                      status: "blocked",
+                      reason: publication.reason,
+                      canonical_id: state.canonical_poi_id,
+                      location_assessment_id: assessment.id,
+                    };
+                }
                 const ready = await recordState(db, item);
                 return {
-                  status: "reused",
+                  status: ready.lineage_ready ? "reused" : "blocked",
+                  reason: ready.lineage_ready
+                    ? undefined
+                    : "canonical_location_assessment_required",
                   canonical_id: state.canonical_poi_id,
                   build_id: ready.active_build_id,
                 };
@@ -1344,7 +1390,11 @@ export async function runOrchestration(
               );
               const after = await recordState(db, item);
               if (!after.canonical_poi_id)
-                throw new Error("Matcher returned without a canonical link");
+                return {
+                  status: "blocked",
+                  reason: "match_location_blocked",
+                  ...stats,
+                };
               return {
                 status: "succeeded",
                 ...stats,
@@ -1352,6 +1402,11 @@ export async function runOrchestration(
                 build_id: after.active_build_id,
               };
             }
+            if (!state.location_accepted)
+              return {
+                status: "blocked",
+                reason: "location_assessment_required",
+              };
             if (!state.lineage_ready)
               throw Object.assign(
                 new Error("Canonical build input lineage mismatch"),

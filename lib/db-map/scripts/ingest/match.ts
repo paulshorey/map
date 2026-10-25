@@ -1,3 +1,9 @@
+import {
+  ensureLocationAssessment,
+  canonicalsHaveAcceptedLocations,
+} from "../../sql/location-assessments.js";
+import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
+import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { canonicalLane } from "./concurrency.js";
 import { currentAttempt } from "./execution.js";
 import { finishTask } from "../../sql/ingestion-tasks.js";
@@ -42,7 +48,7 @@ import { scoreCandidate, type CandidateScore } from "./match/score.js";
 import { LlmError } from "./providers/llm.js";
 
 const ADVISORY_LOCK_ID = 0x5018a;
-const MATCHER_VERSION = "matcher-v1";
+const MATCHER_VERSION = PIPELINE_VERSIONS.matcher;
 const DEFAULT_RADIUS_M = 300;
 const RADIUS_BY_SLUG: Record<string, number> = {
   gardens: 600,
@@ -1311,7 +1317,24 @@ async function applyDecision(
      FROM research_pois WHERE id = $1`,
     [row.id, canonicalId, decisionId, MATCHER_VERSION, opts.runId ?? null],
   );
-  await rebuildCanonicalPoi(client, canonicalId, { noLlm: opts.noLlm });
+  const publication = await rebuildCanonicalPoi(client, canonicalId, {
+    noLlm: opts.noLlm,
+  });
+  if (!publication.published)
+    throw Object.assign(
+      new Error(publication.reason ?? "publication_blocked"),
+      { code: "location_publication_blocked" },
+    );
+  // Retire an old serving snapshot only after an accepted replacement exists.
+  const prior = await client.query<{ canonical_poi_id: string }>(
+    `SELECT DISTINCT b.canonical_poi_id
+    FROM canonical_poi_build_inputs i JOIN canonical_poi_builds b ON b.id=i.build_id
+    JOIN canonical_pois cp ON cp.active_build_id=b.id
+    WHERE i.research_poi_id=$1 AND b.canonical_poi_id<>$2`,
+    [row.id, canonicalId],
+  );
+  for (const old of prior.rows)
+    await rebuildCanonicalPoi(client, old.canonical_poi_id, { noLlm: true });
   return canonicalId;
 }
 
@@ -1397,10 +1420,14 @@ async function runMatchInternal(
     ) {
       await client.query("BEGIN");
       try {
+        // All canonical writers take this lock before locking member projections.
+        await client.query("SELECT pg_advisory_xact_lock($1)", [
+          CANONICAL_WRITER_LOCK,
+        ]);
         const row = await fetchNextRow(
           client,
           sourceId,
-          opts.dryRun ? dryRunSeen : undefined,
+          dryRunSeen,
           opts.recordId,
         );
         if (!row) {
@@ -1408,7 +1435,43 @@ async function runMatchInternal(
           break;
         }
 
+        const assessment = await ensureLocationAssessment(client, row.id);
+        const block = async (reason: string) => {
+          const ctx = currentAttempt();
+          if (!opts.dryRun && ctx?.claim)
+            await finishTask(client, ctx.claim, ctx.attemptId, {
+              status: "blocked",
+              reason,
+              location_assessment_id: assessment.id,
+              location_reasons: assessment.reasons,
+            });
+          await client.query(opts.dryRun ? "ROLLBACK" : "COMMIT");
+          if (!opts.dryRun && ctx?.claim) ctx.committed = true;
+          dryRunSeen.add(row.id);
+          stats.processed++;
+          stats.skipped++;
+          console.log(`BLOCKED ${row.name ?? row.id}: ${reason}`);
+        };
+        if (assessment.status !== "accepted" || !assessment.accepted_point) {
+          await block("location_assessment_" + assessment.status);
+          continue;
+        }
+        row.lat = assessment.accepted_point.lat;
+        row.lng = assessment.accepted_point.lng;
+        row.coordinate_precision = assessment.accepted_point.precision;
         const decision = await decideRow(client, row, opts);
+        decision.signals.location_assessment_id = assessment.id;
+        if (
+          decision.decision === "merge" &&
+          decision.candidatePoiId &&
+          !(await canonicalsHaveAcceptedLocations(client, [
+            decision.candidatePoiId,
+            ...(decision.duplicateCanonicalIds ?? []),
+          ]))
+        ) {
+          await block("candidate_location_assessment_required");
+          continue;
+        }
         if (opts.dryRun) {
           await client.query("ROLLBACK");
           dryRunSeen.add(row.id);
@@ -1418,7 +1481,22 @@ async function runMatchInternal(
               ` (${decision.method}${decision.score !== null ? ` ${decision.score.toFixed(3)}` : ""})`,
           );
         } else {
-          const canonicalId = await applyDecision(client, row, decision, opts);
+          await client.query("SAVEPOINT location_match_application");
+          let canonicalId: string;
+          try {
+            canonicalId = await applyDecision(client, row, decision, opts);
+          } catch (error) {
+            if (
+              (error as { code?: string }).code !==
+              "location_publication_blocked"
+            )
+              throw error;
+            await client.query(
+              "ROLLBACK TO SAVEPOINT location_match_application",
+            );
+            await block((error as Error).message);
+            continue;
+          }
           const ctx = currentAttempt();
           if (ctx?.claim) {
             const build = (

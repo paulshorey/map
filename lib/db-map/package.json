@@ -83,7 +83,10 @@
     "ingest:test-two-locations": "tsx --test scripts/ingest/two-locations.test.ts",
     "ingest:test-two-locations:integration": "tsx scripts/ingest/two-locations.integration.ts",
     "ingest:test-observation-mapping:integration": "tsx scripts/ingest/observation-mapping.integration.ts",
-    "ingest:test-location:integration": "tsx scripts/ingest/location.integration.ts"
+    "ingest:test-location:integration": "tsx scripts/ingest/location.integration.ts",
+    "ingest:location-assess": "tsx scripts/ingest/assess-locations.ts",
+    "ingest:test-location-assessment": "tsx --test scripts/ingest/location-assessment.test.ts",
+    "ingest:test-location-assessment:integration": "tsx --test scripts/ingest/location-assessment.integration.test.ts"
   },
   "dependencies": {
     "csv-parse": "^7.0.1",

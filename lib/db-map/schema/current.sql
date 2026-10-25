@@ -22,6 +22,25 @@ SET row_security = off;
 
 
 
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
+--
+
+
+
+--
+-- Name: reject_location_assessment_update(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.reject_location_assessment_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RAISE EXCEPTION 'Location assessments are immutable; append a new version instead' USING ERRCODE = '23000';
+END;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -55,7 +74,8 @@ CREATE TABLE public.canonical_poi_build_inputs (
     normalization_id uuid,
     geocode_id uuid,
     embedding_id uuid,
-    membership_id uuid
+    membership_id uuid,
+    location_assessment_id uuid
 );
 
 
@@ -779,6 +799,38 @@ CREATE TABLE public.research_poi_geocodes (
 
 
 --
+-- Name: research_poi_location_assessments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_poi_location_assessments (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    research_poi_id uuid NOT NULL,
+    observation_id uuid NOT NULL,
+    normalization_id uuid NOT NULL,
+    geocode_id uuid,
+    policy_version text NOT NULL,
+    input_hash text NOT NULL,
+    input_snapshot jsonb NOT NULL,
+    status text NOT NULL,
+    accepted_kind text,
+    accepted_point jsonb,
+    reasons text[] NOT NULL,
+    evidence jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_poi_location_assessments_accepted_kind_check CHECK ((accepted_kind = ANY (ARRAY['source'::text, 'inferred'::text]))),
+    CONSTRAINT research_poi_location_assessments_check CHECK ((((status = 'accepted'::text) AND (accepted_kind IS NOT NULL) AND (accepted_point IS NOT NULL)) OR ((status <> 'accepted'::text) AND (accepted_kind IS NULL) AND (accepted_point IS NULL)))),
+    CONSTRAINT research_poi_location_assessments_status_check CHECK ((status = ANY (ARRAY['accepted'::text, 'needs_review'::text, 'unlocated'::text])))
+);
+
+
+--
+-- Name: TABLE research_poi_location_assessments; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.research_poi_location_assessments IS 'Append-only policy assessments bound to exact observation, normalization, geocode and projection inputs. Accepted means usable discovery point, not verified venue or edition.';
+
+
+--
 -- Name: research_poi_normalization_occurrences; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -912,6 +964,7 @@ CREATE TABLE public.research_pois (
     identity_inputs jsonb,
     active_geocode_id uuid,
     active_embedding_id uuid,
+    active_location_assessment_id uuid,
     CONSTRAINT research_pois_coordinate_precision_check CHECK ((coordinate_precision = ANY (ARRAY['point'::text, 'city'::text, 'region'::text]))),
     CONSTRAINT research_pois_coordinate_source_check CHECK ((coordinate_source = ANY (ARRAY['source'::text, 'url'::text, 'geocode'::text]))),
     CONSTRAINT research_pois_date_precision_check CHECK ((date_precision = ANY (ARRAY['datetime'::text, 'day'::text, 'month'::text, 'year'::text]))),
@@ -1412,6 +1465,22 @@ ALTER TABLE ONLY public.research_poi_geocodes
 
 
 --
+-- Name: research_poi_location_assessments research_poi_location_assessm_research_poi_id_policy_versio_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_location_assessments
+    ADD CONSTRAINT research_poi_location_assessm_research_poi_id_policy_versio_key UNIQUE (research_poi_id, policy_version, input_hash);
+
+
+--
+-- Name: research_poi_location_assessments research_poi_location_assessments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_location_assessments
+    ADD CONSTRAINT research_poi_location_assessments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: research_poi_normalization_occurrences research_poi_normalization_occur_normalization_id_starts_at_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1785,6 +1854,13 @@ CREATE INDEX research_ingest_tasks_state_idx ON public.research_ingest_tasks USI
 
 
 --
+-- Name: research_location_assessments_history_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_location_assessments_history_idx ON public.research_poi_location_assessments USING btree (research_poi_id, created_at DESC);
+
+
+--
 -- Name: research_match_decisions_research_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1911,6 +1987,13 @@ CREATE INDEX research_pois_todo_normalize ON public.research_pois USING btree (i
 
 
 --
+-- Name: research_poi_location_assessments location_assessment_immutable; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER location_assessment_immutable BEFORE UPDATE ON public.research_poi_location_assessments FOR EACH ROW EXECUTE FUNCTION public.reject_location_assessment_update();
+
+
+--
 -- Name: canonical_categories canonical_categories_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1924,6 +2007,14 @@ ALTER TABLE ONLY public.canonical_categories
 
 ALTER TABLE ONLY public.canonical_poi_build_inputs
     ADD CONSTRAINT canonical_poi_build_inputs_build_id_fkey FOREIGN KEY (build_id) REFERENCES public.canonical_poi_builds(id) ON DELETE CASCADE;
+
+
+--
+-- Name: canonical_poi_build_inputs canonical_poi_build_inputs_location_assessment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.canonical_poi_build_inputs
+    ADD CONSTRAINT canonical_poi_build_inputs_location_assessment_id_fkey FOREIGN KEY (location_assessment_id) REFERENCES public.research_poi_location_assessments(id) ON DELETE SET NULL;
 
 
 --
@@ -2399,6 +2490,38 @@ ALTER TABLE ONLY public.research_poi_geocodes
 
 
 --
+-- Name: research_poi_location_assessments research_poi_location_assessments_geocode_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_location_assessments
+    ADD CONSTRAINT research_poi_location_assessments_geocode_id_fkey FOREIGN KEY (geocode_id) REFERENCES public.research_poi_geocodes(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_poi_location_assessments research_poi_location_assessments_normalization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_location_assessments
+    ADD CONSTRAINT research_poi_location_assessments_normalization_id_fkey FOREIGN KEY (normalization_id) REFERENCES public.research_poi_normalizations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_poi_location_assessments research_poi_location_assessments_observation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_location_assessments
+    ADD CONSTRAINT research_poi_location_assessments_observation_id_fkey FOREIGN KEY (observation_id) REFERENCES public.research_poi_observations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_poi_location_assessments research_poi_location_assessments_research_poi_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_location_assessments
+    ADD CONSTRAINT research_poi_location_assessments_research_poi_id_fkey FOREIGN KEY (research_poi_id) REFERENCES public.research_pois(id) ON DELETE CASCADE;
+
+
+--
 -- Name: research_poi_normalization_occurrences research_poi_normalization_occurrences_normalization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2460,6 +2583,14 @@ ALTER TABLE ONLY public.research_pois
 
 ALTER TABLE ONLY public.research_pois
     ADD CONSTRAINT research_pois_active_geocode_fkey FOREIGN KEY (active_geocode_id) REFERENCES public.research_poi_geocodes(id) ON DELETE SET NULL;
+
+
+--
+-- Name: research_pois research_pois_active_location_assessment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_pois
+    ADD CONSTRAINT research_pois_active_location_assessment_id_fkey FOREIGN KEY (active_location_assessment_id) REFERENCES public.research_poi_location_assessments(id) ON DELETE SET NULL;
 
 
 --

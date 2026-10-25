@@ -1,0 +1,59 @@
+name: Location regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/db-map/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/location-regression.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/db-map/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/location-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  location:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: map_location_assessment_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_MAP_URL: postgresql://postgres:fixture@127.0.0.1:5432/map_location_assessment_test
+      MAP_LOCATION_ASSESSMENT_TEST_URL: postgresql://postgres:fixture@127.0.0.1:5432/map_location_assessment_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm --filter @lib/db-map db:migrate
+      - run: pnpm --filter @lib/db-map check-types
+      - run: pnpm --filter @lib/db-map ingest:test-location-assessment
+      - run: pnpm --filter @lib/db-map ingest:test-location-assessment:integration
+      - name: Existing location and resume contracts
+        run: >-
+          pnpm --filter @lib/db-map exec tsx --test
+          scripts/ingest/pipeline-versions.test.ts
+          scripts/ingest/location-resume.test.ts
+          scripts/ingest/two-locations.test.ts
+          scripts/ingest/location-review.test.ts
