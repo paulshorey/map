@@ -97,8 +97,8 @@ Source files and research notes live under `data/poi/`. Folder-specific instruct
 
 ## Location assessment regression and preview
 
-Use the [ingestion runbook](../../data/poi-ingestion.md#location-assessment-and-publication-gate)
-for the policy, publication behavior, cache identity and rollout rules. These checks
+Use the [ingestion runbook](../../data/poi-ingestion.md#location-assessment)
+for the advisory policy, publication behavior, cache identity and rollout rules. These checks
 use the committed review evidence and do not call providers:
 
 ```bash

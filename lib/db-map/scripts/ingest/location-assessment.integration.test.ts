@@ -253,7 +253,7 @@ test(
         2,
       );
 
-      // Individually consistent candidates cannot silently resolve conflicting canonical countries.
+      // Cross-country members stay published. The assessment records the difference.
       const foreign = await seed("Conflicting country", 30.0002, -97);
       const foreignValidation = structuredClone(foreign.validation);
       foreignValidation.fields.country_code = "CA";
@@ -281,18 +281,39 @@ test(
         "accepted",
       );
       assert.equal(
-        (await rebuildCanonicalPoi(asClient, cp.id, { noLlm: true })).reason,
-        "canonical_country_conflict",
+        (await rebuildCanonicalPoi(asClient, cp.id, { noLlm: true })).published,
+        true,
       );
-      assert.deepEqual(
+      assert.equal(
         (
-          await client.query("SELECT * FROM canonical_pois WHERE id=$1", [
+          await client.query("SELECT status FROM canonical_pois WHERE id=$1", [
             cp.id,
           ])
-        ).rows[0],
-        cp,
+        ).rows[0].status,
+        "published",
+      );
+      await client.query(
+        "DELETE FROM research_canonical_memberships WHERE research_poi_id=$1",
+        [foreign.id],
       );
       await client.query("DELETE FROM research_pois WHERE id=$1", [foreign.id]);
+      assert.equal(
+        (await rebuildCanonicalPoi(asClient, cp.id, { noLlm: true })).published,
+        true,
+      );
+      assert.equal(
+        (
+          await client.query(
+            "SELECT active_build_id FROM canonical_pois WHERE id=$1",
+            [cp.id],
+          )
+        ).rows[0].active_build_id,
+        build,
+      );
+      await client.query(
+        "DELETE FROM canonical_poi_builds WHERE canonical_poi_id=$1 AND id<>$2",
+        [cp.id, build],
+      );
 
       const inferred = await seed("Inferred campground", 35, -100, "inferred");
       assert.equal(
@@ -341,31 +362,8 @@ test(
       assert.ok(equalDetail.coordinate_evidence.inferred_coordinates);
 
       const legacy = await seed("Unassessed legacy", 40, -110, "legacy");
-      const blocked = await runMatch(db, matchOptions(legacy.id), {
-        requested: false,
-        count: 0,
-      });
-      assert.equal(blocked.skipped, 1);
-      assert.equal(
-        (
-          await client.query(
-            "SELECT canonical_poi_id FROM research_pois WHERE id=$1",
-            [legacy.id],
-          )
-        ).rows[0].canonical_poi_id,
-        null,
-      );
-      assert.equal(
-        (
-          await client.query(
-            "SELECT count(*)::int n FROM research_match_decisions WHERE research_id=$1",
-            [legacy.id],
-          )
-        ).rows[0].n,
-        0,
-      );
 
-      // Same normalization, new conflicting geocode: no published field, child or build changes.
+      // A far inferred point is advisory. Both markers publish.
       const changedGeo = randomUUID(),
         conflict = structuredClone(f.validation);
       conflict.coordinate_evidence.inferred_coordinates!.lat = 40;
@@ -391,19 +389,22 @@ test(
       const second = await ensureLocationAssessment(asClient, f.id);
       assert.notEqual(second.id, first.id);
       assert.equal(second.status, "needs_review");
+      assert.ok(Number(second.evidence.distance_m) > 250);
       assert.equal(
         (await rebuildCanonicalPoi(asClient, cp.id, { noLlm: true })).published,
-        false,
+        true,
       );
-      assert.deepEqual(
-        (
-          await client.query("SELECT * FROM canonical_pois WHERE id=$1", [
-            cp.id,
-          ])
-        ).rows[0],
-        cp,
-      );
-      assert.equal((await getPoiById(db, cp.id)).locations.length, 2);
+      const conflictDetail = await getPoiById(db, cp.id);
+      assert.equal(conflictDetail.locations.length, 2);
+      assert.ok(conflictDetail.coordinate_evidence.source_coordinates);
+      assert.ok(conflictDetail.coordinate_evidence.inferred_coordinates);
+      const conflictBuild = (
+        await client.query(
+          "SELECT active_build_id FROM canonical_pois WHERE id=$1",
+          [cp.id],
+        )
+      ).rows[0].active_build_id;
+      assert.notEqual(conflictBuild, build);
       assert.equal(
         (
           await client.query(
@@ -411,7 +412,7 @@ test(
             [cp.id],
           )
         ).rows[0].n,
-        1,
+        2,
       );
 
       // Exercise the actual scheduler/cache queries on a selected frozen cohort.
@@ -475,10 +476,10 @@ test(
         assert.equal((await pendingStageItems(db, run, stage)).length, 1);
         assert.equal(
           (await prepareStageQueue(db, ex, stage, 1, {} as any)).reused,
-          0,
+          1,
         );
       }
-      assert.equal(reused, 0);
+      assert.equal(reused, 3);
       // A membership retired by normalization does not erase the previous serving snapshot.
       await client.query(
         "UPDATE research_canonical_memberships SET active=false,retired_at=now(),retirement_reason='normalization_changed' WHERE research_poi_id=$1",
@@ -499,7 +500,7 @@ test(
             [cp.id],
           )
         ).rows[0].active_build_id,
-        build,
+        conflictBuild,
       );
       assert.equal(await verifyLineage(db), 0);
 
@@ -562,22 +563,19 @@ test(
         first.id,
       );
 
-      // Consolidation cannot hide or move a canonical with a stale assessment.
+      // A missing assessment pointer does not block consolidation.
       await client.query(
         "UPDATE research_pois SET active_location_assessment_id=NULL WHERE id=$1",
         [inferred.id],
       );
-      await assert.rejects(
-        collapseDuplicateCanonicals(asClient, cp.id, [inferredCanonical]),
-        /requires current accepted locations/,
-      );
+      await collapseDuplicateCanonicals(asClient, cp.id, [inferredCanonical]);
       assert.equal(
         (
           await client.query(
             "SELECT count(*)::int n FROM canonical_poi_redirects",
           )
         ).rows[0].n,
-        0,
+        1,
       );
       assert.equal(
         (
@@ -588,7 +586,7 @@ test(
         ).rows[0].n,
         3,
       );
-      // The managed matcher commits a durable record quarantine rather than failing the file.
+      // Stale geocoder evidence still publishes its usable source point.
       await client.query(
         "INSERT INTO research_ingest_run_items(run_id,source_record_id,source_ordinal,research_poi_id,observation_id) VALUES($1,$2::text,1,$2::uuid,$3)",
         [run, legacy.id, legacy.observation],
@@ -631,16 +629,15 @@ test(
             [run, legacy.id],
           )
         ).rows[0].state,
-        "quarantined",
+        "succeeded",
       );
-      assert.equal(
+      assert.ok(
         (
           await client.query(
-            "SELECT output->>'reason' AS reason FROM research_ingest_attempts WHERE id=$1",
-            [attempt],
+            "SELECT canonical_poi_id FROM research_pois WHERE id=$1",
+            [legacy.id],
           )
-        ).rows[0].reason,
-        "location_assessment_needs_review",
+        ).rows[0].canonical_poi_id,
       );
       // Explicit POI cleanup still cascades through the new artifact graph.
       await client.query(

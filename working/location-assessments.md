@@ -1,5 +1,25 @@
 # Versioned location assessments
 
+## Correction — 2026-10-25
+
+PR #62 merged the acceptance gates below into main (`88bf967`). That merge was
+not a merge into PR #61; #61 is still the open decision note at `e488974`.
+Relative to the clarified goal, the merge was a product mistake. Conflicting
+source and address-derived locations must remain ingestible, visible, and
+analyzable.
+
+`matcher-v3` and `canonical-build-v7` keep the immutable assessment history,
+including `evidence.distance_m` whenever both points exist, and remove
+acceptance from matching, canonical publication, consolidation, and checkpoint
+reuse. Venice's roughly 710 m split stays `needs_review` and still publishes
+both markers. The shared database still has no assessment table, so the
+migration has to be applied before a preflight and does not by itself change
+this behavior.
+
+The sections below describe the withdrawn gate. They are the record of what #62
+shipped, not the current publication contract. The current contract is the
+runbook section "Location assessment".
+
 This implements the accepted next step after the 80-POI location review, on a feature
 branch based on main `27666a5`. Imports and providers remain held. The shared database
 receives no migration, assessment activation, POI repair or ingestion run during development.

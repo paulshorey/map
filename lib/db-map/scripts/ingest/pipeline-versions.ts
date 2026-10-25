@@ -14,8 +14,8 @@ export const PIPELINE_VERSIONS = {
   examples: EXAMPLES_VERSION,
   geocode: "locationiq-location-v4",
   embedding: "jina-match-v1",
-  matcher: "matcher-v2",
-  canonicalBuilder: "canonical-build-v6",
+  matcher: "matcher-v3",
+  canonicalBuilder: "canonical-build-v7",
 } as const;
 
 /** Only reviewed checkpoint versions; older proofs also require a fresh full-run audit in inventory. */
@@ -89,6 +89,13 @@ export function compatibleCheckpointVersions(): Record<string, string>[] {
   ];
   return [
     ...reviewed,
+    // #62 gated publication on an accepted assessment. Those checkpoints remain
+    // resumable; matcher-v3 / canonical-build-v7 publish conflicting evidence.
+    {
+      ...PIPELINE_VERSIONS,
+      matcher: "matcher-v2",
+      canonicalBuilder: "canonical-build-v6",
+    },
     ...reviewed.map((v) => ({ ...v, matcher: "matcher-v1" })),
     ...["hybrid-v3", "hybrid-v4", "hybrid-v5", "hybrid-v6"].map(
       (normalizer) => ({

@@ -1,7 +1,4 @@
-import {
-  ensureLocationAssessment,
-  canonicalsHaveAcceptedLocations,
-} from "../../sql/location-assessments.js";
+import { ensureLocationAssessment } from "../../sql/location-assessments.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { canonicalLane } from "./concurrency.js";
@@ -1452,26 +1449,9 @@ async function runMatchInternal(
           stats.skipped++;
           console.log(`BLOCKED ${row.name ?? row.id}: ${reason}`);
         };
-        if (assessment.status !== "accepted" || !assessment.accepted_point) {
-          await block("location_assessment_" + assessment.status);
-          continue;
-        }
-        row.lat = assessment.accepted_point.lat;
-        row.lng = assessment.accepted_point.lng;
-        row.coordinate_precision = assessment.accepted_point.precision;
         const decision = await decideRow(client, row, opts);
         decision.signals.location_assessment_id = assessment.id;
-        if (
-          decision.decision === "merge" &&
-          decision.candidatePoiId &&
-          !(await canonicalsHaveAcceptedLocations(client, [
-            decision.candidatePoiId,
-            ...(decision.duplicateCanonicalIds ?? []),
-          ]))
-        ) {
-          await block("candidate_location_assessment_required");
-          continue;
-        }
+        decision.signals.location_assessment_status = assessment.status;
         if (opts.dryRun) {
           await client.query("ROLLBACK");
           dryRunSeen.add(row.id);

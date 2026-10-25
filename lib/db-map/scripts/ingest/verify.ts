@@ -12,7 +12,7 @@ export async function verifyLineage(db: Pool): Promise<number> {
       `SELECT count(*)::int AS count FROM canonical_poi_builds b JOIN canonical_poi_build_inputs i ON i.build_id=b.id
        LEFT JOIN research_poi_location_assessments la ON la.id=i.location_assessment_id
        WHERE b.builder_version='${PIPELINE_VERSIONS.canonicalBuilder}' AND b.status='accepted' AND
-       (la.id IS NULL OR la.status<>'accepted' OR la.research_poi_id<>i.research_poi_id OR la.normalization_id<>i.normalization_id
+       (la.id IS NULL OR la.research_poi_id<>i.research_poi_id OR la.normalization_id<>i.normalization_id
         OR la.geocode_id IS DISTINCT FROM i.geocode_id)`,
     ],
     [

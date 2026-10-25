@@ -20,6 +20,7 @@ export function locationAssessmentInputSql(alias = "rp"): string {
     WHERE n.id=${alias}.active_normalization_id AND n.research_poi_id=${alias}.id
       AND o.id=${alias}.active_observation_id AND o.research_poi_id=${alias}.id)`;
 }
+/** Diagnostic only. Ingestion and publication do not require this status. */
 export function acceptedLocationSql(alias = "rp"): string {
   return `EXISTS(SELECT 1 FROM research_poi_location_assessments la
     WHERE la.id=${alias}.active_location_assessment_id AND la.research_poi_id=${alias}.id
@@ -27,13 +28,22 @@ export function acceptedLocationSql(alias = "rp"): string {
       AND la.input_snapshot=${locationAssessmentInputSql(alias)})`;
 }
 
-/** An older accepted serving snapshot can outlive the membership of an uncertain refresh. */
+/** Current advisory assessment for these inputs, whatever its status. */
+export function currentLocationAssessmentSql(alias = "rp"): string {
+  return `EXISTS(SELECT 1 FROM research_poi_location_assessments la
+    WHERE la.id=${alias}.active_location_assessment_id AND la.research_poi_id=${alias}.id
+      AND la.policy_version='${LOCATION_ASSESSMENT_VERSION}'
+      AND la.input_snapshot=${locationAssessmentInputSql(alias)})`;
+}
+
+/** A live member whose membership is inactive keeps the previous serving snapshot. */
 export function publicationAwaitingLocationSql(alias = "cp"): string {
   return `EXISTS(SELECT 1 FROM canonical_poi_builds held
     JOIN canonical_poi_build_inputs hi ON hi.build_id=held.id
     JOIN research_pois rp ON rp.id=hi.research_poi_id
     WHERE held.id=${alias}.active_build_id AND held.status='accepted' AND rp.is_poi AND rp.retired_at IS NULL
-      AND NOT (${acceptedLocationSql()}))`;
+      AND NOT EXISTS(SELECT 1 FROM research_canonical_memberships m
+        WHERE m.research_poi_id=rp.id AND m.canonical_poi_id=${alias}.id AND m.active))`;
 }
 export interface StoredLocationAssessment extends LocationAssessment {
   id: string;
@@ -109,17 +119,3 @@ export async function ensureLocationAssessment(
   return { ...assessment, id };
 }
 
-/** Reject canonical merges before they move memberships/redirects if any member is unresolved. */
-export async function canonicalsHaveAcceptedLocations(
-  client: PoolClient,
-  ids: string[],
-): Promise<boolean> {
-  const { rows } = await client.query(
-    `SELECT NOT EXISTS(
-    SELECT 1 FROM research_canonical_memberships m JOIN research_pois rp ON rp.id=m.research_poi_id
-    WHERE m.canonical_poi_id=ANY($1::uuid[]) AND m.active AND rp.is_poi AND rp.retired_at IS NULL
-      AND NOT (${acceptedLocationSql()})) AS ready`,
-    [ids],
-  );
-  return rows[0].ready;
-}
