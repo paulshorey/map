@@ -12,9 +12,12 @@ analyzable.
 including `evidence.distance_m` whenever both points exist, and remove
 acceptance from matching, canonical publication, consolidation, and checkpoint
 reuse. Venice's roughly 710 m split stays `needs_review` and still publishes
-both markers. The shared database still has no assessment table, so the
-migration has to be applied before a preflight and does not by itself change
-this behavior.
+both markers. PR #64 fixed stale canonical retention after completed rematches,
+and #63 merged the combined correction into main as `1d5e7e8`. The additive
+migration is now applied; one two-record smoke succeeded. The
+[preflight receipt](biennale-location-preflight.md) records exact identities,
+provider accounting, evidence, and the remaining ingestion hold. Applying the
+migration alone would not have removed the withdrawn gates.
 
 The sections below describe the withdrawn gate. They are the record of what #62
 shipped, not the current publication contract. The current contract is the
