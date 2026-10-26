@@ -1,5 +1,18 @@
 # Ingestion next decision — 2026-10-25, revised
 
+## Completed — 2026-10-26 UTC
+
+The preflight below is complete. PR #63, including #64's completed-rematch fix,
+merged as `1d5e7e8`; the additive assessment migration is applied. Venice and
+São Paulo each publish two markers while their assessments remain `needs_review`.
+See the [exact receipt and next scope](biennale-location-preflight.md).
+Both ingestion heartbeats remain paused and no full-file run was launched.
+The queue already has all 43 Biennale.com records normalized and linked; its
+old “not yet imported” note is stale. Do not resume the two-record smoke as
+the rest of the file or repeat it merely because the original plan follows.
+
+## Original preflight plan (completed)
+
 PR #62 merged into main as `88bf967`. It did not merge into PR #61. PR #61
 remains the open note at `e488974`, and its “leave publication unchanged until
 after the preflight” sequence is stale.
