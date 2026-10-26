@@ -1,4 +1,3 @@
-import { acceptedLocationSql } from "../../../sql/location-assessments.js";
 import { CANONICAL_WRITER_LOCK } from "../../../lib/ingestion/locks.js";
 import { currentAttempt, type AttemptResult } from "../execution.js";
 import type { PoolClient } from "pg";
@@ -151,8 +150,6 @@ async function loadCanonicals(client: PoolClient): Promise<CanonicalRow[]> {
      LEFT JOIN research_sources rs ON rs.id = rp.source_id
      WHERE cp.status <> 'hidden'
        AND EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.canonical_poi_id=cp.id AND m.active)
-       AND NOT EXISTS(SELECT 1 FROM research_canonical_memberships m JOIN research_pois rp ON rp.id=m.research_poi_id
-         WHERE m.canonical_poi_id=cp.id AND m.active AND NOT (${acceptedLocationSql()}))
      GROUP BY cp.id, primary_cat.slug
      ORDER BY cp.popularity DESC, cp.id`,
   );
@@ -468,12 +465,6 @@ async function applyPlans(
         }
       } catch (err) {
         await client.query("ROLLBACK");
-        if ((err as { code?: string }).code === "location_assessment_required")
-          return {
-            status: "blocked",
-            reason: "location_assessment_required",
-            canonical_id: targetId,
-          };
         throw err;
       }
       return {

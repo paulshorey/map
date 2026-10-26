@@ -130,7 +130,7 @@ for (const reason of [
   "precision_missing",
   "projection_text",
 ])
-  test(`uncertain evidence blocks publication: ${reason}`, () => {
+  test(`uncertain evidence stays advisory: ${reason}`, () => {
     const input = fixtureInput(),
       v = input.validation as any;
     if (reason === "captured_country") input.captured!.country_code = "CH";
@@ -144,6 +144,11 @@ for (const reason of [
     if (reason === "distance") {
       v.coordinate_evidence.inferred_coordinates.lat = 40;
       v.forward.result.lat = 40;
+      const far = assessLocation(input);
+      assert.equal(far.status, "needs_review");
+      assert.equal(far.accepted_point, null);
+      assert.ok(Number(far.evidence.distance_m) > 250);
+      return;
     }
     if (reason === "coarse")
       v.coordinate_evidence.inferred_coordinates.precision = "city";

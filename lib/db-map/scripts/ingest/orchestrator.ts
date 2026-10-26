@@ -1,6 +1,6 @@
 import {
-  acceptedLocationSql,
   assessLocationRecord,
+  currentLocationAssessmentSql,
 } from "../../sql/location-assessments.js";
 import { locationReadySql } from "./location.js";
 import { measureDatabase } from "./database-telemetry.js";
@@ -898,7 +898,7 @@ async function recordState(db: Pool, item: RunItem) {
     `SELECT rp.id,rp.active_observation_id,rp.active_normalization_id,
     rp.normalization_state,rp.is_poi,rp.lat,rp.lng,rp.name_normalized,rp.category_slugs,
     COALESCE(${locationReadySql()},false) AS location_ready,
-    ${acceptedLocationSql()} AS location_accepted,
+    ${currentLocationAssessmentSql()} AS location_assessed,
     (rp.content_embedding IS NOT NULL) AS has_embedding,rp.active_embedding_id,rp.active_geocode_id,
     rp.canonical_poi_id,rp.retired_at,cp.active_build_id,cp.status AS canonical_status,
     EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id) AS membership_valid,
@@ -906,7 +906,7 @@ async function recordState(db: Pool, item: RunItem) {
       WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
         AND b.build_id=cp.active_build_id AND EXISTS(SELECT 1 FROM canonical_poi_builds cb
           WHERE cb.id=b.build_id AND cb.builder_version='${PIPELINE_VERSIONS.canonicalBuilder}')
-        AND ${acceptedLocationSql()}
+        AND ${currentLocationAssessmentSql()}
         AND b.location_assessment_id=rp.active_location_assessment_id
         AND b.normalization_id=rp.active_normalization_id
         AND b.embedding_id IS NOT DISTINCT FROM rp.active_embedding_id AND b.geocode_id IS NOT DISTINCT FROM rp.active_geocode_id) AS lineage_ready,
@@ -1305,13 +1305,6 @@ export async function runOrchestration(
                 db,
                 item.research_poi_id!,
               );
-              if (assessment.status !== "accepted")
-                return {
-                  status: "blocked",
-                  reason: "location_assessment_" + assessment.status,
-                  location_assessment_id: assessment.id,
-                  location_reasons: assessment.reasons,
-                };
               if (state.canonical_poi_id && state.membership_valid) {
                 if (!(await recordState(db, item)).lineage_ready) {
                   const publication = await canonicalLane.run(() =>
@@ -1353,7 +1346,7 @@ export async function runOrchestration(
                   status: ready.lineage_ready ? "reused" : "blocked",
                   reason: ready.lineage_ready
                     ? undefined
-                    : "canonical_location_assessment_required",
+                    : "canonical_lineage_not_ready",
                   canonical_id: state.canonical_poi_id,
                   build_id: ready.active_build_id,
                 };
@@ -1402,11 +1395,6 @@ export async function runOrchestration(
                 build_id: after.active_build_id,
               };
             }
-            if (!state.location_accepted)
-              return {
-                status: "blocked",
-                reason: "location_assessment_required",
-              };
             if (!state.lineage_ready)
               throw Object.assign(
                 new Error("Canonical build input lineage mismatch"),

@@ -2,12 +2,7 @@ import {
   ensureLocationAssessment,
   publicationAwaitingLocationSql,
 } from "../../sql/location-assessments.js";
-import { haversineMeters } from "./match/geo.js";
-import { countryToCode } from "./normalize/country.js";
-import {
-  LOCATION_ASSESSMENT_VERSION,
-  POINT_AGREEMENT_METERS,
-} from "./location-assessment.js";
+import { LOCATION_ASSESSMENT_VERSION } from "./location-assessment.js";
 import { canonicalLocation } from "./canonical-location.js";
 import {
   canonicalPoints,
@@ -585,46 +580,11 @@ export async function rebuildCanonicalPoi(
     return { published: false, reason: "no_active_members" };
   }
 
-  // Assess and fence every member before touching any published fields or children.
-  const acceptedRows: MergeRow[] = [];
+  // Record the advisory assessment, then publish every plottable candidate.
   for (const row of [...rows].sort((a, b) => a.id.localeCompare(b.id))) {
     const assessment = await ensureLocationAssessment(client, row.id);
-    if (assessment.status !== "accepted" || !assessment.accepted_point)
-      return {
-        published: false,
-        reason: "location_assessment_" + assessment.status,
-      };
     row.active_location_assessment_id = assessment.id;
-    acceptedRows.push({
-      ...row,
-      lat: assessment.accepted_point.lat,
-      lng: assessment.accepted_point.lng,
-      coordinate_precision: assessment.accepted_point.precision,
-      coordinate_source: assessment.accepted_kind,
-    });
   }
-  if (
-    new Set(
-      acceptedRows
-        .map((row) => countryToCode(row.country_code))
-        .filter(Boolean),
-    ).size > 1
-  )
-    return { published: false, reason: "canonical_country_conflict" };
-  if (
-    acceptedRows.some((r, index) =>
-      acceptedRows
-        .slice(index + 1)
-        .some(
-          (other) =>
-            haversineMeters(
-              { lat: r.lat!, lng: r.lng! },
-              { lat: other.lat!, lng: other.lng! },
-            ) > POINT_AGREEMENT_METERS,
-        ),
-    )
-  )
-    return { published: false, reason: "canonical_location_conflict" };
 
   const name = chooseText(rows, (row) => row.name, { preferShorter: true });
   const description = await chooseDescription(rows, opts.noLlm, name.value);
@@ -633,11 +593,17 @@ export async function rebuildCanonicalPoi(
 
   const hours = chooseText(rows, (row) => row.hours);
   const photo = chooseText(rows, (row) => row.photo_url);
-  const coords = chooseCoordinates(acceptedRows);
-  const anchor = rows.find((r) => r.id === coords.row?.id) ?? null;
-  const evidence = canonicalCoordinateEvidence(rows, anchor);
-  const points = canonicalPoints(rows, anchor);
-  const location = canonicalLocation(acceptedRows, coords.row);
+  let coords = chooseCoordinates(rows);
+  const evidence = canonicalCoordinateEvidence(rows, coords.row);
+  const preferred =
+    evidence.source_coordinates ?? evidence.inferred_coordinates;
+  if (preferred)
+    coords = {
+      value: { lat: preferred.lat, lng: preferred.lng },
+      row: rows.find((row) => row.id === preferred.research_id) ?? coords.row,
+    };
+  const points = canonicalPoints(rows, coords.row);
+  const location = canonicalLocation(rows, coords.row);
   const address = location.address;
   const occurrences = await syncOccurrences(client, canonicalId, rows);
   const dates = chooseRepresentativeOccurrence(occurrences);
@@ -646,14 +612,14 @@ export async function rebuildCanonicalPoi(
   const attributes = mergeAttributes(rows);
   attributes.coordinate_evidence = evidence;
   attributes.location_assessment = {
-    status: "accepted",
+    advisory: true,
     policy_version: LOCATION_ASSESSMENT_VERSION,
-    accepted_kind: coords.row?.coordinate_source,
-    assessment_id: anchor?.active_location_assessment_id,
-    research_id: anchor?.id,
-    accepted_point: coords.value,
     venue_verified: false,
     edition_verified: false,
+    members: rows.map((row) => ({
+      research_id: row.id,
+      assessment_id: row.active_location_assessment_id ?? null,
+    })),
   };
   for (const field of ["country_code", "city", "region"] as const) {
     if (location[field].value) attributes[field] = location[field].value;
@@ -715,7 +681,7 @@ export async function rebuildCanonicalPoi(
        WHERE id = $1`,
       [canonicalId, finalName, popularity, JSON.stringify(fieldProvenance)],
     );
-    return { published: false, reason: "missing_accepted_point" };
+    return { published: false, reason: "unlocated" };
   }
 
   await client.query(

@@ -912,7 +912,7 @@ and resume reuses cached results; a miss preserves a usable source point.
 
 The `location-v3` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
 to its normalization/primary point, alongside separate listed text, forward query/result
-and reverse lookup. Canonical builder `canonical-build-v5` writes
+and reverse lookup. Canonical builder `canonical-build-v7` writes
 `attributes.coordinate_evidence` with source/research/normalization/geocode IDs for
 each value. Legacy lat/lng is the selected source point when available, otherwise the
 inferred point or retained legacy point. Raw/model attributes cannot publish these
@@ -936,7 +936,7 @@ LocationIQ fields are approximate, cached by exact point and policy version, and
 valid source coordinates. Country/region conflicts, distant results and missing fields remain
 visible in `research_pois.attributes.location_enrichment` and the bound geocode artifact.
 A definitive optional reverse miss does not fail the geocode stage for a coordinate-bearing
-POI; the downstream location assessment can still require review for insufficient evidence.
+POI. The assessment records that missing evidence and still lets the source point publish.
 API failures retain normal bounded recovery and systemic stop behavior. Source-precision centroids do not
 receive inferred street addresses. Forward and reverse calls share `--geocode-limit`.
 
@@ -945,43 +945,41 @@ member/derivation provenance. A versioned location artifact binds normalization 
 old coordinate-only geocode checkpoints do not establish enrichment. Existing completed
 cohorts are preserved; deploying this code does not mass-backfill historical records.
 
-### Location assessment and publication gate
+### Location assessment
 
-`location-assessment-v1` adds a deterministic decision after location evidence exists.
-It appends an input-hashed assessment bound to the exact observation, normalization,
-geocode and point/provenance snapshot; `research_pois.active_location_assessment_id`
-selects the current assessment. Outcomes are `accepted`, `needs_review` and `unlocated`.
-The snapshot and reasons remain available through `ingest:trace`. This is separate from
-the file-level quality review and from venue/edition ground truth.
+`location-assessment-v1` appends an input-hashed diagnostic after location evidence
+exists. It binds the observation, normalization, geocode, and point/provenance
+snapshot. `research_pois.active_location_assessment_id` selects the current row.
+Outcomes are `accepted`, `needs_review`, and `unlocated`. When both coordinate
+slots exist, `evidence.distance_m` stores their separation. Reasons, the forward
+country filter, and the snapshot remain available through `ingest:trace`. Accepted
+means the diagnostic found agreement. It is not a publication requirement and it
+does not verify a venue or an edition.
 
-The policy accepts precise source/inferred candidates within 250 m with a listed
-country and no country/region conflict. A single precise candidate requires bound
-reverse evidence agreeing with the listed country/city within the 1 km reverse guard.
-Inferred candidates must match their forward artifact and retain the listed-text query.
-Coarse results, conflicts, absent evidence and stale bindings require review. A constrained
-forward lookup is not independent confirmation of its country filter. Accepted means a
-usable discovery point; venue and edition verification stay false.
+`matcher-v3` scores the research row's stored point. `canonical-build-v7` publishes
+every plottable candidate. A source point with no inferred point, reverse result,
+or country text still publishes. Far-apart and cross-country candidates publish
+both markers. Equal coordinates keep both evidence records and one marker. A
+record with no plottable point stays unpublished and its assessment is
+`unlocated`; the raw observation and listed text remain. Member disagreement does
+not hide the canonical or quarantine the record.
 
-`matcher-v2` generates/scores candidates using the accepted point. Unresolved records
-are quarantined before identity/membership changes, with assessment ID and reasons.
-Existing canonical members must also have current accepted assessments before a merge.
-`canonical-build-v6` gates all current members before publication and retains each
-assessment ID in build inputs and hash. Disagreeing accepted member points block the
-build. Both original coordinate slots remain visible through the API; equal values
-retain two evidence records and one marker.
+Build inputs still store the current assessment ID, including `needs_review`.
+Checkpoint reuse requires that current snapshot binding and the v7 builder. It
+does not require `status=accepted`. An inactive membership on a live research row
+keeps the previous serving snapshot during a normalization refresh. Explicit
+retirement, exclusion, and cleanup still withdraw output. Paid provider query
+caches stay reusable. Deploy the additive assessment migration before running
+this ingestion code. Deploying it does not backfill historical rows.
 
-An uncertain refresh retains the previous accepted serving build. A new unresolved
-record remains unpublished. Explicit retirement/exclusion/cleanup still withdraws
-affected output. Assessment binding and build-input checks invalidate successful
-downstream checkpoints and batch reuse; paid provider query caches stay reusable.
-Deploy the additive migration before running the changed ingestion code. There is
-no automatic historical reassessment or backfill. A future assessment policy change
-must also bump matcher/builder versions so file completion proofs become stale.
+A normalization refresh may retain its previous serving snapshot while the live record
+has no active membership. Once rematching creates a replacement membership and publishes
+its canonical, rebuild and hide the old canonical when it has no active members; a
+completed rematch is not a pending refresh. The lineage verifier must flag a stale
+published duplicate.
 
-The [implementation and evaluation record](../working/location-assessments.md) links
-the 94-case packet regression, read-only preview and rollout boundaries. Resolve a
-quarantine only after evidence or its responsible code changes, through the existing
-owned-maintenance issue retry workflow. Do not re-run unchanged conflicts in a loop.
+The [implementation record](../working/location-assessments.md) has the 94-case
+diagnostic regression and the correction that removed the #62 acceptance gates.
 
 That Festival Site's split listing labels mix cities, regions and countries. Its version-4
 extractor retains them in `source_location_hints` and the original observation, while
@@ -1095,8 +1093,8 @@ variable unset, the SQL test is explicitly skipped; no shared database is used.
 
 ### Canonical origin repair and resume
 
-`canonical-build-v5` preserves fixed source/inferred coordinate provenance and legacy origins. Deploying it does not
-rewrite historical data. On an explicitly selected new run or compatible resume,
+`canonical-build-v7` preserves fixed source/inferred coordinate provenance and legacy origins, and publishes conflicting candidates. Deploying it does not
+rewrite historical data. `canonical-build-v5` and the acceptance-gated `canonical-build-v6` remain resumable predecessors. On an explicitly selected new run or compatible resume,
 completed downstream tasks and batch/attempt caches reject older builders. The
 match stage rebuilds the existing canonical from its active members when its build
 is stale; it retains memberships and does not repeat match adjudication. Current
