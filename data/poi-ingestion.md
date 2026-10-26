@@ -972,6 +972,12 @@ retirement, exclusion, and cleanup still withdraw output. Paid provider query
 caches stay reusable. Deploy the additive assessment migration before running
 this ingestion code. Deploying it does not backfill historical rows.
 
+A normalization refresh may retain its previous serving snapshot while the live record
+has no active membership. Once rematching creates a replacement membership and publishes
+its canonical, rebuild and hide the old canonical when it has no active members; a
+completed rematch is not a pending refresh. The lineage verifier must flag a stale
+published duplicate.
+
 The [implementation record](../working/location-assessments.md) has the 94-case
 diagnostic regression and the correction that removed the #62 acceptance gates.
 

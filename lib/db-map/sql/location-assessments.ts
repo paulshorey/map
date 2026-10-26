@@ -36,14 +36,14 @@ export function currentLocationAssessmentSql(alias = "rp"): string {
       AND la.input_snapshot=${locationAssessmentInputSql(alias)})`;
 }
 
-/** A live member whose membership is inactive keeps the previous serving snapshot. */
+/** Keep the last serving snapshot only while a live member awaits any replacement membership. */
 export function publicationAwaitingLocationSql(alias = "cp"): string {
   return `EXISTS(SELECT 1 FROM canonical_poi_builds held
     JOIN canonical_poi_build_inputs hi ON hi.build_id=held.id
     JOIN research_pois rp ON rp.id=hi.research_poi_id
     WHERE held.id=${alias}.active_build_id AND held.status='accepted' AND rp.is_poi AND rp.retired_at IS NULL
       AND NOT EXISTS(SELECT 1 FROM research_canonical_memberships m
-        WHERE m.research_poi_id=rp.id AND m.canonical_poi_id=${alias}.id AND m.active))`;
+        WHERE m.research_poi_id=rp.id AND m.active))`;
 }
 export interface StoredLocationAssessment extends LocationAssessment {
   id: string;
@@ -118,4 +118,3 @@ export async function ensureLocationAssessment(
   );
   return { ...assessment, id };
 }
-

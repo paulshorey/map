@@ -504,6 +504,67 @@ test(
       );
       assert.equal(await verifyLineage(db), 0);
 
+      // A completed rematch replaces that held snapshot. Exercise applyDecision,
+      // not just the SQL predicate, and keep the later cache fixtures unchanged.
+      await client.query("SAVEPOINT completed_rematch");
+      await client.query(
+        "INSERT INTO research_match_overrides(record_a,record_b,rule) VALUES($1,NULL,'force_different')",
+        [f.id],
+      );
+      assert.equal(
+        (await runMatch(db, matchOptions(f.id), { requested: false, count: 0 }))
+          .created,
+        1,
+      );
+      const replacement = (
+        await client.query(
+          "SELECT canonical_poi_id FROM research_pois WHERE id=$1",
+          [f.id],
+        )
+      ).rows[0].canonical_poi_id;
+      assert.notEqual(replacement, cp.id);
+      assert.equal(
+        (
+          await client.query("SELECT status FROM canonical_pois WHERE id=$1", [
+            replacement,
+          ])
+        ).rows[0].status,
+        "published",
+      );
+      assert.equal(
+        (
+          await client.query("SELECT status FROM canonical_pois WHERE id=$1", [
+            cp.id,
+          ])
+        ).rows[0].status,
+        "hidden",
+      );
+      const rematchedMap = (await listPoisGeoJson(db, {
+        west: -180,
+        east: 180,
+        south: -90,
+        north: 90,
+        category: null,
+        limit: 10,
+        isWorldView: true,
+      })) as any;
+      assert.equal(
+        rematchedMap.features.filter((x: any) => x.properties.id === cp.id)
+          .length,
+        0,
+      );
+      assert.ok(
+        rematchedMap.features.some((x: any) => x.properties.id === replacement),
+      );
+      assert.equal(await verifyLineage(db), 0);
+      // The verifier must also detect a stale duplicate if it reappears.
+      await client.query(
+        "UPDATE canonical_pois SET status='published' WHERE id=$1",
+        [cp.id],
+      );
+      assert.ok((await verifyLineage(db)) > 0);
+      await client.query("ROLLBACK TO SAVEPOINT completed_rematch");
+
       // Return to the immutable original inputs: reuse the same assessment and build without providers.
       await client.query(
         "UPDATE research_pois SET active_geocode_id=$2,canonical_poi_id=$3,attributes=jsonb_build_object('location_enrichment',$4::jsonb) WHERE id=$1",
