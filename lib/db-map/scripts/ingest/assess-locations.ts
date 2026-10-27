@@ -2,6 +2,7 @@
 import { getDb } from "../../lib/db/postgres.js";
 import { locationAssessmentInputSql } from "../../sql/location-assessments.js";
 import { assessLocation, type AssessmentInput } from "./location-assessment.js";
+import { precisionDiagnostics } from "./precision-diagnostics.js";
 
 const args = process.argv.slice(2);
 if (args.length !== 2 || args[0] !== "--records")
@@ -39,6 +40,7 @@ try {
   const results = rows.map(({ input, ...identity }) => ({
     ...identity,
     assessment: input ? assessLocation(input) : null,
+    precision_diagnostics: precisionDiagnostics(input),
     ...(input ? {} : { reason: "missing_active_input_lineage" }),
   }));
   console.log(

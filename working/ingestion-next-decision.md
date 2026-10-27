@@ -1,5 +1,13 @@
 # Ingestion next decision — 2026-10-25, revised
 
+## Authorized follow-up — 2026-10-26 CT
+
+The owner authorized implementing precision metadata and running a new 43-record
+Biennale.com whole-file refresh after review/validation, with both heartbeats
+remaining paused. See [implementation and launch plan](location-precision-metadata.md).
+The older full-import hold below is superseded only for that single file; the
+completed two-record cohort remains separate and must not be expanded.
+
 ## Completed — 2026-10-26 UTC
 
 The preflight below is complete. PR #63, including #64's completed-rematch fix,

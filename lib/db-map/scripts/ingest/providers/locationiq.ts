@@ -8,6 +8,10 @@ import { ingestConfig } from "../config.js";
 import { LlmError, retryAfterMs } from "./llm.js";
 import { currentAttempt } from "../execution.js";
 import {
+  deriveForwardPrecision,
+  type PrecisionEvidence,
+} from "../../../lib/ingestion/geocode-precision.js";
+import {
   beginProviderCall,
   endProviderCall,
   providerRequestStarted,
@@ -28,6 +32,9 @@ export interface GeocodeHit {
   region?: string | null;
   provider_class?: string | null;
   provider_type?: string | null;
+  precision_evidence?: PrecisionEvidence;
+  /** Exact selected response row; request URLs/credentials are never included. */
+  raw_response?: Record<string, unknown>;
 }
 
 interface LocationIqRow {
@@ -42,27 +49,6 @@ interface LocationIqRow {
 
 const BASE_URL = "https://us1.locationiq.com/v1/search";
 const PROVIDER = "locationiq";
-
-function precisionFrom(row: LocationIqRow): GeocodeHit["precision"] {
-  const type = (row.type ?? "").toLowerCase();
-  const cls = (row.class ?? "").toLowerCase();
-  if (type === "country" || type === "state") return "region";
-  if (
-    [
-      "city",
-      "town",
-      "village",
-      "administrative",
-      "county",
-      "suburb",
-      "municipality",
-    ].includes(type)
-  ) {
-    return "city";
-  }
-  if (cls === "boundary") return "region";
-  return "point";
-}
 
 export class GeocodeError extends LlmError {}
 
@@ -152,10 +138,14 @@ export async function geocode(
           Math.abs(lng) > 180
         )
           throw new GeocodeError("Invalid geocoder coordinates");
+        const raw_response = row as unknown as Record<string, unknown>;
+        const precision_evidence = deriveForwardPrecision(raw_response);
         hit = {
           lat,
           lng,
-          precision: precisionFrom(row),
+          precision: precision_evidence.value as GeocodeHit["precision"],
+          precision_evidence,
+          raw_response,
           provider: PROVIDER,
           label: textValue(row.display_name),
           attribution: textValue(row.licence),

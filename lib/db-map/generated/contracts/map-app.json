@@ -95,6 +95,55 @@
         }
       ]
     },
+    "PoiPrecisionEvidenceRecord": {
+      "fields": [
+        {
+          "name": "version",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "value",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "derivation",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "provider_class",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "provider_type",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "warnings",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        }
+      ]
+    },
     "PoiLocationRecord": {
       "fields": [
         {
@@ -145,6 +194,13 @@
           "kind": "scalar",
           "type": "string",
           "nullable": true
+        },
+        {
+          "name": "precision_evidence",
+          "optional": true,
+          "kind": "model",
+          "type": "PoiPrecisionEvidenceRecord",
+          "nullable": false
         }
       ]
     },

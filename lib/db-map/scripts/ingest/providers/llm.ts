@@ -40,6 +40,8 @@ export interface JsonSchemaResponseFormat {
 }
 
 export interface ChatOptions {
+  /** Provider-ledger purpose; the owning attempt still supplies its actual stage. */
+  purpose?: "description_fusion";
   system?: string;
   user?: string;
   messages?: ChatMessage[];
@@ -430,7 +432,7 @@ export async function completeChat(opts: ChatOptions): Promise<ChatResult> {
   if (!ctx) return completeChatUncontrolled(opts);
   const call = await beginProviderCall(
     "fireworks",
-    ctx.stage,
+    opts.purpose ?? ctx.stage,
     ingestConfig.llm.model,
     undefined,
     ingestConfig.llm.serviceTier,

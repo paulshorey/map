@@ -57,3 +57,6 @@ jobs:
           scripts/ingest/location-resume.test.ts
           scripts/ingest/two-locations.test.ts
           scripts/ingest/location-review.test.ts
+          scripts/ingest/precision-metadata.test.ts
+          scripts/ingest/providers/llm.test.ts
+          scripts/ingest/provider-telemetry.test.ts

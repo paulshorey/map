@@ -12,6 +12,7 @@ import {
 } from "./canonical-points.js";
 import { listedQuery, runGeocode, forwardCacheKey } from "./geocode.js";
 import { LOCATION_VERSION } from "./location.js";
+import { readFileSync } from "node:fs";
 import {
   PIPELINE_VERSIONS,
   resumePipelineUpgrade,
@@ -97,6 +98,56 @@ function fixture(captured: any = source) {
   };
 }
 const opts = { recordId: "poi", limit: 1, throttleMs: 0, dryRun: false };
+
+test("saved Sao Paulo cache replays without providers, cache mutation, or coordinate correction", async () => {
+  const sao = JSON.parse(
+    readFileSync(
+      new URL("./fixtures/locationiq-sao-paulo.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const f = fixture({ ...sao.source, attributes: {} });
+  f.row.lat = sao.source.lat;
+  f.row.lng = sao.source.lng;
+  const query = listedQuery(
+    { ...f.row, ...sao.source, venue: null, region: null, country_name: null },
+    f.row.captured,
+    new Set(["music_festival"]),
+  )!;
+  f.cache.set(forwardCacheKey(query.norm, "BR"), {
+    lat: sao.forward.result.lat,
+    lng: sao.forward.result.lng,
+    precision: "point",
+    payload: { hit: sao.forward.result },
+  });
+  f.cache.set(`location-v2:reverse:${f.row.lat}:${f.row.lng}`, {
+    payload: { hit: null },
+  });
+  const before = structuredClone([...f.cache]);
+  globalThis.fetch = async () => {
+    throw new Error("Paid caches must be reused");
+  };
+  const stats = await runGeocode(f.db, opts);
+  assert.equal(stats.apiCalls, 0);
+  assert.equal(stats.cacheHits, 2);
+  assert.deepEqual([...f.cache], before);
+  assert.deepEqual(f.activated.point, {
+    lat: sao.source.lat,
+    lng: sao.source.lng,
+  });
+  const inferred = f.activated.coordinate_evidence.inferred_coordinates;
+  assert.deepEqual(
+    [inferred.lat, inferred.lng],
+    [sao.forward.result.lat, sao.forward.result.lng],
+  );
+  assert.equal(inferred.precision_evidence.derivation, "legacy_cache");
+  assert.ok(
+    inferred.precision_evidence.warnings.includes(
+      "provider_granularity_missing",
+    ),
+  );
+  assert.equal(f.activated.forward.result.raw_response, undefined);
+});
 
 test("raw source locations remain raw evidence and do not occupy either typed slot", () => {
   const locations = [

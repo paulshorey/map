@@ -1,0 +1,33 @@
+{
+  "evidence_kind": "saved_parsed_forward_result",
+  "run_id": "4dcf935e-4bf6-4af9-bed5-004dcaef0398",
+  "research_id": "0f4d6d6c-43da-4a96-8b36-765c8a2859fa",
+  "raw_provider_response_available": false,
+  "source": {
+    "lat": -23.5874,
+    "lng": -46.6576,
+    "address": "Av. Pedro Álvares Cabral - Ibirapuera Park",
+    "city": "São Paulo",
+    "country_code": "BR"
+  },
+  "forward": {
+    "query": "Av. Pedro Álvares Cabral - Ibirapuera Park, São Paulo, Brazil",
+    "state": "resolved",
+    "result": {
+      "lat": -23.570533,
+      "lng": -46.663713,
+      "city": "São Paulo",
+      "label": "São Paulo, Sao Paulo, Sao Paulo, Brazil",
+      "region": "Sao Paulo",
+      "provider": "locationiq",
+      "precision": "point",
+      "attribution": "https://locationiq.com/attribution",
+      "country_code": "BR",
+      "provider_type": null,
+      "provider_class": null
+    },
+    "query_norm": "location-v2:forward:listed-location-v1:BR:av. pedro alvares cabral - ibirapuera park, sao paulo, brazil",
+    "query_version": "listed-location-v1",
+    "country_filter": "BR"
+  }
+}

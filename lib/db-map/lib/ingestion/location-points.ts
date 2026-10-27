@@ -1,3 +1,7 @@
+import {
+  readPrecisionEvidence,
+  type PrecisionEvidence,
+} from "./geocode-precision.js";
 /** Fixed provenance slots; these are not physical roles such as launch/landing. */
 export interface MapLocation {
   lat: number;
@@ -7,6 +11,7 @@ export interface MapLocation {
   precision: string;
   label: string | null;
   query: string | null;
+  precision_evidence?: PrecisionEvidence;
 }
 
 export interface CoordinateEvidence<T extends MapLocation = MapLocation> {
@@ -45,6 +50,7 @@ export function readCoordinateEvidence(value: unknown): CoordinateEvidence {
     if (!validPoint(p)) return null;
     const row = p as Record<string, unknown>;
     if (row.kind !== kind || row.origin !== origin) return null;
+    const precisionEvidence = readPrecisionEvidence(row.precision_evidence);
     return {
       lat: p.lat,
       lng: p.lng,
@@ -53,6 +59,9 @@ export function readCoordinateEvidence(value: unknown): CoordinateEvidence {
       precision: typeof row.precision === "string" ? row.precision : "point",
       label: typeof row.label === "string" ? row.label : null,
       query: typeof row.query === "string" ? row.query : null,
+      ...(precisionEvidence && precisionEvidence.value === row.precision
+        ? { precision_evidence: precisionEvidence }
+        : {}),
     };
   };
   return {

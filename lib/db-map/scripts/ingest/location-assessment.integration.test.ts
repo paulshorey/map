@@ -15,6 +15,8 @@ import { runMatch } from "./match.js";
 import { collapseDuplicateCanonicals } from "./match/canonicals.js";
 import { verifyLineage } from "./verify.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
+import { deriveForwardPrecision } from "../../lib/ingestion/geocode-precision.js";
+import { runGeocode, listedQuery, forwardCacheKey } from "./geocode.js";
 import {
   LOCATION_GEOCODER_VERSION,
   LOCATION_QUERY_VERSION,
@@ -104,6 +106,7 @@ test(
           kind: "inferred",
           origin: "listed_address_geocode",
           query: "Venue, Austin, US",
+          precision_evidence: deriveForwardPrecision({}),
         };
         const point = kind === "inferred" ? { lat: i.lat, lng } : { lat, lng };
         const validation = {
@@ -239,6 +242,12 @@ test(
         PIPELINE_VERSIONS.canonicalBuilder,
       );
       assert.equal((await getPoiById(db, cp.id)).locations.length, 2);
+      assert.deepEqual(
+        (await getPoiById(db, cp.id)).coordinate_evidence.inferred_coordinates
+          ?.precision_evidence,
+        f.validation.coordinate_evidence.inferred_coordinates
+          ?.precision_evidence,
+      );
       const world = (await listPoisGeoJson(db, {
         west: -180,
         east: 180,
@@ -360,6 +369,117 @@ test(
       assert.equal(equalDetail.locations.length, 1);
       assert.ok(equalDetail.coordinate_evidence.source_coordinates);
       assert.ok(equalDetail.coordinate_evidence.inferred_coordinates);
+      assert.equal(
+        equalDetail.coordinate_evidence.inferred_coordinates.precision_evidence
+          ?.derivation,
+        "fallback",
+      );
+
+      // Exercise real cache -> geocode artifact -> matcher -> API SQL with network forbidden.
+      await client.query("SAVEPOINT precision_cache_fixture");
+      const cached = await seed(
+        "Cached provider evidence",
+        30.3,
+        -97,
+        "legacy",
+      );
+      const cachedRow = (
+        await client.query(
+          `SELECT rp.*,o.captured FROM research_pois rp
+        JOIN research_poi_observations o ON o.id=rp.active_observation_id WHERE rp.id=$1`,
+          [cached.id],
+        )
+      ).rows[0];
+      const query = listedQuery(cachedRow, cachedRow.captured, new Set())!;
+      const raw = {
+        lat: "40",
+        lon: "-100",
+        display_name: "Fixture result",
+        boundingbox: ["39", "41", "-101", "-99"],
+      };
+      const hit = {
+        lat: 40,
+        lng: -100,
+        precision: "point",
+        provider: "locationiq",
+        label: raw.display_name,
+        precision_evidence: deriveForwardPrecision(raw),
+        raw_response: raw,
+      };
+      const key = forwardCacheKey(query.norm, "US");
+      await client.query(
+        `INSERT INTO research_geocode_cache(query_norm,lat,lng,precision,provider,payload)
+        VALUES($1,40,-100,'point','locationiq',$2::jsonb)`,
+        [key, JSON.stringify({ hit })],
+      );
+      await client.query(
+        `INSERT INTO research_geocode_cache(query_norm,lat,lng,precision,provider,payload)
+        VALUES($1,30.3,-97,'point','locationiq','{"hit":null}'::jsonb)`,
+        [`location-v2:reverse:30.3:-97`],
+      );
+      const geocoded = await runGeocode(db, {
+        recordId: cached.id,
+        limit: 1,
+        geocodeLimit: 0,
+        throttleMs: 0,
+        dryRun: false,
+      });
+      assert.equal(geocoded.apiCalls, 0);
+      assert.equal(geocoded.cacheHits, 2);
+      const stored = (
+        await client.query(
+          `SELECT g.validation FROM research_pois rp
+        JOIN research_poi_geocodes g ON g.id=rp.active_geocode_id WHERE rp.id=$1`,
+          [cached.id],
+        )
+      ).rows[0].validation;
+      assert.deepEqual(stored.forward.result.raw_response, raw);
+      assert.deepEqual(
+        stored.coordinate_evidence.inferred_coordinates.precision_evidence,
+        hit.precision_evidence,
+      );
+      assert.equal(
+        (
+          await runMatch(db, matchOptions(cached.id), {
+            requested: false,
+            count: 0,
+          })
+        ).created,
+        1,
+      );
+      const cachedCanonical = (
+        await client.query(
+          "SELECT canonical_poi_id FROM research_pois WHERE id=$1",
+          [cached.id],
+        )
+      ).rows[0].canonical_poi_id;
+      const cachedDetail = await getPoiById(db, cachedCanonical);
+      assert.equal(cachedDetail.locations.length, 2);
+      assert.deepEqual(
+        cachedDetail.coordinate_evidence.inferred_coordinates
+          .precision_evidence,
+        hit.precision_evidence,
+      );
+      assert.equal(
+        (
+          await client.query(
+            "SELECT status FROM research_poi_location_assessments WHERE research_poi_id=$1",
+            [cached.id],
+          )
+        ).rows[0].status,
+        "needs_review",
+      );
+      assert.deepEqual(
+        (
+          await client.query(
+            "SELECT payload FROM research_geocode_cache WHERE query_norm=$1",
+            [key],
+          )
+        ).rows[0].payload,
+        { hit },
+      );
+      assert.equal(await verifyLineage(db), 0);
+      await client.query("ROLLBACK TO SAVEPOINT precision_cache_fixture");
 
       const legacy = await seed("Unassessed legacy", 40, -110, "legacy");
 

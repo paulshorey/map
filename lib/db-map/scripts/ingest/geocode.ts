@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
  */
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
+import { storedPrecisionEvidence } from "../../lib/ingestion/geocode-precision.js";
 import {
   geocode,
   reverseGeocode,
@@ -411,6 +412,11 @@ export async function runGeocode(
               provider: "locationiq",
             }
           : null;
+        if (forward)
+          forward.precision_evidence = storedPrecisionEvidence(
+            forward,
+            "legacy_cache",
+          );
         if (!forward) stats.knownMisses++;
       } else {
         if (remaining() === 0) {
@@ -461,6 +467,7 @@ export async function runGeocode(
             precision: forward.precision,
             label: forward.label ?? null,
             query: q?.display ?? null,
+            precision_evidence: forward.precision_evidence,
           }
         : null,
     };
@@ -535,6 +542,8 @@ export async function runGeocode(
       point: metadata.point,
       coordinate_source: coordinateSource,
       forward_query_norm: forwardQueryNorm,
+      // Bind any newly captured response metadata to this artifact without changing query-cache identity.
+      forward_result: forward,
       version: LOCATION_VERSION,
       coordinate_evidence: coordinateEvidence,
     });

@@ -327,6 +327,7 @@ async function chooseDescription(
 
   try {
     const fused = await chat({
+      purpose: "description_fusion",
       system:
         "Combine multiple source descriptions for one POI into concise factual Markdown. Preserve useful links and basic formatting. Do not invent details or URLs.",
       user: JSON.stringify({
