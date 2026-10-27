@@ -1,5 +1,10 @@
 # Precision metadata and Biennale.com refresh
 
+Implementation merged as PR #66 (`32af110`); the authorized whole-file refresh
+completed and was independently reconciled. See the
+[43-record terminal receipt and next decision](biennale-refresh-receipt.md).
+The launch plan below is retained for context, not as restart authority.
+
 Owner direction on 2026-10-26 CT: implement the precision-metadata follow-up and
 other next steps; explicitly include a new whole-file refresh of the 43
 Biennale.com records after validation. Keep both ingestion heartbeats paused.
