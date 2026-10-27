@@ -1,5 +1,21 @@
 # Ingestion next decision — 2026-10-25, revised
 
+## Current decision — 2026-10-26 CT
+
+PR #66's precision metadata implementation and the authorized 43-record Biennale.com
+refresh are complete. The fresh [terminal receipt](biennale-refresh-receipt.md)
+reconciles raw captures, both-point API output, artifact ownership, lineage, cache
+reuse, provider costs, and worker/lock exit. All 43 POIs publish 86 markers;
+39 advisory `needs_review` assessments do not block publication. Both heartbeats
+remain paused, and no further import is launched.
+
+The next proposed source is a three-record Biennial Foundation preflight covering
+supplied coordinates, `Various` city text, and country-only missing-location data.
+Its 304-record file is unstarted; this proposal does not authorize a full run.
+See the receipt for readiness, bounded command, and acceptance criteria. The
+historical Dyrt continuation requires a separate repair decision; already-imported
+Biennial Association output must not be mistaken for a new capture.
+
 ## Authorized follow-up — 2026-10-26 CT
 
 The owner authorized implementing precision metadata and running a new 43-record
