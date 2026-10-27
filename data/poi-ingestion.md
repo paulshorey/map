@@ -752,6 +752,11 @@ Failed terminal bookkeeping is attempted once; its first DB error and any preced
 provider error/HTTP status survive locally. No SQL or provider request is automatically
 replayed. A partial preflight/unknown terminal commit requires read/reconciliation.
 
+Description-fusion calls use provider operation `description_fusion`, even when
+triggered during a match-stage rebuild. `research_ingest_provider_call_items`
+still links them to their actual owning attempts and stages. This purpose label
+does not change prompts, provider request bodies, admission, cache keys, or budgets.
+
 Use `ingest:test-database` and `ingest:test-scheduler` for provider-free injection of
 pool waiting, actual stalled connection establishment, idle disconnect/removal,
 callback/promise cleanup, preflight/result failure and cross-operation cancellation.
@@ -919,6 +924,26 @@ inferred point or retained legacy point. Raw/model attributes cannot publish the
 reserved fields. The query policy remains `listed-location-v1`; unchanged provider
 queries reuse the `location-v2` cache namespace, so a representation upgrade does
 not repeat already-paid geocoding. No migration or automatic historical sweep occurs.
+
+Forward results now retain the complete selected provider row as `raw_response`
+inside the query-cache hit and geocode artifact's `validation.forward.result`.
+Compact `precision_evidence` (`geocode-precision-v1`) records the operational
+value, its derivation, provider class/type, and diagnostic warnings. Type/class
+rules still produce the existing city/region values; other results keep the
+existing point fallback with `point_precision_default`, plus
+`provider_granularity_missing` when neither field exists. These are diagnostics,
+not venue-accuracy claims or matching/publication gates. The selected response
+row contains no request URL or client credential. Full raw responses stay out
+of canonical coordinate slots; compact evidence survives canonical/API selection.
+
+Existing paid query keys and location/matcher/builder versions stay unchanged.
+Replaying an older parsed cache hit keeps its coordinates and stored precision,
+marks derivation `legacy_cache` / `precision_derivation_not_recorded`, and does
+not rewrite or refetch that cache. Old active artifacts remain current; they are
+not swept merely to add metadata. `ingest:location-assess --records <UUID,...>`
+adds a read-only `precision_diagnostics` supplement, marking old artifacts
+`legacy_artifact` and stating whether the original provider row is available.
+This supplement does not alter immutable assessment policy, hashes, or status.
 
 The map API exposes `coordinate_evidence` plus a rendered `locations` array. Markers
 use stable `<POI>:source`, `<POI>:inferred`, or `<POI>:legacy` IDs and a shared POI detail

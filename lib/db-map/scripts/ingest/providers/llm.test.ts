@@ -62,6 +62,44 @@ function completion(
   };
 }
 
+test("description fusion has an explicit ledger purpose and retains match attempt ownership", async () => {
+  for (const purpose of [undefined, "description_fusion"] as const) {
+    const writes: Array<{ sql: string; args: any[] }> = [];
+    let body: any;
+    globalThis.fetch = async (_url, opts) => {
+      body = JSON.parse(opts!.body as string);
+      return Response.json(completion());
+    };
+    const ctx = {
+      runId: "run",
+      attemptId: "attempt",
+      stage: "match",
+      execution: {
+        id: "execution",
+        stopped: false,
+        abortController: new AbortController(),
+        db: {
+          query: async (sql: string, args: any[]) => {
+            writes.push({ sql, args });
+            return { rows: [] };
+          },
+        },
+      },
+    } as any;
+    await withAttemptContext(ctx, () =>
+      completeChat({ system: "fixture", user: "fixture", retries: 0, purpose }),
+    );
+    assert.equal(writes[0]!.args[4], purpose ?? "match");
+    assert.deepEqual(writes[1]!.args[1], ["attempt"]);
+    assert.equal(writes.at(-1)!.args[1], "succeeded");
+    assert.equal(body.purpose, undefined);
+    assert.deepEqual(
+      body,
+      buildChatRequest({ system: "fixture", user: "fixture", retries: 0 }),
+    );
+  }
+});
+
 test("database cancellation of an in-flight fetch preserves the systemic error", async () => {
   const controller = new AbortController();
   const databaseError = Object.assign(

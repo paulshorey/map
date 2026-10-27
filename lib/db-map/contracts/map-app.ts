@@ -14,6 +14,15 @@ export interface PoiFeatureProperties {
   date_precision: string | null;
 }
 
+export interface PoiPrecisionEvidenceRecord {
+  version: string;
+  value: string;
+  derivation: string;
+  provider_class: string | null;
+  provider_type: string | null;
+  warnings: Array<string>;
+}
+
 export interface PoiLocationRecord {
   lat: number;
   lng: number;
@@ -22,6 +31,7 @@ export interface PoiLocationRecord {
   precision: string;
   label: string | null;
   query: string | null;
+  precision_evidence?: PoiPrecisionEvidenceRecord;
 }
 
 export interface PoiCoordinateEvidenceRecord {
