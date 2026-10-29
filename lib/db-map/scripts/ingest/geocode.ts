@@ -165,6 +165,16 @@ export function buildQuery(
   return { display, norm };
 }
 
+/** A street address supplied by the listing itself, never a location hint label. */
+function capturedStreetAddress(captured: Record<string, any>): string | null {
+  const attrs = captured.attributes ?? {};
+  return (
+    localityValue(captured.address) ??
+    localityValue(attrs.venue_address) ??
+    localityValue(attrs.street_address)
+  );
+}
+
 /** Captured listing text for lookup; placeholder locality such as "Various venues" is dropped. */
 export function listedLocality(row: GeoRow, captured: Record<string, any>) {
   const attrs = captured.attributes ?? {};
@@ -236,7 +246,10 @@ export function listedQueryBasis(
   temporal: Set<string>,
 ): QueryBasis {
   const r = listedLocality(row, captured);
-  if (r.address) return "address";
+  // An address slot filled only by `hints.location` (a listing label such as "Melbourne, VIC")
+  // drops the name and venue, so that lookup is locality text, not a street address.
+  if (r.address)
+    return capturedStreetAddress(captured) ? "address" : "locality";
   if (r.venue) return "venue";
   const isEvent = (row.category_slugs ?? []).some((s) => temporal.has(s));
   const locality = [r.city, r.region, r.country_name ?? r.country_code].some(

@@ -92,12 +92,12 @@ function inferredRank(
       city_confirmation?: { result?: { lat: number; lng: number } };
     };
   } | null;
-  // Same effective listed locality as the lookup (`listedLocality`): captured text, then hints.
+  // Same listed city as the lookup (`listedLocality`): captured text, then the city hint.
   const listedCity =
     localityValue(v?.listed?.city) ?? localityValue(v?.listed?.hints?.city);
-  const listedAddress =
-    localityValue(v?.listed?.address) ??
-    localityValue(v?.listed?.hints?.location);
+  // Only a captured street address earns address priority. `hints.location` is a listing
+  // label such as "Melbourne, VIC" or "Australia", never a street address.
+  const listedAddress = localityValue(v?.listed?.address);
   const result = v?.forward?.result;
   const confirmation = v?.forward?.city_confirmation?.result;
   // After a rejected venue/address hit, the stored result is the listed city's own lookup;
