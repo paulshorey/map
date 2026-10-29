@@ -3,8 +3,59 @@
 The human explicitly selected the three-record preflight from the
 [Biennale completion receipt](biennale-refresh-receipt.md). It ran once on merged
 main `7a4b552` and stopped at its documented 45-second deadline before downstream
-validation. This is a **paused, incomplete preflight**, not source acceptance or
-authorization for the full 304-record file. Both ingestion heartbeats remain paused.
+validation. The human then approved the foreground continuation below, which
+completed the same frozen cohort. **Structural acceptance passed; location quality
+did not.** The full 304-record file stays on hold. Both ingestion heartbeats remain
+paused.
+
+## Continuation result — 2026-10-29
+
+| Item      | Value                                                                       |
+| --------- | --------------------------------------------------------------------------- |
+| Code      | main `4c70d9f` (PR #68 merged)                                              |
+| Command   | `ingest:run --resume ccb63ce7-… --max-llm-requests 2 --max-cost-usd 0.0994` |
+| Execution | `63e9aeb6-23ad-4740-9556-414870335ec2`                                      |
+| Interval  | `20:07:23Z`–`20:08:01Z` (about 40 s), exit 0                                |
+| Result    | run `succeeded`, `requested_scope_verified`; all eight verify checks ok     |
+
+The pre-launch control snapshot was quiescent with no claims; a `--dry-run` showed
+the saved `limit: 3`, `geocodeLimit: 6` and the same file SHA. Final control is
+quiescent with no workers or locks and maintenance off.
+
+**What passed.** All three raw observations deep-equal their source objects.
+Adelaide reused its first-execution normalization (`b4d3823a…`, no new request).
+AFiRIperFOMA has `source_coordinates: null`; no source point was invented. Each
+canonical keeps source and inferred values in separate slots with research,
+normalization and geocode IDs, and every rendered location returns its marker.
+Matching created Adelaide (`a522e1be…`) and AFiRIperFOMA (`b8335f0b…`) and merged
+Aichi into the existing three-source canonical `7b37309b…` at 0.958 (correct).
+The run ledger has 12 successful calls: 3 normalizations, 3 forward and 2 reverse
+geocodes, 3 embeddings and 1 description fusion; estimated priced cost
+$0.0020305 (geocode/embedding unpriced). The continuation normalizations took
+4.5 s and 4.8 s, so the first execution's 41 s was a one-off, not a trend.
+
+**What failed: every inferred point in the sample is wrong or coarse, and all
+of them publish.** Each assessment is correctly `needs_review`, but assessments
+are advisory and do not gate publication or canonical slot selection.
+
+| Record       | Published markers                                                                                                                                                                                                                                                                                |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Adelaide     | Source `-25.2744, 133.7751` is Australia's country centroid, labelled `point` despite the model's `coordinates_country_centroid` warning. Inferred query `Various venues, Various, Australia` hit "Various Restaurants, Mill Park" (Melbourne), `point`. Neither is in Adelaide; 1,742 km apart. |
+| AFiRIperFOMA | Only marker is Nigeria's country centroid from query `Nigeria`, labelled `city` (provider `administrative`/`boundary`).                                                                                                                                                                          |
+| Aichi        | Query `Aichi Arts Center, Nagoya, Japan` hit "Center Street, Urayasu, Chiba", 274 km away, labelled `point`.                                                                                                                                                                                     |
+
+**Regression on an existing POI.** Before this run, Aichi canonical build
+`8af72e4f…` (2026-10-27) published biennale_com's inferred point from its street
+address `1-13-2 Higashisakura, Nagoya` (`35.171876, 136.916736`, the arts center).
+This run's build `096444bc…` replaced that inferred slot with Biennial
+Foundation's Urayasu point. Per-slot canonical selection preferred the new
+venue-name geocode over an existing street-address geocode.
+
+No code reads the model's placeholder or centroid warnings
+(`city_placeholder_value`, `coordinates_country_centroid`); they are stored only.
+`captured_attributes_restored` put `Various` back into the forward query.
+AFiRIperFOMA's `website_url` is the Biennial Foundation listing URL, not the
+event's own site.
 
 ## Scope and identities
 
@@ -77,6 +128,23 @@ at `19:23:38.418Z` confirmed quiescence, maintenance off, and zero workers, sour
 locks, admissions, and local scripts. No schedule or model changed.
 
 ## Decision before the full file
+
+**Still hold the 304-record launch** (updated after the continuation). The file
+has 204 records without coordinates and 13 with street addresses, so most of its
+markers would be venue/city/country forward geocodes like the three above, and
+merges can overwrite better inferred points already published by other sources.
+Fix location handling first, then reprocess these three records and confirm the
+Aichi canonical's Nagoya inferred point is restored:
+
+1. Canonical inferred-slot selection must not replace a street-address or
+   assessment-accepted candidate with a weaker `needs_review` one.
+2. Forward queries must drop placeholder locality text (`Various`, `Various venues`).
+3. A forward result whose city or region contradicts the listed city should be
+   rejected or retried with a locality-only query (`Nagoya, Japan`).
+4. Country-only results and known country-centroid source points need a `country`
+   precision, and the product must decide whether country-precision points publish.
+
+The original 2026-10-29 analysis follows; its continuation recipe is now done.
 
 **Hold the 304-record launch.** The timing boundary prevented the intended semantic
 and downstream checks; it did not demonstrate a failing provider response. The
