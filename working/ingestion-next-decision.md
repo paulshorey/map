@@ -1,6 +1,21 @@
 # Ingestion next decision — 2026-10-25, revised
 
-## Current decision — 2026-10-29
+## Current decision — 2026-10-29, after continuation
+
+PR #68 merged as `4c70d9f`. The human approved the foreground continuation of run
+`ccb63ce7…`; execution `63e9aeb6…` finished in about 40 s with
+`requested_scope_verified`. Capture fidelity, slot provenance, normalization
+reuse, matching, lineage, ledger and process exit pass. Location quality fails:
+all three inferred points are wrong or country-level, Adelaide's source point is
+a country centroid labelled `point`, and the rebuild replaced the existing Aichi
+Triennale canonical's correct Nagoya inferred marker with a point in Urayasu,
+Chiba. See the [preflight receipt](biennial-foundation-preflight.md#continuation-result--2026-10-29).
+
+Hold the 304-record import until location handling is fixed (inferred-slot
+selection, placeholder queries, city-contradiction checks, country precision)
+and these three records are reprocessed. Both heartbeats stay paused.
+
+## Earlier decision — 2026-10-29
 
 The human closed PR #61 without merging and explicitly selected the proposed
 three-record Biennial Foundation preflight. Its one documented 45-second smoke
