@@ -1,11 +1,11 @@
-# POI Map
+# Project: POI Map
 
 Interactive POI map - letting the user search and filter points of interest on a world map.
 
 - Public user-facing app is like Google Maps, Yelp, Zillow, ParaglidingMap, Campgrounds Search, and other typical apps that render many locations on a map - let the user search and filter the results on the map.
 - Hard part is collecting and maintaining POI data. To add POIs (points of interests) to this map, we need to develop and maintain a system to ingest raw source data files (.json or .csv data dumps), normalize the raw data into our standard format, filter for quality and completeness, aggregate by number of sources, and add value like geo code location, clearer description, and category.
 
-# Development
+## Development
 
 This is a monorepo. Apps live in `apps/`; shared libraries live in `lib/`.
 
@@ -126,7 +126,7 @@ supervised jobs and launch intents; use the guides below for command details.
 - Find the relevant job by its run/execution IDs and timestamps. Follow the snapshot's
   `journal` and `result_path` to `lib/db-map/.ingest-jobs/<job UUID>/job.json` and
   `result.json`. Use `pnpm --silent --filter @lib/db-map ingest:status --run <run UUID>
-  --json --limit 10` to identify source/file, stage and failure evidence. Read relevant log
+--json --limit 10` to identify source/file, stage and failure evidence. Read relevant log
   excerpts only; the matching event journal is
   `lib/db-map/.ingest-logs/<run UUID>-<execution UUID>.jsonl`. Do not guess from filenames.
 - Inspect unresolved snapshot `claims` and, if present,
@@ -255,7 +255,17 @@ Destructive reclustering or resets are authorized when necessary to the requeste
 but are not resume shortcuts. Preserve diagnostic evidence first, document why retained
 artifacts cannot be repaired, and use the runbook's cleanup procedure.
 
-## Research and report
+# Research and report
 
 If something went wrong, stop and report back. Include all info, data, and logs.
 If unsure about something, research, search the web, find latest techniques and best practices.
+
+# Next steps
+
+Consider what was recently done, what's in progress, and how it contributes to the goal.
+Decide and recommend what to do next.
+
+# Goal: to collect all the interesting places in the world
+
+1. Develop a collection and ingestion workflow to data mine all the world's interesting places, by category
+2. Display the collected POIs on a map in a web app
