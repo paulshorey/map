@@ -6,6 +6,7 @@ import {
   acceptedLocationSql,
   assessLocationRecord,
   ensureLocationAssessment,
+  locationReviewSql,
 } from "../../sql/location-assessments.js";
 import { listPoisGeoJson, getPoiById } from "../../sql/pois.js";
 import { seedTasks, RECORD_STAGES } from "../../sql/ingestion-tasks.js";
@@ -844,6 +845,108 @@ test(
       await client.query("ROLLBACK");
       await client.end();
       globalThis.fetch = originalFetch;
+    }
+  },
+);
+
+test(
+  "location review flag trusts enrichment only while bound to the active normalization and point",
+  { skip: !connection },
+  async () => {
+    const client = new pg.Client({ connectionString: connection });
+    await client.connect();
+    try {
+      const enrichment = (
+        normalization: string,
+        point: { lat: number | null; lng: number | null },
+        source: string | null,
+        inferred: string | null,
+      ) =>
+        JSON.stringify({
+          location_enrichment: {
+            version: LOCATION_VERSION,
+            normalization_id: normalization,
+            point,
+            coordinate_evidence: {
+              source_coordinates: source && {
+                lat: 1,
+                lng: 2,
+                precision: source,
+              },
+              inferred_coordinates: inferred && {
+                lat: 3,
+                lng: 4,
+                precision: inferred,
+              },
+            },
+          },
+        });
+      const current = randomUUID(),
+        stale = randomUUID();
+      const cases: Array<
+        [
+          string,
+          string,
+          number | null,
+          number | null,
+          string | null,
+          string | null,
+        ]
+      > = [
+        // A later normalization cleared the coordinates; the old enrichment must not hide that.
+        [
+          "stale enrichment, coordinates cleared",
+          enrichment(stale, { lat: 1, lng: 2 }, "point", null),
+          null,
+          null,
+          null,
+          "missing_location",
+        ],
+        // The point moved under a stale enrichment; the current coarse column decides.
+        [
+          "stale point, coarse column",
+          enrichment(current, { lat: 1, lng: 2 }, "point", null),
+          5,
+          6,
+          "city",
+          "coarse_location_only",
+        ],
+        [
+          "bound point evidence",
+          enrichment(current, { lat: 1, lng: 2 }, "point", "country"),
+          1,
+          2,
+          "point",
+          null,
+        ],
+        [
+          "bound country-only evidence",
+          enrichment(current, { lat: 3, lng: 4 }, null, "country"),
+          3,
+          4,
+          "country",
+          "coarse_location_only",
+        ],
+        [
+          "bound, no candidates",
+          enrichment(current, { lat: null, lng: null }, null, null),
+          null,
+          null,
+          null,
+          "missing_location",
+        ],
+      ];
+      for (const [name, attributes, lat, lng, precision, expected] of cases) {
+        const { rows } = await client.query(
+          `SELECT ${locationReviewSql("rp")} AS reason
+           FROM (SELECT $1::jsonb AS attributes, $2::float8 AS lat, $3::float8 AS lng,
+             $4::uuid AS active_normalization_id, $5::text AS coordinate_precision) rp`,
+          [attributes, lat, lng, current, precision],
+        );
+        assert.equal(rows[0].reason, expected, name);
+      }
+    } finally {
+      await client.end();
     }
   },
 );

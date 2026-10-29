@@ -5,6 +5,7 @@ import {
   type AssessmentInput,
   type LocationAssessment,
 } from "../scripts/ingest/location-assessment.js";
+import { LOCATION_VERSION } from "../scripts/ingest/location.js";
 
 /** One snapshot expression for activation, cache checks and publication fencing. */
 export function locationAssessmentInputSql(alias = "rp"): string {
@@ -121,14 +122,21 @@ export async function ensureLocationAssessment(
 
 /** Derived location-review flag from stored evidence, so existing records need no backfill.
  * `missing_location`: no plottable candidate. `coarse_location_only`: every candidate is
- * city, region or country precision. Advisory only; never a matching or publication gate. */
+ * city, region or country precision. Enrichment slots count only while bound to the active
+ * normalization and current point; a stale enrichment left by a later normalization falls
+ * back to the current columns. Advisory only; never a matching or publication gate. */
 export function locationReviewSql(alias = "rp"): string {
-  const e = `${alias}.attributes->'location_enrichment'->'coordinate_evidence'`;
+  const enrichment = `${alias}.attributes->'location_enrichment'`;
+  const e = `${enrichment}->'coordinate_evidence'`;
+  const bound = `(${enrichment}->>'version'='${LOCATION_VERSION}'
+      AND ${enrichment}->>'normalization_id'=${alias}.active_normalization_id::text
+      AND ${enrichment}->'point'=jsonb_build_object('lat',${alias}.lat,'lng',${alias}.lng)
+      AND jsonb_typeof(${e})='object')`;
   const present = (slot: string) => `jsonb_typeof(${e}->'${slot}')='object'`;
   const precise = (slot: string) =>
     `COALESCE(${e}->'${slot}'->>'precision','')='point'`;
   return `(CASE
-    WHEN jsonb_typeof(${e})='object' THEN CASE
+    WHEN COALESCE(${bound},false) THEN CASE
       WHEN NOT (${present("source_coordinates")} OR ${present("inferred_coordinates")}) THEN 'missing_location'
       WHEN NOT (${precise("source_coordinates")} OR ${precise("inferred_coordinates")}) THEN 'coarse_location_only'
     END
