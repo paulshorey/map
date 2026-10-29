@@ -5,6 +5,7 @@ import {
   type AssessmentInput,
   type LocationAssessment,
 } from "../scripts/ingest/location-assessment.js";
+import { LOCATION_VERSION } from "../scripts/ingest/location.js";
 
 /** One snapshot expression for activation, cache checks and publication fencing. */
 export function locationAssessmentInputSql(alias = "rp"): string {
@@ -117,4 +118,29 @@ export async function ensureLocationAssessment(
     [researchId, id],
   );
   return { ...assessment, id };
+}
+
+/** Derived location-review flag from stored evidence, so existing records need no backfill.
+ * `missing_location`: no plottable point. `coarse_location_only`: every candidate is
+ * city, region or country precision. Enrichment slots count only while bound to the active
+ * normalization and current point and at least one is present; otherwise (a stale enrichment
+ * or a retained legacy point) the current columns decide. Advisory only; never a matching or
+ * publication gate. */
+export function locationReviewSql(alias = "rp"): string {
+  const enrichment = `${alias}.attributes->'location_enrichment'`;
+  const e = `${enrichment}->'coordinate_evidence'`;
+  const bound = `(${enrichment}->>'version'='${LOCATION_VERSION}'
+      AND ${enrichment}->>'normalization_id'=${alias}.active_normalization_id::text
+      AND ${enrichment}->'point'=jsonb_build_object('lat',${alias}.lat,'lng',${alias}.lng)
+      AND jsonb_typeof(${e})='object')`;
+  const present = (slot: string) => `jsonb_typeof(${e}->'${slot}')='object'`;
+  const precise = (slot: string) =>
+    `COALESCE(${e}->'${slot}'->>'precision','')='point'`;
+  // A bound enrichment with no slots (a legacy point whose new lookup missed) defers to the columns.
+  return `(CASE
+    WHEN COALESCE(${bound},false) AND (${present("source_coordinates")} OR ${present("inferred_coordinates")}) THEN
+      CASE WHEN NOT (${precise("source_coordinates")} OR ${precise("inferred_coordinates")}) THEN 'coarse_location_only' END
+    WHEN ${alias}.lat IS NULL OR ${alias}.lng IS NULL THEN 'missing_location'
+    WHEN COALESCE(${alias}.coordinate_precision,'point')<>'point' THEN 'coarse_location_only'
+  END)`;
 }

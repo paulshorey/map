@@ -189,6 +189,8 @@ try {
           lon: String(row.lng),
           class: "place",
           type: "attraction",
+          // Real responses carry addressdetails; an unnamed result would need city verification.
+          address: { city: "Venice", state: "Veneto", country_code: "it" },
         },
       ]);
     }

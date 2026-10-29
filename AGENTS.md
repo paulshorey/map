@@ -267,5 +267,5 @@ Decide and recommend what to do next.
 
 # Goal: to collect all the interesting places in the world
 
-1. Develop a collection and ingestion workflow to data mine all the world's interesting places, by category
-2. Display the collected POIs on a map in a web app
+1. Develop a ingestion workflow to normalize, analyze, and aggregate all the world's interesting places
+2. Display the collected POIs on a map in a web app, by category

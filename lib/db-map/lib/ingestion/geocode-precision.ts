@@ -8,7 +8,12 @@ export interface PrecisionEvidence {
   warnings: string[];
 }
 
-export const PRECISION_EVIDENCE_VERSION = "geocode-precision-v1";
+// v2 classifies country-level results as `country` (v1 called them region/city).
+export const PRECISION_EVIDENCE_VERSION = "geocode-precision-v2";
+const READABLE_VERSIONS = new Set([
+  "geocode-precision-v1",
+  "geocode-precision-v2",
+]);
 const text = (v: unknown) =>
   typeof v === "string" && v.trim() ? v.trim() : null;
 
@@ -18,7 +23,7 @@ export function readPrecisionEvidence(
   if (!value || typeof value !== "object") return null;
   const p = value as PrecisionEvidence;
   if (
-    p.version !== PRECISION_EVIDENCE_VERSION ||
+    !READABLE_VERSIONS.has(p.version) ||
     typeof p.value !== "string" ||
     typeof p.derivation !== "string" ||
     !Array.isArray(p.warnings) ||
@@ -41,9 +46,23 @@ export function deriveForwardPrecision(
 ): PrecisionEvidence {
   const type = typeof row.type === "string" ? row.type.toLowerCase() : "";
   const cls = typeof row.class === "string" ? row.class.toLowerCase() : "";
+  const address =
+    row.address && typeof row.address === "object"
+      ? Object.keys(row.address)
+      : [];
   let value = "point",
     derivation = "fallback";
-  if (type === "country" || type === "state") {
+  if (type === "country" || row.addresstype === "country") {
+    value = "country";
+    derivation = "provider_type";
+  } else if (
+    address.length > 0 &&
+    address.every((key) => key === "country" || key === "country_code")
+  ) {
+    // A country boundary arrives as administrative/boundary with only country fields.
+    value = "country";
+    derivation = "provider_address";
+  } else if (type === "state") {
     value = "region";
     derivation = "provider_type";
   } else if (

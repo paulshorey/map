@@ -898,8 +898,18 @@ These are provenance categories, not physical roles or two arbitrary candidates.
 A second original/source point cannot occupy the inferred field. Source-native
 multiple points/roles remain raw evidence; choosing physical launch/landing/entrance
 locations is outside this contract. With several linked sources, canonical selection
-chooses one value independently per evidence category using the existing anchor/trust
-ordering, preserving each selected member/artifact's identity.
+chooses one value independently per evidence category, preserving each selected
+member/artifact's identity. The source slot uses the existing anchor/trust ordering.
+The inferred slot first ranks evidence: a lookup whose result contradicts its listed
+city ranks last, a supplied street address beats venue/name text, then finer
+precision (point, city, region, country); ties keep anchor/trust order. The listed
+city and address are the same effective values the lookup used, falling back to
+`source_location_hints.city` / `.location`. A city-only fallback gets no address
+priority from its rejected venue/address lookup, and is not re-tested as a venue
+conflict: it is the listed city's own lookup, even when named in another script. A newly
+linked venue-name lookup therefore cannot replace another member's address lookup.
+The builder version is unchanged: existing builds are not swept, and the ranking
+applies at each canonical's next rebuild.
 
 Either slot can be absent. A record with only an address-derived point keeps
 `source_coordinates=null`. Equal coordinate pairs retain **both named observations**;
@@ -915,6 +925,47 @@ search. Hits and misses are cached by query policy/country. Forward and reverse 
 provider budgets and recovery. If the budget expires between calls, activation waits
 and resume reuses cached results; a miss preserves a usable source point.
 
+Listing filler such as `Various`, `Various venues`, `TBA`, `Online` or `Multiple
+locations` is not locality and never enters a forward query; the captured text itself
+is preserved. Quantifiers (`Multiple`, `Several`, `Many`) are filler only with a noun
+such as `venues`, so a town named Many is kept. When a source point exists and the only remaining listed locality is
+the country, no forward lookup runs: a country centroid beside a supplied point adds
+a marker, not evidence. Only points with `coordinate_source=source` or `url` qualify
+for this suppression. A record with legacy geocoded or unclassified coordinates
+still looks up its country and can acquire country-level inferred evidence.
+
+A venue/name/address lookup is suspect unless one of its city-level fields (city, town,
+village, hamlet, municipality, suburb or city district) equals the listed city's whole
+name, folded for accents and `St`/`Saint`-style abbreviations, with any qualifier after
+a comma (`Portland, OR`) ignored. State, county, country and the display label never
+confirm a city: `Kansas City` is never reduced to `Kansas`, and a Wichita, Kansas
+result does not name it. A suspect result within 50 km of the record's source point is
+kept; otherwise (or with no source point) it is verified by the city lookup below. A suspect result triggers one locality-only retry
+(`Nagoya, JP`). If that city lookup lands within 50 km of the first result, the first
+result is the listed city under another name (Venice/Venezia) and is kept. This
+confirmation is stored in `validation.forward.city_confirmation`, bound into the
+artifact hash, and reused by canonical ranking so it cannot flag the exonym again. Otherwise
+it is rejected (for example `Aichi Arts Center, Nagoya` → Urayasu, Chiba), kept in
+`validation.forward.rejected` with reason `forward_locality_conflict`, and the city
+result supplies the inferred value. A definitive city miss cannot confirm the first
+result: a usable source point is retained without an inferred point, or the record
+stays unresolved when it has no usable point. Both the rejected hit and city miss
+remain cached for provider-free retries. Names compare in any script
+(`名古屋市` matches `名古屋市`); a listed name and result in different scripts (`Nagoya` vs
+`名古屋市`), or a result with no city-level field, is not a match and follows the same
+distance verification. Only a record with no listed city skips this check. Both lookups share the call budget.
+
+`locationReviewSql()` (`sql/location-assessments.ts`) derives an advisory review flag
+from stored evidence: `missing_location` when no candidate is plottable, and
+`coarse_location_only` when every candidate is city, region or country precision.
+Stored slots count only while the enrichment's version, normalization and point match
+the row and at least one slot is present. Otherwise the current coordinate columns
+decide: cleared coordinates show as `missing_location`, and a retained legacy point
+whose new lookup missed stays plottable and is judged by its stored precision.
+`ingest:report` counts these per source/category. They never gate matching or
+publication. A supplied centroid labelled `point` (for example Google's Australia
+centroid) is not detected without a centroid reference dataset.
+
 The `location-v3` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
 to its normalization/primary point, alongside separate listed text, forward query/result
 and reverse lookup. Canonical builder `canonical-build-v7` writes
@@ -923,21 +974,28 @@ each value. Legacy lat/lng is the selected source point when available, otherwis
 inferred point or retained legacy point. Raw/model attributes cannot publish these
 reserved fields. The query policy remains `listed-location-v1`; unchanged provider
 queries reuse the `location-v2` cache namespace, so a representation upgrade does
-not repeat already-paid geocoding. No migration or automatic historical sweep occurs.
+not repeat already-paid geocoding. There is no automatic historical sweep. The
+additive country-precision migration widens the two storage constraints; it does
+not reclassify stored points or rebuild existing artifacts.
 
 Forward results now retain the complete selected provider row as `raw_response`
 inside the query-cache hit and geocode artifact's `validation.forward.result`.
-Compact `precision_evidence` (`geocode-precision-v1`) records the operational
-value, its derivation, provider class/type, and diagnostic warnings. Type/class
-rules still produce the existing city/region values; other results keep the
-existing point fallback with `point_precision_default`, plus
+Compact `precision_evidence` (`geocode-precision-v2`) records the operational
+value, its derivation, provider class/type, and diagnostic warnings. A provider
+`country` type, or a result whose address holds only country fields (OSM country
+boundaries arrive as `boundary`/`administrative`), is `country`; v1 called these
+`region` or `city`. Other type/class rules produce the existing city/region values;
+remaining results keep the point fallback with `point_precision_default`, plus
 `provider_granularity_missing` when neither field exists. These are diagnostics,
 not venue-accuracy claims or matching/publication gates. The selected response
 row contains no request URL or client credential. Full raw responses stay out
 of canonical coordinate slots; compact evidence survives canonical/API selection.
+v1 evidence remains readable.
 
 Existing paid query keys and location/matcher/builder versions stay unchanged.
-Replaying an older parsed cache hit keeps its coordinates and stored precision,
+A cached hit that saved its provider row is reclassified from that row with the
+current classifier, without a refetch. Replaying an older parsed cache hit without
+a row keeps its coordinates and stored precision,
 marks derivation `legacy_cache` / `precision_derivation_not_recorded`, and does
 not rewrite or refetch that cache. Old active artifacts remain current; they are
 not swept merely to add metadata. `ingest:location-assess --records <UUID,...>`

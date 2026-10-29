@@ -5,7 +5,10 @@ import { pathToFileURL } from "node:url";
  */
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
-import { storedPrecisionEvidence } from "../../lib/ingestion/geocode-precision.js";
+import {
+  deriveForwardPrecision,
+  storedPrecisionEvidence,
+} from "../../lib/ingestion/geocode-precision.js";
 import {
   geocode,
   reverseGeocode,
@@ -21,6 +24,9 @@ import {
   LOCATION_CACHE_VERSION,
   LOCATION_GEOCODER_VERSION,
   LOCATION_QUERY_VERSION,
+  LOCALITY_CONFLICT_M,
+  forwardLocalityConflict,
+  localityValue,
   locationReadySql,
   resolveLocation,
   textValue,
@@ -28,6 +34,7 @@ import {
 } from "./location.js";
 import { countryToCode } from "./normalize/country.js";
 import { stableHash } from "./hash.js";
+import { haversineMeters } from "./match/geo.js";
 import {
   validPoint,
   type CoordinateEvidence,
@@ -71,6 +78,7 @@ interface GeoRow {
   category_slugs: string[] | null;
   lat?: number | null;
   lng?: number | null;
+  coordinate_source?: string | null;
 }
 
 function parseArgs(argv: string[]): CliOptions {
@@ -157,31 +165,36 @@ export function buildQuery(
   return { display, norm };
 }
 
+/** Captured listing text for lookup; placeholder locality such as "Various venues" is dropped. */
+export function listedLocality(row: GeoRow, captured: Record<string, any>) {
+  const attrs = captured.attributes ?? {};
+  const hints = attrs.source_location_hints ?? {};
+  return {
+    ...row,
+    name: textValue(captured.name),
+    venue:
+      localityValue(attrs.venue) ??
+      localityValue(attrs.venue_name) ??
+      localityValue(hints.venue),
+    address:
+      localityValue(captured.address) ??
+      localityValue(attrs.venue_address) ??
+      localityValue(attrs.street_address) ??
+      localityValue(hints.location),
+    city: localityValue(captured.city) ?? localityValue(hints.city),
+    region: localityValue(captured.region) ?? localityValue(hints.region),
+    country_code: textValue(captured.country_code),
+    country_name: textValue(attrs.country_name) ?? textValue(hints.country),
+  };
+}
+
 /** The address candidate must be independent of reverse enrichment and LLM guesses. */
 export function listedQuery(
   row: GeoRow,
   captured: Record<string, any>,
   temporal: Set<string>,
 ) {
-  const attrs = captured.attributes ?? {};
-  const hints = attrs.source_location_hints ?? {};
-  const queryRow = {
-    ...row,
-    name: textValue(captured.name),
-    venue:
-      textValue(attrs.venue) ??
-      textValue(attrs.venue_name) ??
-      textValue(hints.venue),
-    address:
-      textValue(captured.address) ??
-      textValue(attrs.venue_address) ??
-      textValue(attrs.street_address) ??
-      textValue(hints.location),
-    city: textValue(captured.city) ?? textValue(hints.city),
-    region: textValue(captured.region) ?? textValue(hints.region),
-    country_code: textValue(captured.country_code),
-    country_name: textValue(attrs.country_name) ?? textValue(hints.country),
-  };
+  const queryRow = listedLocality(row, captured);
   if (
     validPoint(row) &&
     ![
@@ -196,8 +209,33 @@ export function listedQuery(
     return null;
   // Multiple venue names can steer free-form lookup to an unrelated business.
   // A supplied address/locality is the better query when available.
-  return buildQuery(
+  const q = buildQuery(
     queryRow.address ? { ...queryRow, name: null, venue: null } : queryRow,
+    temporal,
+  );
+  // A country-only lookup beside a supplied point adds a centroid marker, not evidence.
+  const country = (queryRow.country_name ?? queryRow.country_code)?.trim();
+  if (
+    q &&
+    validPoint(row) &&
+    ["source", "url"].includes(row.coordinate_source ?? "") &&
+    country &&
+    q.display === country
+  )
+    return null;
+  return q;
+}
+
+/** Locality-only retry when a venue/address lookup lands in another city. */
+export function listedCityQuery(
+  row: GeoRow,
+  captured: Record<string, any>,
+  temporal: Set<string>,
+) {
+  const queryRow = listedLocality(row, captured);
+  if (!queryRow.city) return null;
+  return buildQuery(
+    { ...queryRow, name: null, venue: null, address: null },
     temporal,
   );
 }
@@ -395,15 +433,13 @@ export async function runGeocode(
       source.country_code ??
       countryToCode(textValue(attrs.source_location_hints?.country)) ??
       null;
-    let forward: GeocodeHit | null = null;
-    let forwardQueryNorm: string | null = null;
-    if (q) {
-      // Separate policy namespace; do not reuse historical name/reverse-derived queries.
-      forwardQueryNorm = forwardCacheKey(q.norm, forwardCountry);
-      const cached = await readCache(db, forwardQueryNorm);
+    // Separate policy namespace; do not reuse historical name/reverse-derived queries.
+    const lookup = async (query: { display: string; norm: string }) => {
+      const key = forwardCacheKey(query.norm, forwardCountry);
+      const cached = await readCache(db, key);
       if (cached) {
         stats.cacheHits++;
-        forward = validPoint(cached)
+        const hit: GeocodeHit | null = validPoint(cached)
           ? {
               ...cached.payload?.hit,
               lat: cached.lat!,
@@ -412,25 +448,89 @@ export async function runGeocode(
               provider: "locationiq",
             }
           : null;
-        if (forward)
-          forward.precision_evidence = storedPrecisionEvidence(
-            forward,
-            "legacy_cache",
-          );
-        if (!forward) stats.knownMisses++;
-      } else {
-        if (remaining() === 0) {
+        if (!hit) stats.knownMisses++;
+        else if (hit.raw_response) {
+          // The saved provider row reproduces the current classifier without a paid refetch.
+          hit.precision_evidence = deriveForwardPrecision(hit.raw_response);
+          hit.precision = hit.precision_evidence
+            .value as GeocodeHit["precision"];
+        } else
+          hit.precision_evidence = storedPrecisionEvidence(hit, "legacy_cache");
+        return { key, hit, stop: null };
+      }
+      if (remaining() === 0) return { key, hit: null, stop: "budget" as const };
+      if (opts.dryRun) {
+        stats.apiCalls++;
+        return { key, hit: null, stop: "dry_run" as const };
+      }
+      if (opts.throttleMs > 0) await sleep(opts.throttleMs);
+      const hit = await geocode(query.display, forwardCountry);
+      stats.apiCalls++;
+      await writeCache(db, key, hit);
+      return { key, hit, stop: null };
+    };
+    let forward: GeocodeHit | null = null;
+    let forwardQueryNorm: string | null = null;
+    let forwardQuery = q;
+    let rejected: Record<string, unknown> | null = null;
+    let cityConfirmation: {
+      query: string;
+      query_norm: string;
+      result: GeocodeHit;
+    } | null = null;
+    if (q) {
+      const first = await lookup(q);
+      if (first.stop === "budget") {
+        stats.budgetHit = true;
+        break;
+      }
+      if (first.stop) continue;
+      forwardQueryNorm = first.key;
+      forward = first.hit ?? null;
+      const cityQuery = listedCityQuery(row, captured, temporal);
+      const sourcePoint =
+        validPoint({ lat: row.lat, lng: row.lng }) &&
+        ["source", "url"].includes(row.coordinate_source)
+          ? { lat: row.lat as number, lng: row.lng as number }
+          : null;
+      if (
+        forward &&
+        cityQuery &&
+        cityQuery.norm !== q.norm &&
+        forwardLocalityConflict(
+          listedLocality(row, captured).city,
+          forward,
+          sourcePoint,
+        )
+      ) {
+        const retry = await lookup(cityQuery);
+        if (retry.stop === "budget") {
           stats.budgetHit = true;
           break;
         }
-        if (opts.dryRun) {
-          stats.apiCalls++;
-          continue;
+        if (retry.stop) continue;
+        // The listed city's own lookup confirms a nearby result (another spelling of that city).
+        const confirmed =
+          retry.hit &&
+          haversineMeters(retry.hit, forward) <= LOCALITY_CONFLICT_M;
+        if (confirmed && retry.hit) {
+          cityConfirmation = {
+            query: cityQuery.display,
+            query_norm: retry.key,
+            result: retry.hit,
+          };
+        } else {
+          // Keep the rejected paid result as evidence; it never occupies the inferred slot.
+          rejected = {
+            reason: "forward_locality_conflict",
+            query: q.display,
+            query_norm: first.key,
+            result: forward,
+          };
+          forwardQuery = cityQuery;
+          forwardQueryNorm = retry.key;
+          forward = retry.hit ?? null;
         }
-        if (opts.throttleMs > 0) await sleep(opts.throttleMs);
-        forward = await geocode(q.display, forwardCountry);
-        stats.apiCalls++;
-        await writeCache(db, forwardQueryNorm, forward);
       }
     } else stats.noQuery++;
     if (!validPoint({ lat, lng })) {
@@ -466,7 +566,7 @@ export async function runGeocode(
             origin: "listed_address_geocode",
             precision: forward.precision,
             label: forward.label ?? null,
-            query: q?.display ?? null,
+            query: forwardQuery?.display ?? null,
             precision_evidence: forward.precision_evidence,
           }
         : null,
@@ -522,10 +622,12 @@ export async function runGeocode(
       forward: {
         query_version: LOCATION_QUERY_VERSION,
         country_filter: forwardCountry,
-        query: q?.display ?? null,
+        query: forwardQuery?.display ?? null,
         query_norm: forwardQueryNorm,
         state: !q ? "no_query" : forward ? "resolved" : "miss",
         result: forward,
+        ...(rejected ? { rejected } : {}),
+        ...(cityConfirmation ? { city_confirmation: cityConfirmation } : {}),
       },
       coordinate_evidence: coordinateEvidence,
       ...resolved,
@@ -544,6 +646,10 @@ export async function runGeocode(
       forward_query_norm: forwardQueryNorm,
       // Bind any newly captured response metadata to this artifact without changing query-cache identity.
       forward_result: forward,
+      ...(rejected ? { forward_rejected: rejected } : {}),
+      ...(cityConfirmation
+        ? { forward_city_confirmation: cityConfirmation }
+        : {}),
       version: LOCATION_VERSION,
       coordinate_evidence: coordinateEvidence,
     });
