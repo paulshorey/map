@@ -905,7 +905,8 @@ city ranks last, a supplied street address beats venue/name text, then finer
 precision (point, city, region, country); ties keep anchor/trust order. The listed
 city and address are the same effective values the lookup used, falling back to
 `source_location_hints.city` / `.location`. A city-only fallback gets no address
-priority from its rejected venue/address lookup. A newly
+priority from its rejected venue/address lookup, and is not re-tested as a venue
+conflict: it is the listed city's own lookup, even when named in another script. A newly
 linked venue-name lookup therefore cannot replace another member's address lookup.
 The builder version is unchanged: existing builds are not swept, and the ranking
 applies at each canonical's next rebuild.

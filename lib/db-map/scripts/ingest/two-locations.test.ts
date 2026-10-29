@@ -1243,3 +1243,76 @@ test("canonical ranking reads city and address from source location hints like t
     "the hinted city exposes Wichita's conflict and the hinted address earns priority",
   );
 });
+
+test("an accepted cross-script city fallback is not re-tested as a venue conflict in ranking", () => {
+  const member = (
+    id: string,
+    trust: number,
+    lat: number,
+    lng: number,
+    forward: Record<string, unknown>,
+    precision: string,
+  ) => ({
+    id,
+    source_id: id,
+    source_slug: id,
+    source_trust: trust,
+    lat,
+    lng,
+    coordinate_source: "geocode",
+    coordinate_precision: precision,
+    active_normalization_id: `n-${id}`,
+    active_geocode_id: `g-${id}`,
+    location_validation: {
+      version: LOCATION_VERSION,
+      normalization_id: `n-${id}`,
+      point: { lat, lng },
+      listed: { city: "Nagoya", address: null },
+      forward,
+      coordinate_evidence: {
+        source_coordinates: null,
+        inferred_coordinates: {
+          lat,
+          lng,
+          kind: "inferred",
+          origin: "listed_address_geocode",
+          precision,
+          label: null,
+          query: "q",
+        },
+      },
+    },
+  });
+  // Listed Nagoya; the venue hit landed in Urayasu and was rejected, and the city-only
+  // retry returned 名古屋市 (another script), which is the correct inferred value.
+  const fallback = member(
+    "fallback",
+    10,
+    35.1851,
+    136.8994,
+    {
+      rejected: {
+        reason: "forward_locality_conflict",
+        result: { city: "Urayasu" },
+      },
+      result: {
+        lat: 35.1851,
+        lng: 136.8994,
+        city: "名古屋市",
+        raw_response: { address: { city: "名古屋市" } },
+      },
+    },
+    "city",
+  );
+  // A higher-trust venue hit with no city field elsewhere in Japan, never verified.
+  const unverified = member(
+    "unverified",
+    90,
+    34.6937,
+    135.5023,
+    { result: { lat: 34.6937, lng: 135.5023, label: "Some Hall" } },
+    "point",
+  );
+  const e = canonicalCoordinateEvidence([unverified, fallback], unverified);
+  assert.equal(e.inferred_coordinates!.research_id, "fallback");
+});

@@ -100,7 +100,11 @@ function inferredRank(
     localityValue(v?.listed?.hints?.location);
   const result = v?.forward?.result;
   const confirmation = v?.forward?.city_confirmation?.result;
+  // After a rejected venue/address hit, the stored result is the listed city's own lookup;
+  // the venue-conflict test does not apply to it (Nagoya → 名古屋市 is the accepted answer).
+  const cityFallback = !!v?.forward?.rejected;
   const conflict =
+    !cityFallback &&
     !!result &&
     validPoint(result) &&
     result.lat === p.lat &&
