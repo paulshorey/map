@@ -12,6 +12,7 @@
  */
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
+import { locationReviewSql } from "../../sql/location-assessments.js";
 
 interface CliOptions {
   source?: string;
@@ -154,6 +155,26 @@ async function reportNotReady(db: Pool, opts: CliOptions): Promise<void> {
   console.log(`missing coords:     ${fmt(r.missing_coords)}`);
   console.log(`missing name:       ${fmt(r.missing_name)}`);
   console.log(`missing categories: ${fmt(r.missing_categories)}`);
+}
+
+/** Records to review later: no location, or nothing finer than a city/region/country point. */
+async function reportLocationReview(db: Pool, opts: CliOptions): Promise<void> {
+  const { rows } = await db.query<{ reason: string; precision: string | null; count: string }>(
+    `SELECT ${locationReviewSql("rp")} AS reason, rp.coordinate_precision AS precision, count(*)::text AS count
+     FROM research_pois rp
+     JOIN research_sources rs ON rs.id = rp.source_id
+     WHERE rp.is_poi AND rp.retired_at IS NULL AND ${RESEARCH_FILTER}
+       AND ${locationReviewSql("rp")} IS NOT NULL
+     GROUP BY 1, 2 ORDER BY 1, 2`,
+    [opts.source ?? null, opts.category ?? null],
+  );
+  heading("Location review (advisory)");
+  if (rows.length === 0) {
+    console.log("none: every located record has a point-precision candidate");
+    return;
+  }
+  for (const r of rows)
+    console.log(`${r.reason.padEnd(22)} ${(r.precision ?? "-").padEnd(8)} ${fmt(r.count)}`);
 }
 
 async function reportCanonicals(db: Pool, opts: CliOptions): Promise<void> {
@@ -418,6 +439,7 @@ async function main() {
 
   await reportResearchBySource(db, opts);
   await reportNotReady(db, opts);
+  await reportLocationReview(db, opts);
   await reportCanonicals(db, opts);
   await reportDecisions(db, opts);
   await reportGeocodeCache(db);

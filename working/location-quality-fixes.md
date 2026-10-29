@@ -110,3 +110,37 @@ the rollback checks; no active ingestion run needed stopping. The 304-record imp
 remains on hold. Final control readback confirmed maintenance off and quiescence;
 all three Map coordinator/import automations remain paused. The disposable
 PostgreSQL server was stopped after validation.
+
+## Second PR #70 review — whole-name city matching — 2026-10-29
+
+Codex found that the city check matched any single listed-city token anywhere in the
+result, including state, county, country and the display label. `Kansas City` reduced
+to `KANSAS`, so a Wichita, Kansas result counted as naming it and skipped verification;
+any label in Mexico satisfied `Mexico City`. The human required that a city name is
+never reduced this way and that the most accurate location is kept.
+
+- `resultNamesListedCity()` now compares the listed city's **whole** folded name
+  (qualifier after a comma ignored; `St`/`Saint`, `Mt`/`Mount`, `Ft`/`Fort` and a
+  result's `City of` prefix normalized) for equality with city-level fields only: city,
+  town, village, hamlet, municipality, suburb, city district. State, county, country
+  and the label never confirm a city; a shorter name (`York`) never matches a longer
+  one (`New York`).
+- A result that is not name-confirmed, including one with no Latin-script city field,
+  is kept only within 50 km of the source point; otherwise the city-only lookup must
+  confirm it. Previously unreadable labels skipped verification entirely.
+- `Multiple`, `Several` and `Many` are filler only with a noun (`Many venues`); a town
+  named Many is kept. `Various`, `TBA`, `Online` etc. stay filler on their own.
+- **Review flag.** `locationReviewSql()` derives `missing_location` (no plottable
+  candidate) and `coarse_location_only` (every candidate is city/region/country) from
+  stored evidence, with no backfill. `ingest:report` shows the counts as
+  "Location review (advisory)". The live database has 3 of 45,921 research POIs
+  flagged: AFiRIperFOMA (`coarse_location_only`, country) and one `missing_location`
+  each from RIDB and BGCI. Supplied centroids labelled `point` (Adelaide) are not
+  detected; that needs a centroid reference dataset.
+
+Fixtures whose geocode results carried no city name now include one, because an
+unverifiable result is no longer trusted without a distance check. No live
+reprocessing, provider call or rebuild was made for this revision.
+
+Follow-up (separate PR): map/API filter to include, exclude or show only records
+flagged for location review or missing a geocode or listed address, for debugging.

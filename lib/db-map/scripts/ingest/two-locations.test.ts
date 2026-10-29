@@ -15,6 +15,7 @@ import {
   LOCATION_VERSION,
   forwardLocalityConflict,
   localityValue,
+  resultNamesListedCity,
 } from "./location.js";
 import { deriveForwardPrecision } from "../../lib/ingestion/geocode-precision.js";
 import { readFileSync } from "node:fs";
@@ -241,6 +242,7 @@ test("contradictory source/address points both activate atomically; budget resum
           lon: "7.4402",
           type: "attraction",
           display_name: "Swiss venue",
+          address: { city: "Köniz", country_code: "ch" },
         },
       ]);
     return Response.json({
@@ -308,6 +310,7 @@ test("a second source point cannot displace the independently inferred point", a
     lat: 46.9,
     lng: 7.4,
     precision: "city",
+    payload: { hit: { city: "Köniz" } },
   });
   assert.equal(
     (await runGeocode(f.db, { ...opts, geocodeLimit: 0 })).apiCalls,
@@ -343,6 +346,7 @@ test("address-only input keeps the source slot empty", async () => {
     lat: 46.9,
     lng: 7.4,
     precision: "city",
+    payload: { hit: { city: "Köniz" } },
   });
   await runGeocode(f.db, { ...opts, geocodeLimit: 0 });
   assert.equal(f.activated.coordinate_evidence.source_coordinates, null);
@@ -488,7 +492,12 @@ for (const found of [true, false])
     f.cache.set(
       forwardCacheKey(q.norm, "CH"),
       found
-        ? { lat: 46.9, lng: 7.4, precision: "city" }
+        ? {
+            lat: 46.9,
+            lng: 7.4,
+            precision: "city",
+            payload: { hit: { city: "Köniz" } },
+          }
         : { lat: null, lng: null, precision: null, payload: { hit: null } },
     );
     await runGeocode(f.db, { ...opts, geocodeLimit: 0 });
@@ -698,20 +707,29 @@ test("forward locality conflict compares Latin-script locality and never flags u
     true,
     "without an anchor the name mismatch is only a suspicion for the city retry",
   );
+  const japanese = {
+    ...hit({
+      display_name: "東桜二丁目, 東区, 名古屋市, 愛知県, 461-0005, 日本",
+      address: { city: "名古屋市", state: "愛知県", country_code: "jp" },
+    }),
+    lat: 35.171876,
+    lng: 136.916736,
+  };
+  assert.equal(resultNamesListedCity("Nagoya", japanese), null);
   assert.equal(
-    forwardLocalityConflict(
-      "Nagoya",
-      hit({
-        display_name: "東桜二丁目, 東区, 名古屋市, 愛知県, 461-0005, 日本",
-        address: { city: "名古屋市", state: "愛知県", country_code: "jp" },
-      }),
-    ),
+    forwardLocalityConflict("Nagoya", japanese, nagoya),
     false,
+    "an unreadable label near the source point is kept",
+  );
+  assert.equal(
+    forwardLocalityConflict("Nagoya", japanese),
+    true,
+    "an unreadable label without an anchor is verified by the city lookup",
   );
   assert.equal(
     forwardLocalityConflict("Köniz", { label: "Swiss venue" }),
-    false,
-    "a label without structured locality cannot establish another city",
+    true,
+    "a label alone never confirms the listed city",
   );
   assert.equal(
     forwardLocalityConflict(
@@ -725,6 +743,88 @@ test("forward locality conflict compares Latin-script locality and never flags u
     false,
   );
   assert.equal(forwardLocalityConflict("Various", hit(urayasu)), false);
+});
+
+test("the listed city must match a whole city-level name; states, counties and countries never confirm it", () => {
+  const wichita = {
+    city: "Wichita",
+    region: "Kansas",
+    label: "Old Town, Wichita, Sedgwick County, Kansas, United States",
+    raw_response: {
+      address: {
+        city: "Wichita",
+        county: "Sedgwick County",
+        state: "Kansas",
+        country: "United States",
+      },
+    },
+  };
+  assert.equal(resultNamesListedCity("Kansas City", wichita), false);
+  assert.equal(
+    forwardLocalityConflict(
+      "Kansas City",
+      { ...wichita, lat: 37.6872, lng: -97.3301 },
+      { lat: 39.0997, lng: -94.5786 },
+    ),
+    true,
+    "Kansas City is never reduced to Kansas; Wichita is 280 km away",
+  );
+  assert.equal(
+    resultNamesListedCity("Kansas City, MO", {
+      raw_response: { address: { city: "Kansas City", state: "Missouri" } },
+    }),
+    true,
+  );
+  assert.equal(
+    resultNamesListedCity("Mexico City", {
+      label: "Monterrey, Nuevo León, México",
+      raw_response: {
+        address: { city: "Monterrey", state: "Nuevo León", country: "México" },
+      },
+    }),
+    false,
+    "a country name in the label does not confirm Mexico City",
+  );
+  assert.equal(
+    resultNamesListedCity("York", {
+      raw_response: { address: { city: "New York" } },
+    }),
+    false,
+    "a shorter listed name is not a substring match",
+  );
+  assert.equal(
+    resultNamesListedCity("Orange", {
+      raw_response: { address: { county: "Orange County", city: "Anaheim" } },
+    }),
+    false,
+  );
+  assert.equal(
+    resultNamesListedCity("St. Louis", {
+      raw_response: { address: { city: "Saint Louis" } },
+    }),
+    true,
+  );
+  assert.equal(
+    resultNamesListedCity("Sydney", {
+      raw_response: { address: { city: "City of Sydney" } },
+    }),
+    true,
+  );
+  assert.equal(
+    resultNamesListedCity("Brooklyn", {
+      raw_response: { address: { city: "New York", suburb: "Brooklyn" } },
+    }),
+    true,
+  );
+});
+
+test("ambiguous quantifiers are filler only with a noun; a town named Many is kept", () => {
+  assert.equal(localityValue("Many"), "Many");
+  assert.equal(localityValue("Many venues"), null);
+  assert.equal(localityValue("Multiple locations"), null);
+  assert.equal(localityValue("Several cities"), null);
+  assert.equal(localityValue("Various"), null);
+  assert.equal(localityValue("Online"), null);
 });
 
 test("country boundary results are classified as country precision", () => {

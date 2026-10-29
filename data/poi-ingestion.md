@@ -924,15 +924,20 @@ and resume reuses cached results; a miss preserves a usable source point.
 
 Listing filler such as `Various`, `Various venues`, `TBA`, `Online` or `Multiple
 locations` is not locality and never enters a forward query; the captured text itself
-is preserved. When a source point exists and the only remaining listed locality is
+is preserved. Quantifiers (`Multiple`, `Several`, `Many`) are filler only with a noun
+such as `venues`, so a town named Many is kept. When a source point exists and the only remaining listed locality is
 the country, no forward lookup runs: a country centroid beside a supplied point adds
 a marker, not evidence. Only points with `coordinate_source=source` or `url` qualify
 for this suppression. A record with legacy geocoded or unclassified coordinates
 still looks up its country and can acquire country-level inferred evidence.
 
-A venue/name/address lookup is suspect when its Latin-script result locality never
-names the listed city and it lies more than 50 km from the record's source point (or
-there is no source point). A suspect result triggers one locality-only retry
+A venue/name/address lookup is suspect unless one of its city-level fields (city, town,
+village, hamlet, municipality, suburb or city district) equals the listed city's whole
+name, folded for accents and `St`/`Saint`-style abbreviations, with any qualifier after
+a comma (`Portland, OR`) ignored. State, county, country and the display label never
+confirm a city: `Kansas City` is never reduced to `Kansas`, and a Wichita, Kansas
+result does not name it. A suspect result within 50 km of the record's source point is
+kept; otherwise (or with no source point) it is verified by the city lookup below. A suspect result triggers one locality-only retry
 (`Nagoya, JP`). If that city lookup lands within 50 km of the first result, the first
 result is the listed city under another name (Venice/Venezia) and is kept. This
 confirmation is stored in `validation.forward.city_confirmation`, bound into the
@@ -942,8 +947,16 @@ it is rejected (for example `Aichi Arts Center, Nagoya` → Urayasu, Chiba), kep
 result supplies the inferred value. A definitive city miss cannot confirm the first
 result: a usable source point is retained without an inferred point, or the record
 stays unresolved when it has no usable point. Both the rejected hit and city miss
-remain cached for provider-free retries. Results without structured Latin-script locality
-(such as Japanese provider labels) are not compared. Both lookups share the call budget.
+remain cached for provider-free retries. Results without a Latin-script city-level field
+(such as Japanese provider labels) cannot be name-checked, so they follow the same
+distance verification. Both lookups share the call budget.
+
+`locationReviewSql()` (`sql/location-assessments.ts`) derives an advisory review flag
+from stored evidence: `missing_location` when no candidate is plottable, and
+`coarse_location_only` when every candidate is city, region or country precision.
+`ingest:report` counts these per source/category. They never gate matching or
+publication. A supplied centroid labelled `point` (for example Google's Australia
+centroid) is not detected without a centroid reference dataset.
 
 The `location-v3` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
 to its normalization/primary point, alongside separate listed text, forward query/result

@@ -118,3 +118,21 @@ export async function ensureLocationAssessment(
   );
   return { ...assessment, id };
 }
+
+/** Derived location-review flag from stored evidence, so existing records need no backfill.
+ * `missing_location`: no plottable candidate. `coarse_location_only`: every candidate is
+ * city, region or country precision. Advisory only; never a matching or publication gate. */
+export function locationReviewSql(alias = "rp"): string {
+  const e = `${alias}.attributes->'location_enrichment'->'coordinate_evidence'`;
+  const present = (slot: string) => `jsonb_typeof(${e}->'${slot}')='object'`;
+  const precise = (slot: string) =>
+    `COALESCE(${e}->'${slot}'->>'precision','')='point'`;
+  return `(CASE
+    WHEN jsonb_typeof(${e})='object' THEN CASE
+      WHEN NOT (${present("source_coordinates")} OR ${present("inferred_coordinates")}) THEN 'missing_location'
+      WHEN NOT (${precise("source_coordinates")} OR ${precise("inferred_coordinates")}) THEN 'coarse_location_only'
+    END
+    WHEN ${alias}.lat IS NULL OR ${alias}.lng IS NULL THEN 'missing_location'
+    WHEN COALESCE(${alias}.coordinate_precision,'point')<>'point' THEN 'coarse_location_only'
+  END)`;
+}

@@ -22,8 +22,10 @@ export interface ReverseLocation extends LocationFields {
 export const textValue = (v: unknown): string | null =>
   typeof v === "string" && v.trim() ? v.trim() : null;
 
+// Filler words that are never a place on their own. Quantifiers such as "Many" (a town in
+// Louisiana) or "Multiple" count as filler only with a noun such as "venues".
 const PLACEHOLDER_LOCALITY =
-  /^(various|multiple|several|many|tba|tbc|tbd|n\/?a|unknown|online|virtual)( (venues?|locations?|cities|places|sites|spaces))?$/i;
+  /^((various|tba|tbc|tbd|n\/?a|unknown|online|virtual)( (venues?|locations?|cities|places|sites|spaces))?|(multiple|several|many) (venues?|locations?|cities|places|sites|spaces))$/i;
 /** Directory filler such as "Various venues" is not a place and must never reach a geocoder. */
 export const localityValue = (v: unknown): string | null => {
   const text = textValue(v);
@@ -39,19 +41,20 @@ const foldTokens = (s: string) =>
     .toUpperCase()
     .split(/[^A-Z0-9]+/)
     .filter(Boolean);
-const GENERIC_CITY_TOKENS = new Set([
-  "CITY",
-  "THE",
-  "NEW",
-  "SAN",
-  "SANTA",
-  "SAINT",
-  "DEL",
-  "DES",
-  "LOS",
-  "LAS",
-]);
-const RESULT_LOCALITY_KEYS = [
+const NAME_ABBREVIATIONS: Record<string, string> = {
+  ST: "SAINT",
+  STE: "SAINTE",
+  MT: "MOUNT",
+  FT: "FORT",
+};
+/** Whole folded name; "Kansas City" stays "KANSAS CITY" and never reduces to "KANSAS". */
+const cityName = (value: string) =>
+  foldTokens(value)
+    .map((t) => NAME_ABBREVIATIONS[t] ?? t)
+    .join(" ")
+    .replace(/^(CITY|TOWN|VILLAGE|MUNICIPALITY|BOROUGH) OF /, "");
+// City-level result fields only: a state, county or country never names the listed city.
+const RESULT_CITY_KEYS = [
   "city",
   "town",
   "village",
@@ -59,18 +62,40 @@ const RESULT_LOCALITY_KEYS = [
   "municipality",
   "suburb",
   "city_district",
-  "county",
-  "state_district",
-  "state",
 ];
+
+/** True when the result's Latin-script city-level fields include the listed city's whole name,
+ * false when they name another place, null when nothing comparable exists. A listed qualifier
+ * after a comma ("Washington, D.C.", "Portland, OR") is not part of the name. */
+export function resultNamesListedCity(
+  listedCity: unknown,
+  // The display label is never compared: it also carries state and country names.
+  hit: {
+    city?: string | null;
+    label?: string | null;
+    raw_response?: Record<string, unknown>;
+  },
+): boolean | null {
+  const listed = localityValue(listedCity);
+  const wanted = listed ? cityName(listed.split(",")[0]!) : "";
+  if (!/[A-Z]/.test(wanted)) return null;
+  const address = (hit.raw_response?.address ?? {}) as Record<string, unknown>;
+  const names = [hit.city, ...RESULT_CITY_KEYS.map((key) => address[key])]
+    .map(textValue)
+    .filter((p): p is string => !!p)
+    .map(cityName)
+    .filter((name) => /[A-Z]/.test(name));
+  return names.length ? names.includes(wanted) : null;
+}
 
 /** Beyond this distance a result is not the listed city under another name. */
 export const LOCALITY_CONFLICT_M = 50_000;
 
-/** True when a venue/address lookup landed in a Latin-script locality that never names the listed city
- * and lies more than LOCALITY_CONFLICT_M from an independent anchor (the source point) when one exists.
- * Non-Latin provider labels are not compared; the distance gate keeps exonyms such as
- * Venice/Venezia from counting as conflicts. */
+/** True when a venue/address lookup cannot be trusted to be in the listed city: its city-level
+ * fields do not name the listed city (or are not comparable, such as Japanese labels), and it lies
+ * more than LOCALITY_CONFLICT_M from an independent anchor (the source point or the listed city's
+ * own lookup). Without an anchor, the caller verifies with a city-only lookup. Exonyms such as
+ * Venice/Venezia pass through the distance gate. */
 export function forwardLocalityConflict(
   listedCity: unknown,
   hit: {
@@ -83,31 +108,9 @@ export function forwardLocalityConflict(
   },
   anchor?: { lat: number; lng: number } | null,
 ): boolean {
-  const city = localityValue(listedCity);
-  const wanted = city
-    ? foldTokens(city).filter(
-        (t) => t.length >= 3 && !GENERIC_CITY_TOKENS.has(t) && /[A-Z]/.test(t),
-      )
-    : [];
-  if (!wanted.length) return false;
-  const address = (hit.raw_response?.address ?? {}) as Record<string, unknown>;
-  const latin = (values: unknown[]) =>
-    values
-      .map(textValue)
-      .filter((p): p is string => !!p)
-      .map(foldTokens)
-      .filter((tokens) => tokens.some((t) => /[A-Z]/.test(t)));
-  // A label alone (no structured locality) cannot establish which city was found.
-  const structured = latin([
-    hit.city,
-    hit.region,
-    ...RESULT_LOCALITY_KEYS.map((key) => address[key]),
-  ]);
-  if (!structured.length) return false;
-  const named = [...structured, ...latin([hit.label])].some((tokens) =>
-    wanted.some((t) => tokens.includes(t)),
-  );
-  if (named) return false;
+  const listed = localityValue(listedCity);
+  if (!listed || !/[A-Z]/.test(cityName(listed.split(",")[0]!))) return false;
+  if (resultNamesListedCity(listed, hit) === true) return false;
   return !anchor || !validPoint(anchor) || !validPoint(hit)
     ? true
     : haversineMeters(anchor, hit) > LOCALITY_CONFLICT_M;
