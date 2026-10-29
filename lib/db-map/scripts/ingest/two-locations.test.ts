@@ -543,6 +543,7 @@ test("placeholder locality never reaches the geocoder; a country-only lookup bes
     category_slugs: ["music_festival"],
     lat: -25.2744,
     lng: 133.7751,
+    coordinate_source: "source",
   };
   const adelaide = {
     name: "Adelaide Biennial of Australian Art",
@@ -553,6 +554,17 @@ test("placeholder locality never reaches the geocoder; a country-only lookup bes
   assert.equal(localityValue("TBA."), null);
   assert.equal(localityValue("Variety Theatre"), "Variety Theatre");
   assert.equal(listedQuery(row, adelaide, temporal), null);
+  assert.equal(
+    listedQuery({ ...row, coordinate_source: "url" }, adelaide, temporal),
+    null,
+  );
+  for (const coordinate_source of ["geocode", null, undefined]) {
+    assert.equal(
+      listedQuery({ ...row, coordinate_source }, adelaide, temporal)!.display,
+      "Australia",
+      `country evidence is still queried for ${coordinate_source} coordinates`,
+    );
+  }
   const missing = listedQuery(
     { ...row, lat: null, lng: null },
     adelaide,
@@ -567,6 +579,88 @@ test("placeholder locality never reaches the geocoder; a country-only lookup bes
     listedQuery(row, { ...adelaide, city: "Adelaide" }, temporal)!.display,
     "Adelaide, Australia",
   );
+});
+
+test("a legacy geocoded point still obtains country-level inferred evidence", async () => {
+  const f = fixture({
+    name: "AFiRIperFOMA",
+    country_code: "NG",
+    attributes: {},
+  });
+  f.row.coordinate_source = "geocode";
+  f.cache.set(`location-v2:reverse:${f.row.lat}:${f.row.lng}`, {
+    payload: { hit: null },
+  });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  const queries: string[] = [];
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    assert.ok(url.pathname.endsWith("/search"));
+    queries.push(url.searchParams.get("q")!);
+    return Response.json([
+      {
+        lat: "9.6000359",
+        lon: "7.9999721",
+        type: "administrative",
+        class: "boundary",
+        display_name: "Nigeria",
+        address: { country: "Nigeria", country_code: "ng" },
+      },
+    ]);
+  };
+  const stats = await runGeocode(f.db, opts);
+  assert.deepEqual(queries, ["NG"]);
+  assert.equal(stats.apiCalls, 1);
+  assert.equal(f.activated.coordinate_evidence.source_coordinates, null);
+  const inferred = f.activated.coordinate_evidence.inferred_coordinates;
+  assert.deepEqual(
+    [inferred.lat, inferred.lng, inferred.precision, inferred.query],
+    [9.6000359, 7.9999721, "country", "NG"],
+  );
+});
+
+test("a city-only miss never confirms a conflicting venue without a source point", async () => {
+  const f = fixture({
+    ...japan,
+    attributes: { venue_name: "Aichi Arts Center" },
+  });
+  Object.assign(f.row, {
+    lat: null,
+    lng: null,
+    coordinate_source: null,
+    coordinate_precision: null,
+  });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  const queries: string[] = [];
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    assert.ok(
+      url.pathname.endsWith("/search"),
+      "no rejected point is reverse geocoded",
+    );
+    const q = url.searchParams.get("q")!;
+    queries.push(q);
+    return q.startsWith("Aichi Arts Center")
+      ? Response.json([urayasu])
+      : Response.json({ error: "Unable to geocode" }, { status: 404 });
+  };
+  const stats = await runGeocode(f.db, opts);
+  assert.deepEqual(queries, ["Aichi Arts Center, Nagoya, JP", "Nagoya, JP"]);
+  assert.equal(stats.apiCalls, 2);
+  assert.equal(stats.unresolved, 1);
+  assert.equal(stats.resolved, 0);
+  assert.equal(f.activated, null, "a wrong venue must not become publishable");
+  assert.equal(
+    f.cache.size,
+    2,
+    "both the paid hit and definitive miss are retained",
+  );
+  const replay = await runGeocode(f.db, opts);
+  assert.equal(replay.apiCalls, 0);
+  assert.equal(replay.cacheHits, 2);
+  assert.equal(replay.knownMisses, 1);
+  assert.equal(replay.unresolved, 1);
+  assert.equal(f.activated, null);
 });
 
 test("forward locality conflict compares Latin-script locality and never flags unreadable labels", () => {
@@ -807,6 +901,25 @@ test("canonical inferred slot prefers an address lookup over the anchor's confli
       .research_id,
     "venue",
   );
+  const cityFallback = member(
+    "city-fallback",
+    100,
+    { city: "Nagoya", address: "1-13-2 Higashisakura, Higashi-ku" },
+    35.1851,
+    136.8994,
+    { city: "Nagoya" },
+  );
+  cityFallback.location_validation.coordinate_evidence.inferred_coordinates.precision =
+    "city";
+  Object.assign(cityFallback.location_validation.forward, {
+    rejected: { reason: "forward_locality_conflict", result: urayasu },
+  });
+  assert.equal(
+    canonicalCoordinateEvidence([cityFallback, venue], cityFallback)
+      .inferred_coordinates!.research_id,
+    "venue",
+    "a city fallback must not inherit the rejected address lookup's rank",
+  );
 });
 
 test("an exonym result confirmed by the listed city's own lookup is kept, not rejected", async () => {
@@ -862,4 +975,39 @@ test("an exonym result confirmed by the listed city's own lookup is kept, not re
     [45.4286, 12.3602, "Giardini, Venice, IT"],
   );
   assert.equal(f.activated.forward.rejected, undefined);
+  assert.equal(f.activated.forward.city_confirmation.query, "Venice, IT");
+  const confirmed = {
+    id: "confirmed",
+    source_id: "confirmed",
+    source_slug: "confirmed",
+    source_trust: 90,
+    lat: inferred.lat,
+    lng: inferred.lng,
+    coordinate_source: "geocode",
+    coordinate_precision: "point",
+    active_normalization_id: f.row.active_normalization_id,
+    active_geocode_id: "geocode-new",
+    location_validation: f.activated,
+  };
+  const city = {
+    ...confirmed,
+    id: "city",
+    source_id: "city",
+    source_slug: "city",
+    source_trust: 50,
+    location_validation: {
+      ...f.activated,
+      forward: { result: null },
+      coordinate_evidence: {
+        source_coordinates: null,
+        inferred_coordinates: { ...inferred, precision: "city" },
+      },
+    },
+  };
+  assert.equal(
+    canonicalCoordinateEvidence([confirmed, city], confirmed)
+      .inferred_coordinates!.research_id,
+    "confirmed",
+    "a confirmed exonym must stay nonconflicting during canonical ranking",
+  );
 });

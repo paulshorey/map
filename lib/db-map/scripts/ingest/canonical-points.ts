@@ -82,18 +82,27 @@ function inferredRank(
 ): number[] {
   const v = row.location_validation as {
     listed?: { address?: unknown; city?: unknown };
-    forward?: { result?: Parameters<typeof forwardLocalityConflict>[1] };
+    forward?: {
+      result?: Parameters<typeof forwardLocalityConflict>[1];
+      rejected?: unknown;
+      city_confirmation?: { result?: { lat: number; lng: number } };
+    };
   } | null;
   const result = v?.forward?.result;
+  const confirmation = v?.forward?.city_confirmation?.result;
   const conflict =
     !!result &&
     validPoint(result) &&
     result.lat === p.lat &&
     result.lng === p.lng &&
-    forwardLocalityConflict(v?.listed?.city, result, sourcePoint);
+    forwardLocalityConflict(
+      v?.listed?.city,
+      result,
+      validPoint(confirmation) ? confirmation : sourcePoint,
+    );
   return [
     conflict ? 0 : 1,
-    localityValue(v?.listed?.address) ? 1 : 0,
+    localityValue(v?.listed?.address) && !v?.forward?.rejected ? 1 : 0,
     PRECISION_RANK[p.precision] ?? PRECISION_RANK.point!,
   ];
 }

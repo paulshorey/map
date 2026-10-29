@@ -902,7 +902,8 @@ chooses one value independently per evidence category, preserving each selected
 member/artifact's identity. The source slot uses the existing anchor/trust ordering.
 The inferred slot first ranks evidence: a lookup whose result contradicts its listed
 city ranks last, a supplied street address beats venue/name text, then finer
-precision (point, city, region, country); ties keep anchor/trust order. A newly
+precision (point, city, region, country); ties keep anchor/trust order. A city-only
+fallback gets no address priority from its rejected venue/address lookup. A newly
 linked venue-name lookup therefore cannot replace another member's address lookup.
 The builder version is unchanged: existing builds are not swept, and the ranking
 applies at each canonical's next rebuild.
@@ -925,16 +926,23 @@ Listing filler such as `Various`, `Various venues`, `TBA`, `Online` or `Multiple
 locations` is not locality and never enters a forward query; the captured text itself
 is preserved. When a source point exists and the only remaining listed locality is
 the country, no forward lookup runs: a country centroid beside a supplied point adds
-a marker, not evidence. A record without a source point still looks up its country.
+a marker, not evidence. Only points with `coordinate_source=source` or `url` qualify
+for this suppression. A record with legacy geocoded or unclassified coordinates
+still looks up its country and can acquire country-level inferred evidence.
 
 A venue/name/address lookup is suspect when its Latin-script result locality never
 names the listed city and it lies more than 50 km from the record's source point (or
 there is no source point). A suspect result triggers one locality-only retry
 (`Nagoya, JP`). If that city lookup lands within 50 km of the first result, the first
-result is the listed city under another name (Venice/Venezia) and is kept. Otherwise
+result is the listed city under another name (Venice/Venezia) and is kept. This
+confirmation is stored in `validation.forward.city_confirmation`, bound into the
+artifact hash, and reused by canonical ranking so it cannot flag the exonym again. Otherwise
 it is rejected (for example `Aichi Arts Center, Nagoya` → Urayasu, Chiba), kept in
 `validation.forward.rejected` with reason `forward_locality_conflict`, and the city
-result supplies the inferred value. Results without structured Latin-script locality
+result supplies the inferred value. A definitive city miss cannot confirm the first
+result: a usable source point is retained without an inferred point, or the record
+stays unresolved when it has no usable point. Both the rejected hit and city miss
+remain cached for provider-free retries. Results without structured Latin-script locality
 (such as Japanese provider labels) are not compared. Both lookups share the call budget.
 
 The `location-v3` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
@@ -945,7 +953,9 @@ each value. Legacy lat/lng is the selected source point when available, otherwis
 inferred point or retained legacy point. Raw/model attributes cannot publish these
 reserved fields. The query policy remains `listed-location-v1`; unchanged provider
 queries reuse the `location-v2` cache namespace, so a representation upgrade does
-not repeat already-paid geocoding. No migration or automatic historical sweep occurs.
+not repeat already-paid geocoding. There is no automatic historical sweep. The
+additive country-precision migration widens the two storage constraints; it does
+not reclassify stored points or rebuild existing artifacts.
 
 Forward results now retain the complete selected provider row as `raw_response`
 inside the query-cache hit and geocode artifact's `validation.forward.result`.

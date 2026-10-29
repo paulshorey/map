@@ -78,6 +78,7 @@ interface GeoRow {
   category_slugs: string[] | null;
   lat?: number | null;
   lng?: number | null;
+  coordinate_source?: string | null;
 }
 
 function parseArgs(argv: string[]): CliOptions {
@@ -214,7 +215,14 @@ export function listedQuery(
   );
   // A country-only lookup beside a supplied point adds a centroid marker, not evidence.
   const country = (queryRow.country_name ?? queryRow.country_code)?.trim();
-  if (q && validPoint(row) && country && q.display === country) return null;
+  if (
+    q &&
+    validPoint(row) &&
+    ["source", "url"].includes(row.coordinate_source ?? "") &&
+    country &&
+    q.display === country
+  )
+    return null;
   return q;
 }
 
@@ -465,6 +473,11 @@ export async function runGeocode(
     let forwardQueryNorm: string | null = null;
     let forwardQuery = q;
     let rejected: Record<string, unknown> | null = null;
+    let cityConfirmation: {
+      query: string;
+      query_norm: string;
+      result: GeocodeHit;
+    } | null = null;
     if (q) {
       const first = await lookup(q);
       if (first.stop === "budget") {
@@ -497,10 +510,16 @@ export async function runGeocode(
         }
         if (retry.stop) continue;
         // The listed city's own lookup confirms a nearby result (another spelling of that city).
-        const confirmed = retry.hit
-          ? haversineMeters(retry.hit, forward) <= LOCALITY_CONFLICT_M
-          : !sourcePoint;
-        if (!confirmed) {
+        const confirmed =
+          retry.hit &&
+          haversineMeters(retry.hit, forward) <= LOCALITY_CONFLICT_M;
+        if (confirmed && retry.hit) {
+          cityConfirmation = {
+            query: cityQuery.display,
+            query_norm: retry.key,
+            result: retry.hit,
+          };
+        } else {
           // Keep the rejected paid result as evidence; it never occupies the inferred slot.
           rejected = {
             reason: "forward_locality_conflict",
@@ -608,6 +627,7 @@ export async function runGeocode(
         state: !q ? "no_query" : forward ? "resolved" : "miss",
         result: forward,
         ...(rejected ? { rejected } : {}),
+        ...(cityConfirmation ? { city_confirmation: cityConfirmation } : {}),
       },
       coordinate_evidence: coordinateEvidence,
       ...resolved,
@@ -627,6 +647,9 @@ export async function runGeocode(
       // Bind any newly captured response metadata to this artifact without changing query-cache identity.
       forward_result: forward,
       ...(rejected ? { forward_rejected: rejected } : {}),
+      ...(cityConfirmation
+        ? { forward_city_confirmation: cityConfirmation }
+        : {}),
       version: LOCATION_VERSION,
       coordinate_evidence: coordinateEvidence,
     });

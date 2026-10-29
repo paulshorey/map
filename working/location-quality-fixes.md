@@ -69,3 +69,44 @@ and 270 km from the Nagoya city result, and the other two records have no city l
   rebuilt. A read-only audit for published inferred points with a listed-city conflict
   would size a targeted rebuild.
 - The 304-record Biennial Foundation file remains on hold until these decisions are made.
+
+## PR #70 review follow-up — 2026-10-29
+
+Both Codex review findings were reproduced with regression fixtures and fixed on
+`claude/location-quality-fixes`:
+
+- A definitive city-only miss cannot confirm a conflicting venue/address result,
+  including when the record has no source coordinates. With no usable point the
+  record stays unresolved; the paid hit and definitive miss remain in the query
+  cache, and replay makes no provider calls.
+- Country-only query suppression now requires `coordinate_source=source` or `url`.
+  Legacy geocoded and unclassified coordinates still allow a country query, so
+  country-level inferred evidence can be acquired without inventing source evidence.
+
+Review also found and fixed two canonical-ranking errors. A city-only fallback
+no longer inherits address priority from its rejected address query. Successful
+city confirmation is persisted in `validation.forward.city_confirmation` and
+included in the artifact hash; canonical ranking uses that independent city point
+to avoid flagging an accepted exonym such as Venice/Venezia again. Existing
+artifacts remain readable; query/cache/builder versions and historical builds stay
+unchanged.
+
+Validation on the review revision:
+
+- `pnpm --filter @lib/db-map check-types`, including the app contract check, passes.
+- 204 unit tests pass with no skips: location/resume, extractor, precision,
+  two-locations, assessment, pipeline versions, provider and inventory coverage.
+- Five database regressions pass: `two-locations`, `location` and
+  `normalization-coordinates` use the development database under owned maintenance
+  and roll back every fixture; `canonical-cache` and `location-assessment` use
+  disposable loopback PostgreSQL databases. The latter was migrated from this
+  checkout, including the additive country-precision migration.
+- Provider requests are mocked or forbidden throughout. No live reprocessing,
+  historical rebuild, production migration or backlog launch was performed.
+
+The review started with no workers, source locks, admitted workers, local ingestion
+scripts or unresolved launch claims. Owned maintenance protected runtime edits and
+the rollback checks; no active ingestion run needed stopping. The 304-record import
+remains on hold. Final control readback confirmed maintenance off and quiescence;
+all three Map coordinator/import automations remain paused. The disposable
+PostgreSQL server was stopped after validation.
