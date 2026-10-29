@@ -124,7 +124,8 @@ export async function ensureLocationAssessment(
  * city, region or country precision. Advisory only; never a matching or publication gate. */
 export function locationReviewSql(alias = "rp"): string {
   const e = `${alias}.attributes->'location_enrichment'->'coordinate_evidence'`;
-  const present = (slot: string) => `jsonb_typeof(${e}->'${slot}')='object'`;
+  const present = (slot: string) =>
+    `COALESCE(jsonb_typeof(${e}->'${slot}')='object',false)`;
   const precise = (slot: string) =>
     `COALESCE(${e}->'${slot}'->>'precision','')='point'`;
   return `(CASE

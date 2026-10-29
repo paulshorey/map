@@ -969,6 +969,42 @@ test("canonical inferred slot prefers an address lookup over the anchor's confli
     136.916736,
     { city: "名古屋市", label: "東桜二丁目, 東区, 名古屋市, 愛知県, 日本" },
   );
+
+  const hintedAddress = {
+    ...address,
+    location_validation: {
+      ...address.location_validation,
+      listed: { hints: { city: "Nagoya", location: "1-13-2 Higashisakura" } },
+    },
+  };
+  const hintedConflict = {
+    ...anchor,
+    location_validation: {
+      ...anchor.location_validation,
+      listed: { hints: { city: "Nagoya" } },
+    },
+  };
+  const plainCity = member("city", 10, { city: "Nagoya" }, 35.18, 136.9, null);
+  assert.equal(
+    canonicalCoordinateEvidence([hintedConflict, plainCity], hintedConflict)
+      .inferred_coordinates!.research_id,
+    "city",
+    "a conflict against a hinted city ranks below a consistent candidate",
+  );
+  const plainVenue = member(
+    "venue-only",
+    100,
+    { city: "Nagoya" },
+    35.18,
+    136.9,
+    null,
+  );
+  assert.equal(
+    canonicalCoordinateEvidence([plainVenue, hintedAddress], plainVenue)
+      .inferred_coordinates!.research_id,
+    "biennale_com",
+    "a hinted street address outranks an otherwise consistent anchor venue",
+  );
   const e = canonicalCoordinateEvidence([anchor, address], anchor);
   assert.equal(e.source_coordinates!.research_id, "biennial_foundation");
   assert.equal(e.inferred_coordinates!.research_id, "biennale_com");

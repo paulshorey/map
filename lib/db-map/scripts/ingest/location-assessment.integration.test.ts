@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import pg, { type Pool, type PoolClient } from "pg";
 import {
   acceptedLocationSql,
+  locationReviewSql,
   assessLocationRecord,
   ensureLocationAssessment,
 } from "../../sql/location-assessments.js";
@@ -73,6 +74,25 @@ test(
     });
     try {
       await client.query("BEGIN");
+      // Sparse historical evidence can omit a slot, rather than storing JSON null.
+      for (const evidence of [
+        {},
+        { source_coordinates: null },
+        { inferred_coordinates: null },
+      ]) {
+        const flagged = await client.query(
+          `SELECT ${locationReviewSql("rp")} AS reason FROM
+           (SELECT $1::jsonb AS attributes, NULL::double precision AS lat,
+                   NULL::double precision AS lng, NULL::text AS coordinate_precision) rp`,
+          [
+            JSON.stringify({
+              location_enrichment: { coordinate_evidence: evidence },
+            }),
+          ],
+        );
+        assert.equal(flagged.rows[0].reason, "missing_location");
+      }
+
       const source = (
         await client.query(
           "INSERT INTO research_sources(slug,name) VALUES('assessment_fixture','Assessment fixture') RETURNING id",
@@ -395,6 +415,7 @@ test(
         lat: "40",
         lon: "-100",
         display_name: "Fixture result",
+        address: { city: "Austin", country_code: "us" },
         boundingbox: ["39", "41", "-101", "-99"],
       };
       const hit = {

@@ -144,3 +144,24 @@ reprocessing, provider call or rebuild was made for this revision.
 
 Follow-up (separate PR): map/API filter to include, exclude or show only records
 flagged for location review or missing a geocode or listed address, for debugging.
+
+
+## Independent maintenance review — 2026-10-29
+
+Contribution targeting PR #70:
+
+- Canonical ranking now falls back to `listed.hints.city` and
+  `listed.hints.location`, using the same placeholder filtering as forward queries.
+  Hinted street addresses receive address priority; old results contradicting a
+  hinted city rank below consistent candidates.
+- Sparse coordinate evidence (omitted slots or JSON null) reports
+  `missing_location`, rather than falling through SQL NULL logic to coarse precision.
+- The cached-provider integration fixture explicitly names its listed city, Austin.
+  This preserves its intended metadata/cache test without bypassing the new city
+  verification policy; the old unnamed result exhausted its zero-call budget.
+
+Validation: 155 focused unit tests and type/contract checks pass. The full
+location-assessment integration passes on a freshly migrated disposable loopback
+PostgreSQL 18 database, with providers forbidden. No shared database, provider,
+collector, import control or historical artifact was changed. Leave this
+contribution for an independent reviewer before integrating it into #70.
