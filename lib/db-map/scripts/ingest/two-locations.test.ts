@@ -1159,7 +1159,7 @@ test("an exonym result confirmed by the listed city's own lookup is kept, not re
   );
 });
 
-test("canonical ranking reads city and address from source location hints like the lookup does", () => {
+test("canonical ranking reads the listed city from source location hints like the lookup does", () => {
   const member = (
     id: string,
     trust: number,
@@ -1232,7 +1232,7 @@ test("canonical ranking reads city and address from source location hints like t
       {
         city: null,
         address: null,
-        hints: { city: "Kansas City", location: "1601 Broadway Blvd" },
+        hints: { city: "Kansas City", location: "Kansas City, MO" },
       },
       39.0943,
       -94.5867,
@@ -1246,7 +1246,96 @@ test("canonical ranking reads city and address from source location hints like t
   assert.equal(
     e.inferred_coordinates!.research_id,
     "hinted",
-    "the hinted city exposes Wichita's conflict and the hinted address earns priority",
+    "the hinted city exposes Wichita's conflict",
+  );
+});
+
+test("a location hint label never earns street-address priority", () => {
+  const member = (
+    id: string,
+    trust: number,
+    listed: Record<string, unknown>,
+    lat: number,
+    lng: number,
+    precision: string,
+  ) => ({
+    id,
+    source_id: id,
+    source_slug: id,
+    source_trust: trust,
+    lat,
+    lng,
+    coordinate_source: "geocode",
+    coordinate_precision: precision,
+    active_normalization_id: `n-${id}`,
+    active_geocode_id: `g-${id}`,
+    location_validation: {
+      version: LOCATION_VERSION,
+      normalization_id: `n-${id}`,
+      point: { lat, lng },
+      listed,
+      forward: {
+        result: {
+          lat,
+          lng,
+          city: "Melbourne",
+          raw_response: { address: { city: "Melbourne" } },
+        },
+      },
+      coordinate_evidence: {
+        source_coordinates: null,
+        inferred_coordinates: {
+          lat,
+          lng,
+          kind: "inferred",
+          origin: "listed_address_geocode",
+          precision,
+          label: null,
+          query: "q",
+        },
+      },
+    },
+  });
+  // thatfestivalsite stores labels such as "Melbourne, VIC" in source_location_hints.location.
+  const label = member(
+    "label",
+    90,
+    {
+      city: null,
+      address: null,
+      hints: { city: "Melbourne", location: "Melbourne, VIC" },
+    },
+    -37.8136,
+    144.9631,
+    "city",
+  );
+  const venue = member(
+    "venue",
+    10,
+    { city: "Melbourne", address: null },
+    -37.8226,
+    144.9689,
+    "point",
+  );
+  const e = canonicalCoordinateEvidence([label, venue], label);
+  assert.equal(
+    e.inferred_coordinates!.research_id,
+    "venue",
+    "the city-level label lookup must not outrank another member's point venue result",
+  );
+  // A captured street address still earns priority.
+  const street = member(
+    "street",
+    10,
+    { city: "Melbourne", address: "2 Batman Ave" },
+    -37.8226,
+    144.9689,
+    "city",
+  );
+  assert.equal(
+    canonicalCoordinateEvidence([venue, street], venue).inferred_coordinates!
+      .research_id,
+    "street",
   );
 });
 
@@ -1356,6 +1445,30 @@ test("query basis names the most specific listing text the lookup used", () => {
   );
   assert.equal(basis(event, { name: "Fest" }), "name");
   assert.equal(basis(place, { name: "Rose Garden", city: "Portland" }), "name");
+  const hinted = {
+    name: "Some Fest",
+    attributes: {
+      source_location_hints: {
+        city: "Melbourne",
+        region: "VIC",
+        country: "Australia",
+        location: "Melbourne, VIC",
+        venue: "Sidney Myer Music Bowl",
+      },
+    },
+  };
+  assert.equal(
+    basis(event, hinted),
+    "locality",
+    "a hint label in the address slot is locality text, so its result stays general",
+  );
+  assert.equal(
+    basis(event, {
+      ...hinted,
+      attributes: { ...hinted.attributes, street_address: "2 Batman Ave" },
+    }),
+    "address",
+  );
 });
 
 test("location specificity flags POIs that rest only on country, region or city", () => {
@@ -1373,16 +1486,20 @@ test("location specificity flags POIs that rest only on country, region or city"
     normalization_id: "n",
     geocode_id: "g",
   });
-  const member = (forward: Record<string, unknown> | null) =>
-    ({ id: "r", location_validation: forward && { forward } }) as any;
+  const member = (
+    forward: Record<string, unknown> | null,
+    listed: Record<string, unknown>,
+  ) =>
+    ({ id: "r", location_validation: forward && { forward, listed } }) as any;
   const spec = (
     source: ReturnType<typeof point> | null,
     inferred: ReturnType<typeof point> | null,
     forward: Record<string, unknown> | null = null,
+    listed: Record<string, unknown> = { address: "2 Batman Ave" },
   ) =>
     locationSpecificity(
       { source_coordinates: source, inferred_coordinates: inferred },
-      [member(forward)],
+      [member(forward, listed)],
     );
   assert.equal(spec(null, null), null, "legacy builds carry no flag");
   assert.equal(
@@ -1424,5 +1541,15 @@ test("location specificity flags POIs that rest only on country, region or city"
     spec(null, point("inferred", "point"), {}),
     "precise",
     "older artifact without a basis",
+  );
+  assert.equal(
+    spec(
+      null,
+      point("inferred", "point"),
+      { query_basis: "address" },
+      { address: null, hints: { location: "Melbourne, VIC" } },
+    ),
+    "general",
+    "an artifact that stored `address` for a hint label is read as locality at rebuild",
   );
 });
