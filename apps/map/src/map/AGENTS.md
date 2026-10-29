@@ -4,12 +4,15 @@ Interactive MapLibre map — basemap, clustered POI overlay, click-to-detail dra
 
 ## Files
 
-| File                 | Role                                                                        |
-| -------------------- | --------------------------------------------------------------------------- |
-| `MapView.tsx`        | Main map component — controls, layers, click handling, viewport persistence |
-| `PoiLayer.tsx`       | GeoJSON source with clustering; fetches POIs for current bbox               |
-| `PoiDrawer.tsx`      | Right-side panel showing selected POI details                               |
-| `usePoiSelection.ts` | Selected POI state, detail fetch, MapLibre feature-state highlight          |
+| File                      | Role                                                                        |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `MapView.tsx`             | Main map component — controls, layers, click handling, viewport persistence |
+| `PoiLayer.tsx`            | GeoJSON source with clustering; renders the list MapView passes in          |
+| `usePoiList.ts`           | Debounced `/api/pois` query: features plus `total` / `returned` counts      |
+| `usePoiLocationFilter.ts` | General / All / Precise choice, persisted in `localStorage`                 |
+| `PoiFilterBar.tsx`        | Location filter control and the always-visible result count                 |
+| `PoiDrawer.tsx`           | Right-side panel showing selected POI details                               |
+| `usePoiSelection.ts`      | Selected POI state, detail fetch, MapLibre feature-state highlight          |
 
 ## Stack
 
@@ -20,7 +23,9 @@ Interactive MapLibre map — basemap, clustered POI overlay, click-to-detail dra
 ## Data flow
 
 1. `MapView` tracks bbox/zoom on `onLoad` / `onMoveEnd`.
-2. `PoiLayer` debounces bbox (250ms), GETs `/api/pois?bbox=...&zoom=...`, renders clustered circles.
+2. `usePoiList` debounces bbox (250ms) and GETs `/api/pois?bbox=...&zoom=...[&category=...][&location=general|precise]`.
+   `MapView` passes the features to `PoiLayer` (clustered circles) and `total` / `returned` to the
+   result count. `total` counts every matching POI, even beyond the 500/5000 marker limit.
 3. Click on cluster → expand zoom; click on point → `selectPoi(id)` → GET `/api/pois/[id]` → `PoiDrawer`.
 4. Viewport center/zoom debounced 2s → `updatePreferences` (saved to DB for guest user).
 
@@ -36,6 +41,14 @@ and cluster counts are marker counts. Details retain fixed source/inferred origi
 `coordinate_evidence` contains independently nullable source_coordinates and
 inferred_coordinates; location order is not provenance. Equal values retain both
 evidence records while one marker is rendered. Physical roles are not assumed.
+
+## Location filter
+
+`location=general` shows only POIs whose canonical build flagged
+`attributes.location_specificity = 'general'` (located just by country, region or city);
+`location=precise` shows every other POI, including legacy builds without the flag. The
+drawer notes a general location. The flag is set at canonical build time; existing POIs
+are not backfilled.
 
 ## Quirks
 

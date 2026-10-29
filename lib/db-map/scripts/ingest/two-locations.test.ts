@@ -9,8 +9,14 @@ import { mapGenericRecord } from "./extractors/generic.js";
 import {
   canonicalPoints,
   canonicalCoordinateEvidence,
+  locationSpecificity,
 } from "./canonical-points.js";
-import { listedQuery, runGeocode, forwardCacheKey } from "./geocode.js";
+import {
+  listedQuery,
+  listedQueryBasis,
+  runGeocode,
+  forwardCacheKey,
+} from "./geocode.js";
 import {
   LOCATION_VERSION,
   forwardLocalityConflict,
@@ -1315,4 +1321,108 @@ test("an accepted cross-script city fallback is not re-tested as a venue conflic
   );
   const e = canonicalCoordinateEvidence([unverified, fallback], unverified);
   assert.equal(e.inferred_coordinates!.research_id, "fallback");
+});
+
+test("query basis names the most specific listing text the lookup used", () => {
+  const temporal = new Set(["music_festival"]);
+  const event: any = { category_slugs: ["music_festival"] };
+  const place: any = { category_slugs: ["garden"] };
+  const basis = (row: any, captured: any) =>
+    listedQueryBasis(row, captured, temporal);
+  assert.equal(
+    basis(event, { name: "Fest", address: "1 Main St", city: "Austin" }),
+    "address",
+  );
+  assert.equal(
+    basis(event, {
+      name: "Fest",
+      city: "Austin",
+      attributes: { venue_name: "Zilker Park" },
+    }),
+    "venue",
+  );
+  assert.equal(
+    basis(event, { name: "Fest", city: "Austin", country_code: "US" }),
+    "locality",
+  );
+  assert.equal(
+    basis(event, {
+      name: "Fest",
+      city: "Various",
+      attributes: { venue_name: "Various venues", country_name: "Australia" },
+    }),
+    "locality",
+    "placeholders are not specific text",
+  );
+  assert.equal(basis(event, { name: "Fest" }), "name");
+  assert.equal(basis(place, { name: "Rose Garden", city: "Portland" }), "name");
+});
+
+test("location specificity flags POIs that rest only on country, region or city", () => {
+  const point = (kind: "source" | "inferred", precision: string) => ({
+    lat: 1,
+    lng: 2,
+    kind,
+    origin: kind === "source" ? "source_coordinates" : "listed_address_geocode",
+    precision,
+    label: null,
+    query: null,
+    research_id: "r",
+    source_id: "s",
+    source: "src",
+    normalization_id: "n",
+    geocode_id: "g",
+  });
+  const member = (forward: Record<string, unknown> | null) =>
+    ({ id: "r", location_validation: forward && { forward } }) as any;
+  const spec = (
+    source: ReturnType<typeof point> | null,
+    inferred: ReturnType<typeof point> | null,
+    forward: Record<string, unknown> | null = null,
+  ) =>
+    locationSpecificity(
+      { source_coordinates: source, inferred_coordinates: inferred },
+      [member(forward)],
+    );
+  assert.equal(spec(null, null), null, "legacy builds carry no flag");
+  assert.equal(
+    spec(point("source", "point"), point("inferred", "country")),
+    "precise",
+  );
+  assert.equal(spec(point("source", "city"), null), "general");
+  assert.equal(
+    spec(null, point("inferred", "country")),
+    "general",
+    "AFiRIperFOMA",
+  );
+  assert.equal(
+    spec(null, point("inferred", "city"), { query_basis: "venue" }),
+    "general",
+  );
+  assert.equal(
+    spec(null, point("inferred", "point"), { query_basis: "venue" }),
+    "precise",
+  );
+  assert.equal(
+    spec(null, point("inferred", "point"), { query_basis: "address" }),
+    "precise",
+  );
+  assert.equal(
+    spec(null, point("inferred", "point"), { query_basis: "locality" }),
+    "general",
+    "a point-precision answer to a city-only query is still a general location",
+  );
+  assert.equal(
+    spec(null, point("inferred", "point"), {
+      query_basis: "venue",
+      rejected: { reason: "x" },
+    }),
+    "general",
+    "the city fallback after a rejected venue hit",
+  );
+  assert.equal(
+    spec(null, point("inferred", "point"), {}),
+    "precise",
+    "older artifact without a basis",
+  );
 });

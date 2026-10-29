@@ -17,8 +17,11 @@ import { usePremiumKey } from '../auth/usePremiumKey';
 import { UserMenu } from '../auth/UserMenu';
 import { BasemapSwitcher } from '../basemap/BasemapSwitcher';
 import { CategorySwitcher } from './CategorySwitcher';
-import { PoiLayer, type Bbox } from './PoiLayer';
+import { PoiLayer } from './PoiLayer';
 import { usePoiCategory } from './usePoiCategory';
+import { usePoiList, type Bbox } from './usePoiList';
+import { usePoiLocationFilter } from './usePoiLocationFilter';
+import { LocationFilter, ResultCount } from './PoiFilterBar';
 import { PoiDrawer } from './PoiDrawer';
 import { usePoiSelection } from './usePoiSelection';
 import { useDebouncedValue } from '../lib/useDebouncedValue';
@@ -77,6 +80,7 @@ export function MapView() {
   const { provider } = useBasemap();
   const { category, categories, isLoading: categoriesLoading, selectCategory } =
     usePoiCategory();
+  const { location, selectLocation } = usePoiLocationFilter();
   const { user, loading, updatePreferences } = useAuth();
   const key = usePremiumKey(provider.id);
   const style = provider.getStyle({ apiKey: key ?? undefined });
@@ -97,6 +101,7 @@ export function MapView() {
   const [cursor, setCursor] = useState(MAP_DEFAULT_CURSOR);
 
   const { selectedPoi, isLoadingPoi, selectPoi, clearSelection } = usePoiSelection(mapRef);
+  const pois = usePoiList(bbox, zoom, category, location);
 
   const [pendingViewport, setPendingViewport] = useState<{
     center: [number, number];
@@ -242,15 +247,28 @@ export function MapView() {
         />
         <AttributionControl compact />
         <BasemapSwitcher />
-        {bbox && <PoiLayer bbox={bbox} zoom={zoom} category={category} />}
+        {bbox && (
+          <PoiLayer data={pois.data as GeoJSON.FeatureCollection | undefined} />
+        )}
       </Map>
 
-      <CategorySwitcher
-        category={category}
-        categories={categories}
-        isLoading={categoriesLoading}
-        onSelect={selectCategory}
-      />
+      <div className="absolute top-2 left-2 z-10 flex max-w-[calc(100%-4rem)] flex-col items-start gap-2">
+        <div className="flex flex-wrap items-start gap-2">
+          <CategorySwitcher
+            category={category}
+            categories={categories}
+            isLoading={categoriesLoading}
+            onSelect={selectCategory}
+          />
+          <LocationFilter value={location} onChange={selectLocation} />
+        </div>
+        <ResultCount
+          total={pois.data?.total}
+          returned={pois.data?.returned}
+          isFetching={pois.isFetching}
+          isError={pois.isError}
+        />
+      </div>
       <UserMenu />
 
       {isLoadingPoi && (

@@ -226,6 +226,26 @@ export function listedQuery(
   return q;
 }
 
+export type QueryBasis = "address" | "venue" | "name" | "locality";
+
+/** The most specific listing text in `listedQuery`'s lookup. `locality` means only
+ * city/region/country text, so its result is a general location, never a venue or address. */
+export function listedQueryBasis(
+  row: GeoRow,
+  captured: Record<string, any>,
+  temporal: Set<string>,
+): QueryBasis {
+  const r = listedLocality(row, captured);
+  if (r.address) return "address";
+  if (r.venue) return "venue";
+  const isEvent = (row.category_slugs ?? []).some((s) => temporal.has(s));
+  const locality = [r.city, r.region, r.country_name ?? r.country_code].some(
+    Boolean,
+  );
+  // buildQuery adds the name for places, and for events only when nothing else is listed.
+  return r.name && (!isEvent || !locality) ? "name" : "locality";
+}
+
 /** Locality-only retry when a venue/address lookup lands in another city. */
 export function listedCityQuery(
   row: GeoRow,
@@ -472,6 +492,9 @@ export async function runGeocode(
     let forward: GeocodeHit | null = null;
     let forwardQueryNorm: string | null = null;
     let forwardQuery = q;
+    let forwardBasis: QueryBasis | null = q
+      ? listedQueryBasis(row, captured, temporal)
+      : null;
     let rejected: Record<string, unknown> | null = null;
     let cityConfirmation: {
       query: string;
@@ -528,6 +551,7 @@ export async function runGeocode(
             result: forward,
           };
           forwardQuery = cityQuery;
+          forwardBasis = "locality";
           forwardQueryNorm = retry.key;
           forward = retry.hit ?? null;
         }
@@ -623,6 +647,7 @@ export async function runGeocode(
         query_version: LOCATION_QUERY_VERSION,
         country_filter: forwardCountry,
         query: forwardQuery?.display ?? null,
+        query_basis: forwardBasis,
         query_norm: forwardQueryNorm,
         state: !q ? "no_query" : forward ? "resolved" : "miss",
         result: forward,

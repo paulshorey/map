@@ -24,6 +24,7 @@ interface Props {
     lng?: number;
     locations?: PoiLocationRecord[];
     coordinate_evidence?: PoiCoordinateEvidenceRecord;
+    attributes?: unknown;
   };
   onClose: () => void;
 }
@@ -208,6 +209,13 @@ export function PoiDrawer({ poi, onClose }: Props) {
             {locations.length ? (
               <DetailRow icon={<CoordIcon />} label="Map locations">
                 <div className="space-y-2">
+                  {(poi.attributes as { location_specificity?: string } | null)
+                    ?.location_specificity === "general" && (
+                    <p className="text-xs font-medium text-amber-700">
+                      General location: only a country, region or city is
+                      known
+                    </p>
+                  )}
                   {locations.map((location) => (
                     <div
                       key={`${location.kind}:${location.lat},${location.lng}`}

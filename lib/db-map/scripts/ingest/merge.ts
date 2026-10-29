@@ -7,6 +7,7 @@ import { canonicalLocation } from "./canonical-location.js";
 import {
   canonicalPoints,
   canonicalCoordinateEvidence,
+  locationSpecificity,
 } from "./canonical-points.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
@@ -612,6 +613,10 @@ export async function rebuildCanonicalPoi(
   const popularity = new Set(rows.map((row) => row.source_id)).size;
   const attributes = mergeAttributes(rows);
   attributes.coordinate_evidence = evidence;
+  // Reserved: a member's raw attributes can never set this flag.
+  const specificity = locationSpecificity(evidence, rows);
+  if (specificity) attributes.location_specificity = specificity;
+  else delete attributes.location_specificity;
   attributes.location_assessment = {
     advisory: true,
     policy_version: LOCATION_ASSESSMENT_VERSION,

@@ -134,7 +134,12 @@ export interface ListPoisInBboxParams {
    *  those overlapping [from, to]; permanent POIs (starts_at IS NULL) are always included. */
   from?: string | null;
   to?: string | null;
+  /** `general`: only POIs flagged as a country/region/city-level location; `precise`: all
+   *  others, including legacy POIs built before the flag existed. Null/omitted: all. */
+  location?: PoiLocationFilter | null;
 }
+
+export type PoiLocationFilter = "general" | "precise";
 
 // Feature properties: id, name, primary category display name, photo, popularity, event dates.
 // Primary category resolves via the denormalized primary_category_id join (hot path);
@@ -174,6 +179,12 @@ const CATEGORY_FILTER = (param: string) => `(
 )`;
 
 // Date window: no-op unless both bounds provided; permanent POIs always pass.
+const LOCATION_FILTER = (param: string) => `(
+  ${param}::text IS NULL
+  OR (${param} = 'general' AND p.attributes->>'location_specificity' = 'general')
+  OR (${param} = 'precise' AND p.attributes->>'location_specificity' IS DISTINCT FROM 'general')
+)`;
+
 const DATE_FILTER = (from: string, to: string) => `(
   ${from}::timestamptz IS NULL OR ${to}::timestamptz IS NULL
   OR p.starts_at IS NULL
@@ -200,22 +211,28 @@ export async function listPoisGeoJson(
         THEN (${p}->>'lng')::float8 BETWEEN $1 AND $3 AND (${p}->>'lat')::float8 BETWEEN $2 AND $4
         ELSE false END ELSE false END`;
   };
+  const matching = `p.status='published'
+        AND ${CATEGORY_FILTER("$5")}
+        AND ${DATE_FILTER("$7", "$8")}
+        AND ${LOCATION_FILTER("$10")}
+        AND ($9::boolean OR (p.lng BETWEEN $1 AND $3 AND p.lat BETWEEN $2 AND $4)
+          OR (${evidenceInBbox("source_coordinates", "source", "source_coordinates")})
+          OR (${evidenceInBbox("inferred_coordinates", "inferred", "listed_address_geocode")}))`;
   // Limit entities before expanding markers: either named point may admit the POI.
+  // `total` counts every matching POI, so the app can report results beyond the limit.
   const { rows } = await db.query(
     `
     WITH selected AS MATERIALIZED (
       SELECT p.* FROM canonical_pois p
-      WHERE p.status='published'
-        AND ${CATEGORY_FILTER("$5")}
-        AND ${DATE_FILTER("$7", "$8")}
-        AND ($9::boolean OR (p.lng BETWEEN $1 AND $3 AND p.lat BETWEEN $2 AND $4)
-          OR (${evidenceInBbox("source_coordinates", "source", "source_coordinates")})
-          OR (${evidenceInBbox("inferred_coordinates", "inferred", "listed_address_geocode")}))
+      WHERE ${matching}
       ORDER BY p.popularity DESC,p.id
       LIMIT $6
     )
     SELECT jsonb_build_object('type','FeatureCollection',
-      'features',COALESCE(jsonb_agg(feature ORDER BY poi_id,location_index),'[]'::jsonb)) AS geojson
+      'features',COALESCE(jsonb_agg(feature ORDER BY poi_id,location_index),'[]'::jsonb),
+      'total',(SELECT count(*) FROM canonical_pois p WHERE ${matching}),
+      'returned',(SELECT count(*) FROM selected),
+      'limit',$6::int) AS geojson
     FROM (
       SELECT p.id AS poi_id,loc.location_index,jsonb_build_object(
         'type','Feature','id',p.id::text || ':' || (loc.location->>'kind'),
@@ -228,9 +245,28 @@ export async function listPoisGeoJson(
       CROSS JOIN LATERAL jsonb_array_elements(${mapLocationsSql()}) WITH ORDINALITY AS loc(location,location_index)
       WHERE $9::boolean OR (${inBbox})
     ) markers`,
-    [west, south, east, north, category, limit, from, to, isWorldView],
+    [
+      west,
+      south,
+      east,
+      north,
+      category,
+      limit,
+      from,
+      to,
+      isWorldView,
+      params.location ?? null,
+    ],
   );
-  return rows[0]?.geojson ?? { type: "FeatureCollection", features: [] };
+  return (
+    rows[0]?.geojson ?? {
+      type: "FeatureCollection",
+      features: [],
+      total: 0,
+      returned: 0,
+      limit,
+    }
+  );
 }
 
 export async function listPoiCategories(db: Pool): Promise<string[]> {
