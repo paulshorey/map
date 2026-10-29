@@ -396,6 +396,8 @@ test(
         lon: "-100",
         display_name: "Fixture result",
         boundingbox: ["39", "41", "-101", "-99"],
+        // Real addressdetails name the city; an unnamed far result would need a city lookup.
+        address: { city: "Austin", state: "Texas", country_code: "us" },
       };
       const hit = {
         lat: 40,

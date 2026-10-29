@@ -139,7 +139,13 @@ never reduced this way and that the most accurate location is kept.
   detected; that needs a centroid reference dataset.
 
 Fixtures whose geocode results carried no city name now include one, because an
-unverifiable result is no longer trusted without a distance check. No live
+unverifiable result is no longer trusted without a distance check. This includes the
+CI-only `location-assessment` integration fixture (an Austin record whose cached
+result sat 1,100 km away with no city), which failed the `location` check at `8e65d00`.
+Canonical ranking now also reads the listed city and address from
+`source_location_hints` (third Codex finding), matching `listedLocality()`.
+`location-assessment` and `canonical-cache` were rerun on a disposable local
+PostgreSQL 18 (TCP-only, C locale, stopped afterwards). No live
 reprocessing, provider call or rebuild was made for this revision.
 
 Follow-up (separate PR): map/API filter to include, exclude or show only records

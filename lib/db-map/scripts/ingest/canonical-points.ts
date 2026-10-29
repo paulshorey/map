@@ -81,13 +81,23 @@ function inferredRank(
   sourcePoint: MapLocation | null,
 ): number[] {
   const v = row.location_validation as {
-    listed?: { address?: unknown; city?: unknown };
+    listed?: {
+      address?: unknown;
+      city?: unknown;
+      hints?: { city?: unknown; location?: unknown } | null;
+    };
     forward?: {
       result?: Parameters<typeof forwardLocalityConflict>[1];
       rejected?: unknown;
       city_confirmation?: { result?: { lat: number; lng: number } };
     };
   } | null;
+  // Same effective listed locality as the lookup (`listedLocality`): captured text, then hints.
+  const listedCity =
+    localityValue(v?.listed?.city) ?? localityValue(v?.listed?.hints?.city);
+  const listedAddress =
+    localityValue(v?.listed?.address) ??
+    localityValue(v?.listed?.hints?.location);
   const result = v?.forward?.result;
   const confirmation = v?.forward?.city_confirmation?.result;
   const conflict =
@@ -96,13 +106,13 @@ function inferredRank(
     result.lat === p.lat &&
     result.lng === p.lng &&
     forwardLocalityConflict(
-      v?.listed?.city,
+      listedCity,
       result,
       validPoint(confirmation) ? confirmation : sourcePoint,
     );
   return [
     conflict ? 0 : 1,
-    localityValue(v?.listed?.address) && !v?.forward?.rejected ? 1 : 0,
+    listedAddress && !v?.forward?.rejected ? 1 : 0,
     PRECISION_RANK[p.precision] ?? PRECISION_RANK.point!,
   ];
 }

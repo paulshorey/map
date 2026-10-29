@@ -902,8 +902,10 @@ chooses one value independently per evidence category, preserving each selected
 member/artifact's identity. The source slot uses the existing anchor/trust ordering.
 The inferred slot first ranks evidence: a lookup whose result contradicts its listed
 city ranks last, a supplied street address beats venue/name text, then finer
-precision (point, city, region, country); ties keep anchor/trust order. A city-only
-fallback gets no address priority from its rejected venue/address lookup. A newly
+precision (point, city, region, country); ties keep anchor/trust order. The listed
+city and address are the same effective values the lookup used, falling back to
+`source_location_hints.city` / `.location`. A city-only fallback gets no address
+priority from its rejected venue/address lookup. A newly
 linked venue-name lookup therefore cannot replace another member's address lookup.
 The builder version is unchanged: existing builds are not swept, and the ranking
 applies at each canonical's next rebuild.

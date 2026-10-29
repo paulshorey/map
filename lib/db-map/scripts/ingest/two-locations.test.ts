@@ -1111,3 +1111,94 @@ test("an exonym result confirmed by the listed city's own lookup is kept, not re
     "a confirmed exonym must stay nonconflicting during canonical ranking",
   );
 });
+
+test("canonical ranking reads city and address from source location hints like the lookup does", () => {
+  const member = (
+    id: string,
+    trust: number,
+    listed: Record<string, unknown>,
+    lat: number,
+    lng: number,
+    result: Record<string, unknown> | null,
+  ) => ({
+    id,
+    source_id: id,
+    source_slug: id,
+    source_trust: trust,
+    lat: null,
+    lng: null,
+    coordinate_source: null,
+    coordinate_precision: null,
+    active_normalization_id: `n-${id}`,
+    active_geocode_id: `g-${id}`,
+    location_validation: {
+      version: LOCATION_VERSION,
+      normalization_id: `n-${id}`,
+      point: { lat: null, lng: null },
+      listed,
+      forward: { result: result && { ...result, lat, lng } },
+      coordinate_evidence: {
+        source_coordinates: null,
+        inferred_coordinates: {
+          lat,
+          lng,
+          kind: "inferred",
+          origin: "listed_address_geocode",
+          precision: "point",
+          label: null,
+          query: "q",
+        },
+      },
+    },
+  });
+  // Rows have no point of their own; the validation binding below is what memberEvidence reads.
+  const bind = (m: ReturnType<typeof member>) => ({
+    ...m,
+    lat: m.location_validation.coordinate_evidence.inferred_coordinates.lat,
+    lng: m.location_validation.coordinate_evidence.inferred_coordinates.lng,
+    location_validation: {
+      ...m.location_validation,
+      point: {
+        lat: m.location_validation.coordinate_evidence.inferred_coordinates.lat,
+        lng: m.location_validation.coordinate_evidence.inferred_coordinates.lng,
+      },
+    },
+  });
+  const wichita = bind(
+    member(
+      "venue",
+      90,
+      { city: null, address: null, hints: { city: "Kansas City" } },
+      37.6872,
+      -97.3301,
+      {
+        city: "Wichita",
+        region: "Kansas",
+        raw_response: { address: { city: "Wichita", state: "Kansas" } },
+      },
+    ),
+  );
+  const hinted = bind(
+    member(
+      "hinted",
+      10,
+      {
+        city: null,
+        address: null,
+        hints: { city: "Kansas City", location: "1601 Broadway Blvd" },
+      },
+      39.0943,
+      -94.5867,
+      {
+        city: "Kansas City",
+        raw_response: { address: { city: "Kansas City", state: "Missouri" } },
+      },
+    ),
+  );
+  const e = canonicalCoordinateEvidence([wichita, hinted], wichita);
+  assert.equal(
+    e.inferred_coordinates!.research_id,
+    "hinted",
+    "the hinted city exposes Wichita's conflict and the hinted address earns priority",
+  );
+});
