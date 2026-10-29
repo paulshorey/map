@@ -928,6 +928,22 @@ test(
           "coarse_location_only",
         ],
         [
+          "bound, no slots, retained legacy point",
+          enrichment(current, { lat: 7, lng: 8 }, null, null),
+          7,
+          8,
+          "point",
+          null,
+        ],
+        [
+          "bound, no slots, retained coarse legacy point",
+          enrichment(current, { lat: 7, lng: 8 }, null, null),
+          7,
+          8,
+          "city",
+          "coarse_location_only",
+        ],
+        [
           "bound, no candidates",
           enrichment(current, { lat: null, lng: null }, null, null),
           null,

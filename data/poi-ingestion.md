@@ -957,8 +957,9 @@ distance verification. Both lookups share the call budget.
 from stored evidence: `missing_location` when no candidate is plottable, and
 `coarse_location_only` when every candidate is city, region or country precision.
 Stored slots count only while the enrichment's version, normalization and point match
-the row; a stale enrichment left by a later normalization falls back to the current
-coordinate columns, so cleared coordinates still show as `missing_location`.
+the row and at least one slot is present. Otherwise the current coordinate columns
+decide: cleared coordinates show as `missing_location`, and a retained legacy point
+whose new lookup missed stays plottable and is judged by its stored precision.
 `ingest:report` counts these per source/category. They never gate matching or
 publication. A supplied centroid labelled `point` (for example Google's Australia
 centroid) is not detected without a centroid reference dataset.
