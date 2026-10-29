@@ -193,14 +193,21 @@ export function locationSpecificity(
   if (!source && !inferred) return null;
   if (source?.precision === "point") return "precise";
   if (inferred?.precision === "point") {
-    const forward = (
-      rows.find((r) => r.id === inferred.research_id)?.location_validation as {
-        forward?: { query_basis?: unknown; rejected?: unknown };
-      } | null
-    )?.forward;
+    const v = rows.find((r) => r.id === inferred.research_id)
+      ?.location_validation as {
+      listed?: { address?: unknown };
+      forward?: { query_basis?: unknown; rejected?: unknown };
+    } | null;
+    const forward = v?.forward;
+    // `listed.address` holds only captured street-address fields. A stored `address` basis
+    // without one came from a hint label ("Melbourne, VIC"), so it is read as locality text
+    // at every rebuild; existing artifacts need no reflow.
+    const basis =
+      forward?.query_basis === "address" && !localityValue(v?.listed?.address)
+        ? "locality"
+        : forward?.query_basis;
     // A rejected venue/address hit leaves the listed city's own lookup.
-    if (forward?.query_basis !== "locality" && !forward?.rejected)
-      return "precise";
+    if (basis !== "locality" && !forward?.rejected) return "precise";
   }
   return "general";
 }

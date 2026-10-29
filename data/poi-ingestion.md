@@ -906,7 +906,9 @@ precision (point, city, region, country); ties keep anchor/trust order. The list
 city falls back to `source_location_hints.city`, as the lookup does. Only a captured
 street address (`address`, `venue_address`, `street_address`) earns address priority
 or `query_basis: address`: `source_location_hints.location` holds listing labels such
-as "Melbourne, VIC" or "Australia", so a lookup built from it is `locality`. A city-only fallback gets no address
+as "Melbourne, VIC" or "Australia", so a lookup built from it is `locality`. At canonical
+build a stored `address` basis counts only when the artifact's `listed.address` holds a
+captured street address, so no artifact needs reflowing for this rule. A city-only fallback gets no address
 priority from its rejected venue/address lookup, and is not re-tested as a venue
 conflict: it is the listed city's own lookup, even when named in another script. A newly
 linked venue-name lookup therefore cannot replace another member's address lookup.

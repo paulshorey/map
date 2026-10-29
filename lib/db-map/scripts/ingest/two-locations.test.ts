@@ -1486,16 +1486,20 @@ test("location specificity flags POIs that rest only on country, region or city"
     normalization_id: "n",
     geocode_id: "g",
   });
-  const member = (forward: Record<string, unknown> | null) =>
-    ({ id: "r", location_validation: forward && { forward } }) as any;
+  const member = (
+    forward: Record<string, unknown> | null,
+    listed: Record<string, unknown>,
+  ) =>
+    ({ id: "r", location_validation: forward && { forward, listed } }) as any;
   const spec = (
     source: ReturnType<typeof point> | null,
     inferred: ReturnType<typeof point> | null,
     forward: Record<string, unknown> | null = null,
+    listed: Record<string, unknown> = { address: "2 Batman Ave" },
   ) =>
     locationSpecificity(
       { source_coordinates: source, inferred_coordinates: inferred },
-      [member(forward)],
+      [member(forward, listed)],
     );
   assert.equal(spec(null, null), null, "legacy builds carry no flag");
   assert.equal(
@@ -1537,5 +1541,15 @@ test("location specificity flags POIs that rest only on country, region or city"
     spec(null, point("inferred", "point"), {}),
     "precise",
     "older artifact without a basis",
+  );
+  assert.equal(
+    spec(
+      null,
+      point("inferred", "point"),
+      { query_basis: "address" },
+      { address: null, hints: { location: "Melbourne, VIC" } },
+    ),
+    "general",
+    "an artifact that stored `address` for a hint label is read as locality at rebuild",
   );
 });
