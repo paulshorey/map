@@ -14,6 +14,16 @@ export interface PoiFeatureProperties {
   date_precision: string | null;
 }
 
+/** GET /api/pois. `total` counts every matching POI; `returned` POIs (up to `limit`) are
+ * expanded into one or two marker features each. */
+export interface PoiListResponse {
+  type: string;
+  features: Array<unknown>;
+  total: number;
+  returned: number;
+  limit: number;
+}
+
 export interface PoiPrecisionEvidenceRecord {
   version: string;
   value: string;

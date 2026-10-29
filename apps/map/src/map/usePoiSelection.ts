@@ -25,6 +25,7 @@ export interface PoiDetail {
   geometry: GeoJSON.Point;
   locations?: PoiLocationRecord[];
   coordinate_evidence?: PoiCoordinateEvidenceRecord;
+  attributes?: unknown;
 }
 
 export function usePoiSelection(mapRef: RefObject<MapRef | null>) {

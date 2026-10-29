@@ -955,6 +955,14 @@ remain cached for provider-free retries. Names compare in any script
 `名古屋市`), or a result with no city-level field, is not a match and follows the same
 distance verification. Only a record with no listed city skips this check. Both lookups share the call budget.
 
+Each canonical build writes `attributes.location_specificity`: `precise` when a
+point-precision source coordinate exists, or a point-precision lookup used an address,
+venue or name (`validation.forward.query_basis`); otherwise `general`. General covers
+country/region/city-only lookups, the city fallback after a rejected venue/address hit,
+and coarse supplied coordinates. Builds without slotted evidence carry no flag. The map
+API filters on it (`/api/pois?location=general|precise`); member raw attributes cannot set
+it. Existing canonicals are not backfilled; they gain the flag at their next rebuild.
+
 `locationReviewSql()` (`sql/location-assessments.ts`) derives an advisory review flag
 from stored evidence: `missing_location` when no candidate is plottable, and
 `coarse_location_only` when every candidate is city, region or country precision.

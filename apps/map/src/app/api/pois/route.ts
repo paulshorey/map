@@ -1,6 +1,7 @@
 import {
   getDb,
   listPoisGeoJson,
+  type PoiLocationFilter,
 } from '@lib/db-map';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -11,6 +12,18 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get('category');
   const from = searchParams.get('from');
   const to = searchParams.get('to');
+  // general | precise; absent or "all" returns every POI.
+  const locationParam = searchParams.get('location');
+  const location: PoiLocationFilter | null =
+    locationParam === 'general' || locationParam === 'precise'
+      ? locationParam
+      : null;
+  if (locationParam && locationParam !== 'all' && !location) {
+    return NextResponse.json(
+      { error: 'location must be general, precise or all' },
+      { status: 400 },
+    );
+  }
 
   if (!bbox) {
     return NextResponse.json(
@@ -42,6 +55,7 @@ export async function GET(request: NextRequest) {
     isWorldView,
     from: from ?? null,
     to: to ?? null,
+    location,
   });
 
   return NextResponse.json(geojson, {

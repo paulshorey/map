@@ -179,6 +179,32 @@ export function canonicalCoordinateEvidence(
   };
 }
 
+export type LocationSpecificity = "general" | "precise";
+
+/** `general` when the published location rests only on country/region/city: no point-precision
+ * source coordinates and no point-precision lookup of an address, venue or name. Null when the
+ * canonical has no slotted evidence (legacy builds), which callers treat as not general. */
+export function locationSpecificity(
+  evidence: CoordinateEvidence<CanonicalMapLocation>,
+  rows: LocationMember[],
+): LocationSpecificity | null {
+  const source = evidence.source_coordinates,
+    inferred = evidence.inferred_coordinates;
+  if (!source && !inferred) return null;
+  if (source?.precision === "point") return "precise";
+  if (inferred?.precision === "point") {
+    const forward = (
+      rows.find((r) => r.id === inferred.research_id)?.location_validation as {
+        forward?: { query_basis?: unknown; rejected?: unknown };
+      } | null
+    )?.forward;
+    // A rejected venue/address hit leaves the listed city's own lookup.
+    if (forward?.query_basis !== "locality" && !forward?.rejected)
+      return "precise";
+  }
+  return "general";
+}
+
 /** Legacy output remains one stored point when its listed-text evidence is unavailable. */
 export function canonicalPoints(
   rows: LocationMember[],

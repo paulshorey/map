@@ -95,6 +95,48 @@
         }
       ]
     },
+    "PoiListResponse": {
+      "fields": [
+        {
+          "name": "type",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "features",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "model",
+            "type": "unknown"
+          },
+          "nullable": false
+        },
+        {
+          "name": "total",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "returned",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "limit",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        }
+      ]
+    },
     "PoiPrecisionEvidenceRecord": {
       "fields": [
         {

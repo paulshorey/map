@@ -6,7 +6,13 @@ export {
   getPoiById,
   insertPois,
 } from "./sql/pois";
-export type { NewPoi, InsertPoisOptions, InsertPoisResult, InsertFailure } from "./sql/pois";
+export type {
+  NewPoi,
+  InsertPoisOptions,
+  InsertPoisResult,
+  InsertFailure,
+  PoiLocationFilter,
+} from "./sql/pois";
 export {
   getUserWithPreferences,
   getUserTier,
