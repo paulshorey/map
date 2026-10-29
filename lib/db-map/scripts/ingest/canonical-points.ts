@@ -4,7 +4,11 @@ import {
   type CoordinateEvidence,
   type MapLocation,
 } from "../../lib/ingestion/location-points.js";
-import { LOCATION_VERSION } from "./location.js";
+import {
+  LOCATION_VERSION,
+  forwardLocalityConflict,
+  localityValue,
+} from "./location.js";
 
 export interface LocationMember {
   id: string;
@@ -62,6 +66,43 @@ function memberEvidence(row: LocationMember): CoordinateEvidence {
   return readCoordinateEvidence(v.coordinate_evidence);
 }
 
+const PRECISION_RANK: Record<string, number> = {
+  point: 3,
+  city: 2,
+  region: 1,
+  country: 0,
+};
+
+/** Listed-text evidence strength: a lookup that contradicts its listed city ranks last,
+ * then a supplied street address beats venue/name text, then finer provider precision. */
+function inferredRank(
+  row: LocationMember,
+  p: MapLocation,
+  sourcePoint: MapLocation | null,
+): number[] {
+  const v = row.location_validation as {
+    listed?: { address?: unknown; city?: unknown };
+    forward?: { result?: Parameters<typeof forwardLocalityConflict>[1] };
+  } | null;
+  const result = v?.forward?.result;
+  const conflict =
+    !!result &&
+    validPoint(result) &&
+    result.lat === p.lat &&
+    result.lng === p.lng &&
+    forwardLocalityConflict(v?.listed?.city, result, sourcePoint);
+  return [
+    conflict ? 0 : 1,
+    localityValue(v?.listed?.address) ? 1 : 0,
+    PRECISION_RANK[p.precision] ?? PRECISION_RANK.point!,
+  ];
+}
+
+const compareRank = (a: number[], b: number[]) => {
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return b[i]! - a[i]!;
+  return 0;
+};
+
 /** Choose one value independently for each provenance slot; source points cannot occupy the inferred slot. */
 export function canonicalCoordinateEvidence(
   rows: LocationMember[],
@@ -75,29 +116,44 @@ export function canonicalCoordinateEvidence(
         (a, b) => b.source_trust - a.source_trust || a.id.localeCompare(b.id),
       ),
   ];
-  const result: CoordinateEvidence<CanonicalMapLocation> = {
-    source_coordinates: null,
-    inferred_coordinates: null,
+  const located = ordered.map((row) => ({
+    row,
+    evidence: memberEvidence(row),
+  }));
+  const pick = (
+    slot: keyof CoordinateEvidence,
+    candidates: typeof located,
+  ): CanonicalMapLocation | null => {
+    const hit = candidates.find((c) => c.evidence[slot]);
+    if (!hit) return null;
+    const { row } = hit;
+    return {
+      ...hit.evidence[slot]!,
+      research_id: row.id,
+      source_id: row.source_id,
+      source: row.source_slug,
+      normalization_id: row.active_normalization_id,
+      geocode_id: row.active_geocode_id,
+    };
   };
-  for (const row of ordered) {
-    const evidence = memberEvidence(row);
-    for (const slot of [
-      "source_coordinates",
-      "inferred_coordinates",
-    ] as const) {
-      const p = evidence[slot];
-      if (result[slot] || !p) continue;
-      result[slot] = {
-        ...p,
-        research_id: row.id,
-        source_id: row.source_id,
-        source: row.source_slug,
-        normalization_id: row.active_normalization_id,
-        geocode_id: row.active_geocode_id,
-      };
-    }
-  }
-  return result;
+  // Source points keep anchor/trust order. Inferred candidates rank by evidence first, so a
+  // weaker venue-name lookup from the anchor cannot displace another member's address lookup.
+  const inferred = located
+    .filter((c) => c.evidence.inferred_coordinates)
+    .map((c, order) => ({
+      ...c,
+      order,
+      rank: inferredRank(
+        c.row,
+        c.evidence.inferred_coordinates!,
+        c.evidence.source_coordinates,
+      ),
+    }))
+    .sort((a, b) => compareRank(a.rank, b.rank) || a.order - b.order);
+  return {
+    source_coordinates: pick("source_coordinates", located),
+    inferred_coordinates: pick("inferred_coordinates", inferred),
+  };
 }
 
 /** Legacy output remains one stored point when its listed-text evidence is unavailable. */

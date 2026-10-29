@@ -23,7 +23,7 @@ export interface GeocodeHit {
   lat: number;
   lng: number;
   /** Coarse precision so the matcher can down-weight centroids (overview §14.6). */
-  precision: "point" | "city" | "region";
+  precision: "point" | "city" | "region" | "country";
   provider: string;
   label?: string | null;
   attribution?: string | null;

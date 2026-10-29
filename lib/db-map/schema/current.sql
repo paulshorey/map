@@ -23,12 +23,6 @@ SET row_security = off;
 
 
 --
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
---
-
-
-
---
 -- Name: reject_location_assessment_update(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -793,7 +787,7 @@ CREATE TABLE public.research_poi_geocodes (
     validation jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     activated_at timestamp with time zone,
-    CONSTRAINT research_poi_geocodes_precision_check CHECK (("precision" = ANY (ARRAY['point'::text, 'city'::text, 'region'::text]))),
+    CONSTRAINT research_poi_geocodes_precision_check CHECK (("precision" = ANY (ARRAY['point'::text, 'city'::text, 'region'::text, 'country'::text]))),
     CONSTRAINT research_poi_geocodes_status_check CHECK ((status = ANY (ARRAY['resolved'::text, 'miss'::text, 'rejected'::text, 'failed'::text])))
 );
 
@@ -965,7 +959,7 @@ CREATE TABLE public.research_pois (
     active_geocode_id uuid,
     active_embedding_id uuid,
     active_location_assessment_id uuid,
-    CONSTRAINT research_pois_coordinate_precision_check CHECK ((coordinate_precision = ANY (ARRAY['point'::text, 'city'::text, 'region'::text]))),
+    CONSTRAINT research_pois_coordinate_precision_check CHECK ((coordinate_precision = ANY (ARRAY['point'::text, 'city'::text, 'region'::text, 'country'::text]))),
     CONSTRAINT research_pois_coordinate_source_check CHECK ((coordinate_source = ANY (ARRAY['source'::text, 'url'::text, 'geocode'::text]))),
     CONSTRAINT research_pois_date_precision_check CHECK ((date_precision = ANY (ARRAY['datetime'::text, 'day'::text, 'month'::text, 'year'::text]))),
     CONSTRAINT research_pois_normalization_state_check CHECK ((normalization_state = ANY (ARRAY['pending'::text, 'active'::text, 'active_stale'::text, 'rejected'::text, 'degraded'::text, 'failed'::text]))),

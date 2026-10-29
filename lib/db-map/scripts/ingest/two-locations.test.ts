@@ -11,7 +11,12 @@ import {
   canonicalCoordinateEvidence,
 } from "./canonical-points.js";
 import { listedQuery, runGeocode, forwardCacheKey } from "./geocode.js";
-import { LOCATION_VERSION } from "./location.js";
+import {
+  LOCATION_VERSION,
+  forwardLocalityConflict,
+  localityValue,
+} from "./location.js";
+import { deriveForwardPrecision } from "../../lib/ingestion/geocode-precision.js";
 import { readFileSync } from "node:fs";
 import {
   PIPELINE_VERSIONS,
@@ -517,3 +522,344 @@ for (const found of [true, false])
       assert.equal(old.query, null);
     }
   });
+
+const japan = { name: "Aichi Triennale", city: "Nagoya", country_code: "JP" };
+const urayasu = {
+  lat: "35.634313",
+  lon: "139.879606",
+  display_name: "Center Street, Urayasu, Urayasu, Chiba Prefecture, Japan",
+  address: {
+    road: "Center Street",
+    city: "Urayasu",
+    state: "Chiba Prefecture",
+    country: "Japan",
+    country_code: "jp",
+  },
+};
+
+test("placeholder locality never reaches the geocoder; a country-only lookup beside a source point is skipped", () => {
+  const temporal = new Set(["music_festival"]);
+  const row: any = {
+    category_slugs: ["music_festival"],
+    lat: -25.2744,
+    lng: 133.7751,
+  };
+  const adelaide = {
+    name: "Adelaide Biennial of Australian Art",
+    city: "Various",
+    attributes: { venue_name: "Various venues", country_name: "Australia" },
+  };
+  assert.equal(localityValue("Various venues"), null);
+  assert.equal(localityValue("TBA."), null);
+  assert.equal(localityValue("Variety Theatre"), "Variety Theatre");
+  assert.equal(listedQuery(row, adelaide, temporal), null);
+  const missing = listedQuery(
+    { ...row, lat: null, lng: null },
+    adelaide,
+    temporal,
+  )!;
+  assert.equal(
+    missing.display,
+    "Australia",
+    "no source point: the country is the only listed evidence",
+  );
+  assert.equal(
+    listedQuery(row, { ...adelaide, city: "Adelaide" }, temporal)!.display,
+    "Adelaide, Australia",
+  );
+});
+
+test("forward locality conflict compares Latin-script locality and never flags unreadable labels", () => {
+  const hit = (row: any) => ({
+    label: row.display_name,
+    city: row.address?.city ?? null,
+    region: row.address?.state ?? null,
+    raw_response: row,
+  });
+  assert.equal(forwardLocalityConflict("Nagoya", hit(urayasu)), true);
+  const nagoya = { lat: 35.1815, lng: 136.9066 };
+  assert.equal(
+    forwardLocalityConflict(
+      "Nagoya",
+      { ...hit(urayasu), lat: 35.634313, lng: 139.879606 },
+      nagoya,
+    ),
+    true,
+    "274 km from the source point",
+  );
+  const venezia = {
+    lat: 45.4344,
+    lng: 12.3536,
+    city: "Venezia",
+    region: "Veneto",
+    label: "Castello, Venezia, Veneto, Italia",
+  };
+  assert.equal(
+    forwardLocalityConflict("Venice", venezia, { lat: 45.4286, lng: 12.3602 }),
+    false,
+    "an exonym near the source point is the listed city",
+  );
+  assert.equal(
+    forwardLocalityConflict("Venice", venezia),
+    true,
+    "without an anchor the name mismatch is only a suspicion for the city retry",
+  );
+  assert.equal(
+    forwardLocalityConflict(
+      "Nagoya",
+      hit({
+        display_name: "東桜二丁目, 東区, 名古屋市, 愛知県, 461-0005, 日本",
+        address: { city: "名古屋市", state: "愛知県", country_code: "jp" },
+      }),
+    ),
+    false,
+  );
+  assert.equal(
+    forwardLocalityConflict("Köniz", { label: "Swiss venue" }),
+    false,
+    "a label without structured locality cannot establish another city",
+  );
+  assert.equal(
+    forwardLocalityConflict(
+      "Washington, D.C.",
+      hit({
+        display_name:
+          "National Mall, Washington, District of Columbia, United States",
+        address: { city: "Washington", state: "District of Columbia" },
+      }),
+    ),
+    false,
+  );
+  assert.equal(forwardLocalityConflict("Various", hit(urayasu)), false);
+});
+
+test("country boundary results are classified as country precision", () => {
+  const nigeria = {
+    lat: "9.6000359",
+    lon: "7.9999721",
+    type: "administrative",
+    class: "boundary",
+    display_name: "Nigeria",
+    address: { country: "Nigeria", country_code: "ng" },
+  };
+  assert.deepEqual(
+    [
+      deriveForwardPrecision(nigeria).value,
+      deriveForwardPrecision(nigeria).derivation,
+    ],
+    ["country", "provider_address"],
+  );
+  assert.equal(deriveForwardPrecision({ type: "country" }).value, "country");
+  assert.equal(
+    deriveForwardPrecision({
+      type: "administrative",
+      address: { city: "Kaduna", country_code: "ng" },
+    }).value,
+    "city",
+  );
+});
+
+test("a venue lookup in another city is kept only as rejected evidence and retried by listed city", async () => {
+  const f = fixture({
+    ...japan,
+    attributes: { venue_name: "Aichi Arts Center" },
+  });
+  Object.assign(f.row, { lat: 35.1815, lng: 136.9066 });
+  f.cache.set(`location-v2:reverse:35.1815:136.9066`, {
+    payload: { hit: null },
+  });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  const queries: string[] = [];
+  globalThis.fetch = async (input) => {
+    const q = new URL(String(input)).searchParams.get("q")!;
+    queries.push(q);
+    return Response.json([
+      q.startsWith("Aichi Arts Center")
+        ? urayasu
+        : {
+            lat: "35.1851",
+            lon: "136.8994",
+            type: "city",
+            class: "place",
+            display_name: "Nagoya, Aichi Prefecture, Japan",
+            address: {
+              city: "Nagoya",
+              state: "Aichi Prefecture",
+              country_code: "jp",
+            },
+          },
+    ]);
+  };
+  const stats = await runGeocode(f.db, opts);
+  assert.deepEqual(queries, ["Aichi Arts Center, Nagoya, JP", "Nagoya, JP"]);
+  assert.equal(stats.apiCalls, 2);
+  const inferred = f.activated.coordinate_evidence.inferred_coordinates;
+  assert.deepEqual(
+    [inferred.lat, inferred.lng, inferred.precision],
+    [35.1851, 136.8994, "city"],
+  );
+  assert.equal(inferred.query, "Nagoya, JP");
+  assert.equal(
+    f.activated.forward.rejected.reason,
+    "forward_locality_conflict",
+  );
+  assert.equal(f.activated.forward.rejected.result.city, "Urayasu");
+  assert.equal(f.activated.coordinate_evidence.source_coordinates.lat, 35.1815);
+});
+
+test("canonical inferred slot prefers an address lookup over the anchor's conflicting venue lookup", () => {
+  const member = (
+    id: string,
+    trust: number,
+    listed: Record<string, unknown>,
+    lat: number,
+    lng: number,
+    result: Record<string, unknown> | null,
+  ) => ({
+    id,
+    source_id: id,
+    source_slug: id,
+    source_trust: trust,
+    lat: 35.1815,
+    lng: 136.9066,
+    coordinate_source: "source",
+    coordinate_precision: "point",
+    active_normalization_id: `n-${id}`,
+    active_geocode_id: `g-${id}`,
+    location_validation: {
+      version: LOCATION_VERSION,
+      normalization_id: `n-${id}`,
+      point: { lat: 35.1815, lng: 136.9066 },
+      listed,
+      forward: { result: result && { ...result, lat, lng } },
+      coordinate_evidence: {
+        source_coordinates: {
+          lat: 35.1815,
+          lng: 136.9066,
+          kind: "source",
+          origin: "source_coordinates",
+          precision: "point",
+          label: null,
+          query: null,
+        },
+        inferred_coordinates: {
+          lat,
+          lng,
+          kind: "inferred",
+          origin: "listed_address_geocode",
+          precision: "point",
+          label: null,
+          query: "q",
+        },
+      },
+    },
+  });
+  const anchor = member(
+    "biennial_foundation",
+    90,
+    { city: "Nagoya", address: null },
+    35.634313,
+    139.879606,
+    {
+      city: "Urayasu",
+      region: "Chiba Prefecture",
+      label: urayasu.display_name,
+      raw_response: urayasu,
+    },
+  );
+  const address = member(
+    "biennale_com",
+    50,
+    { city: "Nagoya", address: "1-13-2 Higashisakura, Higashi-ku" },
+    35.171876,
+    136.916736,
+    { city: "名古屋市", label: "東桜二丁目, 東区, 名古屋市, 愛知県, 日本" },
+  );
+  const e = canonicalCoordinateEvidence([anchor, address], anchor);
+  assert.equal(e.source_coordinates!.research_id, "biennial_foundation");
+  assert.equal(e.inferred_coordinates!.research_id, "biennale_com");
+  assert.equal(e.inferred_coordinates!.lat, 35.171876);
+  // Without a conflict, a supplied street address still outranks venue text.
+  const venue = member(
+    "venue",
+    90,
+    { city: "Nagoya", address: null },
+    35.17,
+    136.91,
+    null,
+  );
+  assert.equal(
+    canonicalCoordinateEvidence([venue, address], venue).inferred_coordinates!
+      .research_id,
+    "biennale_com",
+  );
+  // Equal evidence keeps the existing anchor/trust order.
+  const peer = member(
+    "peer",
+    10,
+    { city: "Nagoya", address: null },
+    35.18,
+    136.9,
+    null,
+  );
+  assert.equal(
+    canonicalCoordinateEvidence([venue, peer], venue).inferred_coordinates!
+      .research_id,
+    "venue",
+  );
+});
+
+test("an exonym result confirmed by the listed city's own lookup is kept, not rejected", async () => {
+  const f = fixture({
+    name: "Venice Biennale",
+    city: "Venice",
+    country_code: "IT",
+    attributes: { venue_name: "Giardini" },
+  });
+  Object.assign(f.row, {
+    lat: null,
+    lng: null,
+    coordinate_source: null,
+    coordinate_precision: null,
+  });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  const queries: string[] = [];
+  globalThis.fetch = async (input) => {
+    const u = new URL(String(input));
+    if (u.pathname.endsWith("/reverse"))
+      return Response.json({
+        lat: "45.4286",
+        lon: "12.3602",
+        address: { country_code: "it", city: "Venezia", state: "Veneto" },
+      });
+    const q = u.searchParams.get("q")!;
+    queries.push(q);
+    return Response.json([
+      q.startsWith("Giardini")
+        ? {
+            lat: "45.4286",
+            lon: "12.3602",
+            class: "leisure",
+            type: "park",
+            display_name: "Giardini, Castello, Venezia, Veneto, Italia",
+            address: { city: "Venezia", state: "Veneto", country_code: "it" },
+          }
+        : {
+            lat: "45.4372",
+            lon: "12.3346",
+            class: "place",
+            type: "city",
+            display_name: "Venezia, Veneto, Italia",
+            address: { city: "Venezia", state: "Veneto", country_code: "it" },
+          },
+    ]);
+  };
+  await runGeocode(f.db, opts);
+  assert.deepEqual(queries, ["Giardini, Venice, IT", "Venice, IT"]);
+  const inferred = f.activated.coordinate_evidence.inferred_coordinates;
+  assert.deepEqual(
+    [inferred.lat, inferred.lng, inferred.query],
+    [45.4286, 12.3602, "Giardini, Venice, IT"],
+  );
+  assert.equal(f.activated.forward.rejected, undefined);
+});
