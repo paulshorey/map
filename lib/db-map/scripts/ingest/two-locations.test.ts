@@ -715,7 +715,8 @@ test("forward locality conflict compares Latin-script locality and never flags u
     lat: 35.171876,
     lng: 136.916736,
   };
-  assert.equal(resultNamesListedCity("Nagoya", japanese), null);
+  assert.equal(resultNamesListedCity("Nagoya", japanese), false);
+  assert.equal(resultNamesListedCity("名古屋市", japanese), true);
   assert.equal(
     forwardLocalityConflict("Nagoya", japanese, nagoya),
     false,
@@ -815,6 +816,46 @@ test("the listed city must match a whole city-level name; states, counties and c
       raw_response: { address: { city: "New York", suburb: "Brooklyn" } },
     }),
     true,
+  );
+});
+
+test("a native-script listed city is verified, never waved through", () => {
+  const venue = {
+    lat: 35.634313,
+    lng: 139.879606,
+    city: "Urayasu",
+    raw_response: { address: { city: "Urayasu", state: "Chiba Prefecture" } },
+  };
+  assert.equal(resultNamesListedCity("名古屋市", venue), false);
+  assert.equal(
+    forwardLocalityConflict("名古屋市", venue),
+    true,
+    "no source point: the city-only retry must confirm it",
+  );
+  assert.equal(
+    forwardLocalityConflict("名古屋市", venue, { lat: 35.1815, lng: 136.9066 }),
+    true,
+    "274 km from the source point",
+  );
+  const sameCity = {
+    lat: 35.1719,
+    lng: 136.9167,
+    city: "名古屋市",
+    raw_response: { address: { city: "名古屋市", state: "愛知県" } },
+  };
+  assert.equal(forwardLocalityConflict("名古屋市", sameCity), false);
+  assert.equal(
+    forwardLocalityConflict("Москва", {
+      lat: 55.75,
+      lng: 37.62,
+      city: "Москва",
+    }),
+    false,
+  );
+  assert.equal(
+    forwardLocalityConflict(null, venue),
+    false,
+    "no listed city: nothing to retry with",
   );
 });
 

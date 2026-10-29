@@ -949,9 +949,10 @@ it is rejected (for example `Aichi Arts Center, Nagoya` → Urayasu, Chiba), kep
 result supplies the inferred value. A definitive city miss cannot confirm the first
 result: a usable source point is retained without an inferred point, or the record
 stays unresolved when it has no usable point. Both the rejected hit and city miss
-remain cached for provider-free retries. Results without a Latin-script city-level field
-(such as Japanese provider labels) cannot be name-checked, so they follow the same
-distance verification. Both lookups share the call budget.
+remain cached for provider-free retries. Names compare in any script
+(`名古屋市` matches `名古屋市`); a listed name and result in different scripts (`Nagoya` vs
+`名古屋市`), or a result with no city-level field, is not a match and follows the same
+distance verification. Only a record with no listed city skips this check. Both lookups share the call budget.
 
 `locationReviewSql()` (`sql/location-assessments.ts`) derives an advisory review flag
 from stored evidence: `missing_location` when no candidate is plottable, and

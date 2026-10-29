@@ -39,7 +39,8 @@ const foldTokens = (s: string) =>
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toUpperCase()
-    .split(/[^A-Z0-9]+/)
+    // Any script's letters: 名古屋市 compares to 名古屋市, never silently to nothing.
+    .split(/[^\p{L}\p{M}\p{N}]+/u)
     .filter(Boolean);
 const NAME_ABBREVIATIONS: Record<string, string> = {
   ST: "SAINT",
@@ -64,7 +65,7 @@ const RESULT_CITY_KEYS = [
   "city_district",
 ];
 
-/** True when the result's Latin-script city-level fields include the listed city's whole name,
+/** True when the result's city-level fields include the listed city's whole name (any script),
  * false when they name another place, null when nothing comparable exists. A listed qualifier
  * after a comma ("Washington, D.C.", "Portland, OR") is not part of the name. */
 export function resultNamesListedCity(
@@ -78,13 +79,13 @@ export function resultNamesListedCity(
 ): boolean | null {
   const listed = localityValue(listedCity);
   const wanted = listed ? cityName(listed.split(",")[0]!) : "";
-  if (!/[A-Z]/.test(wanted)) return null;
+  if (!/\p{L}/u.test(wanted)) return null;
   const address = (hit.raw_response?.address ?? {}) as Record<string, unknown>;
   const names = [hit.city, ...RESULT_CITY_KEYS.map((key) => address[key])]
     .map(textValue)
     .filter((p): p is string => !!p)
     .map(cityName)
-    .filter((name) => /[A-Z]/.test(name));
+    .filter((name) => /\p{L}/u.test(name));
   return names.length ? names.includes(wanted) : null;
 }
 
@@ -92,7 +93,7 @@ export function resultNamesListedCity(
 export const LOCALITY_CONFLICT_M = 50_000;
 
 /** True when a venue/address lookup cannot be trusted to be in the listed city: its city-level
- * fields do not name the listed city (or are not comparable, such as Japanese labels), and it lies
+ * fields do not name the listed city (another script, such as Nagoya vs 名古屋市, is not a match), and it lies
  * more than LOCALITY_CONFLICT_M from an independent anchor (the source point or the listed city's
  * own lookup). Without an anchor, the caller verifies with a city-only lookup. Exonyms such as
  * Venice/Venezia pass through the distance gate. */
@@ -109,7 +110,8 @@ export function forwardLocalityConflict(
   anchor?: { lat: number; lng: number } | null,
 ): boolean {
   const listed = localityValue(listedCity);
-  if (!listed || !/[A-Z]/.test(cityName(listed.split(",")[0]!))) return false;
+  // Only a record with no listed city skips verification; there is nothing to retry with.
+  if (!listed || !/\p{L}/u.test(cityName(listed.split(",")[0]!))) return false;
   if (resultNamesListedCity(listed, hit) === true) return false;
   return !anchor || !validPoint(anchor) || !validPoint(hit)
     ? true
