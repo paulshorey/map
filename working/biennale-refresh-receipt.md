@@ -102,6 +102,12 @@ a total bill; the callback's normalization estimate excludes all other purposes.
 
 ## Decision and next candidate
 
+The human selected the proposed three-record Biennial Foundation preflight on
+2026-10-29. Its one smoke reached the deadline during the first normalization;
+the [new receipt](biennial-foundation-preflight.md) records the paused cohort and
+the next decision. The command below is historical launch scope, not a retry
+instruction. The full 304-record file remains held.
+
 Accept this file's structural completion. Keep imports and both heartbeats idle;
 the owner authorized this file only. The queue now reports 43/43 normalized,
 linked, verified, and complete. Historical operator notes saying “not yet imported”

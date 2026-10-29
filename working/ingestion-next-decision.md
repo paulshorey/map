@@ -1,5 +1,19 @@
 # Ingestion next decision — 2026-10-25, revised
 
+## Current decision — 2026-10-29
+
+The human closed PR #61 without merging and explicitly selected the proposed
+three-record Biennial Foundation preflight. Its one documented 45-second smoke
+extracted the intended cohort, committed Adelaide's normalization, and stopped
+gracefully at the deadline before geocoding or downstream validation. See the
+[preflight receipt](biennial-foundation-preflight.md) for exact identities, provider
+accounting, intermediate data findings, and verified process exit.
+
+Hold the full 304-record import. The next recommended decision is a supervised
+continuation of the frozen three-record run with suitable completion ownership;
+no continuation or new full cohort has launched. Both ingestion heartbeats stay
+paused. This section supersedes the unstarted-preflight statement below.
+
 ## Current decision — 2026-10-26 CT
 
 PR #66's precision metadata implementation and the authorized 43-record Biennale.com
