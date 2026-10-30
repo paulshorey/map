@@ -22,8 +22,9 @@ hosting/authentication infrastructure needs a separate request. See [framing](ap
 Railway Config File field stays unset. Install pinned dependencies with `pnpm install`.
 
 Validate IaC with `pnpm railway:config:check` and `pnpm railway:config:plan`; verify
-project `World`, environment, deletes, and preserved variables. Humans use
-`railway:login` and `railway:link:dev|production`; CI/cloud use the exact environment's
+project `World`, environment, deletes, and preserved variables. Humans run
+`pnpm railway:login`, then `pnpm railway:link:dev` or `pnpm railway:link:production`.
+CI/cloud use the exact environment's
 injected `RAILWAY_TOKEN`, never persisted or printed. Export to inspect live state;
 never force-pull over authored IaC or clear its rendered dashboard settings.
 
@@ -131,7 +132,8 @@ reason, and the runbook cleanup procedure.
 
 # Research and report
 
-If something went wrong, stop and report back. Include all info, data, and logs.
+If something goes wrong, stop the affected operation and report relevant findings, data, and logs.
+Redact secrets and private content.
 If unsure about something, research, search the web, find latest techniques and best practices.
 
 # Next steps
