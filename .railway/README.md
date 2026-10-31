@@ -1,7 +1,7 @@
 # Railway Infrastructure as Code
 
 [`railway.ts`](railway.ts) is the source of truth for the map deployments in project
-**World**. It owns the GitHub source, Railpack commands, watch paths, healthcheck, and
+**Map**. It owns the GitHub source, Railpack commands, watch paths, healthcheck, and
 the names of variables whose values remain stored in Railway with `preserve()`.
 
 | Environment  | Service    | Git branch | Environment ID                         |
@@ -58,7 +58,7 @@ For production work, replace the link step with:
 pnpm railway:link:production
 ```
 
-Before planning, confirm status identifies project `World` and the intended
+Before planning, confirm status identifies project `Map` and the intended
 environment. The link commands use fixed IDs so similarly named projects cannot be
 selected by mistake. Linking changes the local target for subsequent export, plan,
 apply, and service commands.
@@ -115,7 +115,7 @@ explicit bootstrap/recovery task; routine application belongs to reviewed CI.
 
 For same-repository pull requests that affect IaC or its tooling, the workflow:
 
-1. evaluates the proposed `.railway/` tree against `World/dev`;
+1. evaluates the proposed `.railway/` tree against `Map/dev`;
 2. posts the plan on the pull request;
 3. stores a pinned artifact containing the exact change set, environment etag, and
    `.railway/` Git tree; and
@@ -193,17 +193,18 @@ References: [Railway IaC](https://docs.railway.com/infrastructure-as-code),
 [official config action](https://github.com/railwayapp/config), and
 [PR Environments](https://docs.railway.com/guides/preview-deployments-with-pr-environments).
 
-## WebArts deployment
+## Experimental deployment
 
-This repository also has a service in the older **WebArts** project
+This repository also has the `apps/map` service in the **Experimental** project
 (`c6260c51-8b01-4934-8ccb-9cf32456744c`). Its configuration lives in
 `webarts.ts`, exports the `map` partial, and owns only `apps/map`. The default
-`railway.ts` and existing `railway-config.yml` workflow continue to target **World**.
-Never use the default authoring file to manage WebArts. Databases, volumes, domains,
-and other repositories in WebArts remain under their existing ownership.
+`railway.ts` and the `railway-config.yml` workflow target the **Map** project.
+Never use the default authoring file to manage Experimental. Databases, volumes,
+domains, and other repositories in Experimental remain under their existing ownership.
+Every shell exports the Railway workspace token (`RAILWAY_API_TOKEN`) from
+`~/.secrets.sh`. Unset `RAILWAY_TOKEN` first, because a project token takes precedence.
 
 ```bash
-source ~/.config/railway/webarts.env
 unset RAILWAY_TOKEN
 export RAILWAY_PROJECT_ID=c6260c51-8b01-4934-8ccb-9cf32456744c
 export RAILWAY_ENVIRONMENT_ID=4e7d33aa-1de0-441f-a105-352bbe3b6697
@@ -215,16 +216,14 @@ pnpm exec railway config plan --file .railway/webarts.ts --detailed-exit-code
 
 `.github/workflows/railway-webarts.yml` plans same-repository PRs and applies pinned
 plans on main pushes or manual dispatch using `WEBARTS_RAILWAY_TOKEN_DEV`, scoped
-only to WebArts dev. The workflow checks types and the latest branch head, rejects
+only to Experimental dev. The workflow checks types and the latest branch head, rejects
 destructive changes, and checks for a clean plan afterward. A concurrent apply from
 another repository can make a saved plan stale; review and rerun it.
 
-New previews inherit dev. Existing WebArts previews need an explicit apply with their
+New previews inherit dev. Existing Experimental previews need an explicit apply with their
 exact environment ID and `RAILWAY_IAC_BRANCH` set to the current Map preview branch.
-The file rejects missing preview branches and the wrong project. WebArts production
-currently has no Map service; do not apply this file there.
-
-The obsolete `/apps/map/railway.json` reference was cleared in dev and all four
-existing WebArts previews on 2026-09-30. Keep the legacy Config File field empty.
+The file rejects missing preview branches and the wrong project. It targets dev and
+previews; do not apply it to Experimental production. Keep the legacy Config File
+field empty.
 A normal GitHub build does not evaluate IaC. Check the new deployment and its
 `/api/health` after applying configuration.

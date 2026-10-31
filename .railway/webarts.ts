@@ -1,6 +1,6 @@
 import { defineRailway, preserve, project, service } from "railway/iac";
 
-// The same repository also deploys to World using railway.ts.
+// The same repository also deploys to the Map project using railway.ts.
 export const partial = "map";
 
 export default defineRailway((ctx) => {

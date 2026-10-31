@@ -22,7 +22,7 @@ hosting/authentication infrastructure needs a separate request. See [framing](ap
 Railway Config File field stays unset. Install pinned dependencies with `pnpm install`.
 
 Validate IaC with `pnpm railway:config:check` and `pnpm railway:config:plan`; verify
-project `World`, environment, deletes, and preserved variables. Humans run
+project `Map`, environment, deletes, and preserved variables. Humans run
 `pnpm railway:login`, then `pnpm railway:link:dev` or `pnpm railway:link:production`.
 CI/cloud use the exact environment's
 injected `RAILWAY_TOKEN`, never persisted or printed. Export to inspect live state;

@@ -140,7 +140,7 @@ Cloud agents should receive a `RAILWAY_TOKEN` project token through their secret
 store and must not write credentials into the repository.
 
 Pull requests that change `.railway/` receive a pinned Railway plan. Merging applies
-that exact reviewed plan to `World/dev`; drift or a changed `.railway/` tree causes
+that exact reviewed plan to `Map/dev`; drift or a changed `.railway/` tree causes
 the apply to fail. Railway PR Environments clone `dev`, deploy only affected services,
 and include supported bot-authored PRs. See the [Railway runbook](.railway/README.md)
 for setup, production operations, agent rules, CI behavior, preview limitations, and
