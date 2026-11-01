@@ -42,4 +42,4 @@ jobs:
           command: apply
           railway-token: ${{ secrets.RAILWAY_TOKEN }}
           cli-version: 5.59.0
-          confirm-destructive: true
+          confirm-destructive: false

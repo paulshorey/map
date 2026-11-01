@@ -62,7 +62,7 @@ preservation and migration using only temporary files and fake values.
 
 Optional:
 
-- `RAILWAY_TOKEN` — `dev`-scoped Railway project token; never print or commit
+- `RAILWAY_TOKEN` — task-injected `dev` project token for authorized Railway operations, with `RAILWAY_API_TOKEN` unset; never persist it in `agent.env`, print or commit
 - `THUNDERFOREST_API_KEY`
 - `NEXT_PUBLIC_API_URL` — only for Capacitor/mobile builds
 

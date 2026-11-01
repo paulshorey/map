@@ -217,7 +217,7 @@ persist_runtime_env() {
     persist_env_value JINA_API_KEY
     persist_env_value FIREWORKS_API_KEY
     persist_env_value THUNDERFOREST_API_KEY
-    persist_env_value RAILWAY_TOKEN
+    # Railway control-plane tokens remain task-scoped injected secrets.
     persist_env_value NEXT_PUBLIC_API_URL
     persist_env_value GEOCODER_PROVIDER
     persist_env_value EMBEDDINGS_PROVIDER
