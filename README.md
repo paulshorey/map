@@ -120,28 +120,35 @@ Railway Infrastructure as Code lives in [`.railway/railway.ts`](.railway/railway
 The repository pins both the `railway/iac` TypeScript SDK and Railway CLI, so humans,
 local agents, cloud agents, and CI evaluate the same configuration.
 
-For a first local setup:
+For local workspace-token access on Paul’s Mac:
 
 ```bash
 pnpm install
-pnpm railway:login
-pnpm railway:link:dev
+unset RAILWAY_TOKEN RAILWAY_SERVICE_ID
+test -n "${RAILWAY_API_TOKEN:-}" || exit 1
+export RAILWAY_PROJECT_ID=d25b93f2-bea9-4f05-a6c0-4a045e8b18ac
+export RAILWAY_ENVIRONMENT_ID=01e37c22-5804-4b63-80a3-5d00255951e4
 pnpm railway:status
 pnpm railway:config:plan
 ```
 
-Use `pnpm railway:link:production` instead when working against production. Always
-read `pnpm railway:status` before a plan or apply. Dev deploys `apps/map` from `main`;
-production deploys `map` from `prod` with the same build, start, watch, and health
-settings.
+`~/.secrets.sh` exports `RAILWAY_API_TOKEN`; clean noninteractive shells need it
+injected explicitly. Use production’s environment ID from the Railway runbook for
+production work. Interactive login/link scripts are optional alternatives when no
+token is supplied. Verify the exact project/environment before planning.
+
+The authored default dev graph creates `apps/map` while the live project uses
+`map`, and it omits the existing database and backup bucket. Its resulting
+replacement/deletion plan must be reconciled before merge or apply.
 
 The plan is read-only. Use `pnpm railway:config:apply` only after reviewing it.
-Cloud agents should receive a `RAILWAY_TOKEN` project token through their secret
-store and must not write credentials into the repository.
+Cloud agents should receive only the intended environment’s `RAILWAY_TOKEN` through
+their secret store, with `RAILWAY_API_TOKEN` unset; never persist it in the runtime
+environment file or repository.
 
 Pull requests that change `.railway/` receive a pinned Railway plan. Merging applies
-that exact reviewed plan to `World/dev`; drift or a changed `.railway/` tree causes
-the apply to fail. Railway PR Environments clone `dev`, deploy only affected services,
+that exact reviewed plan to `Map/dev`; drift or a changed `.railway/` tree causes
+the apply to fail. Automatic destructive confirmation is disabled. Railway PR Environments clone `dev`, deploy only affected services,
 and include supported bot-authored PRs. See the [Railway runbook](.railway/README.md)
 for setup, production operations, agent rules, CI behavior, preview limitations, and
 recovery steps. Agents should follow the repository's

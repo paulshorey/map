@@ -1,7 +1,7 @@
 # Railway Infrastructure as Code
 
 [`railway.ts`](railway.ts) is the source of truth for the map deployments in project
-**World**. It owns the GitHub source, Railpack commands, watch paths, healthcheck, and
+**Map**. It owns the GitHub source, Railpack commands, watch paths, healthcheck, and
 the names of variables whose values remain stored in Railway with `preserve()`.
 
 | Environment  | Service    | Git branch | Environment ID                         |
@@ -41,27 +41,27 @@ pnpm install --frozen-lockfile
 pnpm railway:config:check
 ```
 
-## Local setup for humans and interactive agents
+## Local workspace access
 
-Each developer authenticates into their own Railway account. Login credentials are
-stored by the Railway CLI outside the repository.
+Start in a shell with the intended workspace credential already exported. Keep
+credential values outside the repository and select the target explicitly.
 
 ```bash
-pnpm railway:login
-pnpm railway:link:dev
+unset RAILWAY_TOKEN RAILWAY_SERVICE_ID
+test -n "${RAILWAY_API_TOKEN:-}" || exit 1
+export RAILWAY_PROJECT_ID=d25b93f2-bea9-4f05-a6c0-4a045e8b18ac
+export RAILWAY_ENVIRONMENT_ID=01e37c22-5804-4b63-80a3-5d00255951e4
+pnpm exec railway api 'query($id:String!){project(id:$id){id name workspaceId}}' \
+  --raw-var id="$RAILWAY_PROJECT_ID"
 pnpm railway:status
 ```
 
-For production work, replace the link step with:
-
-```bash
-pnpm railway:link:production
-```
-
-Before planning, confirm status identifies project `World` and the intended
-environment. The link commands use fixed IDs so similarly named projects cannot be
-selected by mistake. Linking changes the local target for subsequent export, plan,
-apply, and service commands.
+Use `RAILWAY_API_TOKEN` exported from `~/.secrets.sh` on Paul’s Mac. A clean
+noninteractive shell needs explicit injection or trusted profile loading. A valid
+workspace token can fail account-level `whoami` or `link`; the scoped read above
+checks the actual project. Set production’s exact environment ID from the table
+for production work. Interactive login/link scripts are alternatives only when no
+token is set; do not require them for workspace-token access.
 
 Inspect the live graph without overwriting the authoring file:
 
@@ -75,7 +75,9 @@ first preserve the current file, inspect the live JSON export, then reconcile al
 resources and variables. A whole-project IaC apply treats an omitted managed resource
 or variable as a deletion.
 
-Plan and apply:
+Plan first. The current default dev graph has a destructive-plan blocker documented
+below; do not apply it until that graph is reconciled. For a reviewed, authorized
+configuration change:
 
 ```bash
 pnpm railway:config:check
@@ -115,7 +117,7 @@ explicit bootstrap/recovery task; routine application belongs to reviewed CI.
 
 For same-repository pull requests that affect IaC or its tooling, the workflow:
 
-1. evaluates the proposed `.railway/` tree against `World/dev`;
+1. evaluates the proposed `.railway/` tree against `Map/dev`;
 2. posts the plan on the pull request;
 3. stores a pinned artifact containing the exact change set, environment etag, and
    `.railway/` Git tree; and
@@ -123,8 +125,16 @@ For same-repository pull requests that affect IaC or its tooling, the workflow:
 
 If the environment drifts, merge resolution changes `.railway/`, or no matching plan
 artifact exists, apply fails. Refresh the pull request plan rather than bypassing the
-guard. Merging a plan that visibly contains destructive operations is the approval
-for the workflow's `confirm-destructive: true` apply.
+guard. Automatic applies use `confirm-destructive: false`; a merge cannot approve
+resource deletion. Reconcile a destructive plan before merging rather than enabling
+destructive confirmation.
+
+The default Map/dev definition is not safe to apply to the current live graph:
+it proposes creating `apps/map`, deleting `map`, and deleting the existing `DB_MAP`
+database and `Postgres-PITR` bucket. Reconcile application identity and database/bucket
+ownership in a reviewed infrastructure change before merging an IaC plan against
+that environment. The Experimental partial also proposes creating `apps/map`; that is a
+provisioning change requiring review, not a credential verification no-op.
 
 Fork pull requests are skipped because GitHub does not expose repository secrets to
 fork workflows. The Railway GitHub App and `id-token: write` let plans post under the
@@ -193,18 +203,22 @@ References: [Railway IaC](https://docs.railway.com/infrastructure-as-code),
 [official config action](https://github.com/railwayapp/config), and
 [PR Environments](https://docs.railway.com/guides/preview-deployments-with-pr-environments).
 
-## WebArts deployment
+## Experimental deployment
 
-This repository also has a service in the older **WebArts** project
+This repository also has the `apps/map` service in the **Experimental** project
 (`c6260c51-8b01-4934-8ccb-9cf32456744c`). Its configuration lives in
 `webarts.ts`, exports the `map` partial, and owns only `apps/map`. The default
-`railway.ts` and existing `railway-config.yml` workflow continue to target **World**.
-Never use the default authoring file to manage WebArts. Databases, volumes, domains,
-and other repositories in WebArts remain under their existing ownership.
+`railway.ts` and the `railway-config.yml` workflow target the **Map** project.
+Never use the default authoring file to manage Experimental. Databases, volumes,
+domains, and other repositories in Experimental remain under their existing ownership.
+On Paul’s Mac, use the workspace token `RAILWAY_API_TOKEN` exported from
+`~/.secrets.sh`. Clean noninteractive shells must receive it explicitly;
+`~/.shortcuts.sh` defines shell helpers, not Railway credentials. Unset
+`RAILWAY_TOKEN` for workspace operations and require a nonempty API token.
 
 ```bash
-source ~/.config/railway/webarts.env
 unset RAILWAY_TOKEN
+test -n "${RAILWAY_API_TOKEN:-}" || exit 1
 export RAILWAY_PROJECT_ID=c6260c51-8b01-4934-8ccb-9cf32456744c
 export RAILWAY_ENVIRONMENT_ID=4e7d33aa-1de0-441f-a105-352bbe3b6697
 pnpm railway:webarts:check
@@ -215,16 +229,14 @@ pnpm exec railway config plan --file .railway/webarts.ts --detailed-exit-code
 
 `.github/workflows/railway-webarts.yml` plans same-repository PRs and applies pinned
 plans on main pushes or manual dispatch using `WEBARTS_RAILWAY_TOKEN_DEV`, scoped
-only to WebArts dev. The workflow checks types and the latest branch head, rejects
+only to Experimental dev. The workflow checks types and the latest branch head, rejects
 destructive changes, and checks for a clean plan afterward. A concurrent apply from
 another repository can make a saved plan stale; review and rerun it.
 
-New previews inherit dev. Existing WebArts previews need an explicit apply with their
+New previews inherit dev. Existing Experimental previews need an explicit apply with their
 exact environment ID and `RAILWAY_IAC_BRANCH` set to the current Map preview branch.
-The file rejects missing preview branches and the wrong project. WebArts production
-currently has no Map service; do not apply this file there.
-
-The obsolete `/apps/map/railway.json` reference was cleared in dev and all four
-existing WebArts previews on 2026-09-30. Keep the legacy Config File field empty.
+The file rejects missing preview branches and the wrong project. It targets dev and
+previews; do not apply it to Experimental production. Keep the legacy Config File
+field empty.
 A normal GitHub build does not evaluate IaC. Check the new deployment and its
 `/api/health` after applying configuration.

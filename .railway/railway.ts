@@ -30,5 +30,5 @@ export default defineRailway((ctx) => {
     },
   });
 
-  return project(ctx.projectName ?? "World", { resources: [map] });
+  return project(ctx.projectName ?? "Map", { resources: [map] });
 });

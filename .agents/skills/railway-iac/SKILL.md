@@ -41,11 +41,36 @@ use distinct service resources, encode both the service name and source branch t
 `ctx.isEnvironment(name)` and verify the plan maps to the existing resources rather
 than creating replacements.
 
-Environment selection comes from the local Railway link or the scope of
-`RAILWAY_TOKEN`; the authoring file does not select its target. Use fixed project
-and environment IDs when linking. Cloud agents and CI receive a project token as
-`RAILWAY_TOKEN`; interactive developers use `railway login`. Never print or commit
-tokens or variable values.
+On Paul’s Mac, local agents use `RAILWAY_API_TOKEN` exported from `~/.secrets.sh`.
+`~/.shortcuts.sh` contains helpers, not Railway credentials. Clean noninteractive
+shells must receive the token explicitly. Unset `RAILWAY_TOKEN`, require a nonempty
+API token, and select exact `RAILWAY_PROJECT_ID` / `RAILWAY_ENVIRONMENT_ID` values.
+Workspace tokens can fail `whoami` or `link` despite valid project access; verify a
+scoped read before declaring authentication broken:
+
+```bash
+(
+  unset RAILWAY_TOKEN
+  test -n "${RAILWAY_API_TOKEN:-}" || exit 1
+  export RAILWAY_PROJECT_ID=d25b93f2-bea9-4f05-a6c0-4a045e8b18ac
+  export RAILWAY_ENVIRONMENT_ID=01e37c22-5804-4b63-80a3-5d00255951e4
+  pnpm exec railway api 'query($id:String!){project(id:$id){id name workspaceId}}' \
+    --raw-var id="$RAILWAY_PROJECT_ID"
+  pnpm railway:config:plan
+)
+```
+
+This definition targets **Map**. Experimental is a different project
+(`c6260c51-8b01-4934-8ccb-9cf32456744c`), managed here only by the `map` partial in
+`.railway/webarts.ts`; pass that file explicitly with its dev environment ID.
+Never point the whole Map definition at Experimental.
+
+Cloud agents and CI receive only the intended environment’s project token as
+`RAILWAY_TOKEN`, with `RAILWAY_API_TOKEN` unset. Verify its scope with
+`railway api 'query{projectToken{projectId environmentId}}'` before use. Never
+persist control-plane tokens in `agent.env` or copy the local workspace credential
+to CI. Interactive login is an alternative when no token is supplied. Never print
+or commit tokens or variable values.
 
 ## Author complete desired state
 
@@ -88,6 +113,11 @@ Normal IaC changes go through the `railwayapp/config` pull-request workflow. It
 pins the change set, environment etag, and `.railway/` tree; merge applies that
 exact artifact. Fork PRs cannot receive the Railway secret. Direct apply is for an
 explicit bootstrap or recovery:
+
+Automatic applies disable destructive confirmation. The current default Map/dev
+graph proposes deleting its database and backup bucket; reconcile ownership and
+service identity before merging or applying it. Read `.railway/README.md` for the
+current blocker. A successful authenticated plan is not approval to apply it.
 
 ```bash
 pnpm railway:config:apply

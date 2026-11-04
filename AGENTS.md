@@ -22,10 +22,12 @@ hosting/authentication infrastructure needs a separate request. See [framing](ap
 Railway Config File field stays unset. Install pinned dependencies with `pnpm install`.
 
 Validate IaC with `pnpm railway:config:check` and `pnpm railway:config:plan`; verify
-project `World`, environment, deletes, and preserved variables. Humans run
-`pnpm railway:login`, then `pnpm railway:link:dev` or `pnpm railway:link:production`.
-CI/cloud use the exact environment's
-injected `RAILWAY_TOKEN`, never persisted or printed. Export to inspect live state;
+project `Map`, environment, deletes, and preserved variables. Local agents use
+`RAILWAY_API_TOKEN` from `~/.secrets.sh`, unset `RAILWAY_TOKEN`, and select the
+explicit project/environment IDs in the runbook. Verify scoped project access;
+workspace tokens can fail `whoami`/`link`. CI/cloud use only the exact environment’s
+injected `RAILWAY_TOKEN` with `RAILWAY_API_TOKEN` unset, never persisted or printed.
+Export to inspect live state;
 never force-pull over authored IaC or clear its rendered dashboard settings.
 
 Normal IaC changes use PR plans applied on merge; do not compete with a pending
