@@ -1158,20 +1158,16 @@ export async function runGeocode(
           (coarse(row.coordinate_precision) !== coarse(coordinatePrecision) ||
             localityChanged ||
             pointMoved);
-        if (rematch) {
+        // The pointer and membership stay authoritative: only the match marker is cleared, and
+        // matching rematches the row while linked, replacing both atomically.
+        if (rematch)
           await client.query(
-            `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
-            retirement_reason='coordinate_precision_changed' WHERE research_poi_id=$1 AND active`,
+            "UPDATE research_pois SET matched_normalization_id=NULL WHERE id=$1",
             [row.id],
           );
-          await client.query(
-            "UPDATE research_pois SET canonical_poi_id=NULL, matched_normalization_id=NULL WHERE id=$1",
-            [row.id],
-          );
-        }
-        // A rematch keeps the old canonical's accepted snapshot until a replacement membership
-        // exists (matching rebuilds the prior canonical then), as normalization activation does.
-        if (row.canonical_poi_id && !rematch)
+        // The record stays a member until the rematch replaces it, so its build reflects the
+        // refreshed location now.
+        if (row.canonical_poi_id)
           await rebuildCanonicalPoi(client, row.canonical_poi_id, {
             noLlm: true,
           });

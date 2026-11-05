@@ -903,7 +903,8 @@ async function recordState(db: Pool, item: RunItem) {
     (rp.content_embedding IS NOT NULL) AS has_embedding,rp.active_embedding_id,rp.active_geocode_id,
     rp.canonical_poi_id,rp.retired_at,cp.active_build_id,cp.status AS canonical_status,
     EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
-      AND m.matcher_version='${PIPELINE_VERSIONS.matcher}') AS membership_valid,
+      AND m.matcher_version='${PIPELINE_VERSIONS.matcher}' AND rp.matched_normalization_id IS NOT NULL) AS membership_valid,
+    (rp.canonical_poi_id IS NOT NULL AND rp.matched_normalization_id IS NULL) AS rematch_required,
     EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
       AND m.matcher_version IS DISTINCT FROM '${PIPELINE_VERSIONS.matcher}') AS membership_stale_matcher,
     EXISTS(SELECT 1 FROM research_canonical_memberships m JOIN canonical_poi_build_inputs b ON b.membership_id=m.id
@@ -1308,8 +1309,11 @@ export async function runOrchestration(
               // A membership decided by an older matcher is matched again. Pointer and membership
               // stay intact (status, rebuilds and other queries still see the record) until the
               // rematch replaces both atomically in its apply transaction.
+              // Rematch a linked row decided by an older matcher, or one whose location evidence
+              // changed (geocode activation cleared its match marker).
               let rematchLinked =
-                !!state.canonical_poi_id && !!state.membership_stale_matcher;
+                !!state.canonical_poi_id &&
+                (!!state.membership_stale_matcher || !!state.rematch_required);
               if (rematchLinked) {
                 // A sole live member has nothing to split from: keep its canonical and decision,
                 // re-versioning the membership and rebuilding in one fenced transaction.
@@ -1337,6 +1341,10 @@ export async function runOrchestration(
                         PIPELINE_VERSIONS.matcher,
                         ctx.runId,
                       ],
+                    );
+                    await client.query(
+                      "UPDATE research_pois SET matched_normalization_id=active_normalization_id WHERE id=$1",
+                      [item.research_poi_id],
                     );
                     await rebuildCanonicalPoi(client, state.canonical_poi_id, {
                       noLlm: true,

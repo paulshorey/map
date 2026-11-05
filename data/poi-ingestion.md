@@ -972,11 +972,10 @@ other than the centroid's rules the match out, so a full-precision venue near a
 microstate centroid stays a point. A match gets the `source_point_country_centroid` warning and `supplied_centroid` evidence; it
 is never an anchor for the 50 km checks below. When enrichment flips a linked record's point
 between `point` and a coarser precision, or removes or replaces its address, city, region
-or country (filling a missing field does not), or moves a geocode-derived point, its
-membership is retired
-(`coordinate_precision_changed`) and the record is matched again, because matching ignores
-distance for coarse points; overrides apply first, and the old canonical is not rebuilt: its
-snapshot is held until the rematch. A centroid's country fills a missing listed country only
+or country (filling a missing field does not), or moves a geocode-derived point, the record
+is marked for rematch (`matched_normalization_id` cleared) while its pointer and membership
+stay authoritative; the managed match stage rematches it while linked and replaces both
+atomically, because matching ignores distance for coarse points; overrides apply first. A centroid's country fills a missing listed country only
 when it is a current ISO code (not the vendored `GZ`/`AN`). A reverse lookup is trusted only to the
 point's precision: a `country` point keeps only the country, a `region` point drops the
 city, and any coarse or unknown-precision point drops the street address and postcode. A country centroid

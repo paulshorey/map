@@ -120,6 +120,8 @@ interface ResearchMatchRow {
   description: string | null;
   website: string | null;
   website_domain: string | null;
+  /** Set only while a linked row is rematched (`rematchLinked`). */
+  canonical_poi_id?: string | null;
   phone: string | null;
   address: string | null;
   city: string | null;
@@ -456,7 +458,7 @@ async function fetchNextRow(
        rp.city, rp.region, rp.country_code, rp.lng, rp.lat,
        rp.starts_at, rp.ends_at, rp.date_precision,
        rp.category_slugs, rp.content_embedding, rp.coordinate_precision,
-       rp.attributes, rp.raw
+       rp.attributes, rp.raw, rp.canonical_poi_id
      FROM research_pois rp
      JOIN research_sources rs ON rs.id = rp.source_id
      WHERE (rp.canonical_poi_id IS NULL OR ${rematchLinked && recordId ? "true" : "false"})
@@ -700,8 +702,39 @@ async function fetchCandidates(
     ],
   );
 
+  // A linked row being rematched must not block against coordinates it contributed itself: its
+  // own canonical is placed at the nearest of its other live members, or dropped without one.
+  const ownOthers = row.canonical_poi_id
+    ? (
+        await client.query<{ lat: number; lng: number }>(
+          `SELECT rp.lat, rp.lng FROM research_canonical_memberships m JOIN research_pois rp ON rp.id=m.research_poi_id
+          WHERE m.canonical_poi_id=$1 AND m.active AND rp.id<>$2 AND rp.retired_at IS NULL
+            AND rp.lat IS NOT NULL AND rp.lng IS NOT NULL`,
+          [row.canonical_poi_id, row.id],
+        )
+      ).rows
+    : [];
+  const dropOwn = new Set<string>();
+  for (const candidate of rows) {
+    if (candidate.canonical_id !== row.canonical_poi_id) continue;
+    const nearest = ownOthers
+      .map((p) => ({ p, d: haversineMeters({ lat: row.lat, lng: row.lng }, p) }))
+      .sort((a, b) => a.d - b.d)[0];
+    if (!nearest) {
+      dropOwn.add(candidate.canonical_id);
+      continue;
+    }
+    candidate.canonical_lat = nearest.p.lat;
+    candidate.canonical_lng = nearest.p.lng;
+    candidate.via_spatial = true;
+    candidate.via_proximity = true;
+  }
+
   return rows
-    .filter((candidate) => !excluded.has(candidate.canonical_id))
+    .filter(
+      (candidate) =>
+        !excluded.has(candidate.canonical_id) && !dropOwn.has(candidate.canonical_id),
+    )
     .map((candidate): CandidateRow => {
       const distance_m = haversineMeters(
         { lat: row.lat, lng: row.lng },
