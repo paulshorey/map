@@ -1594,7 +1594,10 @@ async function main() {
   try {
     // Standalone matching only selects unlinked rows, so it cannot replace memberships decided
     // by an older matcher; managed runs retire and rematch those (matcher_upgraded).
-    const stale = await staleMatcherMemberships(db, opts.source ?? null);
+    // Reclustering resets every cluster first, so it replaces stale memberships itself.
+    const stale = opts.recluster
+      ? 0
+      : await staleMatcherMemberships(db, opts.source ?? null);
     if (stale > 0)
       throw new Error(
         `${formatInt(stale)} active memberships${opts.source ? ` for ${opts.source}` : ""} were decided by an older matcher than ${MATCHER_VERSION}. ` +

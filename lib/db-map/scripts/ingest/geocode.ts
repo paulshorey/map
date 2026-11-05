@@ -765,11 +765,9 @@ export async function runGeocode(
         forward = null;
       }
       // A retained geocoded point that is itself a rejected result must not survive it.
-      if (
-        rejected &&
-        !["source", "url"].includes(row.coordinate_source ?? "") &&
-        validPoint({ lat, lng })
-      ) {
+      // Only a geocode-derived point qualifies: settlement can clear exactly those, so the
+      // in-memory and persisted states agree (pre-provenance points are kept).
+      if (rejected && row.coordinate_source === "geocode" && validPoint({ lat, lng })) {
         for (let r: any = rejected; r; r = r.previous)
           if (
             validPoint(r.result) &&

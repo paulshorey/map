@@ -1763,3 +1763,23 @@ test("a retained point that was the earlier inferred result takes the refreshed 
   assert.deepEqual(f.activated.point, { lat: 35.18, lng: 136.9 });
   assert.equal(f.activated.coordinate_evidence.inferred_coordinates.precision, "city");
 });
+
+test("a rejected pre-provenance point is kept, matching what settlement can persist", async () => {
+  const restaurant = {
+    lat: "57.72", lon: "11.948", class: "amenity", type: "restaurant",
+    address: { name: "East Africa", city: "Göteborg", country_code: "se" },
+  };
+  const f = fixture({ name: "East Africa Art Biennale", city: null, country_code: null, attributes: { country_name: "East Africa" } });
+  Object.assign(f.row, { lat: 57.72, lng: 11.948, coordinate_source: null, coordinate_precision: null });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith("/reverse"))
+      return Response.json({ lat: "57.72", lon: "11.948", address: { city: "Göteborg", country_code: "se" } });
+    return Response.json([restaurant]);
+  };
+  await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
+  assert.deepEqual(f.cleared, [], "nothing is cleared for a point settlement cannot clear");
+  assert.ok(f.activated, "the legacy point stays and is re-enriched");
+  assert.equal(f.activated.forward.rejected.reason, "locality_result_too_specific");
+});
