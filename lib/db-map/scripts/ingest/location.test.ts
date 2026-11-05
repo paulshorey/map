@@ -236,6 +236,11 @@ test("a coarse point's reverse lookup never invents finer locality", () => {
   assert.equal(city.address, null);
   assert.equal(city.postcode, null);
   assert.equal(reverseForPrecision(hit, "point"), hit);
+  // Unknown precision is coarse: no street address or postcode, locality kept.
+  const unknown = reverseForPrecision(hit, null)!;
+  assert.equal(unknown.address, null);
+  assert.equal(unknown.postcode, null);
+  assert.equal(unknown.city, "Austin");
   assert.equal(reverseForPrecision(null, "country"), null);
 });
 
@@ -260,6 +265,10 @@ test("a supplied point repeating a published country centroid is country precisi
   assert.equal(suppliedCountryCentroid({ lat: 1.35, lng: 103.82 }), "SG");
   assert.equal(suppliedCountryCentroid({ lat: 1.35, lng: 103.81 }), "SG");
   assert.equal(suppliedCountryCentroid({ lat: 1.36, lng: 103.82 }), null);
+  // Negative halfway ties: Mayotte's -12.8275 formats to -12.828 (and Math.round gives -12.827).
+  assert.equal(suppliedCountryCentroid({ lat: -12.828, lng: 45.166 }), "YT");
+  assert.equal(suppliedCountryCentroid({ lat: -12.827, lng: 45.166 }), "YT");
+  assert.equal(suppliedCountryCentroid({ lat: -12.829, lng: 45.166 }), null);
   assert.equal(suppliedCountryCentroid({ lat: -25.2745, lng: 133.7751 }), null);
   // One decimal cannot tell a copied centroid from a coarse point.
   assert.equal(suppliedCountryCentroid({ lat: -25.3, lng: 133.8 }), null);

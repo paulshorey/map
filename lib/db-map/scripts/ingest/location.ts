@@ -136,7 +136,8 @@ export function reverseForPrecision(
   reverse: ReverseLocation | null,
   precision: string | null | undefined,
 ): ReverseLocation | null {
-  if (!reverse || !precision || precision === "point") return reverse;
+  if (!reverse || precision === "point") return reverse;
+  // Unknown precision is coarse, as in matching: never a street address.
   return {
     ...reverse,
     address: null,
