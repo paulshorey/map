@@ -167,6 +167,88 @@
       "type": "boolean"
     }
   ],
+  "canonical_poi_locations": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "canonical_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "build_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "lat",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "lng",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "precision",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "specificity",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "kinds",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "origins",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "roles",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "label",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "is_primary",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "research_location_ids",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "research_poi_ids",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "sources",
+      "nullable": false,
+      "type": "Array<string>"
+    },
+    {
+      "column": "ordinal",
+      "nullable": false,
+      "type": "number"
+    }
+  ],
   "canonical_poi_occurrences": [
     {
       "column": "id",
@@ -2024,6 +2106,98 @@
       "column": "evidence",
       "nullable": false,
       "type": "unknown"
+    },
+    {
+      "column": "created_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
+  "research_poi_locations": [
+    {
+      "column": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "research_poi_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "geocode_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "normalization_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "kind",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "origin",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "role",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "precision",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "reason",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "lat",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "lng",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "label",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "query",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "query_basis",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "evidence",
+      "nullable": false,
+      "type": "unknown"
+    },
+    {
+      "column": "logic_version",
+      "nullable": false,
+      "type": "string"
     },
     {
       "column": "created_at",

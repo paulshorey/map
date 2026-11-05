@@ -1,5 +1,5 @@
 import type { Pool } from "pg";
-import { mapLocationsSql, coordinateEvidenceSql } from "./map-locations";
+import { canonicalLocationsSql, coordinateEvidenceSql } from "./map-locations";
 
 export interface NewPoi {
   name: string;
@@ -146,12 +146,13 @@ export type PoiLocationFilter = "general" | "precise";
 // falls back to the junction lateral if it is not set.
 const FEATURE_PROPERTIES = `jsonb_build_object(
   'id', p.id,
-  'marker_id', p.id::text || ':' || (loc.location->>'kind'),
+  'marker_id', p.id::text || ':' || (loc.location->>'id'),
+  'location_id', loc.location->>'id',
   'location_index', loc.location_index,
   'coordinate_kind', loc.location->>'kind',
   'location_origin', loc.location->>'origin',
   'location_precision', loc.location->>'precision',
-  'location_specificity', p.attributes->>'location_specificity',
+  'location_specificity', loc.location->>'specificity',
   'name', p.name,
   'category', COALESCE(pcat.display_name, (
     SELECT c.display_name FROM canonical_poi_categories pc
@@ -202,24 +203,14 @@ export async function listPoisGeoJson(
 
   const inBbox = `(loc.location->>'lng')::float8 >= $1 AND (loc.location->>'lat')::float8 >= $2
     AND (loc.location->>'lng')::float8 <= $3 AND (loc.location->>'lat')::float8 <= $4`;
-  // Filter stored points before expanding their detailed JSON evidence. Evaluating the
-  // full rendering expression for every row triggers expensive plans/JIT on legacy data.
-  const evidenceInBbox = (slot: string, kind: string, origin: string) => {
-    const p = `(p.attributes->'coordinate_evidence'->'${slot}')`;
-    return `CASE WHEN jsonb_typeof(${p}->'lat')='number' AND jsonb_typeof(${p}->'lng')='number'
-      AND ${p}->>'kind'='${kind}' AND ${p}->>'origin'='${origin}'
-      THEN CASE WHEN (${p}->>'lat')::numeric BETWEEN -90 AND 90 AND (${p}->>'lng')::numeric BETWEEN -180 AND 180
-        THEN (${p}->>'lng')::float8 BETWEEN $1 AND $3 AND (${p}->>'lat')::float8 BETWEEN $2 AND $4
-        ELSE false END ELSE false END`;
-  };
   const matching = `p.status='published'
         AND ${CATEGORY_FILTER("$5")}
         AND ${DATE_FILTER("$7", "$8")}
         AND ${LOCATION_FILTER("$10")}
         AND ($9::boolean OR (p.lng BETWEEN $1 AND $3 AND p.lat BETWEEN $2 AND $4)
-          OR (${evidenceInBbox("source_coordinates", "source", "source_coordinates")})
-          OR (${evidenceInBbox("inferred_coordinates", "inferred", "listed_address_geocode")}))`;
-  // Limit entities before expanding markers: either named point may admit the POI.
+          OR EXISTS (SELECT 1 FROM canonical_poi_locations l WHERE l.build_id = p.active_build_id
+            AND l.lng BETWEEN $1 AND $3 AND l.lat BETWEEN $2 AND $4))`;
+  // Limit entities before expanding markers: any of a POI's locations may admit it.
   // `total` counts every matching POI, so the app can report results beyond the limit.
   const { rows } = await db.query(
     `
@@ -236,14 +227,14 @@ export async function listPoisGeoJson(
       'limit',$6::int) AS geojson
     FROM (
       SELECT p.id AS poi_id,loc.location_index,jsonb_build_object(
-        'type','Feature','id',p.id::text || ':' || (loc.location->>'kind'),
+        'type','Feature','id',p.id::text || ':' || (loc.location->>'id'),
         'geometry',jsonb_build_object('type','Point','coordinates',
           jsonb_build_array((loc.location->>'lng')::float8,(loc.location->>'lat')::float8)),
         'properties',${FEATURE_PROPERTIES}
       ) AS feature
       FROM selected p
       LEFT JOIN canonical_categories pcat ON pcat.id=p.primary_category_id
-      CROSS JOIN LATERAL jsonb_array_elements(${mapLocationsSql()}) WITH ORDINALITY AS loc(location,location_index)
+      CROSS JOIN LATERAL jsonb_array_elements(${canonicalLocationsSql()}) WITH ORDINALITY AS loc(location,location_index)
       WHERE $9::boolean OR (${inBbox})
     ) markers`,
     [
@@ -287,7 +278,7 @@ async function getPoisByIds(db: Pool, ids: string[]) {
     `SELECT
         p.id, p.name, p.description, p.address, p.website, p.hours, p.phone, p.photo_url,
         p.lng, p.lat, p.attributes, p.popularity,
-        ${mapLocationsSql()} AS locations,
+        ${canonicalLocationsSql()} AS locations,
         ${coordinateEvidenceSql()} AS coordinate_evidence,
         p.starts_at, p.ends_at, p.date_precision,
         CASE
@@ -331,8 +322,8 @@ const COLOCATED_EPSILON_DEG = 1e-7;
 export interface ColocatedPoisParams {
   /** The clicked POI; it is always first in the result. */
   id: string;
-  /** Which of its markers was clicked (`source`, `inferred` or `legacy`); defaults to the first. */
-  kind?: string | null;
+  /** Which of its locations was clicked (a location id); defaults to the first (primary). */
+  location?: string | null;
   limit?: number;
 }
 
@@ -347,10 +338,10 @@ export async function getColocatedPois(db: Pool, params: ColocatedPoisParams) {
   const locations = (anchor.locations ?? []) as Array<{
     lat: number;
     lng: number;
-    kind: string;
+    id: string;
   }>;
   const location =
-    locations.find((l) => l.kind === params.kind) ?? locations[0] ?? null;
+    locations.find((l) => l.id === params.location) ?? locations[0] ?? null;
   if (!location)
     return { location: null, pois: [anchor], total: 1, truncated: false };
   const limit = Math.min(Math.max(params.limit ?? 200, 1), 500);

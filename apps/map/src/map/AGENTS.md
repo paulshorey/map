@@ -26,8 +26,8 @@ Interactive MapLibre map — basemap, clustered POI overlay, click-to-detail dra
 2. `usePoiList` debounces bbox (250ms) and GETs `/api/pois?bbox=...&zoom=...[&category=...][&location=general|precise]`.
    `MapView` passes the features to `PoiLayer` (clustered circles) and `total` / `returned` to the
    result count. `total` counts every matching POI, even beyond the 500/5000 marker limit.
-3. Click on cluster → expand zoom; click on point → `selectPoi(id, coordinate_kind)` →
-   GET `/api/pois/[id]/colocated?kind=` → `PoiDrawer`. The response lists every published POI
+3. Click on cluster → expand zoom; click on point → `selectPoi(id, location_id)` →
+   GET `/api/pois/[id]/colocated?location=` → `PoiDrawer`. The response lists every published POI
    with a marker at the clicked marker's exact point (±1e-7°), clicked POI first, ignoring the
    category/location/date filters. One POI renders as before; several render as a scrollable
    list of cards (`N places at this location`). `GET /api/pois/[id]` still returns one POI.
@@ -37,11 +37,12 @@ Interactive MapLibre map — basemap, clustered POI overlay, click-to-detail dra
 
 Source id: `pois`. Interactive layers: `clusters`, `poi-points`. Feature state `selected` drives opacity on the active point.
 
-Each POI has one or two Point features. `properties.id` is the shared detail/POI ID;
-`properties.marker_id` (`<POI>:source` / `<POI>:inferred` / `<POI>:legacy`) is the unique promoted feature-state ID.
-Never use the shared POI ID as a feature ID. Both locations open the same drawer;
-the API filters each location by viewport. Entity limits expand to up to two markers,
-and cluster counts are marker counts. Details retain fixed source/inferred origin and precision for both.
+Each POI has one Point feature per known location (`canonical_poi_locations`). `properties.id` is
+the shared detail/POI ID; `properties.marker_id` (`<POI>:<location id>`, or `<POI>:legacy` without
+stored locations) is the unique promoted feature-state ID and `properties.location_id` the location.
+Never use the shared POI ID as a feature ID. Every location opens the same drawer,
+which lists them all with provenance; the API filters each location by viewport. Entity limits
+count POIs, and cluster counts are marker counts. Details retain fixed source/inferred origin and precision for both.
 `coordinate_evidence` contains independently nullable source_coordinates and
 inferred_coordinates; location order is not provenance. Equal values retain both
 evidence records while one marker is rendered. Physical roles are not assumed.

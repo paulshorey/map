@@ -66,6 +66,7 @@ function fixture(captured: any = source) {
   const cache = new Map<string, any>();
   let activated: any = null;
   let heldLookups = 0;
+  const locations: any[] = [];
   let unresolved: any = null;
   const cleared: string[] = [];
   const client = {
@@ -94,6 +95,9 @@ function fixture(captured: any = source) {
               }
             : { payload: JSON.parse(args[3]) },
         );
+      } else if (sql.startsWith("INSERT INTO research_poi_locations")) {
+        locations.push({ kind: args[3], origin: args[4], status: args[7], lat: args[9], lng: args[10] });
+        return { rows: [], rowCount: 1 };
       } else if (sql.includes("INSERT INTO research_poi_geocodes")) {
         return { rows: [{ id: "geocode-new" }] };
       } else if (sql.startsWith("SELECT pg_advisory_xact_lock")) {
@@ -132,6 +136,7 @@ function fixture(captured: any = source) {
     get heldLookups() {
       return heldLookups;
     },
+    locations,
     get unresolved() {
       return unresolved;
     },
@@ -1601,6 +1606,11 @@ test("an address miss without any point falls back to the listed city, flagged a
   assert.equal(forward.query_basis, "locality");
   assert.deepEqual(forward.fallback_from, { reason: "miss", query: "Aichi Arts Center, Nagoya, JP" });
   assert.equal(f.activated.coordinate_evidence.inferred_coordinates.precision, "city");
+  assert.deepEqual(
+    f.locations.map((l: any) => [l.kind, l.origin, l.status]),
+    [["inferred", "city_fallback", "accepted"]],
+    "the fallback is stored as a record location",
+  );
 });
 
 test("over-long queries keep their local end; a 400 is a record-level miss, not a run failure", async () => {

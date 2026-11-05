@@ -33,3 +33,28 @@ export function mapLocationsSql(alias = "p"): string {
       'kind','legacy','origin',CASE WHEN ${alias}.field_provenance->>'coordinate_source'='geocode' THEN 'geocode' ELSE 'legacy_coordinates' END,'precision',COALESCE(${alias}.field_provenance->>'coordinate_precision','point'),
       'label',null,'query',null)) END FROM (SELECT ${evidence} AS e) named_coordinates)`;
 }
+
+/**
+ * Every known location of a canonical POI (its active build's `canonical_poi_locations`), the
+ * primary point first. A POI without stored locations (manual or legacy) falls back to its one
+ * stored point. Each object keeps the PoiLocationRecord fields (`kind`, `origin`, `precision`,
+ * `label`, `query`) plus `id`, `specificity`, all merged `kinds`/`origins`/`roles`, and `sources`.
+ */
+export function canonicalLocationsSql(alias = "p"): string {
+  return `(SELECT COALESCE(
+    (SELECT jsonb_agg(jsonb_build_object(
+        'id', l.id::text, 'lat', l.lat, 'lng', l.lng, 'precision', l.precision,
+        'specificity', l.specificity, 'kind', l.kinds[1], 'kinds', to_jsonb(l.kinds),
+        'origin', l.origins[1], 'origins', to_jsonb(l.origins), 'roles', to_jsonb(l.roles),
+        'label', l.label, 'query', NULL, 'is_primary', l.is_primary, 'sources', to_jsonb(l.sources))
+      ORDER BY l.ordinal)
+     FROM canonical_poi_locations l WHERE l.build_id = ${alias}.active_build_id),
+    jsonb_build_array(jsonb_build_object(
+      'id', 'legacy', 'lat', ${alias}.lat, 'lng', ${alias}.lng,
+      'precision', COALESCE(${alias}.field_provenance->>'coordinate_precision', 'point'),
+      'specificity', CASE WHEN ${alias}.attributes->>'location_specificity' = 'general' THEN 'general' ELSE 'precise' END,
+      'kind', 'legacy', 'kinds', '["legacy"]'::jsonb,
+      'origin', CASE WHEN ${alias}.field_provenance->>'coordinate_source' = 'geocode' THEN 'geocode' ELSE 'legacy_coordinates' END,
+      'origins', '[]'::jsonb, 'roles', '[]'::jsonb, 'label', NULL, 'query', NULL,
+      'is_primary', true, 'sources', '[]'::jsonb))))`;
+}

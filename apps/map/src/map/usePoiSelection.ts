@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { MapRef } from "react-map-gl/maplibre";
 import { apiUrl } from "@/lib/config";
 import type {
-  PoiLocationRecord,
+  PoiMapLocationRecord,
   PoiCoordinateEvidenceRecord,
 } from "@lib/db-map/contracts/map-app";
 
@@ -23,7 +23,7 @@ export interface PoiDetail {
   lat?: number;
   lng?: number;
   geometry: GeoJSON.Point;
-  locations?: PoiLocationRecord[];
+  locations?: PoiMapLocationRecord[];
   coordinate_evidence?: PoiCoordinateEvidenceRecord;
   attributes?: unknown;
   sources?: string[];
@@ -31,7 +31,7 @@ export interface PoiDetail {
 
 /** Clicked POI first, then every other POI whose marker shares its exact point. */
 export interface PoiSelection {
-  location: PoiLocationRecord | null;
+  location: PoiMapLocationRecord | null;
   pois: PoiDetail[];
   total: number;
   truncated: boolean;
@@ -39,7 +39,7 @@ export interface PoiSelection {
 
 interface Selected {
   id: string;
-  kind: string | null;
+  location: string | null;
 }
 
 export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
@@ -47,13 +47,13 @@ export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
   const selectedId = selected?.id ?? null;
 
   const { data: selection, isLoading } = useQuery({
-    queryKey: ["poi-colocated", selected?.id, selected?.kind],
+    queryKey: ["poi-colocated", selected?.id, selected?.location],
     queryFn: async () => {
-      const kind = selected?.kind
-        ? `?kind=${encodeURIComponent(selected.kind)}`
+      const location = selected?.location
+        ? `?location=${encodeURIComponent(selected.location)}`
         : "";
       const r = await fetch(
-        apiUrl(`/api/pois/${selected!.id}/colocated${kind}`),
+        apiUrl(`/api/pois/${selected!.id}/colocated${location}`),
       );
       if (!r.ok) throw new Error("POI detail fetch failed");
       return r.json() as Promise<PoiSelection>;
@@ -62,36 +62,33 @@ export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
     staleTime: 60_000,
   });
 
+  // Highlight every marker of the selected POI (one per known location).
+  const markerIds = (
+    selection?.pois.find((poi) => poi.id === selectedId)?.locations ?? []
+  ).map((location) => `${selectedId}:${location.id}`);
+  const markerKey = markerIds.join("|");
   useEffect(() => {
     const map = mapRef.current?.getMap();
-    if (!map || !selectedId) return;
-
+    if (!map || !markerKey) return;
+    const ids = markerKey.split("|");
     try {
-      for (const slot of ["source", "inferred", "legacy"])
-        map.setFeatureState(
-          { source: "pois", id: `${selectedId}:${slot}` },
-          { selected: true },
-        );
+      for (const id of ids)
+        map.setFeatureState({ source: "pois", id }, { selected: true });
     } catch {
       // source may not exist yet
     }
-
     return () => {
       try {
-        for (const slot of ["source", "inferred", "legacy"])
-          map.removeFeatureState({
-            source: "pois",
-            id: `${selectedId}:${slot}`,
-          });
+        for (const id of ids) map.removeFeatureState({ source: "pois", id });
       } catch {
         // source may have been removed
       }
     };
-  }, [mapRef, selectedId]);
+  }, [mapRef, markerKey]);
 
-  const selectPoi = useCallback((id: string, kind?: string | null) => {
-    // Either marker opens the shared record; the clicked marker's point decides co-location.
-    setSelected({ id, kind: kind ?? null });
+  const selectPoi = useCallback((id: string, location?: string | null) => {
+    // Any marker opens the shared record; the clicked location decides co-location.
+    setSelected({ id, location: location ?? null });
   }, []);
 
   const clearSelection = useCallback(() => {

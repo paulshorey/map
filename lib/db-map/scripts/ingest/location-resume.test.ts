@@ -313,6 +313,8 @@ for (const changed of [
             address: args[4],
             active_geocode_id: args[5],
           });
+        } else if (sql.startsWith("INSERT INTO research_poi_locations")) {
+          // Record locations are stored with the artifact; not under test here.
         } else
           assert.ok(
             ["BEGIN", "COMMIT", "ROLLBACK"].includes(sql),

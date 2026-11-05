@@ -32,6 +32,7 @@ try {
     "canonical_pois",
     "canonical_categories",
     "canonical_poi_categories",
+    "canonical_poi_locations",
     "research_pois",
     "research_sources",
   ])
@@ -44,34 +45,35 @@ try {
     [category],
   );
   const one = "00000000-0000-4000-8000-000000000011",
-    two = "00000000-0000-4000-8000-000000000012";
-  const sourcePoint = {
-    lat: 46,
-    lng: 7,
-    kind: "source",
-    origin: "source_coordinates",
-    precision: "point",
-    label: null,
-    query: null,
-  };
-  const inferredPoint = {
-    lat: -36,
-    lng: 174,
-    kind: "inferred",
-    origin: "listed_address_geocode",
-    precision: "city",
-    label: "NZ locality",
-    query: "Listed address",
-  };
-  const evidence = {
-    source_coordinates: sourcePoint,
-    inferred_coordinates: inferredPoint,
-  };
+    two = "00000000-0000-4000-8000-000000000012",
+    build = "00000000-0000-4000-8000-000000000099";
   await client.query(
-    `INSERT INTO canonical_pois(id,name,lat,lng,status,attributes,primary_category_id,popularity)
-    VALUES($1,'Two origins',46,7,'published',$3::jsonb,$4,2),($2,'Legacy',45,8,'published','{}',$4,1)`,
-    [two, one, JSON.stringify({ coordinate_evidence: evidence }), category],
+    `INSERT INTO canonical_pois(id,name,lat,lng,status,attributes,primary_category_id,popularity,active_build_id)
+    VALUES($1,'Many locations',46,7,'published','{}',$3,2,$4),($2,'Legacy',45,8,'published','{}',$3,1,NULL)`,
+    [two, one, category, build],
   );
+  const location = (
+    id: string,
+    lat: number,
+    lng: number,
+    precision: string,
+    kind: string,
+    origin: string,
+    primary: boolean,
+    ordinal: number,
+  ) =>
+    client.query(
+      `INSERT INTO canonical_poi_locations(id,canonical_poi_id,build_id,lat,lng,precision,specificity,kinds,origins,roles,
+        label,is_primary,research_location_ids,research_poi_ids,sources,ordinal)
+      VALUES($1,$2,$3,$4,$5,$6,$7,ARRAY[$8],ARRAY[$9],ARRAY['venue'],NULL,$10,ARRAY[$1]::uuid[],ARRAY[$2]::uuid[],ARRAY['test'],$11)`,
+      [id, two, build, lat, lng, precision, precision === "point" ? "precise" : "general", kind, origin, primary, ordinal],
+    );
+  const L1 = "00000000-0000-4000-8000-0000000000a1",
+    L2 = "00000000-0000-4000-8000-0000000000a2",
+    L3 = "00000000-0000-4000-8000-0000000000a3";
+  await location(L1, 46, 7, "point", "source", "source_coordinates", true, 0);
+  await location(L2, -36, 174, "city", "inferred", "listed_address_geocode", false, 1);
+  await location(L3, 35.18, 136.9, "point", "source", "source_coordinates", false, 2);
   const scoped = { query: client.query.bind(client) } as unknown as Pool;
   const base = {
     west: -180,
@@ -83,24 +85,18 @@ try {
     isWorldView: true,
   };
   const world = (await listPoisGeoJson(scoped, base)) as any;
-  assert.equal(world.features.length, 3);
-  assert.equal(new Set(world.features.map((f: any) => f.id)).size, 3);
-  const pair = world.features.filter((f: any) => f.properties.id === two);
+  assert.equal(world.features.length, 4, "every known location is a marker, plus the legacy point");
+  assert.equal(new Set(world.features.map((f: any) => f.id)).size, 4);
+  const many = world.features.filter((f: any) => f.properties.id === two);
   assert.deepEqual(
-    pair.map((f: any) => f.geometry.coordinates),
-    [
-      [7, 46],
-      [174, -36],
-    ],
+    many.map((f: any) => f.geometry.coordinates),
+    [[7, 46], [174, -36], [136.9, 35.18]],
   );
-  assert.deepEqual(
-    pair.map((f: any) => f.properties.coordinate_kind),
-    ["source", "inferred"],
-  );
-  assert.deepEqual(
-    pair.map((f: any) => f.id),
-    [`${two}:source`, `${two}:inferred`],
-  );
+  assert.deepEqual(many.map((f: any) => f.id), [`${two}:${L1}`, `${two}:${L2}`, `${two}:${L3}`]);
+  assert.deepEqual(many.map((f: any) => f.properties.location_specificity), ["precise", "general", "precise"]);
+  const legacy = world.features.find((f: any) => f.properties.id === one);
+  assert.equal(legacy.id, `${one}:legacy`, "a POI without stored locations falls back to its point");
+  // A viewport over one location admits the POI and renders only that marker.
   const viewport = (await listPoisGeoJson(scoped, {
     ...base,
     isWorldView: false,
@@ -109,104 +105,19 @@ try {
     south: -40,
     north: -30,
   })) as any;
-  assert.equal(viewport.features.length, 1);
-  assert.equal(viewport.features[0].id, `${two}:inferred`);
-  assert.equal(viewport.features[0].properties.id, two);
-  assert.equal(
-    ((await listPoisGeoJson(scoped, { ...base, limit: 1 })) as any).features
-      .length,
-    2,
-  );
+  assert.deepEqual(viewport.features.map((f: any) => f.id), [`${two}:${L2}`]);
+  assert.equal(viewport.total, 1);
+  // The entity limit counts POIs, not markers.
+  assert.equal(((await listPoisGeoJson(scoped, { ...base, limit: 1 })) as any).features.length, 3);
   const detail = await getPoiById(scoped, two);
-  assert.deepEqual(detail.coordinate_evidence, evidence);
-  assert.equal((await getPoiById(scoped, one)).locations.length, 1);
-  assert.equal(
-    (await getPoiById(scoped, one)).coordinate_evidence.source_coordinates,
-    null,
-  );
-  // Equality must preserve both named observations while rendering only one marker.
-  const equal = {
-    ...evidence,
-    inferred_coordinates: { ...inferredPoint, lat: 46, lng: 7 },
-  };
-  await client.query(
-    "UPDATE canonical_pois SET attributes=$2::jsonb WHERE id=$1",
-    [two, JSON.stringify({ coordinate_evidence: equal })],
-  );
-  assert.equal((await getPoiById(scoped, two)).locations.length, 1);
-  assert.deepEqual((await getPoiById(scoped, two)).coordinate_evidence, equal);
-  // Inferred-only coordinates retain their identity; index/absence never relabels them as source.
-  await client.query(
-    "UPDATE canonical_pois SET lat=-36,lng=174,attributes=$2::jsonb WHERE id=$1",
-    [
-      two,
-      JSON.stringify({
-        coordinate_evidence: {
-          source_coordinates: null,
-          inferred_coordinates: inferredPoint,
-        },
-      }),
-    ],
-  );
-  const inferredOnly = await getPoiById(scoped, two);
-  assert.equal(inferredOnly.locations[0].kind, "inferred");
-  assert.equal(inferredOnly.coordinate_evidence.source_coordinates, null);
-  await client.query("UPDATE canonical_pois SET lat=46,lng=7 WHERE id=$1", [
-    two,
-  ]);
-  for (const bad of [
-    "bad",
-    { ...inferredPoint, lat: "bad" },
-    { ...inferredPoint, lat: 1e100 },
-    { lat: 0, lng: 0 },
-    { lat: 999, lng: 1 },
-    { ...inferredPoint, kind: "source" },
-  ]) {
-    await client.query(
-      "UPDATE canonical_pois SET attributes=$2::jsonb WHERE id=$1",
-      [
-        two,
-        JSON.stringify({
-          coordinate_evidence: {
-            source_coordinates: sourcePoint,
-            inferred_coordinates: bad,
-          },
-        }),
-      ],
-    );
-    assert.equal((await getPoiById(scoped, two)).locations.length, 1);
-    const invalidViewport = (await listPoisGeoJson(scoped, {
-      ...base,
-      isWorldView: false,
-      west: 170,
-      east: 179,
-      south: -40,
-      north: -30,
-    })) as any;
-    assert.equal(
-      invalidViewport.features.length,
-      0,
-      "invalid numeric data cannot reach casts or consume viewport markers",
-    );
-  }
-  await client.query(
-    "UPDATE canonical_pois SET attributes=$2::jsonb WHERE id=$1",
-    [
-      two,
-      JSON.stringify({
-        coordinate_evidence: { ...evidence, third_point: inferredPoint },
-      }),
-    ],
-  );
-  assert.equal((await getPoiById(scoped, two)).locations.length, 2);
-  // Old role-based arrays remain history; they cannot assign either named bucket.
-  await client.query(
-    "UPDATE canonical_pois SET attributes=$2::jsonb WHERE id=$1",
-    [two, JSON.stringify({ map_locations: [sourcePoint, inferredPoint] })],
-  );
-  assert.equal((await getPoiById(scoped, two)).locations[0].kind, "legacy");
+  assert.deepEqual(detail.locations.map((l: any) => l.id), [L1, L2, L3]);
+  assert.equal(detail.locations[0].is_primary, true);
+  assert.deepEqual(detail.locations[1].origins, ["listed_address_geocode"]);
+  const legacyDetail = await getPoiById(scoped, one);
+  assert.equal(legacyDetail.locations.length, 1);
+  assert.equal(legacyDetail.locations[0].kind, "legacy");
   console.log(
-    "PASS fixed source/inferred buckets, shared detail and stable origin marker IDs, inferred-only viewport, equality preserves both observations, legacy/invalid/excess protection; rollback only",
+    "PASS every known location is a marker with a stable location ID, viewport admission by any location, entity limit, shared detail and legacy fallback; rollback only",
   );
 } finally {
   await client.query("ROLLBACK");

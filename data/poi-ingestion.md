@@ -920,6 +920,27 @@ and the shared geocode cache remain. Cleanup does **not** filter by category; it
 
 ## Standardized location enrichment
 
+### All known locations (`research_poi_locations`, `canonical_poi_locations`)
+
+Each geocode activation stores **every location its artifact knows** for the record in
+`research_poi_locations`, in the same transaction: the supplied point (`source_coordinates` /
+`url_coordinates`), the listed-text lookup or its `city_fallback` / `country_fallback`, and each
+rejected lookup (`status = rejected`, with its reason; never mapped). Rows are immutable per
+artifact and carry `kind`, `origin`, `role` (venue, address, locality, region, country),
+`precision`, query, basis and `logic_version`; the active set is the one for the record's
+`active_geocode_id`.
+
+Each canonical build writes `canonical_poi_locations`: the accepted locations of all active
+members, de-duplicated by point (~1 cm), each with the merged kinds/origins/roles, contributing
+research records and sources, a per-location `specificity` (`precise` only where a member places
+a venue or address at point precision) and `is_primary` for the canonical's lat/lng. The map
+API renders **one marker per row** (`marker_id` `<poi>:<location id>`), admits a POI to a
+viewport through any of its locations, and returns them all in the detail; a POI without rows
+(manual or legacy) falls back to its stored point (`<poi>:legacy`). The two-slot
+`coordinate_evidence` below still selects the primary point and the POI-level
+`location_specificity`. Future multi-venue captures add more `research_poi_locations` rows
+per record; the canonical and map side already handle any number.
+
 Future processing stores a fixed `coordinate_evidence` object with two independently
 nullable fields:
 

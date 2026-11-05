@@ -17,6 +17,13 @@
           "nullable": false
         },
         {
+          "name": "location_id",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
           "name": "location_index",
           "optional": false,
           "kind": "scalar",
@@ -253,6 +260,120 @@
         }
       ]
     },
+    "PoiMapLocationRecord": {
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "lat",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "lng",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "precision",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "specificity",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "kind",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "kinds",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        },
+        {
+          "name": "origin",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "origins",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        },
+        {
+          "name": "roles",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        },
+        {
+          "name": "label",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "query",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "is_primary",
+          "optional": false,
+          "kind": "scalar",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "sources",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        }
+      ]
+    },
     "PoiCoordinateEvidenceRecord": {
       "fields": [
         {
@@ -425,7 +546,7 @@
           "kind": "array",
           "items": {
             "kind": "model",
-            "type": "PoiLocationRecord"
+            "type": "PoiMapLocationRecord"
           },
           "nullable": false
         },
@@ -444,7 +565,7 @@
           "name": "location",
           "optional": false,
           "kind": "model",
-          "type": "PoiLocationRecord",
+          "type": "PoiMapLocationRecord",
           "nullable": true
         },
         {

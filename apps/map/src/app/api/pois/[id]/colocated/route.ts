@@ -7,8 +7,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const kind = request.nextUrl.searchParams.get("kind");
-  const result = await getColocatedPois(getDb(), { id, kind });
+  const location = request.nextUrl.searchParams.get("location");
+  const result = await getColocatedPois(getDb(), { id, location });
 
   if (!result) {
     return NextResponse.json({ error: "POI not found" }, { status: 404 });

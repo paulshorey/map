@@ -45,6 +45,25 @@ export interface CanonicalPoiCategoriesRow {
   "is_primary": boolean;
 }
 
+export interface CanonicalPoiLocationsRow {
+  "id": string;
+  "canonical_poi_id": string;
+  "build_id": string;
+  "lat": number;
+  "lng": number;
+  "precision": string;
+  "specificity": string;
+  "kinds": Array<string>;
+  "origins": Array<string>;
+  "roles": Array<string>;
+  "label": string | null;
+  "is_primary": boolean;
+  "research_location_ids": Array<string>;
+  "research_poi_ids": Array<string>;
+  "sources": Array<string>;
+  "ordinal": number;
+}
+
 export interface CanonicalPoiOccurrencesRow {
   "id": string;
   "poi_id": string;
@@ -501,6 +520,27 @@ export interface ResearchPoiLocationAssessmentsRow {
   "created_at": Date;
 }
 
+export interface ResearchPoiLocationsRow {
+  "id": string;
+  "research_poi_id": string;
+  "geocode_id": string;
+  "normalization_id": string;
+  "kind": string;
+  "origin": string;
+  "role": string;
+  "precision": string;
+  "status": string;
+  "reason": string | null;
+  "lat": number;
+  "lng": number;
+  "label": string | null;
+  "query": string | null;
+  "query_basis": string | null;
+  "evidence": unknown;
+  "logic_version": string;
+  "created_at": Date;
+}
+
 export interface ResearchPoiNormalizationOccurrencesRow {
   "id": string;
   "normalization_id": string;
@@ -714,6 +754,7 @@ export interface PostgresDbSchema {
   "canonical_poi_build_inputs": CanonicalPoiBuildInputsRow;
   "canonical_poi_builds": CanonicalPoiBuildsRow;
   "canonical_poi_categories": CanonicalPoiCategoriesRow;
+  "canonical_poi_locations": CanonicalPoiLocationsRow;
   "canonical_poi_occurrences": CanonicalPoiOccurrencesRow;
   "canonical_poi_redirects": CanonicalPoiRedirectsRow;
   "canonical_pois": CanonicalPoisRow;
@@ -746,6 +787,7 @@ export interface PostgresDbSchema {
   "research_poi_embeddings": ResearchPoiEmbeddingsRow;
   "research_poi_geocodes": ResearchPoiGeocodesRow;
   "research_poi_location_assessments": ResearchPoiLocationAssessmentsRow;
+  "research_poi_locations": ResearchPoiLocationsRow;
   "research_poi_normalization_occurrences": ResearchPoiNormalizationOccurrencesRow;
   "research_poi_normalizations": ResearchPoiNormalizationsRow;
   "research_poi_observations": ResearchPoiObservationsRow;

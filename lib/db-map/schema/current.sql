@@ -105,6 +105,32 @@ CREATE TABLE public.canonical_poi_categories (
 
 
 --
+-- Name: canonical_poi_locations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.canonical_poi_locations (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    canonical_poi_id uuid NOT NULL,
+    build_id uuid NOT NULL,
+    lat double precision NOT NULL,
+    lng double precision NOT NULL,
+    "precision" text NOT NULL,
+    specificity text NOT NULL,
+    kinds text[] NOT NULL,
+    origins text[] NOT NULL,
+    roles text[] NOT NULL,
+    label text,
+    is_primary boolean DEFAULT false NOT NULL,
+    research_location_ids uuid[] NOT NULL,
+    research_poi_ids uuid[] NOT NULL,
+    sources text[] NOT NULL,
+    ordinal integer NOT NULL,
+    CONSTRAINT canonical_poi_locations_precision_check CHECK (("precision" = ANY (ARRAY['point'::text, 'city'::text, 'region'::text, 'country'::text]))),
+    CONSTRAINT canonical_poi_locations_specificity_check CHECK ((specificity = ANY (ARRAY['general'::text, 'precise'::text])))
+);
+
+
+--
 -- Name: canonical_poi_occurrences; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -825,6 +851,39 @@ COMMENT ON TABLE public.research_poi_location_assessments IS 'Append-only policy
 
 
 --
+-- Name: research_poi_locations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_poi_locations (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    research_poi_id uuid NOT NULL,
+    geocode_id uuid NOT NULL,
+    normalization_id uuid NOT NULL,
+    kind text NOT NULL,
+    origin text NOT NULL,
+    role text NOT NULL,
+    "precision" text NOT NULL,
+    status text NOT NULL,
+    reason text,
+    lat double precision NOT NULL,
+    lng double precision NOT NULL,
+    label text,
+    query text,
+    query_basis text,
+    evidence jsonb DEFAULT '{}'::jsonb NOT NULL,
+    logic_version text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_poi_locations_kind_check CHECK ((kind = ANY (ARRAY['source'::text, 'inferred'::text]))),
+    CONSTRAINT research_poi_locations_lat_check CHECK (((lat >= ('-90'::integer)::double precision) AND (lat <= (90)::double precision))),
+    CONSTRAINT research_poi_locations_lng_check CHECK (((lng >= ('-180'::integer)::double precision) AND (lng <= (180)::double precision))),
+    CONSTRAINT research_poi_locations_origin_check CHECK ((origin = ANY (ARRAY['source_coordinates'::text, 'url_coordinates'::text, 'listed_address_geocode'::text, 'city_fallback'::text, 'country_fallback'::text]))),
+    CONSTRAINT research_poi_locations_precision_check CHECK (("precision" = ANY (ARRAY['point'::text, 'city'::text, 'region'::text, 'country'::text]))),
+    CONSTRAINT research_poi_locations_role_check CHECK ((role = ANY (ARRAY['venue'::text, 'address'::text, 'locality'::text, 'region'::text, 'country'::text]))),
+    CONSTRAINT research_poi_locations_status_check CHECK ((status = ANY (ARRAY['accepted'::text, 'rejected'::text])))
+);
+
+
+--
 -- Name: research_poi_normalization_occurrences; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1144,6 +1203,22 @@ ALTER TABLE ONLY public.canonical_poi_builds
 
 ALTER TABLE ONLY public.canonical_poi_categories
     ADD CONSTRAINT canonical_poi_categories_pkey PRIMARY KEY (poi_id, category_id);
+
+
+--
+-- Name: canonical_poi_locations canonical_poi_locations_build_id_ordinal_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.canonical_poi_locations
+    ADD CONSTRAINT canonical_poi_locations_build_id_ordinal_key UNIQUE (build_id, ordinal);
+
+
+--
+-- Name: canonical_poi_locations canonical_poi_locations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.canonical_poi_locations
+    ADD CONSTRAINT canonical_poi_locations_pkey PRIMARY KEY (id);
 
 
 --
@@ -1475,6 +1550,14 @@ ALTER TABLE ONLY public.research_poi_location_assessments
 
 
 --
+-- Name: research_poi_locations research_poi_locations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_locations
+    ADD CONSTRAINT research_poi_locations_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: research_poi_normalization_occurrences research_poi_normalization_occur_normalization_id_starts_at_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1621,6 +1704,27 @@ CREATE INDEX canonical_poi_build_inputs_research_idx ON public.canonical_poi_bui
 --
 
 CREATE INDEX canonical_poi_categories_cat_idx ON public.canonical_poi_categories USING btree (category_id, poi_id);
+
+
+--
+-- Name: canonical_poi_locations_lat_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX canonical_poi_locations_lat_idx ON public.canonical_poi_locations USING btree (lat);
+
+
+--
+-- Name: canonical_poi_locations_lng_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX canonical_poi_locations_lng_idx ON public.canonical_poi_locations USING btree (lng);
+
+
+--
+-- Name: canonical_poi_locations_poi_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX canonical_poi_locations_poi_idx ON public.canonical_poi_locations USING btree (canonical_poi_id);
 
 
 --
@@ -1890,6 +1994,20 @@ CREATE INDEX research_pipeline_jobs_run_idx ON public.research_pipeline_jobs USI
 
 
 --
+-- Name: research_poi_locations_artifact_point_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX research_poi_locations_artifact_point_key ON public.research_poi_locations USING btree (geocode_id, kind, origin, status, lat, lng);
+
+
+--
+-- Name: research_poi_locations_poi_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_poi_locations_poi_idx ON public.research_poi_locations USING btree (research_poi_id);
+
+
+--
 -- Name: research_poi_normalizations_poi_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2041,6 +2159,22 @@ ALTER TABLE ONLY public.canonical_poi_categories
 
 ALTER TABLE ONLY public.canonical_poi_categories
     ADD CONSTRAINT canonical_poi_categories_poi_id_fkey FOREIGN KEY (poi_id) REFERENCES public.canonical_pois(id) ON DELETE CASCADE;
+
+
+--
+-- Name: canonical_poi_locations canonical_poi_locations_build_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.canonical_poi_locations
+    ADD CONSTRAINT canonical_poi_locations_build_id_fkey FOREIGN KEY (build_id) REFERENCES public.canonical_poi_builds(id) ON DELETE CASCADE;
+
+
+--
+-- Name: canonical_poi_locations canonical_poi_locations_canonical_poi_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.canonical_poi_locations
+    ADD CONSTRAINT canonical_poi_locations_canonical_poi_id_fkey FOREIGN KEY (canonical_poi_id) REFERENCES public.canonical_pois(id) ON DELETE CASCADE;
 
 
 --
@@ -2513,6 +2647,30 @@ ALTER TABLE ONLY public.research_poi_location_assessments
 
 ALTER TABLE ONLY public.research_poi_location_assessments
     ADD CONSTRAINT research_poi_location_assessments_research_poi_id_fkey FOREIGN KEY (research_poi_id) REFERENCES public.research_pois(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_poi_locations research_poi_locations_geocode_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_locations
+    ADD CONSTRAINT research_poi_locations_geocode_id_fkey FOREIGN KEY (geocode_id) REFERENCES public.research_poi_geocodes(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_poi_locations research_poi_locations_normalization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_locations
+    ADD CONSTRAINT research_poi_locations_normalization_id_fkey FOREIGN KEY (normalization_id) REFERENCES public.research_poi_normalizations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: research_poi_locations research_poi_locations_research_poi_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_poi_locations
+    ADD CONSTRAINT research_poi_locations_research_poi_id_fkey FOREIGN KEY (research_poi_id) REFERENCES public.research_pois(id) ON DELETE CASCADE;
 
 
 --

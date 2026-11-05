@@ -238,7 +238,7 @@ export function MapView() {
       }
 
       const id = feature.properties?.id;
-      if (id) selectPoi(id, feature.properties?.coordinate_kind ?? null);
+      if (id) selectPoi(id, feature.properties?.location_id ?? null);
     },
     [selectPoi],
   );

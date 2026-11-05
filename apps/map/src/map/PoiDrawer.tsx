@@ -2,7 +2,7 @@
 
 import { HtmlDescription } from "@/components/HtmlDescription";
 import { useEffect, useRef } from "react";
-import type { PoiLocationRecord } from "@lib/db-map/contracts/map-app";
+import type { PoiMapLocationRecord } from "@lib/db-map/contracts/map-app";
 import type { PoiSelection } from "./usePoiSelection";
 
 type Poi = PoiSelection["pois"][number];
@@ -208,12 +208,8 @@ function PoiBody({ poi }: { poi: Poi }) {
     poi.ends_at,
     poi.date_precision,
   );
-  const namedLocations = Object.values(poi.coordinate_evidence ?? {}).filter(
-    (p): p is PoiLocationRecord => !!p,
-  );
-  const locations = namedLocations.length
-    ? namedLocations
-    : (poi.locations ?? []);
+  // Every known location (one marker each), the primary point first.
+  const locations: PoiMapLocationRecord[] = poi.locations ?? [];
 
   return (
     <div>
@@ -271,6 +267,11 @@ function PoiBody({ poi }: { poi: Poi }) {
           {locations.length ? (
             <DetailRow icon={<CoordIcon />} label="Map locations">
               <div className="space-y-2">
+                {locations.length > 1 && (
+                  <p className="text-xs text-gray-500">
+                    {locations.length} known locations, each shown on the map
+                  </p>
+                )}
                 {(poi.attributes as { location_specificity?: string } | null)
                   ?.location_specificity === "general" && (
                   <p className="text-xs font-medium text-amber-700">
@@ -278,20 +279,13 @@ function PoiBody({ poi }: { poi: Poi }) {
                   </p>
                 )}
                 {locations.map((location) => (
-                  <div key={`${location.kind}:${location.lat},${location.lng}`}>
+                  <div key={location.id}>
                     <p className="text-xs">
-                      {location.origin === "listed_address_geocode"
-                        ? "Inferred from listing text"
-                        : location.origin === "source_coordinates"
-                          ? "Source coordinates"
-                          : location.origin === "geocode"
-                            ? "Geocoded coordinates"
-                            : location.origin === "legacy_coordinates"
-                              ? "Legacy coordinates"
-                              : `Origin: ${location.origin || "unknown"}`}
+                      {originLabel(location)}
                       {location.precision !== "point"
                         ? ` · Approximate ${location.precision}`
                         : ""}
+                      {location.is_primary && locations.length > 1 ? " · Primary" : ""}
                     </p>
                     <span className="font-mono text-xs">
                       {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
@@ -301,6 +295,11 @@ function PoiBody({ poi }: { poi: Poi }) {
                         {location.query || location.label}
                       </p>
                     )}
+                    {location.sources?.length ? (
+                      <p className="text-[11px] text-gray-400">
+                        {location.sources.join(", ")}
+                      </p>
+                    ) : null}
                   </div>
                 ))}
               </div>
@@ -319,6 +318,23 @@ function PoiBody({ poi }: { poi: Poi }) {
       </div>
     </div>
   );
+}
+
+const ORIGIN_LABELS: Record<string, string> = {
+  source_coordinates: "Source coordinates",
+  url_coordinates: "Coordinates from the listing URL",
+  listed_address_geocode: "Inferred from listing text",
+  city_fallback: "City of the listing (lookup missed)",
+  country_fallback: "Country of the listing (lookup missed)",
+  geocode: "Geocoded coordinates",
+  legacy_coordinates: "Legacy coordinates",
+};
+
+function originLabel(location: PoiMapLocationRecord): string {
+  const origins = location.origins?.length ? location.origins : [location.origin];
+  return origins
+    .map((origin) => ORIGIN_LABELS[origin] ?? `Origin: ${origin || "unknown"}`)
+    .join(" + ");
 }
 
 function DetailRow({
