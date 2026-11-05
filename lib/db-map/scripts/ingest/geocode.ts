@@ -820,7 +820,8 @@ export async function runGeocode(
     // centroid match already names its country.
     const reverseNeeded = REVERSE_FIELDS[coordinatePrecision ?? "unknown"]!.some(
       (key) =>
-        !source[key] && !(key === "country_code" && suppliedCentroid),
+        !source[key] &&
+        !(key === "country_code" && suppliedCentroid && countryToCode(suppliedCentroid)),
     );
     let hit: ReverseLocation | null = null;
     if (reverseNeeded) {
@@ -862,8 +863,10 @@ export async function runGeocode(
     if (!hit && reverseNeeded)
       resolved.warnings.push("reverse_location_incomplete");
     // The matched centroid identifies the country when the listing names none.
-    if (suppliedCentroid && !resolved.fields.country_code) {
-      resolved.fields.country_code = suppliedCentroid;
+    // Vendored codes include non-ISO entries (GZ, AN); only a current ISO code is projected.
+    const centroidCountry = suppliedCentroid ? countryToCode(suppliedCentroid) : undefined;
+    if (centroidCountry && !resolved.fields.country_code) {
+      resolved.fields.country_code = centroidCountry;
       (resolved.provenance as Record<string, unknown>).country_code =
         "supplied_centroid";
     }
@@ -1004,7 +1007,9 @@ export async function runGeocode(
             [row.id],
           );
         }
-        if (row.canonical_poi_id)
+        // A rematch keeps the old canonical's accepted snapshot until a replacement membership
+        // exists (matching rebuilds the prior canonical then), as normalization activation does.
+        if (row.canonical_poi_id && !rematch)
           await rebuildCanonicalPoi(client, row.canonical_poi_id, {
             noLlm: true,
           });

@@ -4,6 +4,7 @@ import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
 import {
   capLocalityPrecision,
+  localityValue,
   forwardImplausible,
   providerNameAgrees,
   resolveLocation,
@@ -318,4 +319,13 @@ test("a provider name stored under its category key is read", () => {
   assert.equal(forwardImplausible("name", { name: "Museo Tamayo Arte Contemporáneo" }, museum), null);
   const shop = { precision: "point", raw_response: { address: { shop: "Ray-Ban", city: "Frankfurt" } } };
   assert.equal(forwardImplausible("name", { name: "RAY Fotografieprojekte" }, shop), "name_result_mismatch");
+});
+
+test("qualified Various placeholders and non-ISO centroid codes never project", () => {
+  for (const filler of ["Various villages", "Various (England)", "Various (nationwide)", "TBA (online)", "Multiple towns"])
+    assert.equal(localityValue(filler), null, filler);
+  for (const place of ["Many", "Variousville", "Online Park Road"]) assert.equal(localityValue(place), place);
+  // Gaza's vendored centroid code GZ is not ISO; it identifies precision, never a country code.
+  assert.equal(suppliedCountryCentroid({ lat: 31.354676, lng: 34.308825 }), "GZ");
+  assert.equal(countryToCode("GZ"), undefined);
 });
