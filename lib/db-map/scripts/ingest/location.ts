@@ -127,10 +127,22 @@ const GENERIC_NAME_TOKENS = new Set(
     "der und van een museum gallery galerie center centre park garden gardens online"
   ).split(" "),
 );
+// Short tokens still identify a place when they are an acronym ("TD Garden") or non-Latin
+// ("故宫"); only short lowercase Latin words are noise.
 const significantTokens = (value: string) =>
-  foldTokens(value).filter(
-    (t) => t.length >= 3 && !GENERIC_NAME_TOKENS.has(t.toLowerCase()),
-  );
+  value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .split(/[^\p{L}\p{M}\p{N}]+/u)
+    .filter(
+      (t) =>
+        t &&
+        !GENERIC_NAME_TOKENS.has(t.toLowerCase()) &&
+        (t.length >= 3 ||
+          /[^\p{Script=Latin}\p{N}]/u.test(t) ||
+          (t.length === 2 && /^\p{Lu}+$/u.test(t))),
+    )
+    .map((t) => t.toUpperCase());
 
 /** True when every distinctive word of the provider's place name appears in the listed name. */
 export function providerNameAgrees(listedName: string, providerName: string) {

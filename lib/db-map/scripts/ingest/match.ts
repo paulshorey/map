@@ -1570,6 +1570,20 @@ async function runMatchInternal(
   return stats;
 }
 
+/** Active memberships whose matcher is older than the current one, optionally for one source. */
+export async function staleMatcherMemberships(
+  db: Pool,
+  source: string | null,
+): Promise<number> {
+  const { rows } = await db.query<{ n: string }>(
+    `SELECT count(*)::text AS n FROM research_canonical_memberships m
+    JOIN research_pois rp ON rp.id=m.research_poi_id JOIN research_sources rs ON rs.id=rp.source_id
+    WHERE m.active AND m.matcher_version IS DISTINCT FROM $1 AND ($2::text IS NULL OR rs.slug=$2)`,
+    [MATCHER_VERSION, source],
+  );
+  return Number(rows[0]?.n ?? 0);
+}
+
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
@@ -1578,6 +1592,14 @@ async function main() {
   let stats: MatchStats | undefined;
 
   try {
+    // Standalone matching only selects unlinked rows, so it cannot replace memberships decided
+    // by an older matcher; managed runs retire and rematch those (matcher_upgraded).
+    const stale = await staleMatcherMemberships(db, opts.source ?? null);
+    if (stale > 0)
+      throw new Error(
+        `${formatInt(stale)} active memberships${opts.source ? ` for ${opts.source}` : ""} were decided by an older matcher than ${MATCHER_VERSION}. ` +
+          "Standalone ingest:match cannot rematch linked rows; start a new managed run (ingest:run or ingest:supervise) so they are retired and rematched.",
+      );
     stats = await runMatch(db, opts, shutdown);
 
     if (stats.stopped) {

@@ -329,3 +329,11 @@ test("qualified Various placeholders and non-ISO centroid codes never project", 
   assert.equal(suppliedCountryCentroid({ lat: 31.354676, lng: 34.308825 }), "GZ");
   assert.equal(countryToCode("GZ"), undefined);
 });
+
+test("short acronyms and non-Latin names still count as distinctive", () => {
+  assert.equal(providerNameAgrees("TD Garden", "TD Garden"), true);
+  assert.equal(providerNameAgrees("故宫", "故宫"), true);
+  assert.equal(providerNameAgrees("TD Garden", "BB Garden"), false);
+  // Short lowercase Latin words remain noise.
+  assert.equal(providerNameAgrees("Jardin de la Ville", "de la"), false);
+});
