@@ -25,6 +25,7 @@ import {
   LOCATION_GEOCODER_VERSION,
   LOCATION_QUERY_VERSION,
   LOCALITY_CONFLICT_M,
+  forwardImplausible,
   forwardLocalityConflict,
   localityValue,
   locationReadySql,
@@ -33,6 +34,7 @@ import {
   reverseForPrecision,
   type ReverseLocation,
 } from "./location.js";
+import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
 import { suppliedCountryCentroid } from "./supplied-centroids.js";
 import { stableHash } from "./hash.js";
@@ -164,6 +166,19 @@ export function buildQuery(
     .replace(/\s+/g, " ")
     .trim();
   if (/^q\d+(,|$)/i.test(norm)) return null;
+  return { display, norm };
+}
+
+/** The listed country's English name, for a fallback after an implausible lookup. */
+export function countryOnlyQuery(code: string) {
+  const display = countries.getName(code, "en");
+  if (!display) return null;
+  const norm = display
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
   return { display, norm };
 }
 
@@ -391,6 +406,39 @@ export async function writeRowCoords(
   await (linked ? canonicalLane.run(activate) : activate());
 }
 
+/**
+ * An unlocatable record must not keep serving the snapshot it held while its location was
+ * refreshed (for example a restaurant that a region-only lookup returned). Rebuild each
+ * canonical whose active build still includes it; one without other members is hidden.
+ */
+async function releaseHeldSnapshots(db: Pool, researchId: string) {
+  await canonicalLane.run(async () => {
+    const client = await db.connect();
+    try {
+      await client.query("BEGIN");
+      const held = await client.query<{ canonical_poi_id: string }>(
+        `SELECT DISTINCT b.canonical_poi_id
+        FROM canonical_poi_build_inputs i JOIN canonical_poi_builds b ON b.id=i.build_id
+        JOIN canonical_pois cp ON cp.active_build_id=b.id
+        WHERE i.research_poi_id=$1 AND NOT EXISTS(SELECT 1 FROM research_canonical_memberships m
+          WHERE m.research_poi_id=$1 AND m.canonical_poi_id=b.canonical_poi_id AND m.active)`,
+        [researchId],
+      );
+      for (const { canonical_poi_id } of held.rows)
+        await rebuildCanonicalPoi(client, canonical_poi_id, {
+          noLlm: true,
+          releaseLocationHold: true,
+        });
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
+  });
+}
+
 /** Collect an independent listed-location candidate, then source-first reverse enrichment. */
 export async function runGeocode(
   db: Pool,
@@ -578,10 +626,45 @@ export async function runGeocode(
           forward = retry.hit ?? null;
         }
       }
+      const implausible =
+        forward &&
+        forwardImplausible(forwardBasis, listedLocality(row, captured), forward);
+      if (forward && implausible) {
+        // Keep the paid result as evidence; it never occupies the inferred slot.
+        const current = {
+          reason: implausible,
+          query: forwardQuery?.display ?? q.display,
+          query_norm: forwardQueryNorm,
+          result: forward,
+        };
+        rejected = rejected ? { ...current, previous: rejected } : current;
+        forward = null;
+        // Fall back to the recognized listed country, unless a supplied point already locates it.
+        const countryQuery =
+          forwardCountry && !sourcePoint ? countryOnlyQuery(forwardCountry) : null;
+        if (countryQuery && countryQuery.norm !== forwardQuery?.norm) {
+          const retry = await lookup(countryQuery);
+          if (retry.stop === "budget") {
+            stats.budgetHit = true;
+            break;
+          }
+          if (retry.stop) continue;
+          forwardQuery = countryQuery;
+          forwardBasis = "locality";
+          forwardQueryNorm = retry.key;
+          forward =
+            retry.hit &&
+            !forwardImplausible("locality", { city: null }, retry.hit)
+              ? retry.hit
+              : null;
+        }
+      }
     } else stats.noQuery++;
     if (!validPoint({ lat, lng })) {
       if (!forward) {
         stats.unresolved++;
+        // Every lookup finished (budget/provider stops exit above): no plausible point exists.
+        if (!opts.dryRun) await releaseHeldSnapshots(db, row.id);
         continue;
       }
       lat = forward.lat;

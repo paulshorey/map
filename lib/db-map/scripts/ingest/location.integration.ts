@@ -36,6 +36,17 @@ try {
     )
   ).rows[0];
   assert.ok(row?.active_normalization_id);
+  // Isolate the fixture: other sources' Venice records may share this canonical. Detach
+  // them inside this rolled-back transaction so the assertions see one member.
+  await client.query(
+    `UPDATE research_canonical_memberships SET active=false, retired_at=now(), retirement_reason='test_isolation'
+    WHERE canonical_poi_id=$1 AND research_poi_id<>$2 AND active`,
+    [row.canonical_poi_id, row.id],
+  );
+  await client.query(
+    "UPDATE research_pois SET canonical_poi_id=NULL WHERE canonical_poi_id=$1 AND id<>$2",
+    [row.canonical_poi_id, row.id],
+  );
   await client.query(
     "UPDATE research_pois SET attributes=attributes-'location_enrichment' WHERE id=$1",
     [row.id],

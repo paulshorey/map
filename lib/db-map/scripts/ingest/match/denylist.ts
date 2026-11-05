@@ -19,18 +19,39 @@ export function isDeniedDomain(domain: string | null | undefined): boolean {
   return DENIED_DOMAINS.some((d) => value === d || value.endsWith(`.${d}`));
 }
 
+/**
+ * Comparable identity of a website: host without `www.`, path without a trailing slash, and
+ * the query without tracking parameters. Domains are shared by unrelated places (thousands
+ * of Forest Service campgrounds live under `fs.usda.gov`), so a domain alone never identifies
+ * a place. Denied hosts and unparsable values have no identity.
+ */
+export function websiteIdentity(url: string | null | undefined): string | null {
+  const text = (url ?? "").trim();
+  if (!text) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : `https://${text}`);
+  } catch {
+    return null;
+  }
+  const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+  if (!host.includes(".") || isDeniedDomain(host)) return null;
+  for (const key of [...parsed.searchParams.keys()])
+    if (/^(utm_|fbclid$|gclid$)/i.test(key)) parsed.searchParams.delete(key);
+  parsed.searchParams.sort();
+  const path = decodeURI(parsed.pathname).replace(/\/+$/, "").toLowerCase();
+  const query = parsed.searchParams.toString();
+  return `${host}${path}${query ? `?${query}` : ""}`;
+}
+
 export function strongContactSignal(
-  aDomain: string | null | undefined,
-  bDomain: string | null | undefined,
+  aWebsite: string | null | undefined,
+  bWebsite: string | null | undefined,
   aPhone: string | null | undefined,
   bPhone: string | null | undefined,
 ): { website: boolean; phone: boolean } {
-  const domainA = (aDomain ?? "").toLowerCase().replace(/^www\./, "");
-  const domainB = (bDomain ?? "").toLowerCase().replace(/^www\./, "");
-  const website =
-    domainA.length > 0 &&
-    domainA === domainB &&
-    !isDeniedDomain(domainA);
+  const a = websiteIdentity(aWebsite);
+  const website = a !== null && a === websiteIdentity(bWebsite);
 
   const phoneA = (aPhone ?? "").replace(/[^\d+]/g, "");
   const phoneB = (bPhone ?? "").replace(/[^\d+]/g, "");
@@ -38,4 +59,3 @@ export function strongContactSignal(
 
   return { website, phone };
 }
-

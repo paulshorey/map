@@ -36,7 +36,7 @@
         "coordinate_precision": "point",
         "geocoder_version": "locationiq-location-v4",
         "validation": {
-          "version": "location-v5",
+          "version": "location-v6",
           "normalization_id": "8b8b0dee-c7e5-4918-9d92-1a1e00c3851a",
           "point": {
             "lat": 45.433,

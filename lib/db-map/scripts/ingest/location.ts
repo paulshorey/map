@@ -2,7 +2,7 @@
 import { countryToCode } from "./normalize/country.js";
 import { haversineMeters } from "./match/geo.js";
 import { validPoint } from "../../lib/ingestion/location-points.js";
-export const LOCATION_VERSION = "location-v5";
+export const LOCATION_VERSION = "location-v6";
 export const LOCATION_GEOCODER_VERSION = "locationiq-location-v4";
 export const LOCATION_CACHE_VERSION = "location-v2";
 export const LOCATION_QUERY_VERSION = "listed-location-v1";
@@ -116,6 +116,54 @@ export function forwardLocalityConflict(
   return !anchor || !validPoint(anchor) || !validPoint(hit)
     ? true
     : haversineMeters(anchor, hit) > LOCALITY_CONFLICT_M;
+}
+// Words that name the kind of place, not which one: "Biennale" alone identifies nothing.
+const GENERIC_NAME_TOKENS = new Set(
+  (
+    "biennale biennial biennal bienal bienale biennalen triennale triennial trienal " +
+    "quadriennale festival festivals fair art arts artes international internacional " +
+    "contemporary contemporanea contemporain the and for of de la le les del della di du des " +
+    "der und van een museum gallery galerie center centre park garden gardens online"
+  ).split(" "),
+);
+const significantTokens = (value: string) =>
+  foldTokens(value).filter(
+    (t) => t.length >= 3 && !GENERIC_NAME_TOKENS.has(t.toLowerCase()),
+  );
+
+/** True when every distinctive word of the provider's place name appears in the listed name. */
+export function providerNameAgrees(listedName: string, providerName: string) {
+  const listed = new Set(significantTokens(listedName));
+  const provider = significantTokens(providerName);
+  return provider.length > 0 && provider.every((t) => listed.has(t));
+}
+
+/**
+ * Why a forward result cannot stand for the listed text, or null when it can. A lookup of only
+ * region/country text ("England", "East Africa", "USA / Mexico") locates at most a region: a
+ * city, village, shop or restaurant it returns is a coincidence of names. A lookup by the POI's
+ * name alone must return a place whose own name matches (not "Ray-Ban" for "RAY Fotografie").
+ */
+export function forwardImplausible(
+  basis: string | null,
+  listed: { city?: unknown; name?: unknown },
+  hit: { precision: string; raw_response?: Record<string, unknown> | null },
+): "locality_result_too_specific" | "name_result_mismatch" | null {
+  if (
+    basis === "locality" &&
+    !localityValue(listed.city) &&
+    hit.precision !== "region" &&
+    hit.precision !== "country"
+  )
+    return "locality_result_too_specific";
+  if (basis === "name" && hit.precision === "point") {
+    const address = hit.raw_response?.address as Record<string, unknown> | undefined;
+    const providerName = textValue(address?.name);
+    const name = textValue(listed.name);
+    if (!name || !providerName || !providerNameAgrees(name, providerName))
+      return "name_result_mismatch";
+  }
+  return null;
 }
 export function locationReadySql(alias = "rp"): string {
   return `(${alias}.attributes->'location_enrichment'->>'version'='${LOCATION_VERSION}'

@@ -152,7 +152,7 @@ interface CandidateRow {
   best_name: string | null;
   best_name_normalized: string | null;
   best_content_embedding: number[] | null;
-  best_website_domain: string | null;
+  best_website: string | null;
   best_phone: string | null;
   best_address: string | null;
   best_city: string | null;
@@ -603,7 +603,7 @@ async function fetchCandidates(
        br.name AS best_name,
        br.name_normalized AS best_name_normalized,
        br.content_embedding AS best_content_embedding,
-       br.website_domain AS best_website_domain,
+       br.website AS best_website,
        br.phone AS best_phone,
        br.address AS best_address,
        br.city AS best_city,
@@ -738,8 +738,7 @@ function scoreCandidates(
         name_normalized:
           candidate.best_name_normalized ?? candidate.canonical_name,
         content_embedding: candidate.best_content_embedding,
-        website_domain:
-          candidate.best_website_domain ?? candidate.canonical_website,
+        website: candidate.best_website ?? candidate.canonical_website,
         phone: candidate.best_phone ?? candidate.canonical_phone,
         city: candidate.best_city,
         region: candidate.best_region,
@@ -839,7 +838,7 @@ async function llmDecisionForCandidate(
         country_code: candidate.best_country_code,
         lat: candidate.canonical_lat,
         lng: candidate.canonical_lng,
-        website: candidate.best_website_domain ?? candidate.canonical_website,
+        website: candidate.best_website ?? candidate.canonical_website,
         phone: candidate.best_phone ?? candidate.canonical_phone,
         coordinate_precision: candidate.best_coordinate_precision,
         starts_at: candidate.best_starts_at ?? candidate.canonical_starts_at,

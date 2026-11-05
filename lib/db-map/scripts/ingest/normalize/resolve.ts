@@ -3,6 +3,7 @@ import { normalizeName, websiteDomain } from "./text.js";
 import { strictDate, type DeterministicFacts, type DeterministicInput } from "./deterministic.js";
 import type { LlmNormalizationOutput } from "./contracts.js";
 import { isListingDomain, type NormalizationProfile } from "./profiles.js";
+import { websiteIdentity } from "../match/denylist.js";
 import { resolveAttributes } from "./attributes.js";
 
 export interface ResolvedNormalization {
@@ -139,7 +140,13 @@ export function resolveNormalization(input: {
     : null;
   let website = selectedWebsite?.value ?? captured.website;
   let domain = websiteDomain(website);
-  if (website && isListingDomain(domain, profile)) {
+  // A website that is the record's own listing page (or a directory domain) is not official.
+  const listingPage =
+    profile.selfListingNotOfficial &&
+    website !== null &&
+    websiteIdentity(website) !== null &&
+    websiteIdentity(website) === websiteIdentity(captured.source_url);
+  if (website && (listingPage || isListingDomain(domain, profile))) {
     warnings.push("listing_url_not_official");
     website = null;
     domain = null;

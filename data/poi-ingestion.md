@@ -617,6 +617,10 @@ legacy attempt records.
 - **Normalize:** deterministic facts plus evidence-validated model interpretation. Source/URL
   coordinates are authoritative; models cannot invent coordinates, contacts, or identifiers.
   Cache inputs come from immutable captured evidence, never derived projections. Keys include model, prompt/schema/examples/profile/normalizer versions.
+  A profile's `listingDomains` and, for `event-v2`, `selfListingNotOfficial` drop directory
+  pages from the official `website` (warning `listing_url_not_official`): Biennial Foundation
+  sets each record's website to its own listing page, which would otherwise publish and
+  match as an official site. Other profiles adopt the self-listing rule at their next version.
   Failed refresh keeps prior valid output and marks it stale. Accepted changes clear derived
   embeddings/geocode pointers, invalidate old geocoded coordinates, and refresh or retire
   memberships/builds according to match changes. Prompt output must retain the input UUID.
@@ -814,7 +818,11 @@ The matcher uses a cascade:
 2. Strong IDs, such as Wikidata QIDs and OSM identifiers.
 3. Aggressive proximity rules for same-category nearby features.
 4. Candidate scoring from name, stored embedding similarity, distance, locality, contact
-   fields, coordinate precision, and date compatibility.
+   fields, coordinate precision, and date compatibility. Websites compare by full URL
+   identity (`websiteIdentity`: host without `www.`, path, query without tracking
+   parameters), never by domain: `fs.usda.gov` alone is shared by thousands of
+   campgrounds, and a directory's listing pages share its domain. The LLM adjudicator sees
+   the same full URLs (`matcher-v4`).
 5. LLM adjudication for ambiguous gray-zone pairs when LLM is enabled.
 
 Each non-dry-run decision writes `research_match_decisions`.
@@ -970,6 +978,20 @@ remain cached for provider-free retries. Names compare in any script
 `名古屋市`), or a result with no city-level field, is not a match and follows the same
 distance verification. Only a record with no listed city skips this check. Both lookups share the call budget.
 
+Two plausibility checks follow (`forwardImplausible`, `location.ts`). A lookup of only
+region/country text, with no listed city (`England`, `East Africa`, `USA / Mexico`), may
+locate at most a region or country: a city, village, shop or restaurant it returns is a
+name coincidence and is rejected as `locality_result_too_specific`. A lookup by the POI's
+name alone must return a place whose own name agrees: every distinctive word of the
+provider's name (generic words such as Biennale, Festival, Art are ignored) must appear
+in the listed name, otherwise `name_result_mismatch` (Ray-Ban for "RAY Fotografieprojekte").
+The rejected hit is kept in `validation.forward.rejected` (an earlier rejection nests under
+`previous`). The lookup then falls back to the recognized listed country's English name
+unless a usable supplied point exists; an unrecognized country text (`East Africa`) leaves
+the record unlocated. An unlocated record is unpublished and its geocode task needs
+intervention; geocoding releases any snapshot it held, so its old canonical is rebuilt
+without it, or hidden when it was the only member (`releaseLocationHold`).
+
 Each canonical build writes `attributes.location_specificity`: `precise` when a
 point-precision source coordinate exists, or a point-precision lookup used an address,
 venue or name (`validation.forward.query_basis`); otherwise `general`. General covers
@@ -1010,11 +1032,15 @@ not reclassify stored points or rebuild existing artifacts.
 
 Forward results now retain the complete selected provider row as `raw_response`
 inside the query-cache hit and geocode artifact's `validation.forward.result`.
-Compact `precision_evidence` (`geocode-precision-v2`) records the operational
+Compact `precision_evidence` (`geocode-precision-v3`) records the operational
 value, its derivation, provider class/type, and diagnostic warnings. A provider
 `country` type, or a result whose address holds only country fields (OSM country
 boundaries arrive as `boundary`/`administrative`), is `country`; v1 called these
-`region` or `city`. Other type/class rules produce the existing city/region values;
+`region` or `city`. v3 reads an `administrative`/`boundary` result's precision from
+its own address: a city-level field makes it `city`, a state/region/province/county/island
+field `region`, otherwise `country` (`England` is a region, not a city; Mexico, Missouri
+is a city). Island, archipelago, county and similar types are `region`. Other type/class
+rules produce the existing city/region values;
 remaining results keep the point fallback with `point_precision_default`, plus
 `provider_granularity_missing` when neither field exists. These are diagnostics,
 not venue-accuracy claims or matching/publication gates. The selected response

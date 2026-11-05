@@ -62,6 +62,7 @@ function fixture(captured: any = source) {
   };
   const cache = new Map<string, any>();
   let activated: any = null;
+  let heldLookups = 0;
   const client = {
     release() {},
     async query(sql: string, args: any[] = []) {
@@ -92,7 +93,11 @@ function fixture(captured: any = source) {
         return { rows: [{ id: "geocode-new" }] };
       } else if (sql.startsWith("UPDATE research_pois SET lat="))
         activated = JSON.parse(args[6]);
-      else
+      else if (sql.startsWith("SELECT DISTINCT b.canonical_poi_id")) {
+        // An unlocatable record releases held snapshots; this fixture holds none.
+        heldLookups++;
+        return { rows: [] };
+      } else
         assert.ok(
           ["BEGIN", "COMMIT", "ROLLBACK"].includes(sql),
           `Unexpected fixture SQL: ${sql}`,
@@ -105,6 +110,9 @@ function fixture(captured: any = source) {
     cache,
     get activated() {
       return activated;
+    },
+    get heldLookups() {
+      return heldLookups;
     },
     db: { ...client, connect: async () => client } as unknown as Pool,
   };
@@ -665,6 +673,7 @@ test("a city-only miss never confirms a conflicting venue without a source point
   assert.equal(stats.unresolved, 1);
   assert.equal(stats.resolved, 0);
   assert.equal(f.activated, null, "a wrong venue must not become publishable");
+  assert.equal(f.heldLookups, 1, "an unlocatable record releases its held snapshot");
   assert.equal(
     f.cache.size,
     2,

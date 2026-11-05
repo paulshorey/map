@@ -129,3 +129,15 @@ test("fresh response preserves complete selected provider row and carries compac
   assert.equal(slots.source_coordinates, null);
   assert.equal((slots.inferred_coordinates as any).raw_response, undefined);
 });
+
+test("v3 boundaries take their precision from their own address", () => {
+  const row = (type: string, cls: string, address: Record<string, string>) =>
+    deriveForwardPrecision({ type, class: cls, address });
+  // "England" is a state boundary, not a city; Missouri's Mexico is a city.
+  assert.equal(row("administrative", "boundary", { state: "England", country: "United Kingdom", country_code: "gb" }).value, "region");
+  assert.equal(row("administrative", "boundary", { city: "Mexico", county: "Audrain County", state: "Missouri", country_code: "us" }).value, "city");
+  assert.equal(row("administrative", "boundary", { state: "Κύπρος", country: "Κύπρος - Kıbrıs", country_code: "cy" }).value, "region");
+  assert.equal(row("island", "place", { island: "Great Britain", country_code: "gb" }).value, "region");
+  assert.equal(row("county", "boundary", { county: "Kent", country_code: "gb" }).value, "region");
+  assert.equal(row("administrative", "boundary", { country: "Nigeria", country_code: "ng" }).value, "country");
+});

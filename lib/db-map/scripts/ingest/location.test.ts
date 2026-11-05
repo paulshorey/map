@@ -3,6 +3,8 @@ import { test, afterEach } from "node:test";
 import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
 import {
+  forwardImplausible,
+  providerNameAgrees,
   resolveLocation,
   reverseForPrecision,
   type ReverseLocation,
@@ -258,4 +260,26 @@ test("a supplied point repeating a published country centroid is country precisi
   // One decimal cannot tell a copied centroid from a coarse point.
   assert.equal(suppliedCountryCentroid({ lat: -25.3, lng: 133.8 }), null);
   assert.equal(suppliedCountryCentroid({ lat: null, lng: null }), null);
+});
+
+test("region/country-only lookups never yield a venue; name lookups must name the place", () => {
+  const shop = { precision: "point", raw_response: { class: "amenity", address: { name: "East Africa" } } };
+  // "East Africa" (no listed city) returned a Göteborg restaurant.
+  assert.equal(forwardImplausible("locality", { city: null, name: "East Africa Art Biennale" }, shop), "locality_result_too_specific");
+  assert.equal(forwardImplausible("locality", { city: "Various", name: "x" }, { precision: "city" }), "locality_result_too_specific");
+  assert.equal(forwardImplausible("locality", { city: null }, { precision: "region" }), null);
+  assert.equal(forwardImplausible("locality", { city: null }, { precision: "country" }), null);
+  // With a listed city, a city/point result is the existing city path.
+  assert.equal(forwardImplausible("locality", { city: "Nagoya" }, { precision: "city" }), null);
+  // Name lookups: "Ray-Ban" for RAY Fotografieprojekte, bare "Biennale" for Online Biennale.
+  const named = (name: string) => ({ precision: "point", raw_response: { address: { name } } });
+  assert.equal(forwardImplausible("name", { name: "RAY Fotografieprojekte Frankfurt/RheinMain" }, named("Ray-Ban")), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Online Biennale" }, named("Biennale")), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Dhaka Art Summit" }, { precision: "point", raw_response: {} }), "name_result_mismatch");
+  // Conservative: a provider name with a distinctive word the listing lacks is not trusted.
+  assert.equal(forwardImplausible("name", { name: "Zeitz MOCAA" }, named("Zeitz Museum of Contemporary Art Africa")), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Museo Tamayo Arte Contemporáneo" }, named("Museo Tamayo")), null);
+  assert.equal(forwardImplausible("name", { name: "Helsinki Biennial" }, { precision: "city" }), null);
+  assert.equal(forwardImplausible("venue", { name: "x" }, shop), null);
+  assert.equal(providerNameAgrees("Les Ateliers de Rennes", "Ateliers"), true);
 });
