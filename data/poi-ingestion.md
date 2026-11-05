@@ -930,13 +930,21 @@ provider budgets and recovery. If the budget expires between calls, activation w
 and resume reuses cached results; a miss preserves a usable source point.
 
 Listing filler such as `Various`, `Various venues`, `TBA`, `Online` or `Multiple
-locations` is not locality and never enters a forward query; the captured text itself
-is preserved. Quantifiers (`Multiple`, `Several`, `Many`) are filler only with a noun
+locations` is not locality and never enters a forward query or the projected
+`city`/`region`/`address`; the captured text itself is preserved. Quantifiers (`Multiple`, `Several`, `Many`) are filler only with a noun
 such as `venues`, so a town named Many is kept. When a source point exists and the only remaining listed locality is
 the country, no forward lookup runs: a country centroid beside a supplied point adds
 a marker, not evidence. Only points with `coordinate_source=source` or `url` qualify
 for this suppression. A record with legacy geocoded or unclassified coordinates
 still looks up its country and can acquire country-level inferred evidence.
+
+A supplied point within 1 km of a published country centroid (Google DSPL
+`countries.csv`, vendored in `scripts/ingest/supplied-centroids.ts`) has `country`
+precision, warning `source_point_country_centroid` and `supplied_centroid` evidence; it
+is never an anchor for the 50 km checks below. A reverse lookup is trusted only to the
+point's precision: a `country` point keeps only the country, a `region` point drops the
+city, and any coarse point drops the street address and postcode. A country centroid
+otherwise reverse-geocodes to whatever village lies under it.
 
 A venue/name/address lookup is suspect unless one of its city-level fields (city, town,
 village, hamlet, municipality, suburb or city district) equals the listed city's whole

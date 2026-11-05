@@ -2,8 +2,13 @@ import assert from "node:assert/strict";
 import { test, afterEach } from "node:test";
 import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
-import { resolveLocation, type ReverseLocation } from "./location.js";
+import {
+  resolveLocation,
+  reverseForPrecision,
+  type ReverseLocation,
+} from "./location.js";
 import { canonicalLocation } from "./canonical-location.js";
+import { suppliedCountryCentroid } from "./supplied-centroids.js";
 import {
   parseReverseLocation,
   reverseGeocode,
@@ -210,4 +215,36 @@ test("camel-case API event dates are deterministic source facts", async () => {
   });
   assert.equal(facts.startDate, "2026-06-12");
   assert.equal(facts.endDate, "2026-06-20");
+});
+
+test("a coarse point's reverse lookup never invents finer locality", () => {
+  // AFiRIperFOMA: Nigeria's centroid reverse-geocodes to a Kaduna village.
+  const country = resolveLocation(
+    { ...empty, country_code: "NG" },
+    reverseForPrecision(
+      { ...hit, country_code: "NG", city: "Kurmin Musa", region: "Kaduna", region_code: null },
+      "country",
+    ),
+  );
+  assert.deepEqual(country.fields, { ...empty, country_code: "NG" });
+  const region = reverseForPrecision(hit, "region")!;
+  assert.equal(region.city, null);
+  assert.equal(region.region, "Texas");
+  assert.equal(region.address, null);
+  const city = reverseForPrecision(hit, "city")!;
+  assert.equal(city.city, "Austin");
+  assert.equal(city.address, null);
+  assert.equal(city.postcode, null);
+  assert.equal(reverseForPrecision(hit, "point"), hit);
+  assert.equal(reverseForPrecision(null, "country"), null);
+});
+
+test("a supplied point repeating a published country centroid is country precision", () => {
+  // Biennial Foundation's Adelaide record supplies Australia's centroid, rounded.
+  assert.equal(suppliedCountryCentroid({ lat: -25.2744, lng: 133.7751 }), "AU");
+  assert.equal(suppliedCountryCentroid({ lat: 9.081999, lng: 8.675277 }), "NG");
+  // A real Rome venue 3.4 km from the Vatican centroid, and Aichi's Nagoya venue, stay points.
+  assert.equal(suppliedCountryCentroid({ lat: 41.9334, lng: 12.4534 }), null);
+  assert.equal(suppliedCountryCentroid({ lat: 35.1815, lng: 136.9066 }), null);
+  assert.equal(suppliedCountryCentroid({ lat: null, lng: null }), null);
 });

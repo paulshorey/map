@@ -2,7 +2,7 @@
 import { countryToCode } from "./normalize/country.js";
 import { haversineMeters } from "./match/geo.js";
 import { validPoint } from "../../lib/ingestion/location-points.js";
-export const LOCATION_VERSION = "location-v3";
+export const LOCATION_VERSION = "location-v5";
 export const LOCATION_GEOCODER_VERSION = "locationiq-location-v4";
 export const LOCATION_CACHE_VERSION = "location-v2";
 export const LOCATION_QUERY_VERSION = "listed-location-v1";
@@ -126,6 +126,24 @@ export function locationReadySql(alias = "rp"): string {
       AND lg.normalization_id=${alias}.active_normalization_id AND lg.provider_version='${LOCATION_GEOCODER_VERSION}'
       AND lg.validation->'coordinate_evidence'=${alias}.attributes->'location_enrichment'->'coordinate_evidence'
       AND jsonb_typeof(lg.validation->'coordinate_evidence')='object'))`;
+}
+/**
+ * A reverse lookup is only as specific as the point it was taken from. A country or
+ * region centroid reverse-geocodes to whatever village lies under it, so fields finer
+ * than the point's precision are dropped before they can fill listed locality.
+ */
+export function reverseForPrecision(
+  reverse: ReverseLocation | null,
+  precision: string | null | undefined,
+): ReverseLocation | null {
+  if (!reverse || !precision || precision === "point") return reverse;
+  return {
+    ...reverse,
+    address: null,
+    postcode: null,
+    ...(precision === "region" || precision === "country" ? { city: null } : {}),
+    ...(precision === "country" ? { region: null, region_code: null } : {}),
+  };
 }
 /** Never replace official text, and never apply a conflicting reverse address. */
 export function resolveLocation(

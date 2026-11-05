@@ -30,9 +30,14 @@ import {
   locationReadySql,
   resolveLocation,
   textValue,
+  reverseForPrecision,
   type ReverseLocation,
 } from "./location.js";
 import { countryToCode } from "./normalize/country.js";
+import {
+  SUPPLIED_CENTROID_M,
+  suppliedCountryCentroid,
+} from "./supplied-centroids.js";
 import { stableHash } from "./hash.js";
 import { haversineMeters } from "./match/geo.js";
 import {
@@ -443,17 +448,23 @@ export async function runGeocode(
         countryToCode(captured.country_code) ??
         countryToCode(attrs.country_name) ??
         null,
+      // Filler such as "Various" stays in the capture but never becomes the projected locality.
       address:
-        textValue(captured.address) ??
-        textValue(attrs.venue_address) ??
-        textValue(attrs.street_address),
-      city: textValue(captured.city),
-      region: textValue(captured.region),
+        localityValue(captured.address) ??
+        localityValue(attrs.venue_address) ??
+        localityValue(attrs.street_address),
+      city: localityValue(captured.city),
+      region: localityValue(captured.region),
     };
     let lat: number | null = row.lat,
       lng: number | null = row.lng;
     let coordinateSource = row.coordinate_source,
       coordinatePrecision = row.coordinate_precision;
+    // A supplied point that repeats a published country centroid locates only the country.
+    const suppliedCentroid = ["source", "url"].includes(row.coordinate_source)
+      ? suppliedCountryCentroid(row)
+      : null;
+    if (suppliedCentroid) coordinatePrecision = "country";
     const temporal = new Set<string>(
       (
         await db.query(
@@ -525,6 +536,7 @@ export async function runGeocode(
       forward = first.hit ?? null;
       const cityQuery = listedCityQuery(row, captured, temporal);
       const sourcePoint =
+        !suppliedCentroid &&
         validPoint({ lat: row.lat, lng: row.lng }) &&
         ["source", "url"].includes(row.coordinate_source)
           ? { lat: row.lat as number, lng: row.lng as number }
@@ -590,7 +602,9 @@ export async function runGeocode(
               lng: row.lng,
               kind: "source",
               origin: "source_coordinates",
-              precision: row.coordinate_precision ?? "point",
+              precision: suppliedCentroid
+                ? "country"
+                : (row.coordinate_precision ?? "point"),
               label: null,
               query: null,
             }
@@ -638,7 +652,7 @@ export async function runGeocode(
     }
     const resolved = resolveLocation(
       source,
-      hit && coordinatePrecision !== "point" ? { ...hit, address: null } : hit,
+      reverseForPrecision(hit, coordinatePrecision),
     );
     if (
       forwardCountry &&
@@ -648,6 +662,8 @@ export async function runGeocode(
       resolved.warnings.push("forward_country_conflict");
     if (!hit && Object.values(source).some((value) => !value))
       resolved.warnings.push("reverse_location_incomplete");
+    if (suppliedCentroid)
+      resolved.warnings.push("source_point_country_centroid");
     if (Object.values(resolved.fields).some((value) => !value))
       resolved.warnings.push("location_fields_incomplete");
     const metadata = {
@@ -668,6 +684,15 @@ export async function runGeocode(
         ...(cityConfirmation ? { city_confirmation: cityConfirmation } : {}),
       },
       coordinate_evidence: coordinateEvidence,
+      ...(suppliedCentroid
+        ? {
+            supplied_centroid: {
+              country_code: suppliedCentroid,
+              reference: "google-dspl-countries",
+              radius_m: SUPPLIED_CENTROID_M,
+            },
+          }
+        : {}),
       ...resolved,
       reverse: hit,
       lookup_state: hit
