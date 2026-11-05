@@ -262,11 +262,18 @@ function decimals(value: number): number {
 /** Fewer decimals than this cannot distinguish a copied centroid from a coarse point. */
 export const MIN_CENTROID_DECIMALS = 2;
 
+/** `value` written to `places` decimals equals `centroid` rounded or truncated to them. */
+function repeats(value: number, centroid: number, places: number): boolean {
+  const scale = 10 ** places;
+  const eq = (a: number) => Math.abs(a / scale - value) < 0.5 / scale / 1000;
+  return eq(Math.round(centroid * scale)) || eq(Math.trunc(centroid * scale));
+}
+
 /**
- * The country whose published centroid a supplied point repeats, if any. The point must
- * equal the centroid rounded or truncated to the point's own precision (within one unit
- * of its last decimal, on both axes), so a real venue near a microstate centroid, written
- * to full precision, never matches. A listed country other than the centroid's rules it out.
+ * The country whose published centroid a supplied point repeats, if any. Each axis must equal
+ * the centroid rounded or truncated to the point's own decimals (at least two), so a real
+ * venue near a microstate centroid, or a neighbouring two-decimal cell, never matches. A
+ * listed country other than the centroid's rules it out.
  */
 export function suppliedCountryCentroid(
   point: { lat: number | null; lng: number | null },
@@ -275,11 +282,10 @@ export function suppliedCountryCentroid(
   if (typeof point.lat !== "number" || typeof point.lng !== "number") return null;
   const places = Math.min(decimals(point.lat), decimals(point.lng));
   if (places < MIN_CENTROID_DECIMALS) return null;
-  const tolerance = 10 ** -places + 1e-9;
   for (const [code, lat, lng] of COUNTRY_CENTROIDS)
     if (
-      Math.abs(lat - point.lat) <= tolerance &&
-      Math.abs(lng - point.lng) <= tolerance &&
+      repeats(point.lat, lat, decimals(point.lat)) &&
+      repeats(point.lng, lng, decimals(point.lng)) &&
       (!listedCountry || listedCountry === code)
     )
       return code;

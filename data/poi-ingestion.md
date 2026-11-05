@@ -948,11 +948,14 @@ still looks up its country and can acquire country-level inferred evidence.
 
 A supplied point that repeats a published country centroid (Google DSPL
 `countries.csv`, vendored in `scripts/ingest/supplied-centroids.ts`) has `country`
-precision. It must equal the centroid rounded or truncated to its own precision (within
-one unit of its last decimal on both axes, at least two decimals), and a listed country
+precision. Each axis must equal the centroid rounded or truncated to that axis's own
+decimals (at least two), and a listed country (captured, or `source_location_hints.country`)
 other than the centroid's rules the match out, so a full-precision venue near a
 microstate centroid stays a point. A match gets the `source_point_country_centroid` warning and `supplied_centroid` evidence; it
-is never an anchor for the 50 km checks below. A reverse lookup is trusted only to the
+is never an anchor for the 50 km checks below. When enrichment flips a linked record's point
+between `point` and a coarser precision, its membership is retired
+(`coordinate_precision_changed`) and the record is matched again, because matching ignores
+distance for coarse points; overrides apply first, and the old snapshot is held until then. A reverse lookup is trusted only to the
 point's precision: a `country` point keeps only the country, a `region` point drops the
 city, and any coarse point drops the street address and postcode. A country centroid
 otherwise reverse-geocodes to whatever village lies under it.
