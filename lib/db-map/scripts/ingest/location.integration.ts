@@ -48,7 +48,9 @@ try {
     [row.canonical_poi_id, row.id],
   );
   await client.query(
-    "UPDATE research_pois SET attributes=attributes-'location_enrichment' WHERE id=$1",
+    // Start from an unenriched row: reverse lookup fills the missing region. (Replacing an
+    // existing region would retire the membership for a rematch instead.)
+    "UPDATE research_pois SET attributes=attributes-'location_enrichment', region=NULL WHERE id=$1",
     [row.id],
   );
   await client.query("DELETE FROM research_geocode_cache WHERE query_norm=$1", [

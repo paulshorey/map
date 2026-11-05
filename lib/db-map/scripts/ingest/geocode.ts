@@ -933,11 +933,14 @@ export async function runGeocode(
         // point that crosses point/coarse precision, or changed city/region/country, is matched
         // again. Overrides apply first there.
         const coarse = (p: unknown) => p !== "point";
-        // Locality fields feed the locality score and the (cleared) embedding text.
+        // Locality fields feed the locality score and the (cleared) embedding text. Removing or
+        // replacing one can undo the evidence a merge passed on; filling a gap only adds it.
+        const lost = (before: unknown, after: unknown) =>
+          before != null && before !== after;
         const localityChanged =
-          row.city !== resolved.fields.city ||
-          row.region !== resolved.fields.region ||
-          row.country_code !== resolved.fields.country_code;
+          lost(row.city, resolved.fields.city) ||
+          lost(row.region, resolved.fields.region) ||
+          lost(row.country_code, resolved.fields.country_code);
         const rematch =
           !!row.canonical_poi_id &&
           (coarse(row.coordinate_precision) !== coarse(coordinatePrecision) ||
