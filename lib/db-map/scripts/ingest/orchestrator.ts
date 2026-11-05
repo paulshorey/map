@@ -8,7 +8,8 @@ import { runRecordScheduler } from "./record-scheduler.js";
 import { EmbeddingBatcher } from "./embedding-batcher.js";
 import { buildEmbedText } from "./embed.js";
 import { configureLlmConcurrency, canonicalLane } from "./concurrency.js";
-import { artifactTransaction, fencedTransaction } from "./execution.js";
+import { artifactTransaction } from "./execution.js";
+import { assertSourceCurrent } from "./staleness.js";
 import { spawn } from "node:child_process";
 import { Execution, lockSource, type AttemptResult } from "./execution.js";
 import { runGeocode } from "./geocode.js";
@@ -33,7 +34,6 @@ import {
 import { getExtractor } from "./sources.js";
 import type { RawRecord } from "./types.js";
 import { rebuildCanonicalPoi } from "./merge.js";
-import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 
 export type IngestStage =
   | "extract"
@@ -903,8 +903,7 @@ async function recordState(db: Pool, item: RunItem) {
     (rp.content_embedding IS NOT NULL) AS has_embedding,rp.active_embedding_id,rp.active_geocode_id,
     rp.canonical_poi_id,rp.retired_at,cp.active_build_id,cp.status AS canonical_status,
     EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
-      AND m.matcher_version='${PIPELINE_VERSIONS.matcher}' AND rp.matched_normalization_id IS NOT NULL) AS membership_valid,
-    (rp.canonical_poi_id IS NOT NULL AND rp.matched_normalization_id IS NULL) AS rematch_required,
+      AND m.matcher_version='${PIPELINE_VERSIONS.matcher}') AS membership_valid,
     EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
       AND m.matcher_version IS DISTINCT FROM '${PIPELINE_VERSIONS.matcher}') AS membership_stale_matcher,
     EXISTS(SELECT 1 FROM research_canonical_memberships m JOIN canonical_poi_build_inputs b ON b.membership_id=m.id
@@ -1027,6 +1026,8 @@ export async function runOrchestration(
     throw new Error("Extractor version changed; start a new run");
   if (previous && hashed.sha256 !== previous.file_sha256)
     throw new Error("Source file changed; start a new run for this version");
+  // Outdated records are re-ingested, never upgraded: a new run refuses a source holding any.
+  if (!previous) await assertSourceCurrent(db, resolved.source.meta.slug);
   if (opts.dryRun) {
     console.log(
       JSON.stringify(
@@ -1306,66 +1307,21 @@ export async function runOrchestration(
               };
             }
             if (stage === "match") {
-              // A membership decided by an older matcher is matched again. Pointer and membership
-              // stay intact (status, rebuilds and other queries still see the record) until the
-              // rematch replaces both atomically in its apply transaction.
-              // Rematch a linked row decided by an older matcher, or one whose location evidence
-              // changed (geocode activation cleared its match marker).
-              let rematchLinked =
-                !!state.canonical_poi_id &&
-                (!!state.membership_stale_matcher || !!state.rematch_required);
-              if (rematchLinked) {
-                // A sole live member has nothing to split from: keep its canonical and decision,
-                // re-versioning the membership and rebuilding in one fenced transaction.
-                const sole = await canonicalLane.run(() =>
-                  fencedTransaction(db, async (client) => {
-                    await client.query(
-                      "SELECT pg_advisory_xact_lock($1::bigint)",
-                      [CANONICAL_WRITER_LOCK],
-                    );
-                    const others = await client.query(
-                      `SELECT 1 FROM research_canonical_memberships m JOIN research_pois rp ON rp.id=m.research_poi_id
-                      WHERE m.canonical_poi_id=$1 AND m.active AND m.research_poi_id<>$2 AND rp.retired_at IS NULL LIMIT 1`,
-                      [state.canonical_poi_id, item.research_poi_id],
-                    );
-                    if (others.rowCount) return false;
-                    await client.query(
-                      `WITH retired AS (
-                        UPDATE research_canonical_memberships SET active=false, retired_at=now(), retirement_reason='matcher_upgraded'
-                        WHERE research_poi_id=$1 AND active
-                        RETURNING research_poi_id,normalization_id,canonical_poi_id,match_decision_id
-                      ) INSERT INTO research_canonical_memberships(research_poi_id,normalization_id,canonical_poi_id,match_decision_id,matcher_version,run_id)
-                      SELECT research_poi_id,normalization_id,canonical_poi_id,match_decision_id,$2,$3 FROM retired`,
-                      [
-                        item.research_poi_id,
-                        PIPELINE_VERSIONS.matcher,
-                        ctx.runId,
-                      ],
-                    );
-                    await client.query(
-                      "UPDATE research_pois SET matched_normalization_id=active_normalization_id WHERE id=$1",
-                      [item.research_poi_id],
-                    );
-                    await rebuildCanonicalPoi(client, state.canonical_poi_id, {
-                      noLlm: true,
-                    });
-                    return true;
-                  }),
+              // Records produced by older pipeline logic are never upgraded in place: purge and
+              // re-ingest them (see ingest:staleness). New runs refuse such sources up front.
+              if (state.canonical_poi_id && state.membership_stale_matcher)
+                throw Object.assign(
+                  new Error(
+                    `Record ${item.source_record_id} was matched by an older matcher than ${PIPELINE_VERSIONS.matcher}; ` +
+                      "purge its source and re-import it (pnpm --filter @lib/db-map ingest:staleness)",
+                  ),
+                  { code: "outdated_data" },
                 );
-                if (sole) {
-                  Object.assign(state, await recordState(db, item));
-                  rematchLinked = false;
-                }
-              }
               const assessment = await assessLocationRecord(
                 db,
                 item.research_poi_id!,
               );
-              if (
-                !rematchLinked &&
-                state.canonical_poi_id &&
-                state.membership_valid
-              ) {
+              if (state.canonical_poi_id && state.membership_valid) {
                 if (!(await recordState(db, item)).lineage_ready) {
                   const publication = await canonicalLane.run(() =>
                     artifactTransaction(db, async (client) => {
@@ -1411,7 +1367,7 @@ export async function runOrchestration(
                   build_id: ready.active_build_id,
                 };
               }
-              if (state.canonical_poi_id && !rematchLinked)
+              if (state.canonical_poi_id)
                 throw Object.assign(
                   new Error("Canonical membership lineage mismatch"),
                   { code: "lineage_invalid" },
@@ -1428,7 +1384,6 @@ export async function runOrchestration(
                 {
                   source: resolved.source.meta.slug,
                   recordId: item.research_poi_id!,
-                  rematchLinked,
                   runId: ctx.runId,
                   limit: 1,
                   dryRun: false,

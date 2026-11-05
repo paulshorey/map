@@ -98,7 +98,10 @@ function fixture(captured: any = source) {
         return { rows: [{ id: "geocode-new" }] };
       } else if (sql.startsWith("SELECT pg_advisory_xact_lock")) {
         return { rows: [], rowCount: 1 };
-      } else if (sql.startsWith("UPDATE research_pois SET attributes=(")) {
+      } else if (
+        sql.startsWith("UPDATE research_pois SET attributes=(") ||
+        sql.startsWith("UPDATE research_pois SET attributes=COALESCE(attributes,'{}'::jsonb)\n")
+      ) {
         unresolved = JSON.parse(args[1]);
         return { rows: [], rowCount: 1 };
       } else if (sql.startsWith("UPDATE research_pois SET lat=NULL")) {
@@ -468,19 +471,6 @@ test("canonical buckets are selected independently by provenance, with exact art
   );
 });
 
-test("single-location pipeline checkpoints remain structurally compatible without a backfill", () => {
-  const previous = {
-    ...PIPELINE_VERSIONS,
-    geocode: "locationiq-location-v2",
-    canonicalBuilder: "canonical-build-v2",
-  };
-  assert.ok(resumePipelineUpgrade(previous));
-  assert.throws(
-    () => resumePipelineUpgrade({ ...previous, matcher: "unreviewed" }),
-    /Pipeline versions changed/,
-  );
-});
-
 test("legacy canonical points retain known coordinate provenance without inventing evidence", () => {
   const row = {
     id: "legacy",
@@ -693,7 +683,7 @@ test("a city-only miss never confirms a conflicting venue without a source point
   assert.equal(stats.unresolved, 1);
   assert.equal(stats.resolved, 0);
   assert.equal(f.activated, null, "a wrong venue must not become publishable");
-  assert.equal(f.heldLookups, 1, "an unlocatable record releases its held snapshot");
+  assert.equal(f.unresolved.forward.state, "unresolved", "why the record is unlocated is kept");
   assert.equal(
     f.cache.size,
     3,
@@ -1613,29 +1603,6 @@ test("an address miss without any point falls back to the listed city, flagged a
   assert.equal(f.activated.coordinate_evidence.inferred_coordinates.precision, "city");
 });
 
-test("a retained geocoded point that is itself the rejected result is dropped, not reactivated", async () => {
-  // East Africa Art Biennale: an older run stored the Göteborg restaurant as its point.
-  const restaurant = {
-    lat: "57.72", lon: "11.948", class: "amenity", type: "restaurant",
-    address: { name: "East Africa", city: "Göteborg", country_code: "se" },
-  };
-  const f = fixture({ name: "East Africa Art Biennale", city: null, country_code: null, attributes: { country_name: "East Africa" } });
-  Object.assign(f.row, { lat: 57.72, lng: 11.948, coordinate_source: "geocode", coordinate_precision: "point" });
-  process.env.LOCATIONIQ_API_KEY = "fixture";
-  globalThis.fetch = async (input) => {
-    const url = new URL(String(input));
-    assert.ok(url.pathname.endsWith("/search"), "a rejected point is never reverse geocoded");
-    return Response.json([restaurant]);
-  };
-  const stats = await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
-  assert.equal(stats.unresolved, 1);
-  assert.equal(f.activated, null, "the rejected restaurant must not be reactivated");
-  assert.deepEqual(f.cleared, ["poi"], "the rejected point is cleared in the database");
-  assert.equal(f.unresolved.forward.rejected.reason, "locality_result_too_specific");
-  assert.deepEqual(f.unresolved.cleared_point, { lat: 57.72, lng: 11.948, coordinate_source: "geocode" });
-  assert.equal(f.heldLookups, 1);
-});
-
 test("over-long queries keep their local end; a 400 is a record-level miss, not a run failure", async () => {
   const long =
     "Departamento de Botánica y Zoología, Centro Universitario de Ciencias Biológicas y Agropecuarias, Universidad de Guadalajara, Km 15.5 carr. Guadalajara a Nogales, Las Agujas, Nextipac, Zapopan, Jalisco, Mexico";
@@ -1756,43 +1723,3 @@ test("a query whose address was trimmed away is judged as locality", () => {
   assert.equal(basisAfterFit("address", { address: long }, fitted), "address");
 });
 
-test("a retained point that was the earlier inferred result takes the refreshed result", async () => {
-  // location-v5 stored a business point for a city-only lookup; the refreshed result is city.
-  const f = fixture({ ...japan });
-  Object.assign(f.row, {
-    lat: 35.2, lng: 136.95, coordinate_source: "geocode", coordinate_precision: "point",
-    attributes: { location_enrichment: { coordinate_evidence: { source_coordinates: null,
-      inferred_coordinates: { lat: 35.2, lng: 136.95, kind: "inferred", origin: "listed_address_geocode", precision: "point" } } } },
-  });
-  process.env.LOCATIONIQ_API_KEY = "fixture";
-  globalThis.fetch = async (input) => {
-    const url = new URL(String(input));
-    if (url.pathname.endsWith("/reverse"))
-      return Response.json({ lat: "35.18", lon: "136.90", address: { city: "Nagoya", country_code: "jp" } });
-    return Response.json([{ lat: "35.18", lon: "136.90", class: "boundary", type: "administrative",
-      address: { city: "名古屋市", state: "愛知県", country_code: "jp" } }]);
-  };
-  await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
-  assert.deepEqual(f.activated.point, { lat: 35.18, lng: 136.9 });
-  assert.equal(f.activated.coordinate_evidence.inferred_coordinates.precision, "city");
-});
-
-test("a rejected pre-provenance point is kept, matching what settlement can persist", async () => {
-  const restaurant = {
-    lat: "57.72", lon: "11.948", class: "amenity", type: "restaurant",
-    address: { name: "East Africa", city: "Göteborg", country_code: "se" },
-  };
-  const f = fixture({ name: "East Africa Art Biennale", city: null, country_code: null, attributes: { country_name: "East Africa" } });
-  Object.assign(f.row, { lat: 57.72, lng: 11.948, coordinate_source: null, coordinate_precision: null });
-  process.env.LOCATIONIQ_API_KEY = "fixture";
-  globalThis.fetch = async (input) => {
-    const url = new URL(String(input));
-    if (url.pathname.endsWith("/reverse"))
-      return Response.json({ lat: "57.72", lon: "11.948", address: { city: "Göteborg", country_code: "se" } });
-    return Response.json([restaurant]);
-  };
-  await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
-  assert.deepEqual(f.cleared, [], "nothing is cleared for a point settlement cannot clear");
-  assert.ok(f.activated, "the legacy point stays and is re-enriched");
-  assert.equal(f.activated.forward.rejected.reason, "locality_result_too_specific");
-});

@@ -16,7 +16,6 @@ import {
   type GeocodeHit,
 } from "./providers/locationiq.js";
 import { artifactTransaction, fencedTransaction } from "./execution.js";
-import { publicationAwaitingLocationSql } from "../../sql/location-assessments.js";
 import { canonicalLane } from "./concurrency.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { rebuildCanonicalPoi } from "./merge.js";
@@ -506,68 +505,18 @@ export async function writeRowCoords(
   await (linked ? canonicalLane.run(activate) : activate());
 }
 
-/**
- * Settle a record whose lookups found no plausible point, in one transaction fenced by the
- * geocode claim: a retained geocoded point that was itself a rejected result is cleared and its
- * membership retired (`location_rejected`), then each canonical whose active build still
- * includes the record is rebuilt without it (hidden when no member remains and no other member
- * awaits a refresh). A stale claim aborts before anything is written.
- */
-async function settleUnlocated(
+/** Record why a record has no plausible point (shown by location review); nothing else changes. */
+async function recordUnlocated(
   db: Pool,
   researchId: string,
-  rejectedPoint: { lat: number; lng: number } | null,
   evidence: Record<string, unknown>,
 ) {
-  await canonicalLane.run(() =>
-    fencedTransaction(db, async (client) => {
-      // Same lock order as every canonical writer: the advisory lock before any member row.
-      await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [
-        CANONICAL_WRITER_LOCK,
-      ]);
-      // Keep why the record is unlocated; enrichment of a cleared point is stale.
-      await client.query(
-        `UPDATE research_pois SET attributes=(COALESCE(attributes,'{}'::jsonb)
-          - CASE WHEN $3 THEN 'location_enrichment' ELSE '' END)
-          || jsonb_build_object('location_unresolved',$2::jsonb) WHERE id=$1`,
-        [researchId, JSON.stringify(evidence), !!rejectedPoint],
-      );
-      if (rejectedPoint) {
-        const cleared = await client.query(
-          `UPDATE research_pois SET lat=NULL, lng=NULL, coordinate_source=NULL, coordinate_precision=NULL,
-            active_geocode_id=NULL, canonical_poi_id=NULL, matched_normalization_id=NULL
-          WHERE id=$1 AND coordinate_source='geocode' AND lat=$2 AND lng=$3`,
-          [researchId, rejectedPoint.lat, rejectedPoint.lng],
-        );
-        if (cleared.rowCount)
-          await client.query(
-            `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
-            retirement_reason='location_rejected' WHERE research_poi_id=$1 AND active`,
-            [researchId],
-          );
-      }
-      const held = await client.query<{ canonical_poi_id: string }>(
-        `SELECT DISTINCT b.canonical_poi_id
-        FROM canonical_poi_build_inputs i JOIN canonical_poi_builds b ON b.id=i.build_id
-        JOIN canonical_pois cp ON cp.active_build_id=b.id
-        WHERE i.research_poi_id=$1 AND NOT EXISTS(SELECT 1 FROM research_canonical_memberships m
-          WHERE m.research_poi_id=$1 AND m.canonical_poi_id=b.canonical_poi_id AND m.active)`,
-        [researchId],
-      );
-      for (const { canonical_poi_id } of held.rows) {
-        // Another member still awaiting its own refresh keeps the snapshot; its completion
-        // (or its own settlement) rebuilds the canonical.
-        const others = await client.query(
-          `SELECT ${publicationAwaitingLocationSql("cp", "$2")} AS held FROM canonical_pois cp WHERE cp.id=$1`,
-          [canonical_poi_id, researchId],
-        );
-        if (others.rows[0]?.held) continue;
-        await rebuildCanonicalPoi(client, canonical_poi_id, {
-          noLlm: true,
-          releaseLocationHoldFor: researchId,
-        });
-      }
-    }),
+  await fencedTransaction(db, (client) =>
+    client.query(
+      `UPDATE research_pois SET attributes=COALESCE(attributes,'{}'::jsonb)
+        || jsonb_build_object('location_unresolved',$2::jsonb) WHERE id=$1`,
+      [researchId, JSON.stringify(evidence)],
+    ),
   );
 }
 
@@ -806,26 +755,6 @@ export async function runGeocode(
         rejected = rejected ? { ...current, previous: rejected } : current;
         forward = null;
       }
-      // A retained geocoded point that is itself a rejected result must not survive it.
-      // Only a geocode-derived point qualifies: settlement can clear exactly those, so the
-      // in-memory and persisted states agree (pre-provenance points are kept).
-      if (
-        rejected &&
-        row.coordinate_source === "geocode" &&
-        validPoint({ lat, lng })
-      ) {
-        for (let r: any = rejected; r; r = r.previous)
-          if (
-            validPoint(r.result) &&
-            Math.abs(r.result.lat - lat!) < 1e-6 &&
-            Math.abs(r.result.lng - lng!) < 1e-6
-          ) {
-            lat = null;
-            lng = null;
-            coordinatePrecision = null;
-            break;
-          }
-      }
       // No plausible result and no point at all: fall back to the listed city, then the
       // recognized country, so the record still publishes as a general location. A record
       // with a supplied or retained point keeps it.
@@ -870,67 +799,29 @@ export async function runGeocode(
         if (stop) continue;
       }
       if (forward) forward = capLocalityPrecision(forwardBasis, forward);
-      // A retained point that is this pipeline's own earlier inferred result takes the refreshed
-      // result (and its precision). Pre-slot legacy points and source/URL points are kept.
-      const priorInferred = (row.attributes?.location_enrichment
-        ?.coordinate_evidence?.inferred_coordinates ?? null) as {
-        lat?: number;
-        lng?: number;
-      } | null;
-      if (
-        forward &&
-        row.coordinate_source === "geocode" &&
-        validPoint({ lat, lng }) &&
-        priorInferred &&
-        validPoint(priorInferred as { lat: number; lng: number }) &&
-        Math.abs(priorInferred.lat! - lat!) < 1e-9 &&
-        Math.abs(priorInferred.lng! - lng!) < 1e-9
-      ) {
-        lat = forward.lat;
-        lng = forward.lng;
-        coordinatePrecision = forward.precision;
-      }
     } else stats.noQuery++;
     if (!validPoint({ lat, lng })) {
       if (!forward) {
         stats.unresolved++;
         // Every lookup finished (budget/provider stops exit above): no plausible point exists.
-        // A retained point dropped above (it was a rejected result) is cleared in the database
-        // too, so the record is unlocated rather than still served.
         if (!opts.dryRun)
-          await settleUnlocated(
-            db,
-            row.id,
-            validPoint({ lat: row.lat, lng: row.lng })
-              ? { lat: row.lat as number, lng: row.lng as number }
-              : null,
-            {
-              version: LOCATION_VERSION,
-              normalization_id: row.active_normalization_id,
-              settled_at: new Date().toISOString(),
-              forward: {
-                query_version: LOCATION_QUERY_VERSION,
-                country_filter: forwardCountry,
-                query: q?.display ?? null,
-                query_basis: forwardBasis,
-                query_norm: forwardQueryNorm,
-                state: !q ? "no_query" : "unresolved",
-                ...(rejected ? { rejected } : {}),
-                ...(invalidQueries.length
-                  ? { invalid_queries: invalidQueries }
-                  : {}),
-              },
-              ...(validPoint({ lat: row.lat, lng: row.lng })
-                ? {
-                    cleared_point: {
-                      lat: row.lat,
-                      lng: row.lng,
-                      coordinate_source: row.coordinate_source,
-                    },
-                  }
+          await recordUnlocated(db, row.id, {
+            version: LOCATION_VERSION,
+            normalization_id: row.active_normalization_id,
+            settled_at: new Date().toISOString(),
+            forward: {
+              query_version: LOCATION_QUERY_VERSION,
+              country_filter: forwardCountry,
+              query: q?.display ?? null,
+              query_basis: forwardBasis,
+              query_norm: forwardQueryNorm,
+              state: !q ? "no_query" : "unresolved",
+              ...(rejected ? { rejected } : {}),
+              ...(invalidQueries.length
+                ? { invalid_queries: invalidQueries }
                 : {}),
             },
-          );
+          });
         continue;
       }
       lat = forward.lat;
@@ -1135,38 +1026,6 @@ export async function runGeocode(
             new Error("Location input changed during activation"),
             { code: "lineage_invalid" },
           );
-        // Matching drops the distance signal for a coarse point and scores locality fields, so a
-        // point that crosses point/coarse precision, or changed city/region/country, is matched
-        // again. Overrides apply first there.
-        const coarse = (p: unknown) => p !== "point";
-        // Locality fields (and the address the LLM judge sees) feed matching and the cleared
-        // embedding text. Removing or replacing one can undo the evidence a merge passed on;
-        // filling a gap only adds it.
-        const lost = (before: unknown, after: unknown) =>
-          before != null && before !== after;
-        const localityChanged =
-          lost(row.address, resolved.fields.address) ||
-          lost(row.city, resolved.fields.city) ||
-          lost(row.region, resolved.fields.region) ||
-          lost(row.country_code, resolved.fields.country_code);
-        // A moved geocode-derived point changes candidate blocking (source points never move).
-        const pointMoved =
-          validPoint({ lat: row.lat, lng: row.lng }) &&
-          (Math.abs(row.lat - lat!) > 1e-9 || Math.abs(row.lng - lng!) > 1e-9);
-        const rematch =
-          !!row.canonical_poi_id &&
-          (coarse(row.coordinate_precision) !== coarse(coordinatePrecision) ||
-            localityChanged ||
-            pointMoved);
-        // The pointer and membership stay authoritative: only the match marker is cleared, and
-        // matching rematches the row while linked, replacing both atomically.
-        if (rematch)
-          await client.query(
-            "UPDATE research_pois SET matched_normalization_id=NULL WHERE id=$1",
-            [row.id],
-          );
-        // The record stays a member until the rematch replaces it, so its build reflects the
-        // refreshed location now.
         if (row.canonical_poi_id)
           await rebuildCanonicalPoi(client, row.canonical_poi_id, {
             noLlm: true,

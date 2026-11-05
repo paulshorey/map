@@ -60,6 +60,11 @@ const PROFILES: Record<string, NormalizationProfile> = {
   },
 };
 
+/** Every current profile version (used to detect normalizations from older profiles). */
+export function allNormalizationProfileVersions(): string[] {
+  return Object.values(PROFILES).map((profile) => profile.version);
+}
+
 export function getNormalizationProfile(
   id: string | undefined,
 ): NormalizationProfile {

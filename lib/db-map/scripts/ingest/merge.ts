@@ -65,9 +65,6 @@ interface OccurrenceChoice {
 
 export interface RebuildOptions {
   noLlm: boolean;
-  /** This member's location refresh finished without a plottable point: its hold is released,
-   * while other members still awaiting a refresh keep the snapshot. */
-  releaseLocationHoldFor?: string;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -570,8 +567,8 @@ export async function rebuildCanonicalPoi(
 
   if (rows.length === 0) {
     const held = await client.query(
-      `SELECT ${publicationAwaitingLocationSql("cp", "$2")} AS held FROM canonical_pois cp WHERE cp.id=$1`,
-      [canonicalId, opts.releaseLocationHoldFor ?? null],
+      `SELECT ${publicationAwaitingLocationSql()} AS held FROM canonical_pois cp WHERE cp.id=$1`,
+      [canonicalId],
     );
     if (held.rows[0]?.held)
       return { published: false, reason: "location_refresh_pending" };

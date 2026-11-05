@@ -43,6 +43,7 @@ import { extractStrongIds } from "./match/ids.js";
 import { adjudicateMatch } from "./match/llm.js";
 import { scoreCandidate, type CandidateScore } from "./match/score.js";
 import { websiteIdentity } from "./match/denylist.js";
+import { stalenessBySource } from "./staleness.js";
 import { LlmError } from "./providers/llm.js";
 
 const ADVISORY_LOCK_ID = 0x5018a;
@@ -63,9 +64,6 @@ const RADIUS_BY_SLUG: Record<string, number> = {
 
 export interface CliOptions {
   recordId?: string;
-  /** With recordId: also select the row while linked (an older-matcher membership). The apply
-   * step replaces pointer and membership atomically, so nothing is cleared beforehand. */
-  rematchLinked?: boolean;
   runId?: string;
   source?: string;
   limit?: number;
@@ -120,8 +118,6 @@ interface ResearchMatchRow {
   description: string | null;
   website: string | null;
   website_domain: string | null;
-  /** Set only while a linked row is rematched (`rematchLinked`). */
-  canonical_poi_id?: string | null;
   phone: string | null;
   address: string | null;
   city: string | null;
@@ -432,7 +428,6 @@ async function fetchNextRow(
   sourceId: string | null,
   excludedIds: Set<string> = new Set(),
   recordId?: string,
-  rematchLinked = false,
 ): Promise<ResearchMatchRow | null> {
   const params: unknown[] = [];
   let sourceClause = "";
@@ -458,11 +453,10 @@ async function fetchNextRow(
        rp.city, rp.region, rp.country_code, rp.lng, rp.lat,
        rp.starts_at, rp.ends_at, rp.date_precision,
        rp.category_slugs, rp.content_embedding, rp.coordinate_precision,
-       rp.attributes, rp.raw, rp.canonical_poi_id
+       rp.attributes, rp.raw
      FROM research_pois rp
      JOIN research_sources rs ON rs.id = rp.source_id
-     WHERE (rp.canonical_poi_id IS NULL OR ${rematchLinked && recordId ? "true" : "false"})
-       AND rp.retired_at IS NULL
+     WHERE rp.canonical_poi_id IS NULL AND rp.retired_at IS NULL
        AND rp.is_poi
        AND rp.lat IS NOT NULL
        AND rp.lng IS NOT NULL
@@ -637,7 +631,7 @@ async function fetchCandidates(
        SELECT
          max(rs.trust)::int AS max_source_trust,
          -- Only live members: an excluded/retired row keeps its pointer but not its website.
-         array_remove(array_agg(DISTINCT rp.website) FILTER (WHERE rp.retired_at IS NULL AND rp.id <> $14::uuid
+         array_remove(array_agg(DISTINCT rp.website) FILTER (WHERE rp.retired_at IS NULL
            AND EXISTS(SELECT 1 FROM research_canonical_memberships am
              WHERE am.research_poi_id=rp.id AND am.canonical_poi_id=cp.id AND am.active)), NULL) AS member_websites,
          bool_or(rp.website IS NOT NULL OR cp.website IS NOT NULL) AS has_website,
@@ -656,10 +650,8 @@ async function fetchCandidates(
        SELECT rp.*, rs.trust
        FROM research_pois rp
        JOIN research_sources rs ON rs.id = rp.source_id
-       -- The representative member must be live (an excluded row keeps its pointer only) and
-       -- never the row being matched (a linked row is rematched against its canonical's others).
+       -- The representative member must be live: an excluded row keeps its pointer only.
        WHERE rp.canonical_poi_id = cp.id AND rp.is_poi AND rp.retired_at IS NULL
-         AND rp.id <> $14::uuid
          AND EXISTS(SELECT 1 FROM research_canonical_memberships bm
            WHERE bm.research_poi_id=rp.id AND bm.canonical_poi_id=cp.id AND bm.active)
        ORDER BY rs.trust DESC, (rp.content_embedding IS NOT NULL) DESC, rp.last_seen_at DESC
@@ -698,43 +690,11 @@ async function fetchCandidates(
       nameBbox.minLng,
       nameBbox.maxLng,
       row.name_normalized ?? row.name ?? "",
-      row.id,
     ],
   );
 
-  // A linked row being rematched must not block against coordinates it contributed itself: its
-  // own canonical is placed at the nearest of its other live members, or dropped without one.
-  const ownOthers = row.canonical_poi_id
-    ? (
-        await client.query<{ lat: number; lng: number }>(
-          `SELECT rp.lat, rp.lng FROM research_canonical_memberships m JOIN research_pois rp ON rp.id=m.research_poi_id
-          WHERE m.canonical_poi_id=$1 AND m.active AND rp.id<>$2 AND rp.retired_at IS NULL
-            AND rp.lat IS NOT NULL AND rp.lng IS NOT NULL`,
-          [row.canonical_poi_id, row.id],
-        )
-      ).rows
-    : [];
-  const dropOwn = new Set<string>();
-  for (const candidate of rows) {
-    if (candidate.canonical_id !== row.canonical_poi_id) continue;
-    const nearest = ownOthers
-      .map((p) => ({ p, d: haversineMeters({ lat: row.lat, lng: row.lng }, p) }))
-      .sort((a, b) => a.d - b.d)[0];
-    if (!nearest) {
-      dropOwn.add(candidate.canonical_id);
-      continue;
-    }
-    candidate.canonical_lat = nearest.p.lat;
-    candidate.canonical_lng = nearest.p.lng;
-    candidate.via_spatial = true;
-    candidate.via_proximity = true;
-  }
-
   return rows
-    .filter(
-      (candidate) =>
-        !excluded.has(candidate.canonical_id) && !dropOwn.has(candidate.canonical_id),
-    )
+    .filter((candidate) => !excluded.has(candidate.canonical_id))
     .map((candidate): CandidateRow => {
       const distance_m = haversineMeters(
         { lat: row.lat, lng: row.lng },
@@ -780,7 +740,10 @@ async function fetchCandidates(
 /** The canonical's website to compare: a member's URL with the same identity, else its best. */
 export function candidateWebsite(
   current: string | null,
-  candidate: Pick<CandidateRow, "member_websites" | "best_website" | "canonical_website">,
+  candidate: Pick<
+    CandidateRow,
+    "member_websites" | "best_website" | "canonical_website"
+  >,
 ): string | null {
   const identity = websiteIdentity(current);
   const same =
@@ -1489,7 +1452,6 @@ async function runMatchInternal(
           sourceId,
           dryRunSeen,
           opts.recordId,
-          opts.rematchLinked,
         );
         if (!row) {
           await client.query("COMMIT");
@@ -1618,20 +1580,6 @@ async function runMatchInternal(
   return stats;
 }
 
-/** Active memberships whose matcher is older than the current one, optionally for one source. */
-export async function staleMatcherMemberships(
-  db: Pool,
-  source: string | null,
-): Promise<number> {
-  const { rows } = await db.query<{ n: string }>(
-    `SELECT count(*)::text AS n FROM research_canonical_memberships m
-    JOIN research_pois rp ON rp.id=m.research_poi_id JOIN research_sources rs ON rs.id=rp.source_id
-    WHERE m.active AND m.matcher_version IS DISTINCT FROM $1 AND ($2::text IS NULL OR rs.slug=$2)`,
-    [MATCHER_VERSION, source],
-  );
-  return Number(rows[0]?.n ?? 0);
-}
-
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
@@ -1640,17 +1588,17 @@ async function main() {
   let stats: MatchStats | undefined;
 
   try {
-    // Standalone matching only selects unlinked rows, so it cannot replace memberships decided
-    // by an older matcher; managed runs retire and rematch those (matcher_upgraded).
-    // Reclustering resets every cluster first, so it replaces stale memberships itself.
-    const stale = opts.recluster
-      ? 0
-      : await staleMatcherMemberships(db, opts.source ?? null);
-    if (stale > 0)
-      throw new Error(
-        `${formatInt(stale)} active memberships${opts.source ? ` for ${opts.source}` : ""} were decided by an older matcher than ${MATCHER_VERSION}. ` +
-          "Standalone ingest:match cannot rematch linked rows; start a new managed run (ingest:run or ingest:supervise) so they are retired and rematched.",
+    // Outdated records are re-ingested, never upgraded in place (reclustering resets all).
+    if (!opts.recluster) {
+      const outdated = (await stalenessBySource(db, opts.source ?? null)).filter(
+        (row) => row.outdated > 0,
       );
+      if (outdated.length)
+        throw new Error(
+          `Outdated records in ${outdated.map((r) => `${r.source} (${r.outdated})`).join(", ")}; ` +
+            "purge and re-ingest them first (see ingest:staleness).",
+        );
+    }
     stats = await runMatch(db, opts, shutdown);
 
     if (stats.stopped) {
