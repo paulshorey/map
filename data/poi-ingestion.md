@@ -937,8 +937,11 @@ and an explicit legacy/unknown classification rather than an invented source cla
 
 Queries over 190 characters drop leading comma-separated parts (institution names) until
 they fit, keeping street, city, region and country: LocationIQ answers HTTP 400 "Invalid
-Request" above about 200. Any remaining 400 is an uncached miss for that query, recorded in
-`validation.forward.invalid_queries`, and the fallback chain continues.
+Request" above about 200. Any remaining 400 is cached as an invalid-request miss for that
+query (so a resume continues at the fallback without a call), recorded in
+`validation.forward.invalid_queries`, and the fallback chain continues. A retained geocoded
+point that was this pipeline's own earlier inferred result takes a refreshed result and its
+precision; pre-slot legacy points and source/URL points are kept.
 
 Forward queries use immutable captured text and source location hints, never fields
 filled by reverse lookup or model coordinate proposals. Supplied address/locality

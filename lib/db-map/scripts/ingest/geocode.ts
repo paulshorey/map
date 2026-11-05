@@ -392,6 +392,7 @@ async function writeCache(
   db: Pool,
   norm: string,
   hit: GeocodeHit | null,
+  extra: Record<string, unknown> = {},
 ): Promise<void> {
   await db.query(
     `INSERT INTO research_geocode_cache (query_norm, lat, lng, precision, provider, payload)
@@ -406,7 +407,7 @@ async function writeCache(
       hit?.lng ?? null,
       hit?.precision ?? null,
       hit?.provider ?? "locationiq",
-      JSON.stringify({ hit }),
+      JSON.stringify({ hit, ...extra }),
     ],
   );
 }
@@ -608,6 +609,8 @@ export async function runGeocode(
               provider: "locationiq",
             }
           : null;
+        if ((cached.payload as { invalid_request?: boolean } | undefined)?.invalid_request)
+          invalidQueries.push(query.display);
         if (!hit) stats.knownMisses++;
         else if (hit.raw_response) {
           // The saved provider row reproduces the current classifier without a paid refetch.
@@ -633,6 +636,8 @@ export async function runGeocode(
         if (error instanceof GeocodeError && (error as { status?: number }).status === 400) {
           stats.apiCalls++;
           invalidQueries.push(query.display);
+          // Deterministic for this query: remember it so a resume continues at the fallback.
+          await writeCache(db, key, null, { invalid_request: true });
           return { key, hit: null, stop: null };
         }
         throw error;
@@ -791,6 +796,23 @@ export async function runGeocode(
         if (stop) continue;
       }
       if (forward) forward = capLocalityPrecision(forwardBasis, forward);
+      // A retained point that is this pipeline's own earlier inferred result takes the refreshed
+      // result (and its precision). Pre-slot legacy points and source/URL points are kept.
+      const priorInferred = (row.attributes?.location_enrichment?.coordinate_evidence
+        ?.inferred_coordinates ?? null) as { lat?: number; lng?: number } | null;
+      if (
+        forward &&
+        row.coordinate_source === "geocode" &&
+        validPoint({ lat, lng }) &&
+        priorInferred &&
+        validPoint(priorInferred as { lat: number; lng: number }) &&
+        Math.abs(priorInferred.lat! - lat!) < 1e-9 &&
+        Math.abs(priorInferred.lng! - lng!) < 1e-9
+      ) {
+        lat = forward.lat;
+        lng = forward.lng;
+        coordinatePrecision = forward.precision;
+      }
     } else stats.noQuery++;
     if (!validPoint({ lat, lng })) {
       if (!forward) {

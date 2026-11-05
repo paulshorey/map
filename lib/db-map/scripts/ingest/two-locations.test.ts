@@ -1642,10 +1642,11 @@ test("over-long queries keep their local end; a 400 is a record-level miss, not 
   assert.equal(stats.resolved, 1);
   assert.deepEqual(f.activated.forward.invalid_queries, ["Aichi Arts Center, Nagoya, JP"]);
   assert.equal(f.activated.forward.query, "Nagoya, JP");
-  assert.ok(
-    ![...f.cache.keys()].some((k) => k.includes("aichi arts center")),
-    "the invalid request is not cached as a miss",
-  );
+  // Remembered as an invalid request: a resume continues at the fallback without a call.
+  const invalidKey = [...f.cache.keys()].find((k) => k.includes("aichi arts center"))!;
+  assert.equal(f.cache.get(invalidKey).payload.invalid_request, true);
+  const replay = await runGeocode(f.db, { ...opts, geocodeLimit: 0 });
+  assert.equal(replay.apiCalls, 0);
 });
 
 test("a supplied country centroid names its country without a reverse call", async () => {
@@ -1715,4 +1716,25 @@ test("a query whose address was trimmed away is judged as locality", () => {
   );
   assert.equal(basisAfterFit("venue", { venue: "Aichi Arts Center" }, "Nagoya, JP"), "locality");
   assert.equal(basisAfterFit("locality", listed, "Mexico"), "locality");
+});
+
+test("a retained point that was the earlier inferred result takes the refreshed result", async () => {
+  // location-v5 stored a business point for a city-only lookup; the refreshed result is city.
+  const f = fixture({ ...japan });
+  Object.assign(f.row, {
+    lat: 35.2, lng: 136.95, coordinate_source: "geocode", coordinate_precision: "point",
+    attributes: { location_enrichment: { coordinate_evidence: { source_coordinates: null,
+      inferred_coordinates: { lat: 35.2, lng: 136.95, kind: "inferred", origin: "listed_address_geocode", precision: "point" } } } },
+  });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith("/reverse"))
+      return Response.json({ lat: "35.18", lon: "136.90", address: { city: "Nagoya", country_code: "jp" } });
+    return Response.json([{ lat: "35.18", lon: "136.90", class: "boundary", type: "administrative",
+      address: { city: "名古屋市", state: "愛知県", country_code: "jp" } }]);
+  };
+  await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
+  assert.deepEqual(f.activated.point, { lat: 35.18, lng: 136.9 });
+  assert.equal(f.activated.coordinate_evidence.inferred_coordinates.precision, "city");
 });
