@@ -33,4 +33,11 @@ test("websites compare by full URL, never by shared domain", () => {
   assert.equal(websiteIdentity("https://example.com/%ZZ"), "example.com/%ZZ");
   assert.equal(strongContactSignal("https://example.org/EventA", "https://example.org/eventa", null, null).website, false);
   assert.equal(websiteIdentity("HTTPS://Example.ORG/EventA/"), "example.org/EventA");
+  // Hash-routed pages are distinct; ordinary anchors are not.
+  assert.equal(
+    strongContactSignal("https://tickets.example/#/event/a", "https://tickets.example/#/event/b", null, null).website,
+    false,
+  );
+  assert.equal(websiteIdentity("https://tickets.example/#!/event/a"), "tickets.example#!/event/a");
+  assert.equal(websiteIdentity("https://hpb.fi/#programme"), "hpb.fi");
 });

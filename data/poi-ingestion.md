@@ -617,10 +617,10 @@ legacy attempt records.
 - **Normalize:** deterministic facts plus evidence-validated model interpretation. Source/URL
   coordinates are authoritative; models cannot invent coordinates, contacts, or identifiers.
   Cache inputs come from immutable captured evidence, never derived projections. Keys include model, prompt/schema/examples/profile/normalizer versions.
-  A profile's `listingDomains` and, for `event-v2`, `selfListingNotOfficial` drop directory
-  pages from the official `website` (warning `listing_url_not_official`): Biennial Foundation
-  sets each record's website to its own listing page, which would otherwise publish and
-  match as an official site. Other profiles adopt the self-listing rule at their next version.
+  A profile's `listingDomains` drop directory pages from the official `website` (warning
+  `listing_url_not_official`). `event-v2` adds `biennialfoundation.org`, whose records list
+  their own directory page as the website. A source's own official site (Aurillac's
+  `aurillac.net` is both `source_url` and website) stays official.
   Failed refresh keeps prior valid output and marks it stale. Accepted changes clear derived
   embeddings/geocode pointers, invalidate old geocoded coordinates, and refresh or retire
   memberships/builds according to match changes. Prompt output must retain the input UUID.
@@ -822,7 +822,8 @@ The matcher uses a cascade:
    identity (`websiteIdentity`: host without `www.`, path, query without tracking
    parameters), never by domain: `fs.usda.gov` alone is shared by thousands of
    campgrounds, and a directory's listing pages share its domain. The LLM adjudicator sees
-   the same full URLs (`matcher-v4`). Paths keep their case and are not decoded.
+   the same full URLs (`matcher-v4`). Paths keep their case and are not decoded; hash
+   routes (`#/event/a`, `#!/…`) are kept, in-page anchors dropped.
    `matcher-v3` checkpoints are not resumable: `event-v2` normalizations must be redone.
 5. LLM adjudication for ambiguous gray-zone pairs when LLM is enabled.
 
@@ -1002,7 +1003,7 @@ The rejected hit is kept in `validation.forward.rejected` (an earlier rejection 
 (a rejection or a plain miss), lookups fall back to the listed city, then the recognized
 listed country's English name, skipping queries already tried. The fallback is
 `query_basis: locality` (so `general`) and records `validation.forward.fallback_from`
-`{reason: miss|rejected, query}`. Any locality-only result that comes back as a `point` (a business that
+`{reason: miss|rejected, query}`; canonical ranking gives such a fallback no address priority. Any locality-only result that comes back as a `point` (a business that
 shares the city's name) is labelled `city` (`locality_query_cap`). A record with a supplied or retained point keeps it.
 An unrecognized country text with no city (`East Africa`) leaves the record unlocated. An unlocated record is unpublished and its geocode task needs
 intervention; geocoding releases that member's hold on its old canonical, which is rebuilt

@@ -42,7 +42,9 @@ export function websiteIdentity(url: string | null | undefined): string | null {
   // Paths are case-sensitive and kept as written (no decoding, which can throw on `%ZZ`).
   const path = parsed.pathname.replace(/\/+$/, "");
   const query = parsed.searchParams.toString();
-  return `${host}${path}${query ? `?${query}` : ""}`;
+  // Hash routes (`#/event/a`, `#!/event/a`) name distinct pages; in-page anchors do not.
+  const route = /^#!?\//.test(parsed.hash) ? parsed.hash : "";
+  return `${host}${path}${query ? `?${query}` : ""}${route}`;
 }
 
 export function strongContactSignal(

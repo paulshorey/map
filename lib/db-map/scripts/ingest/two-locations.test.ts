@@ -1661,3 +1661,44 @@ test("a supplied country centroid names its country without a reverse call", asy
   assert.equal(f.activated.coordinate_evidence.source_coordinates.precision, "country");
   assert.equal(f.activated.lookup_state, "not_needed");
 });
+
+test("a miss-driven fallback earns no address priority and is general", () => {
+  // Member A: its street-address lookup missed; the city fallback was used.
+  const fallback = {
+    listed: { address: "Calle 43 130", city: "Mérida" },
+    forward: {
+      query_basis: "locality",
+      fallback_from: { reason: "miss", query: "Calle 43 130, Mérida, Mexico" },
+      result: { lat: 20.97, lng: -89.62, city: "Mérida" },
+    },
+  };
+  const evidence = {
+    source_coordinates: null,
+    inferred_coordinates: { lat: 20.97, lng: -89.62, kind: "inferred", origin: "listed_address_geocode", precision: "city", research_id: "a" },
+  } as any;
+  assert.equal(locationSpecificity(evidence, [{ id: "a", location_validation: fallback } as any]), "general");
+});
+
+test("a city fallback after an address miss never outranks another member's venue point", () => {
+  const member = (id: string, trust: number, listed: object, forward: object, lat: number, lng: number, precision: string) => ({
+    id, source_id: id, source_slug: id, source_trust: trust,
+    lat, lng, coordinate_source: "geocode", coordinate_precision: precision,
+    active_normalization_id: `n-${id}`, active_geocode_id: `g-${id}`,
+    location_validation: {
+      version: LOCATION_VERSION, normalization_id: `n-${id}`, point: { lat, lng }, listed,
+      forward: { ...forward, result: { lat, lng, city: "Nagoya" } },
+      coordinate_evidence: {
+        source_coordinates: null,
+        inferred_coordinates: { lat, lng, kind: "inferred", origin: "listed_address_geocode", precision, label: null, query: "q" },
+      },
+    },
+  });
+  // Higher trust, a listed street address, but its lookup missed and the city fallback was used.
+  const fallback = member("a", 90, { city: "Nagoya", address: "1-13-2 Higashisakura" },
+    { query_basis: "locality", fallback_from: { reason: "miss", query: "1-13-2 Higashisakura, Nagoya, JP" } },
+    35.18, 136.9, "city");
+  const venue = member("b", 50, { city: "Nagoya", address: null }, { query_basis: "venue" }, 35.1719, 136.9167, "point");
+  const e = canonicalCoordinateEvidence([fallback, venue] as any, fallback as any);
+  assert.equal(e.inferred_coordinates!.research_id, "b");
+  assert.equal(e.inferred_coordinates!.precision, "point");
+});

@@ -3,8 +3,6 @@ export interface NormalizationProfile {
   version: string;
   kind: "event" | "place";
   listingDomains: string[];
-  /** A website identical to the record's own source_url is its listing page, never official. */
-  selfListingNotOfficial: boolean;
   hardFalsePaths: string[];
   descriptionLimit: number;
 }
@@ -12,7 +10,7 @@ export interface NormalizationProfile {
 const PROFILES: Record<string, NormalizationProfile> = {
   event: {
     id: "event",
-    // v2: self-listing websites (Biennial Foundation lists its own page) are not official.
+    // v2: biennialfoundation.org is a directory; its listing pages are never official sites.
     version: "event-v2",
     kind: "event",
     listingDomains: [
@@ -25,8 +23,8 @@ const PROFILES: Record<string, NormalizationProfile> = {
       "eventbrite.com",
       "artsy.net",
       "festivism.com",
+      "biennialfoundation.org",
     ],
-    selfListingNotOfficial: true,
     hardFalsePaths: ["$.raw.is_festival"],
     descriptionLimit: 3000,
   },
@@ -41,7 +39,6 @@ const PROFILES: Record<string, NormalizationProfile> = {
       "wikipedia.org",
       "openstreetmap.org",
     ],
-    selfListingNotOfficial: false,
     hardFalsePaths: [],
     descriptionLimit: 3000,
   },
@@ -50,7 +47,6 @@ const PROFILES: Record<string, NormalizationProfile> = {
     version: "campground-v1",
     kind: "place",
     listingDomains: ["thedyrt.com", "recreation.gov"],
-    selfListingNotOfficial: false,
     hardFalsePaths: [],
     descriptionLimit: 3000,
   },
@@ -59,7 +55,6 @@ const PROFILES: Record<string, NormalizationProfile> = {
     version: "place-v1",
     kind: "place",
     listingDomains: [],
-    selfListingNotOfficial: false,
     hardFalsePaths: [],
     descriptionLimit: 3000,
   },
