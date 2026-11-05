@@ -458,8 +458,13 @@ export async function runGeocode(
     let coordinateSource = row.coordinate_source,
       coordinatePrecision = row.coordinate_precision;
     // A supplied point that repeats a published country centroid locates only the country.
+    // The listed country may live only in location hints (thatfestivalsite), as for lookups.
+    const listedCountry =
+      source.country_code ??
+      countryToCode(textValue(attrs.source_location_hints?.country)) ??
+      null;
     const suppliedCentroid = ["source", "url"].includes(row.coordinate_source)
-      ? suppliedCountryCentroid(row, source.country_code)
+      ? suppliedCountryCentroid(row, listedCountry)
       : null;
     if (suppliedCentroid) coordinatePrecision = "country";
     const temporal = new Set<string>(
@@ -470,10 +475,7 @@ export async function runGeocode(
       ).rows.map((r) => r.slug),
     );
     const q = listedQuery(row, captured, temporal);
-    const forwardCountry =
-      source.country_code ??
-      countryToCode(textValue(attrs.source_location_hints?.country)) ??
-      null;
+    const forwardCountry = listedCountry;
     // Separate policy namespace; do not reuse historical name/reverse-derived queries.
     const lookup = async (query: { display: string; norm: string }) => {
       const key = forwardCacheKey(query.norm, forwardCountry);
@@ -765,6 +767,23 @@ export async function runGeocode(
             new Error("Location input changed during activation"),
             { code: "lineage_invalid" },
           );
+        // Matching drops the distance signal for a coarse point, so a point that becomes coarse
+        // (a supplied centroid) or precise must be matched again. Overrides apply first there.
+        const coarse = (p: unknown) => p !== "point";
+        const rematch =
+          !!row.canonical_poi_id &&
+          coarse(row.coordinate_precision) !== coarse(coordinatePrecision);
+        if (rematch) {
+          await client.query(
+            `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
+            retirement_reason='coordinate_precision_changed' WHERE research_poi_id=$1 AND active`,
+            [row.id],
+          );
+          await client.query(
+            "UPDATE research_pois SET canonical_poi_id=NULL, matched_normalization_id=NULL WHERE id=$1",
+            [row.id],
+          );
+        }
         if (row.canonical_poi_id)
           await rebuildCanonicalPoi(client, row.canonical_poi_id, {
             noLlm: true,

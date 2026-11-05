@@ -255,6 +255,12 @@ test("a supplied point repeating a published country centroid is country precisi
   // A Rome venue 3.4 km from the Vatican centroid, and Aichi's Nagoya venue.
   assert.equal(suppliedCountryCentroid({ lat: 41.9334, lng: 12.4534 }), null);
   assert.equal(suppliedCountryCentroid({ lat: 35.1815, lng: 136.9066 }), null);
+  // Two decimals: only the rounded (1.35, 103.82) or truncated (1.35, 103.81) cells match
+  // Singapore's 1.352083, 103.819836; the neighbouring cell 1.36, 103.82 does not.
+  assert.equal(suppliedCountryCentroid({ lat: 1.35, lng: 103.82 }), "SG");
+  assert.equal(suppliedCountryCentroid({ lat: 1.35, lng: 103.81 }), "SG");
+  assert.equal(suppliedCountryCentroid({ lat: 1.36, lng: 103.82 }), null);
+  assert.equal(suppliedCountryCentroid({ lat: -25.2745, lng: 133.7751 }), null);
   // One decimal cannot tell a copied centroid from a coarse point.
   assert.equal(suppliedCountryCentroid({ lat: -25.3, lng: 133.8 }), null);
   assert.equal(suppliedCountryCentroid({ lat: null, lng: null }), null);
