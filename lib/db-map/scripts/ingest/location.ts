@@ -158,7 +158,19 @@ export function forwardImplausible(
     return "locality_result_too_specific";
   if (basis === "name" && hit.precision === "point") {
     const address = hit.raw_response?.address as Record<string, unknown> | undefined;
-    const providerName = textValue(address?.name);
+    // LocationIQ may store the feature's name under its category key instead of `name`.
+    const providerName = [
+      "name",
+      "amenity",
+      "tourism",
+      "shop",
+      "leisure",
+      "building",
+      "historic",
+      "office",
+    ]
+      .map((key) => textValue(address?.[key]))
+      .find(Boolean) ?? null;
     const name = textValue(listed.name);
     if (!name || !providerName || !providerNameAgrees(name, providerName))
       return "name_result_mismatch";

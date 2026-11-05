@@ -284,6 +284,27 @@ export function listedQuery(
 
 export type QueryBasis = "address" | "venue" | "name" | "locality";
 
+/**
+ * `fitQueryLength` may drop the address, venue or name from an over-long query; the basis is
+ * then what survived (normally the locality), so locality guards still apply to the result.
+ */
+export function basisAfterFit(
+  basis: QueryBasis,
+  listed: { address?: string | null; venue?: string | null; name?: string | null },
+  display: string,
+): QueryBasis {
+  const survives = (text: string | null | undefined) => {
+    const last = text?.split(/\s*,\s*/).filter(Boolean).pop();
+    return !!last && display.includes(last);
+  };
+  if (basis === "address" && !survives(listed.address))
+    return survives(listed.venue) ? "venue" : survives(listed.name) ? "name" : "locality";
+  if (basis === "venue" && !survives(listed.venue))
+    return survives(listed.name) ? "name" : "locality";
+  if (basis === "name" && !survives(listed.name)) return "locality";
+  return basis;
+}
+
 /** The most specific listing text in `listedQuery`'s lookup. `locality` means only
  * city/region/country text, so its result is a general location, never a venue or address. */
 export function listedQueryBasis(
@@ -605,7 +626,11 @@ export async function runGeocode(
     let forwardQueryNorm: string | null = null;
     let forwardQuery = q;
     let forwardBasis: QueryBasis | null = q
-      ? listedQueryBasis(row, captured, temporal)
+      ? basisAfterFit(
+          listedQueryBasis(row, captured, temporal),
+          listedLocality(row, captured),
+          q.display,
+        )
       : null;
     let rejected: Record<string, unknown> | null = null;
     let fallbackFrom: { reason: string; query: string } | null = null;

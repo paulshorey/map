@@ -824,7 +824,10 @@ The matcher uses a cascade:
    campgrounds, and a directory's listing pages share its domain. The LLM adjudicator sees
    the same full URLs (`matcher-v4`). Paths keep their case and are not decoded; hash
    routes (`#/event/a`, `#!/…`) are kept, in-page anchors dropped.
-   `matcher-v3` checkpoints are not resumable: `event-v2` normalizations must be redone.
+   `matcher-v3` checkpoints are not resumable: `event-v2` normalizations must be redone. A
+   membership counts as valid only for the current matcher version: an active membership from
+   an older matcher is retired (`matcher_upgraded`) and the record matched again, the old
+   canonical's snapshot held until then. Ports other than the default are part of the identity.
 5. LLM adjudication for ambiguous gray-zone pairs when LLM is enabled.
 
 Each non-dry-run decision writes `research_match_decisions`.
@@ -1003,7 +1006,8 @@ The rejected hit is kept in `validation.forward.rejected` (an earlier rejection 
 (a rejection or a plain miss), lookups fall back to the listed city, then the recognized
 listed country's English name, skipping queries already tried. The fallback is
 `query_basis: locality` (so `general`) and records `validation.forward.fallback_from`
-`{reason: miss|rejected, query}`; canonical ranking gives such a fallback no address priority. Any locality-only result that comes back as a `point` (a business that
+`{reason: miss|rejected, query}`; canonical ranking gives such a fallback no address priority. When
+query fitting drops the address, venue or name, the basis is what survived (`basisAfterFit`). Any locality-only result that comes back as a `point` (a business that
 shares the city's name) is labelled `city` (`locality_query_cap`). A record with a supplied or retained point keeps it.
 An unrecognized country text with no city (`East Africa`) leaves the record unlocated. An unlocated record is unpublished and its geocode task needs
 intervention; geocoding releases that member's hold on its old canonical, which is rebuilt

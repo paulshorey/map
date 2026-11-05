@@ -34,8 +34,10 @@ export function websiteIdentity(url: string | null | undefined): string | null {
   } catch {
     return null;
   }
-  const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
-  if (!host.includes(".") || isDeniedDomain(host)) return null;
+  const hostname = parsed.hostname.toLowerCase().replace(/^www\./, "");
+  if (!hostname.includes(".") || isDeniedDomain(hostname)) return null;
+  // A non-default port can serve an unrelated application.
+  const host = parsed.port ? `${hostname}:${parsed.port}` : hostname;
   for (const key of [...parsed.searchParams.keys()])
     if (/^(utm_|fbclid$|gclid$)/i.test(key)) parsed.searchParams.delete(key);
   parsed.searchParams.sort();

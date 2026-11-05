@@ -901,7 +901,10 @@ async function recordState(db: Pool, item: RunItem) {
     ${currentLocationAssessmentSql()} AS location_assessed,
     (rp.content_embedding IS NOT NULL) AS has_embedding,rp.active_embedding_id,rp.active_geocode_id,
     rp.canonical_poi_id,rp.retired_at,cp.active_build_id,cp.status AS canonical_status,
-    EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id) AS membership_valid,
+    EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
+      AND m.matcher_version='${PIPELINE_VERSIONS.matcher}') AS membership_valid,
+    EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
+      AND m.matcher_version IS DISTINCT FROM '${PIPELINE_VERSIONS.matcher}') AS membership_stale_matcher,
     EXISTS(SELECT 1 FROM research_canonical_memberships m JOIN canonical_poi_build_inputs b ON b.membership_id=m.id
       WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
         AND b.build_id=cp.active_build_id AND EXISTS(SELECT 1 FROM canonical_poi_builds cb
@@ -1301,6 +1304,25 @@ export async function runOrchestration(
               };
             }
             if (stage === "match") {
+              // A membership decided by an older matcher is matched again; the old canonical
+              // keeps its snapshot until the rematch replaces it.
+              if (state.canonical_poi_id && state.membership_stale_matcher) {
+                await canonicalLane.run(() =>
+                  artifactTransaction(db, async (client) => {
+                    await client.query(
+                      `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
+                      retirement_reason='matcher_upgraded' WHERE research_poi_id=$1 AND active`,
+                      [item.research_poi_id],
+                    );
+                    await client.query(
+                      "UPDATE research_pois SET canonical_poi_id=NULL, matched_normalization_id=NULL WHERE id=$1",
+                      [item.research_poi_id],
+                    );
+                    return { value: undefined, output: { status: "succeeded" } };
+                  }),
+                );
+                Object.assign(state, await recordState(db, item));
+              }
               const assessment = await assessLocationRecord(
                 db,
                 item.research_poi_id!,

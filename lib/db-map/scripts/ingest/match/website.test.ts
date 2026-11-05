@@ -40,4 +40,10 @@ test("websites compare by full URL, never by shared domain", () => {
   );
   assert.equal(websiteIdentity("https://tickets.example/#!/event/a"), "tickets.example#!/event/a");
   assert.equal(websiteIdentity("https://hpb.fi/#programme"), "hpb.fi");
+  // Non-default ports are distinct applications; default ports are dropped by URL parsing.
+  assert.equal(
+    strongContactSignal("https://example.org:8443/event", "https://example.org:9443/event", null, null).website,
+    false,
+  );
+  assert.equal(websiteIdentity("https://example.org:443/event"), "example.org/event");
 });

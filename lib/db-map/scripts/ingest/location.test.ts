@@ -312,3 +312,10 @@ test("a locality-only lookup never yields a point", () => {
   assert.equal(capLocalityPrecision("venue", business), business);
   assert.equal(capLocalityPrecision("locality", { precision: "country" }).precision, "country");
 });
+
+test("a provider name stored under its category key is read", () => {
+  const museum = { precision: "point", raw_response: { address: { tourism: "Museo Tamayo", city: "Mexico City" } } };
+  assert.equal(forwardImplausible("name", { name: "Museo Tamayo Arte Contemporáneo" }, museum), null);
+  const shop = { precision: "point", raw_response: { address: { shop: "Ray-Ban", city: "Frankfurt" } } };
+  assert.equal(forwardImplausible("name", { name: "RAY Fotografieprojekte" }, shop), "name_result_mismatch");
+});

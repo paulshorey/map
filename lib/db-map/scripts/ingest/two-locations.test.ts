@@ -12,6 +12,7 @@ import {
   locationSpecificity,
 } from "./canonical-points.js";
 import {
+  basisAfterFit,
   fitQueryLength,
   MAX_QUERY_LENGTH,
   listedQuery,
@@ -1701,4 +1702,12 @@ test("a city fallback after an address miss never outranks another member's venu
   const e = canonicalCoordinateEvidence([fallback, venue] as any, fallback as any);
   assert.equal(e.inferred_coordinates!.research_id, "b");
   assert.equal(e.inferred_coordinates!.precision, "point");
+});
+
+test("a query whose address was trimmed away is judged as locality", () => {
+  const listed = { address: "Departamento de Botánica y Zoología, Centro Universitario", venue: null, name: "CUCBA" };
+  assert.equal(basisAfterFit("address", listed, "Zapopan, Jalisco, Mexico"), "locality");
+  assert.equal(basisAfterFit("address", listed, "Centro Universitario, Zapopan, Jalisco, Mexico"), "address");
+  assert.equal(basisAfterFit("venue", { venue: "Aichi Arts Center" }, "Nagoya, JP"), "locality");
+  assert.equal(basisAfterFit("locality", listed, "Mexico"), "locality");
 });

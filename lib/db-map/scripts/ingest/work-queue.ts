@@ -74,6 +74,7 @@ async function reusableDownstream(
     LEFT JOIN research_poi_geocodes g ON g.id=rp.active_geocode_id AND g.normalization_id=n.id
     LEFT JOIN research_poi_embeddings em ON em.id=rp.active_embedding_id AND em.normalization_id=n.id
     LEFT JOIN research_canonical_memberships m ON m.research_poi_id=rp.id AND m.active AND m.normalization_id=n.id AND m.canonical_poi_id=rp.canonical_poi_id
+      AND m.matcher_version='${PIPELINE_VERSIONS.matcher}'
     LEFT JOIN canonical_pois cp ON cp.id=m.canonical_poi_id
     LEFT JOIN canonical_poi_builds b ON b.id=cp.active_build_id
     WHERE i.run_id=$1 AND i.source_record_id=ANY($3::text[]) AND rp.normalization_state IN ('active','degraded','rejected')
