@@ -1593,3 +1593,23 @@ test("an address miss without any point falls back to the listed city, flagged a
   assert.deepEqual(forward.fallback_from, { reason: "miss", query: "Aichi Arts Center, Nagoya, JP" });
   assert.equal(f.activated.coordinate_evidence.inferred_coordinates.precision, "city");
 });
+
+test("a retained geocoded point that is itself the rejected result is dropped, not reactivated", async () => {
+  // East Africa Art Biennale: an older run stored the Göteborg restaurant as its point.
+  const restaurant = {
+    lat: "57.72", lon: "11.948", class: "amenity", type: "restaurant",
+    address: { name: "East Africa", city: "Göteborg", country_code: "se" },
+  };
+  const f = fixture({ name: "East Africa Art Biennale", city: null, country_code: null, attributes: { country_name: "East Africa" } });
+  Object.assign(f.row, { lat: 57.72, lng: 11.948, coordinate_source: "geocode", coordinate_precision: "point" });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    assert.ok(url.pathname.endsWith("/search"), "a rejected point is never reverse geocoded");
+    return Response.json([restaurant]);
+  };
+  const stats = await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
+  assert.equal(stats.unresolved, 1);
+  assert.equal(f.activated, null, "the rejected restaurant must not be reactivated");
+  assert.equal(f.heldLookups, 1);
+});

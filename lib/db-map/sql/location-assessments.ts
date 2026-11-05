@@ -38,11 +38,17 @@ export function currentLocationAssessmentSql(alias = "rp"): string {
 }
 
 /** Keep the last serving snapshot only while a live member awaits any replacement membership. */
-export function publicationAwaitingLocationSql(alias = "cp"): string {
+/** `exceptResearchParam`: a SQL parameter naming a member whose refresh finished unlocated. */
+export function publicationAwaitingLocationSql(
+  alias = "cp",
+  exceptResearchParam?: string,
+): string {
   return `EXISTS(SELECT 1 FROM canonical_poi_builds held
     JOIN canonical_poi_build_inputs hi ON hi.build_id=held.id
     JOIN research_pois rp ON rp.id=hi.research_poi_id
-    WHERE held.id=${alias}.active_build_id AND held.status='accepted' AND rp.is_poi AND rp.retired_at IS NULL
+    WHERE held.id=${alias}.active_build_id AND held.status='accepted' AND rp.is_poi AND rp.retired_at IS NULL${
+      exceptResearchParam ? ` AND rp.id IS DISTINCT FROM ${exceptResearchParam}::uuid` : ""
+    }
       AND NOT EXISTS(SELECT 1 FROM research_canonical_memberships m
         WHERE m.research_poi_id=rp.id AND m.active))`;
 }

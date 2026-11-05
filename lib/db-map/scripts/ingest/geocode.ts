@@ -428,7 +428,7 @@ async function releaseHeldSnapshots(db: Pool, researchId: string) {
       for (const { canonical_poi_id } of held.rows)
         await rebuildCanonicalPoi(client, canonical_poi_id, {
           noLlm: true,
-          releaseLocationHold: true,
+          releaseLocationHoldFor: researchId,
         });
       await client.query("COMMIT");
     } catch (error) {
@@ -644,10 +644,28 @@ export async function runGeocode(
         rejected = rejected ? { ...current, previous: rejected } : current;
         forward = null;
       }
+      // A retained geocoded point that is itself a rejected result must not survive it.
+      if (
+        rejected &&
+        !["source", "url"].includes(row.coordinate_source ?? "") &&
+        validPoint({ lat, lng })
+      ) {
+        for (let r: any = rejected; r; r = r.previous)
+          if (
+            validPoint(r.result) &&
+            Math.abs(r.result.lat - lat!) < 1e-6 &&
+            Math.abs(r.result.lng - lng!) < 1e-6
+          ) {
+            lat = null;
+            lng = null;
+            coordinatePrecision = null;
+            break;
+          }
+      }
       // No plausible result and no point at all: fall back to the listed city, then the
       // recognized country, so the record still publishes as a general location. A record
       // with a supplied or retained point keeps it.
-      if (!forward && !validPoint({ lat: row.lat, lng: row.lng })) {
+      if (!forward && !validPoint({ lat, lng })) {
         const tried = new Set([q.norm, forwardQuery?.norm]);
         const listed = listedLocality(row, captured);
         const steps = [

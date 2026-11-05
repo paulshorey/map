@@ -89,10 +89,8 @@ export function compatibleCheckpointVersions(): Record<string, string>[] {
   ];
   return [
     ...reviewed,
-    // matcher-v4 compares full website URLs instead of domains. matcher-v3 memberships
-    // remain valid structural checkpoints; their decisions are not replayed.
-    ...reviewed.map((v) => ({ ...v, matcher: "matcher-v3" })),
-    { ...PIPELINE_VERSIONS, matcher: "matcher-v3" },
+    // matcher-v4 (full-URL websites) ships with normalization profile event-v2, which the
+    // version map does not encode; matcher-v3 checkpoints are therefore not resumable.
     // #62 gated publication on an accepted assessment. Those checkpoints remain
     // resumable; matcher-v3 / canonical-build-v7 publish conflicting evidence.
     {

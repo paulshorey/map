@@ -25,4 +25,12 @@ test("websites compare by full URL, never by shared domain", () => {
   assert.equal(websiteIdentity("https://facebook.com/somegarden"), null);
   assert.equal(websiteIdentity(""), null);
   assert.equal(websiteIdentity("not a url"), null);
+  // A truncated escape (a real BGCI website) never throws; paths keep their case.
+  assert.equal(
+    websiteIdentity("https://www.northcentralcollege.edu/sites/default/files/documents/2017-10/Tree%2..."),
+    "northcentralcollege.edu/sites/default/files/documents/2017-10/Tree%2...",
+  );
+  assert.equal(websiteIdentity("https://example.com/%ZZ"), "example.com/%ZZ");
+  assert.equal(strongContactSignal("https://example.org/EventA", "https://example.org/eventa", null, null).website, false);
+  assert.equal(websiteIdentity("HTTPS://Example.ORG/EventA/"), "example.org/EventA");
 });

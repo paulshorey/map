@@ -822,7 +822,8 @@ The matcher uses a cascade:
    identity (`websiteIdentity`: host without `www.`, path, query without tracking
    parameters), never by domain: `fs.usda.gov` alone is shared by thousands of
    campgrounds, and a directory's listing pages share its domain. The LLM adjudicator sees
-   the same full URLs (`matcher-v4`).
+   the same full URLs (`matcher-v4`). Paths keep their case and are not decoded.
+   `matcher-v3` checkpoints are not resumable: `event-v2` normalizations must be redone.
 5. LLM adjudication for ambiguous gray-zone pairs when LLM is enabled.
 
 Each non-dry-run decision writes `research_match_decisions`.
@@ -997,8 +998,10 @@ listed country's English name, skipping queries already tried. The fallback is
 `{reason: miss|rejected, query}`. Any locality-only result that comes back as a `point` (a business that
 shares the city's name) is labelled `city` (`locality_query_cap`). A record with a supplied or retained point keeps it.
 An unrecognized country text with no city (`East Africa`) leaves the record unlocated. An unlocated record is unpublished and its geocode task needs
-intervention; geocoding releases any snapshot it held, so its old canonical is rebuilt
-without it, or hidden when it was the only member (`releaseLocationHold`).
+intervention; geocoding releases that member's hold on its old canonical, which is rebuilt
+without it, or hidden when no member remains and no other member is still awaiting a
+location refresh (`releaseLocationHoldFor`). A retained geocoded point that equals a rejected
+result is dropped rather than reactivated.
 
 Each canonical build writes `attributes.location_specificity`: `precise` when a
 point-precision source coordinate exists, or a point-precision lookup used an address,
