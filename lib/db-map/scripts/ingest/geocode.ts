@@ -312,10 +312,13 @@ export function basisAfterFit(
   // not just the listed locality: "…, Rue X, Paris" trimmed to "Paris" is locality text.
   const fold = (t: string) => t.trim().toLowerCase();
   const kept = new Set(display.split(/\s*,\s*/).map(fold));
+  // Same comma parts as the query: "Paris, Île-de-France" contributes "paris".
   const locality = new Set(
     [listed.city, listed.region, listed.country_name, listed.country_code]
       .filter((t): t is string => !!t)
-      .map(fold),
+      .flatMap((t) => t.split(/\s*,\s*/))
+      .map(fold)
+      .filter(Boolean),
   );
   // The first kept part may be the trimmed tail of a single over-long component.
   const head = [...kept][0] ?? "";

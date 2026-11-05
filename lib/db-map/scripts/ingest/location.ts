@@ -144,6 +144,23 @@ const significantTokens = (value: string) =>
     )
     .map((t) => t.toUpperCase());
 
+// Place-type words: two names that each state a type must share one ("Central Garden" is
+// not "Central Park").
+const PLACE_TYPE_TOKENS = new Set(
+  (
+    "park garden gardens museum gallery galerie center centre festival fair biennale biennial " +
+    "triennale triennial arboretum zoo cemetery church cathedral temple library theatre theater " +
+    "hall school university college market stadium arena"
+  ).split(" "),
+);
+const placeTypes = (value: string) =>
+  new Set(
+    foldTokens(value)
+      .map((t) => t.toLowerCase())
+      .filter((t) => PLACE_TYPE_TOKENS.has(t))
+      .map((t) => t.replace(/s$/, "")),
+  );
+
 /** Initials of every word ("Museum of Modern Art" -> "MOMA"). */
 const initials = (value: string) =>
   value
@@ -156,6 +173,14 @@ const initials = (value: string) =>
 /** True when every distinctive word of the provider's place name appears in the listed name,
  * or a listed acronym spells the provider name's initials (MoMA, Museum of Modern Art). */
 export function providerNameAgrees(listedName: string, providerName: string) {
+  const listedTypes = placeTypes(listedName);
+  const providerTypes = placeTypes(providerName);
+  if (
+    listedTypes.size &&
+    providerTypes.size &&
+    ![...providerTypes].some((t) => listedTypes.has(t))
+  )
+    return false;
   const listed = new Set(significantTokens(listedName));
   const provider = significantTokens(providerName);
   if (provider.length > 0 && provider.every((t) => listed.has(t))) return true;
@@ -176,7 +201,13 @@ export function providerNameAgrees(listedName: string, providerName: string) {
  */
 export function forwardImplausible(
   basis: string | null,
-  listed: { city?: unknown; name?: unknown },
+  listed: {
+    city?: unknown;
+    name?: unknown;
+    region?: unknown;
+    country_code?: unknown;
+    country_name?: unknown;
+  },
   hit: { precision: string; raw_response?: Record<string, unknown> | null },
 ): "locality_result_too_specific" | "name_result_mismatch" | null {
   if (
@@ -186,6 +217,16 @@ export function forwardImplausible(
     hit.precision !== "country"
   )
     return "locality_result_too_specific";
+  // A name-only lookup with nothing local listed cannot support a city, region or country it
+  // happens to share a word with ("Georgia" in a garden's name).
+  if (
+    basis === "name" &&
+    hit.precision !== "point" &&
+    ![listed.city, listed.region, listed.country_code, listed.country_name].some((v) =>
+      localityValue(v),
+    )
+  )
+    return "name_result_mismatch";
   if (basis === "name" && hit.precision === "point") {
     const address = hit.raw_response?.address as Record<string, unknown> | undefined;
     // LocationIQ may store the feature's name under its category key instead of `name`.

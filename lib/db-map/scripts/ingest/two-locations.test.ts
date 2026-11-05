@@ -1745,6 +1745,11 @@ test("a query whose address was trimmed away is judged as locality", () => {
   );
   assert.equal(basisAfterFit("venue", { venue: "Aichi Arts Center" }, "Nagoya, JP"), "locality");
   assert.equal(basisAfterFit("locality", listed, "Mexico"), "locality");
+  // A composite listed city contributes its parts ("Paris, Île-de-France").
+  assert.equal(
+    basisAfterFit("address", { address: "12 Rue Longue, Bâtiment B, Paris", city: "Paris, Île-de-France" }, "Paris, France"),
+    "locality",
+  );
   // A single comma-free address trimmed inside itself still counts as the address.
   const long = "Edificio " + "muy largo ".repeat(25) + "Avenida Central 100";
   const fitted = fitQueryLength(long);

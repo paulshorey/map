@@ -63,6 +63,9 @@ const RADIUS_BY_SLUG: Record<string, number> = {
 
 export interface CliOptions {
   recordId?: string;
+  /** With recordId: also select the row while linked (an older-matcher membership). The apply
+   * step replaces pointer and membership atomically, so nothing is cleared beforehand. */
+  rematchLinked?: boolean;
   runId?: string;
   source?: string;
   limit?: number;
@@ -427,6 +430,7 @@ async function fetchNextRow(
   sourceId: string | null,
   excludedIds: Set<string> = new Set(),
   recordId?: string,
+  rematchLinked = false,
 ): Promise<ResearchMatchRow | null> {
   const params: unknown[] = [];
   let sourceClause = "";
@@ -455,7 +459,8 @@ async function fetchNextRow(
        rp.attributes, rp.raw
      FROM research_pois rp
      JOIN research_sources rs ON rs.id = rp.source_id
-     WHERE rp.canonical_poi_id IS NULL AND rp.retired_at IS NULL
+     WHERE (rp.canonical_poi_id IS NULL OR ${rematchLinked && recordId ? "true" : "false"})
+       AND rp.retired_at IS NULL
        AND rp.is_poi
        AND rp.lat IS NOT NULL
        AND rp.lng IS NOT NULL
@@ -630,7 +635,7 @@ async function fetchCandidates(
        SELECT
          max(rs.trust)::int AS max_source_trust,
          -- Only live members: an excluded/retired row keeps its pointer but not its website.
-         array_remove(array_agg(DISTINCT rp.website) FILTER (WHERE rp.retired_at IS NULL
+         array_remove(array_agg(DISTINCT rp.website) FILTER (WHERE rp.retired_at IS NULL AND rp.id <> $14::uuid
            AND EXISTS(SELECT 1 FROM research_canonical_memberships am
              WHERE am.research_poi_id=rp.id AND am.canonical_poi_id=cp.id AND am.active)), NULL) AS member_websites,
          bool_or(rp.website IS NOT NULL OR cp.website IS NOT NULL) AS has_website,
@@ -649,8 +654,10 @@ async function fetchCandidates(
        SELECT rp.*, rs.trust
        FROM research_pois rp
        JOIN research_sources rs ON rs.id = rp.source_id
-       -- The representative member must be live: an excluded row keeps its pointer only.
+       -- The representative member must be live (an excluded row keeps its pointer only) and
+       -- never the row being matched (a linked row is rematched against its canonical's others).
        WHERE rp.canonical_poi_id = cp.id AND rp.is_poi AND rp.retired_at IS NULL
+         AND rp.id <> $14::uuid
          AND EXISTS(SELECT 1 FROM research_canonical_memberships bm
            WHERE bm.research_poi_id=rp.id AND bm.canonical_poi_id=cp.id AND bm.active)
        ORDER BY rs.trust DESC, (rp.content_embedding IS NOT NULL) DESC, rp.last_seen_at DESC
@@ -689,6 +696,7 @@ async function fetchCandidates(
       nameBbox.minLng,
       nameBbox.maxLng,
       row.name_normalized ?? row.name ?? "",
+      row.id,
     ],
   );
 
@@ -1448,6 +1456,7 @@ async function runMatchInternal(
           sourceId,
           dryRunSeen,
           opts.recordId,
+          opts.rematchLinked,
         );
         if (!row) {
           await client.query("COMMIT");

@@ -114,10 +114,12 @@ export function deriveForwardPrecision(
     value = "region";
     derivation = "provider_type";
   } else if (
-    ["city", "town", "village", "hamlet", "suburb", "municipality"].includes(
+    ["city", "town", "village", "hamlet", "suburb", "municipality", "postcode"].includes(
       type,
-    )
+    ) ||
+    row.addresstype === "postcode"
   ) {
+    // A postal area is about city-sized.
     value = "city";
     derivation = "provider_type";
   } else if (

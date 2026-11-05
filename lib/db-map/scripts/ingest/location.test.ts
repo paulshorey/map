@@ -296,7 +296,10 @@ test("region/country-only lookups never yield a venue; name lookups must name th
   // Conservative: a provider name with a distinctive word the listing lacks is not trusted.
   assert.equal(forwardImplausible("name", { name: "Zeitz MOCAA" }, named("Zeitz Museum of Contemporary Art Africa")), "name_result_mismatch");
   assert.equal(forwardImplausible("name", { name: "Museo Tamayo Arte Contemporáneo" }, named("Museo Tamayo")), null);
-  assert.equal(forwardImplausible("name", { name: "Helsinki Biennial" }, { precision: "city" }), null);
+  // A coarse name-only result needs listed locality: with none it may be a shared word only.
+  assert.equal(forwardImplausible("name", { name: "Helsinki Biennial" }, { precision: "city" }), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Georgia Botanical Garden" }, { precision: "region" }), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Helsinki Biennial", country_code: "FI" }, { precision: "city" }), null);
   assert.equal(forwardImplausible("venue", { name: "x" }, shop), null);
   assert.equal(providerNameAgrees("Les Ateliers de Rennes", "Ateliers"), true);
 });
@@ -343,4 +346,10 @@ test("a listed acronym matches its expanded provider name; postcodes and astral 
   assert.equal(providerNameAgrees("MoMA PS1", "Museum of Modern Art"), true);
   assert.equal(providerNameAgrees("MoMA", "Metropolitan Opera"), false);
   assert.equal(providerNameAgrees("moma", "Museum of Modern Art"), false);
+});
+
+test("names stating different place types never agree", () => {
+  assert.equal(providerNameAgrees("Central Garden", "Central Park"), false);
+  assert.equal(providerNameAgrees("Central Garden", "Central Gardens"), true);
+  assert.equal(providerNameAgrees("Huntington Library, Art Museum and Botanical Gardens", "Huntington Library"), true);
 });

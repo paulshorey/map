@@ -826,9 +826,10 @@ The matcher uses a cascade:
    routes (`#/event/a`, `#!/…`) are kept, in-page anchors dropped.
    No earlier-matcher (v1–v3) checkpoint is resumable: `event-v2` normalizations must be
    redone, so historical runs need a new run (and a fresh audit for whole-file proofs). A
-   membership counts as valid only for the current matcher version: an active membership from
-   an older matcher is retired (`matcher_upgraded`) and the record matched again, the old
-   canonical's snapshot held until then. Ports other than the default are part of the identity.
+   membership counts as valid only for the current matcher version: a record whose active
+   membership comes from an older matcher is matched again while still linked
+   (`rematchLinked`); the apply transaction replaces its pointer and membership atomically,
+   and candidates never use the record itself as their representative member. Ports other than the default are part of the identity.
    Standalone `ingest:match` selects only unlinked rows, so it refuses to run while active
    memberships in its scope come from an older matcher; use a new managed run instead
    (`--recluster`, which resets every cluster first, is allowed).

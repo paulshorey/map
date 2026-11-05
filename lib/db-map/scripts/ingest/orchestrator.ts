@@ -8,7 +8,7 @@ import { runRecordScheduler } from "./record-scheduler.js";
 import { EmbeddingBatcher } from "./embedding-batcher.js";
 import { buildEmbedText } from "./embed.js";
 import { configureLlmConcurrency, canonicalLane } from "./concurrency.js";
-import { artifactTransaction, fencedTransaction } from "./execution.js";
+import { artifactTransaction } from "./execution.js";
 import { spawn } from "node:child_process";
 import { Execution, lockSource, type AttemptResult } from "./execution.js";
 import { runGeocode } from "./geocode.js";
@@ -1304,28 +1304,16 @@ export async function runOrchestration(
               };
             }
             if (stage === "match") {
-              // A membership decided by an older matcher is matched again; the old canonical
-              // keeps its snapshot until the rematch replaces it.
-              if (state.canonical_poi_id && state.membership_stale_matcher) {
-                // Fenced, but the match claim stays running until the rematch below finishes.
-                await canonicalLane.run(() =>
-                  fencedTransaction(db, async (client) => {
-                    // Only the pointer is cleared, so matching selects the row. The old membership
-                    // stays active (rebuilds keep the record) until the rematch retires it in the
-                    // same transaction as its replacement decision.
-                    await client.query(
-                      "UPDATE research_pois SET canonical_poi_id=NULL, matched_normalization_id=NULL WHERE id=$1",
-                      [item.research_poi_id],
-                    );
-                  }),
-                );
-                Object.assign(state, await recordState(db, item));
-              }
+              // A membership decided by an older matcher is matched again. Pointer and membership
+              // stay intact (status, rebuilds and other queries still see the record) until the
+              // rematch replaces both atomically in its apply transaction.
+              const rematchLinked =
+                !!state.canonical_poi_id && !!state.membership_stale_matcher;
               const assessment = await assessLocationRecord(
                 db,
                 item.research_poi_id!,
               );
-              if (state.canonical_poi_id && state.membership_valid) {
+              if (!rematchLinked && state.canonical_poi_id && state.membership_valid) {
                 if (!(await recordState(db, item)).lineage_ready) {
                   const publication = await canonicalLane.run(() =>
                     artifactTransaction(db, async (client) => {
@@ -1371,7 +1359,7 @@ export async function runOrchestration(
                   build_id: ready.active_build_id,
                 };
               }
-              if (state.canonical_poi_id)
+              if (state.canonical_poi_id && !rematchLinked)
                 throw Object.assign(
                   new Error("Canonical membership lineage mismatch"),
                   { code: "lineage_invalid" },
@@ -1388,6 +1376,7 @@ export async function runOrchestration(
                 {
                   source: resolved.source.meta.slug,
                   recordId: item.research_poi_id!,
+                  rematchLinked,
                   runId: ctx.runId,
                   limit: 1,
                   dryRun: false,
