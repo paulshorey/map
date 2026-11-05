@@ -3,6 +3,7 @@ import { test, afterEach } from "node:test";
 import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
 import {
+  localityValue,
   resolveLocation,
   reverseForPrecision,
   type ReverseLocation,
@@ -273,4 +274,13 @@ test("a supplied point repeating a published country centroid is country precisi
   // One decimal cannot tell a copied centroid from a coarse point.
   assert.equal(suppliedCountryCentroid({ lat: -25.3, lng: 133.8 }), null);
   assert.equal(suppliedCountryCentroid({ lat: null, lng: null }), null);
+});
+
+test("qualified Various placeholders and non-ISO centroid codes never project", () => {
+  for (const filler of ["Various villages", "Various (England)", "Various (nationwide)", "TBA (online)", "Multiple towns"])
+    assert.equal(localityValue(filler), null, filler);
+  for (const place of ["Many", "Variousville", "Online Park Road"]) assert.equal(localityValue(place), place);
+  // Gaza's vendored centroid code GZ is not ISO; it identifies precision, never a country code.
+  assert.equal(suppliedCountryCentroid({ lat: 31.354676, lng: 34.308825 }), "GZ");
+  assert.equal(countryToCode("GZ"), undefined);
 });

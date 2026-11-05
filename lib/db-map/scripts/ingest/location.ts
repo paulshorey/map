@@ -22,10 +22,11 @@ export interface ReverseLocation extends LocationFields {
 export const textValue = (v: unknown): string | null =>
   typeof v === "string" && v.trim() ? v.trim() : null;
 
-// Filler words that are never a place on their own. Quantifiers such as "Many" (a town in
+// Filler words that are never a place on their own. "Various" with anything after it
+// ("Various villages", "Various (England)") is filler. Quantifiers such as "Many" (a town in
 // Louisiana) or "Multiple" count as filler only with a noun such as "venues".
 const PLACEHOLDER_LOCALITY =
-  /^((various|tba|tbc|tbd|n\/?a|unknown|online|virtual)( (venues?|locations?|cities|places|sites|spaces))?|(multiple|several|many) (venues?|locations?|cities|places|sites|spaces))$/i;
+  /^(various\b.*|(tba|tbc|tbd|n\/?a|unknown|online|virtual)( (venues?|locations?|cities|places|sites|spaces))?( \(.*\))?|(multiple|several|many) (venues?|locations?|cities|places|sites|spaces|villages|towns)( \(.*\))?)$/i;
 /** Directory filler such as "Various venues" is not a place and must never reach a geocoder. */
 export const localityValue = (v: unknown): string | null => {
   const text = textValue(v);

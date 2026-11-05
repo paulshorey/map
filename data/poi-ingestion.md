@@ -929,8 +929,8 @@ search. Hits and misses are cached by query policy/country. Forward and reverse 
 provider budgets and recovery. If the budget expires between calls, activation waits
 and resume reuses cached results; a miss preserves a usable source point.
 
-Listing filler such as `Various`, `Various venues`, `TBA`, `Online` or `Multiple
-locations` is not locality and never enters a forward query or the projected
+Listing filler such as `Various`, `Various venues`, `Various (England)`, `TBA`, `Online` or
+`Multiple locations` is not locality and never enters a forward query or the projected
 `city`/`region`/`address`; the captured text itself is preserved. Quantifiers (`Multiple`, `Several`, `Many`) are filler only with a noun
 such as `venues`, so a town named Many is kept. When a source point exists and the only remaining listed locality is
 the country, no forward lookup runs: a country centroid beside a supplied point adds
@@ -948,7 +948,9 @@ is never an anchor for the 50 km checks below. When enrichment flips a linked re
 between `point` and a coarser precision, or removes or replaces its address, city, region
 or country (filling a missing field does not), its membership is retired
 (`coordinate_precision_changed`) and the record is matched again, because matching ignores
-distance for coarse points; overrides apply first, and the old snapshot is held until then. A reverse lookup is trusted only to the
+distance for coarse points; overrides apply first, and the old canonical is not rebuilt: its
+snapshot is held until the rematch. A centroid's country fills a missing listed country only
+when it is a current ISO code (not the vendored `GZ`/`AN`). A reverse lookup is trusted only to the
 point's precision: a `country` point keeps only the country, a `region` point drops the
 city, and any coarse or unknown-precision point drops the street address and postcode. A country centroid
 otherwise reverse-geocodes to whatever village lies under it. A reverse call is made only when
