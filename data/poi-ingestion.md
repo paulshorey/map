@@ -968,7 +968,8 @@ other than the centroid's rules the match out, so a full-precision venue near a
 microstate centroid stays a point. A match gets the `source_point_country_centroid` warning and `supplied_centroid` evidence; it
 is never an anchor for the 50 km checks below. When enrichment flips a linked record's point
 between `point` and a coarser precision, or removes or replaces its address, city, region
-or country (filling a missing field does not), its membership is retired
+or country (filling a missing field does not), or moves a geocode-derived point, its
+membership is retired
 (`coordinate_precision_changed`) and the record is matched again, because matching ignores
 distance for coarse points; overrides apply first, and the old canonical is not rebuilt: its
 snapshot is held until the rematch. A centroid's country fills a missing listed country only
@@ -1019,7 +1020,9 @@ An unrecognized country text with no city (`East Africa`) leaves the record unlo
 intervention; geocoding releases that member's hold on its old canonical, which is rebuilt
 without it, or hidden when no member remains and no other member is still awaiting a
 location refresh (`releaseLocationHoldFor`). A retained geocoded point that equals a rejected
-result is dropped rather than reactivated.
+result is dropped rather than reactivated. The settlement takes the canonical writer lock
+first and stores why in `attributes.location_unresolved` (query, basis, rejected results,
+invalid queries, any cleared point); stale `location_enrichment` of a cleared point is removed.
 
 Each canonical build writes `attributes.location_specificity`: `precise` when a
 point-precision source coordinate exists, or a point-precision lookup used an address,

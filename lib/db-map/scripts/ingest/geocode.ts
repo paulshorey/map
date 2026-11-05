@@ -493,9 +493,21 @@ async function settleUnlocated(
   db: Pool,
   researchId: string,
   rejectedPoint: { lat: number; lng: number } | null,
+  evidence: Record<string, unknown>,
 ) {
   await canonicalLane.run(() =>
     fencedTransaction(db, async (client) => {
+      // Same lock order as every canonical writer: the advisory lock before any member row.
+      await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [
+        CANONICAL_WRITER_LOCK,
+      ]);
+      // Keep why the record is unlocated; enrichment of a cleared point is stale.
+      await client.query(
+        `UPDATE research_pois SET attributes=(COALESCE(attributes,'{}'::jsonb)
+          - CASE WHEN $3 THEN 'location_enrichment' ELSE '' END)
+          || jsonb_build_object('location_unresolved',$2::jsonb) WHERE id=$1`,
+        [researchId, JSON.stringify(evidence), !!rejectedPoint],
+      );
       if (rejectedPoint) {
         const cleared = await client.query(
           `UPDATE research_pois SET lat=NULL, lng=NULL, coordinate_source=NULL, coordinate_precision=NULL,
@@ -845,6 +857,24 @@ export async function runGeocode(
             validPoint({ lat: row.lat, lng: row.lng })
               ? { lat: row.lat as number, lng: row.lng as number }
               : null,
+            {
+              version: LOCATION_VERSION,
+              normalization_id: row.active_normalization_id,
+              settled_at: new Date().toISOString(),
+              forward: {
+                query_version: LOCATION_QUERY_VERSION,
+                country_filter: forwardCountry,
+                query: q?.display ?? null,
+                query_basis: forwardBasis,
+                query_norm: forwardQueryNorm,
+                state: !q ? "no_query" : "unresolved",
+                ...(rejected ? { rejected } : {}),
+                ...(invalidQueries.length ? { invalid_queries: invalidQueries } : {}),
+              },
+              ...(validPoint({ lat: row.lat, lng: row.lng })
+                ? { cleared_point: { lat: row.lat, lng: row.lng, coordinate_source: row.coordinate_source } }
+                : {}),
+            },
           );
         continue;
       }
@@ -1060,10 +1090,15 @@ export async function runGeocode(
           lost(row.city, resolved.fields.city) ||
           lost(row.region, resolved.fields.region) ||
           lost(row.country_code, resolved.fields.country_code);
+        // A moved geocode-derived point changes candidate blocking (source points never move).
+        const pointMoved =
+          validPoint({ lat: row.lat, lng: row.lng }) &&
+          (Math.abs(row.lat - lat!) > 1e-9 || Math.abs(row.lng - lng!) > 1e-9);
         const rematch =
           !!row.canonical_poi_id &&
           (coarse(row.coordinate_precision) !== coarse(coordinatePrecision) ||
-            localityChanged);
+            localityChanged ||
+            pointMoved);
         if (rematch) {
           await client.query(
             `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
