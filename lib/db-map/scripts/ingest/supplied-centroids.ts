@@ -266,7 +266,14 @@ export const MIN_CENTROID_DECIMALS = 2;
 function repeats(value: number, centroid: number, places: number): boolean {
   const scale = 10 ** places;
   const eq = (a: number) => Math.abs(a / scale - value) < 0.5 / scale / 1000;
-  return eq(Math.round(centroid * scale)) || eq(Math.trunc(centroid * scale));
+  const scaled = centroid * scale;
+  // Truncation, and rounding with a halfway tie resolved either way: formatters round
+  // -12.8275 to -12.828 (away from zero), Math.round to -12.827.
+  return (
+    eq(Math.trunc(scaled)) ||
+    eq(Math.round(scaled)) ||
+    eq(Math.sign(scaled) * Math.round(Math.abs(scaled) + 1e-7))
+  );
 }
 
 /**

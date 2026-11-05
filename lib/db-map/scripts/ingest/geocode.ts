@@ -878,12 +878,19 @@ export async function runGeocode(
             new Error("Location input changed during activation"),
             { code: "lineage_invalid" },
           );
-        // Matching drops the distance signal for a coarse point, so a point that becomes coarse
-        // (a supplied centroid) or precise must be matched again. Overrides apply first there.
+        // Matching drops the distance signal for a coarse point and scores locality fields, so a
+        // point that crosses point/coarse precision, or changed city/region/country, is matched
+        // again. Overrides apply first there.
         const coarse = (p: unknown) => p !== "point";
+        // Locality fields feed the locality score and the (cleared) embedding text.
+        const localityChanged =
+          row.city !== resolved.fields.city ||
+          row.region !== resolved.fields.region ||
+          row.country_code !== resolved.fields.country_code;
         const rematch =
           !!row.canonical_poi_id &&
-          coarse(row.coordinate_precision) !== coarse(coordinatePrecision);
+          (coarse(row.coordinate_precision) !== coarse(coordinatePrecision) ||
+            localityChanged);
         if (rematch) {
           await client.query(
             `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
