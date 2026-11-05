@@ -629,7 +629,10 @@ async function fetchCandidates(
      JOIN LATERAL (
        SELECT
          max(rs.trust)::int AS max_source_trust,
-         array_remove(array_agg(DISTINCT rp.website), NULL) AS member_websites,
+         -- Only live members: an excluded/retired row keeps its pointer but not its website.
+         array_remove(array_agg(DISTINCT rp.website) FILTER (WHERE rp.retired_at IS NULL
+           AND EXISTS(SELECT 1 FROM research_canonical_memberships am
+             WHERE am.research_poi_id=rp.id AND am.canonical_poi_id=cp.id AND am.active)), NULL) AS member_websites,
          bool_or(rp.website IS NOT NULL OR cp.website IS NOT NULL) AS has_website,
          bool_or(
            rp.attributes->>'wikidata_id' IS NOT NULL
