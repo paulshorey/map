@@ -337,3 +337,10 @@ test("short acronyms and non-Latin names still count as distinctive", () => {
   // Short lowercase Latin words remain noise.
   assert.equal(providerNameAgrees("Jardin de la Ville", "de la"), false);
 });
+
+test("a listed acronym matches its expanded provider name; postcodes and astral characters stay safe", () => {
+  assert.equal(providerNameAgrees("MoMA", "Museum of Modern Art"), true);
+  assert.equal(providerNameAgrees("MoMA PS1", "Museum of Modern Art"), true);
+  assert.equal(providerNameAgrees("MoMA", "Metropolitan Opera"), false);
+  assert.equal(providerNameAgrees("moma", "Museum of Modern Art"), false);
+});

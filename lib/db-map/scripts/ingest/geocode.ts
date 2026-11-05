@@ -156,7 +156,8 @@ export function fitQueryLength(display: string): string {
   // A single over-long part: keep its end, starting at a word boundary.
   while (bytes(fitted) > MAX_QUERY_BYTES) {
     const space = fitted.indexOf(" ");
-    fitted = space === -1 ? fitted.slice(1) : fitted.slice(space + 1);
+    // Whole code points only: never leave half a surrogate pair.
+    fitted = space === -1 ? Array.from(fitted).slice(1).join("") : fitted.slice(space + 1);
   }
   return fitted;
 }

@@ -144,11 +144,28 @@ const significantTokens = (value: string) =>
     )
     .map((t) => t.toUpperCase());
 
-/** True when every distinctive word of the provider's place name appears in the listed name. */
+/** Initials of every word ("Museum of Modern Art" -> "MOMA"). */
+const initials = (value: string) =>
+  value
+    .normalize("NFKD")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
+
+/** True when every distinctive word of the provider's place name appears in the listed name,
+ * or a listed acronym spells the provider name's initials (MoMA, Museum of Modern Art). */
 export function providerNameAgrees(listedName: string, providerName: string) {
   const listed = new Set(significantTokens(listedName));
   const provider = significantTokens(providerName);
-  return provider.length > 0 && provider.every((t) => listed.has(t));
+  if (provider.length > 0 && provider.every((t) => listed.has(t))) return true;
+  const spelled = initials(providerName);
+  return (
+    spelled.length >= 2 &&
+    listedName
+      .split(/[^\p{L}\p{N}]+/u)
+      .some((w) => w.length >= 2 && /\p{Lu}.*\p{Lu}/u.test(w) && w.toUpperCase() === spelled)
+  );
 }
 
 /**

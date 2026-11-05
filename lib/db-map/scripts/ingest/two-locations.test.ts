@@ -1651,6 +1651,10 @@ test("over-long queries keep their local end; a 400 is a record-level miss, not 
   assert.ok(Buffer.byteLength(fitted) <= MAX_QUERY_BYTES, fitted);
   assert.ok(fitted.endsWith("Russian Federation"));
   assert.equal(fitQueryLength("Nagoya, JP"), "Nagoya, JP");
+  // Never split a surrogate pair.
+  const emoji = fitQueryLength("🌸" + "x".repeat(188));
+  assert.ok(!/[\uD800-\uDFFF]/.test(emoji.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, "")));
+  assert.ok(Buffer.byteLength(emoji) <= MAX_QUERY_BYTES);
 
   const f = fixture({ ...japan, attributes: { venue_name: "Aichi Arts Center" } });
   Object.assign(f.row, { lat: null, lng: null, coordinate_source: null, coordinate_precision: null });

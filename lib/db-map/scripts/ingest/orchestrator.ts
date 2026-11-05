@@ -1310,11 +1310,9 @@ export async function runOrchestration(
                 // Fenced, but the match claim stays running until the rematch below finishes.
                 await canonicalLane.run(() =>
                   fencedTransaction(db, async (client) => {
-                    await client.query(
-                      `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
-                      retirement_reason='matcher_upgraded' WHERE research_poi_id=$1 AND active`,
-                      [item.research_poi_id],
-                    );
+                    // Only the pointer is cleared, so matching selects the row. The old membership
+                    // stays active (rebuilds keep the record) until the rematch retires it in the
+                    // same transaction as its replacement decision.
                     await client.query(
                       "UPDATE research_pois SET canonical_poi_id=NULL, matched_normalization_id=NULL WHERE id=$1",
                       [item.research_poi_id],

@@ -144,7 +144,8 @@ export function deriveForwardPrecision(
     !address.some((key) => POINT_ADDRESS_KEYS.includes(key))
   ) {
     // No granularity fields: "Zongolica, Veracruz, Mexico" names a town, not a point.
-    value = address.some((key) => CITY_ADDRESS_KEYS.includes(key))
+    // A postal area is about city-sized, never a whole country.
+    value = address.some((key) => CITY_ADDRESS_KEYS.includes(key) || key === "postcode")
       ? "city"
       : address.some((key) => REGION_ADDRESS_KEYS.includes(key))
         ? "region"

@@ -154,3 +154,7 @@ test("v4 rows without class/type take precision from their address fields", () =
   assert.equal(deriveForwardPrecision({ address: { road: "Calle 43", city: "Mérida" } }).value, "point");
   assert.equal(deriveForwardPrecision({ address: { name: "Ray-Ban", city: "Frankfurt" } }).value, "point");
 });
+
+test("an untyped postcode-only row is a city-sized area, not a country", () => {
+  assert.equal(deriveForwardPrecision({ address: { postcode: "62210", country_code: "mx" } }).value, "city");
+});
