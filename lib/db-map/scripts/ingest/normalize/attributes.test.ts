@@ -286,3 +286,17 @@ test("JSON-object fallback cannot bypass attribute/evidence type validation", ()
       ),
     );
 });
+
+test("a same-domain website path change changes the match fingerprint", () => {
+  const fingerprint = (website: string) =>
+    resolveNormalization({
+      output: null,
+      captured: { ...captured, website },
+      deterministic: buildDeterministicFacts({ ...captured, website }),
+      ingestCategory: "campground",
+      profile: getNormalizationProfile("campground"),
+    }).matchFingerprint;
+  const a = fingerprint("https://www.fs.usda.gov/recarea/mbs/recarea/?recid=17880");
+  assert.notEqual(a, fingerprint("https://www.fs.usda.gov/recarea/mbs/recarea/?recid=18420"));
+  assert.equal(a, fingerprint("https://fs.usda.gov/recarea/mbs/recarea?recid=17880"));
+});

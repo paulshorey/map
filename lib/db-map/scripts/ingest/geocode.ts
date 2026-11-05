@@ -476,6 +476,39 @@ export async function writeRowCoords(
   await (linked ? canonicalLane.run(activate) : activate());
 }
 
+/** Persist the unlocated state of a record whose retained geocoded point was rejected. */
+async function clearRejectedPoint(
+  db: Pool,
+  researchId: string,
+  lat: number,
+  lng: number,
+) {
+  await canonicalLane.run(async () => {
+    const client = await db.connect();
+    try {
+      await client.query("BEGIN");
+      const cleared = await client.query(
+        `UPDATE research_pois SET lat=NULL, lng=NULL, coordinate_source=NULL, coordinate_precision=NULL,
+          active_geocode_id=NULL, canonical_poi_id=NULL, matched_normalization_id=NULL
+        WHERE id=$1 AND coordinate_source='geocode' AND lat=$2 AND lng=$3`,
+        [researchId, lat, lng],
+      );
+      if (cleared.rowCount)
+        await client.query(
+          `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
+          retirement_reason='location_rejected' WHERE research_poi_id=$1 AND active`,
+          [researchId],
+        );
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
+  });
+}
+
 /**
  * An unlocatable record must not keep serving the snapshot it held while its location was
  * refreshed (for example a restaurant that a region-only lookup returned). Rebuild each
@@ -818,7 +851,13 @@ export async function runGeocode(
       if (!forward) {
         stats.unresolved++;
         // Every lookup finished (budget/provider stops exit above): no plausible point exists.
-        if (!opts.dryRun) await releaseHeldSnapshots(db, row.id);
+        if (!opts.dryRun) {
+          // A retained point dropped above (it was a rejected result) is cleared in the database
+          // too, and its membership retired, so the record is unlocated rather than still served.
+          if (validPoint({ lat: row.lat, lng: row.lng }))
+            await clearRejectedPoint(db, row.id, row.lat, row.lng);
+          await releaseHeldSnapshots(db, row.id);
+        }
         continue;
       }
       lat = forward.lat;

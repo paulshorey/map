@@ -3,6 +3,7 @@ import { normalizeName, websiteDomain } from "./text.js";
 import { strictDate, type DeterministicFacts, type DeterministicInput } from "./deterministic.js";
 import type { LlmNormalizationOutput } from "./contracts.js";
 import { isListingDomain, type NormalizationProfile } from "./profiles.js";
+import { websiteIdentity } from "../match/denylist.js";
 import { resolveAttributes } from "./attributes.js";
 
 export interface ResolvedNormalization {
@@ -238,7 +239,8 @@ export function resolveNormalization(input: {
       isPoi: resultWithoutFingerprint.isPoi,
       matchName: resultWithoutFingerprint.matchName,
       aliases: resultWithoutFingerprint.aliases,
-      websiteDomain: resultWithoutFingerprint.websiteDomain,
+      // matcher-v4 compares full website identities, so a same-domain path change rematches.
+      website: websiteIdentity(resultWithoutFingerprint.website),
       phone: resultWithoutFingerprint.phone,
       city: resultWithoutFingerprint.city,
       region: resultWithoutFingerprint.region,

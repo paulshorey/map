@@ -66,6 +66,7 @@ function fixture(captured: any = source) {
   const cache = new Map<string, any>();
   let activated: any = null;
   let heldLookups = 0;
+  const cleared: string[] = [];
   const client = {
     release() {},
     async query(sql: string, args: any[] = []) {
@@ -94,6 +95,11 @@ function fixture(captured: any = source) {
         );
       } else if (sql.includes("INSERT INTO research_poi_geocodes")) {
         return { rows: [{ id: "geocode-new" }] };
+      } else if (sql.startsWith("UPDATE research_pois SET lat=NULL")) {
+        cleared.push(args[0]);
+        return { rows: [], rowCount: 1 };
+      } else if (sql.includes("retirement_reason='location_rejected'")) {
+        return { rows: [], rowCount: 1 };
       } else if (sql.startsWith("UPDATE research_pois SET lat="))
         activated = JSON.parse(args[6]);
       else if (sql.startsWith("SELECT DISTINCT b.canonical_poi_id")) {
@@ -117,6 +123,7 @@ function fixture(captured: any = source) {
     get heldLookups() {
       return heldLookups;
     },
+    cleared,
     db: { ...client, connect: async () => client } as unknown as Pool,
   };
 }
@@ -1614,6 +1621,7 @@ test("a retained geocoded point that is itself the rejected result is dropped, n
   const stats = await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
   assert.equal(stats.unresolved, 1);
   assert.equal(f.activated, null, "the rejected restaurant must not be reactivated");
+  assert.deepEqual(f.cleared, ["poi"], "the rejected point is cleared in the database");
   assert.equal(f.heldLookups, 1);
 });
 
