@@ -1,5 +1,3 @@
-import { haversineMeters } from "./match/geo.js";
-
 /**
  * Widely copied country centroids: Google DSPL canonical `countries.csv`
  * (https://developers.google.com/public-data/docs/canonical/countries_csv, CC BY 4.0),
@@ -253,19 +251,36 @@ const COUNTRY_CENTROIDS: ReadonlyArray<readonly [string, number, number]> = [
   ["ZW", -19.015438, 29.154857],
 ];
 
-/** Four-decimal rounding moves a point about 15 m; real venues near a centroid are kilometres off. */
-export const SUPPLIED_CENTROID_M = 1_000;
+/** Decimal places as written: `-25.2744` has four. */
+function decimals(value: number): number {
+  const text = value.toString().toLowerCase();
+  if (text.includes("e-")) return Number(text.split("e-")[1] ?? 0);
+  const dot = text.indexOf(".");
+  return dot === -1 ? 0 : text.length - dot - 1;
+}
 
-/** The country code whose published centroid a supplied point repeats, if any. */
+/** Fewer decimals than this cannot distinguish a copied centroid from a coarse point. */
+export const MIN_CENTROID_DECIMALS = 2;
+
+/**
+ * The country whose published centroid a supplied point repeats, if any. The point must
+ * equal the centroid rounded or truncated to the point's own precision (within one unit
+ * of its last decimal, on both axes), so a real venue near a microstate centroid, written
+ * to full precision, never matches. A listed country other than the centroid's rules it out.
+ */
 export function suppliedCountryCentroid(
   point: { lat: number | null; lng: number | null },
+  listedCountry?: string | null,
 ): string | null {
   if (typeof point.lat !== "number" || typeof point.lng !== "number") return null;
-  const p = { lat: point.lat, lng: point.lng };
+  const places = Math.min(decimals(point.lat), decimals(point.lng));
+  if (places < MIN_CENTROID_DECIMALS) return null;
+  const tolerance = 10 ** -places + 1e-9;
   for (const [code, lat, lng] of COUNTRY_CENTROIDS)
     if (
-      Math.abs(lat - p.lat) < 0.02 &&
-      haversineMeters(p, { lat, lng }) <= SUPPLIED_CENTROID_M
+      Math.abs(lat - point.lat) <= tolerance &&
+      Math.abs(lng - point.lng) <= tolerance &&
+      (!listedCountry || listedCountry === code)
     )
       return code;
   return null;

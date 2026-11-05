@@ -34,10 +34,7 @@ import {
   type ReverseLocation,
 } from "./location.js";
 import { countryToCode } from "./normalize/country.js";
-import {
-  SUPPLIED_CENTROID_M,
-  suppliedCountryCentroid,
-} from "./supplied-centroids.js";
+import { suppliedCountryCentroid } from "./supplied-centroids.js";
 import { stableHash } from "./hash.js";
 import { haversineMeters } from "./match/geo.js";
 import {
@@ -462,7 +459,7 @@ export async function runGeocode(
       coordinatePrecision = row.coordinate_precision;
     // A supplied point that repeats a published country centroid locates only the country.
     const suppliedCentroid = ["source", "url"].includes(row.coordinate_source)
-      ? suppliedCountryCentroid(row)
+      ? suppliedCountryCentroid(row, source.country_code)
       : null;
     if (suppliedCentroid) coordinatePrecision = "country";
     const temporal = new Set<string>(
@@ -689,7 +686,7 @@ export async function runGeocode(
             supplied_centroid: {
               country_code: suppliedCentroid,
               reference: "google-dspl-countries",
-              radius_m: SUPPLIED_CENTROID_M,
+              match: "rounded_to_supplied_precision",
             },
           }
         : {}),

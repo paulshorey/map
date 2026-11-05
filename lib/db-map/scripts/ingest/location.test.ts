@@ -242,9 +242,20 @@ test("a coarse point's reverse lookup never invents finer locality", () => {
 test("a supplied point repeating a published country centroid is country precision", () => {
   // Biennial Foundation's Adelaide record supplies Australia's centroid, rounded.
   assert.equal(suppliedCountryCentroid({ lat: -25.2744, lng: 133.7751 }), "AU");
+  assert.equal(suppliedCountryCentroid({ lat: -25.2744, lng: 133.7751 }, "AU"), "AU");
   assert.equal(suppliedCountryCentroid({ lat: 9.081999, lng: 8.675277 }), "NG");
-  // A real Rome venue 3.4 km from the Vatican centroid, and Aichi's Nagoya venue, stay points.
+  assert.equal(suppliedCountryCentroid({ lat: -25.27, lng: 133.78 }), "AU");
+  // A listed country other than the centroid's rules it out.
+  assert.equal(suppliedCountryCentroid({ lat: -25.2744, lng: 133.7751 }, "NZ"), null);
+  // Real venues near microstate centroids, written to full precision, stay points:
+  // St. Peter's Basilica (Vatican centroid 41.902916, 12.453389) and a Singapore venue
+  // about 300 m from Singapore's centroid (1.352083, 103.819836).
+  assert.equal(suppliedCountryCentroid({ lat: 41.902168, lng: 12.453937 }, "VA"), null);
+  assert.equal(suppliedCountryCentroid({ lat: 1.3545, lng: 103.8212 }, "SG"), null);
+  // A Rome venue 3.4 km from the Vatican centroid, and Aichi's Nagoya venue.
   assert.equal(suppliedCountryCentroid({ lat: 41.9334, lng: 12.4534 }), null);
   assert.equal(suppliedCountryCentroid({ lat: 35.1815, lng: 136.9066 }), null);
+  // One decimal cannot tell a copied centroid from a coarse point.
+  assert.equal(suppliedCountryCentroid({ lat: -25.3, lng: 133.8 }), null);
   assert.equal(suppliedCountryCentroid({ lat: null, lng: null }), null);
 });

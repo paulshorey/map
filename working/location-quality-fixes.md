@@ -162,8 +162,9 @@ and `general`. It also exposed two defects, fixed on `claude/coarse-point-revers
   reverse-geocoded to `Kurmin Musa, Kaduna`, which filled `city`/`region`. Reverse fields
   finer than the point's precision are now dropped (`reverseForPrecision`).
 - **Supplied country centroids.** Adelaide's `-25.2744, 133.7751` is Google's Australia
-  centroid. Supplied points within 1 km of a vendored Google DSPL centroid are `country`
-  precision. Only Adelaide matches among the 304-record file and ~46k existing records;
+  centroid. Supplied points that repeat a vendored Google DSPL centroid at their own
+  rounding precision (and listed country) are `country` precision. Only Adelaide matches among the 304-record file and the 2,857 supplied
+  source points in the dev database (of ~46k records);
   a Rome venue 3.4 km from the Vatican centroid does not.
 - Placeholder captured `city`/`region`/`address` (`Various`) no longer project.
 
