@@ -3,6 +3,7 @@ import { test, afterEach } from "node:test";
 import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
 import {
+  capLocalityPrecision,
   forwardImplausible,
   providerNameAgrees,
   resolveLocation,
@@ -288,4 +289,17 @@ test("region/country-only lookups never yield a venue; name lookups must name th
   assert.equal(forwardImplausible("name", { name: "Helsinki Biennial" }, { precision: "city" }), null);
   assert.equal(forwardImplausible("venue", { name: "x" }, shop), null);
   assert.equal(providerNameAgrees("Les Ateliers de Rennes", "Ateliers"), true);
+});
+
+test("a locality-only lookup never yields a point", () => {
+  const business = {
+    precision: "point",
+    precision_evidence: { value: "point", derivation: "fallback", warnings: ["point_precision_default"] },
+  };
+  const capped = capLocalityPrecision("locality", business);
+  assert.equal(capped.precision, "city");
+  assert.equal(capped.precision_evidence.derivation, "locality_query_cap");
+  assert.ok(capped.precision_evidence.warnings.includes("locality_query_point_capped"));
+  assert.equal(capLocalityPrecision("venue", business), business);
+  assert.equal(capLocalityPrecision("locality", { precision: "country" }).precision, "country");
 });

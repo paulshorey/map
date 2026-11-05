@@ -2,7 +2,7 @@
 import { countryToCode } from "./normalize/country.js";
 import { haversineMeters } from "./match/geo.js";
 import { validPoint } from "../../lib/ingestion/location-points.js";
-export const LOCATION_VERSION = "location-v7";
+export const LOCATION_VERSION = "location-v8";
 export const LOCATION_GEOCODER_VERSION = "locationiq-location-v4";
 export const LOCATION_CACHE_VERSION = "location-v2";
 export const LOCATION_QUERY_VERSION = "listed-location-v1";
@@ -164,6 +164,29 @@ export function forwardImplausible(
       return "name_result_mismatch";
   }
   return null;
+}
+/**
+ * A lookup of only locality text locates at most that locality: a business it happens to
+ * return ("Mosaicos Venecianos" for "Cuernavaca, Morelos") is labelled `city`, not `point`.
+ */
+export function capLocalityPrecision<
+  T extends { precision: string; precision_evidence?: { value: string; derivation: string; warnings: string[] } },
+>(basis: string | null, hit: T): T {
+  if (basis !== "locality" || hit.precision !== "point") return hit;
+  return {
+    ...hit,
+    precision: "city",
+    ...(hit.precision_evidence
+      ? {
+          precision_evidence: {
+            ...hit.precision_evidence,
+            value: "city",
+            derivation: "locality_query_cap",
+            warnings: [...hit.precision_evidence.warnings, "locality_query_point_capped"],
+          },
+        }
+      : {}),
+  };
 }
 export function locationReadySql(alias = "rp"): string {
   return `(${alias}.attributes->'location_enrichment'->>'version'='${LOCATION_VERSION}'

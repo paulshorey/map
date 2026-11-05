@@ -25,6 +25,7 @@ import {
   LOCATION_GEOCODER_VERSION,
   LOCATION_QUERY_VERSION,
   LOCALITY_CONFLICT_M,
+  capLocalityPrecision,
   forwardImplausible,
   forwardLocalityConflict,
   localityValue,
@@ -686,6 +687,7 @@ export async function runGeocode(
         }
         if (stop) continue;
       }
+      if (forward) forward = capLocalityPrecision(forwardBasis, forward);
     } else stats.noQuery++;
     if (!validPoint({ lat, lng })) {
       if (!forward) {
