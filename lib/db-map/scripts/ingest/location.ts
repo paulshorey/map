@@ -245,9 +245,11 @@ export function forwardImplausible(
       if (resultNamesListedCity(String(listed.city), hit as never) !== true)
         return "name_result_mismatch";
     } else if (localityValue(listed.region)) {
+      const region = fold(listed.region);
       if (
-        fold(address.state) !== fold(listed.region) &&
-        fold(address.region) !== fold(listed.region)
+        !["state", "region", "province", "state_district", "county"].some(
+          (key) => fold(address[key]) === region,
+        )
       )
         return "name_result_mismatch";
     } else return "name_result_mismatch";

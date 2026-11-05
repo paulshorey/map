@@ -362,3 +362,8 @@ test("a coarse name-only result must agree with the listed city or region", () =
   assert.equal(forwardImplausible("name", { name: "Photo Biennial", city: "Helsinki" }, helsinki), null);
   assert.equal(forwardImplausible("name", { name: "Photo Biennial", city: "Turku" }, helsinki), "name_result_mismatch");
 });
+
+test("a coarse name-only result may match the listed region under any region field", () => {
+  const hit = { precision: "region", raw_response: { address: { province: "Ontario", country_code: "ca" } } };
+  assert.equal(forwardImplausible("name", { name: "Lakeside Garden", region: "Ontario" }, hit), null);
+});
