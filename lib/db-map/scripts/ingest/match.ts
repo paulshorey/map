@@ -649,7 +649,10 @@ async function fetchCandidates(
        SELECT rp.*, rs.trust
        FROM research_pois rp
        JOIN research_sources rs ON rs.id = rp.source_id
-       WHERE rp.canonical_poi_id = cp.id AND rp.is_poi
+       -- The representative member must be live: an excluded row keeps its pointer only.
+       WHERE rp.canonical_poi_id = cp.id AND rp.is_poi AND rp.retired_at IS NULL
+         AND EXISTS(SELECT 1 FROM research_canonical_memberships bm
+           WHERE bm.research_poi_id=rp.id AND bm.canonical_poi_id=cp.id AND bm.active)
        ORDER BY rs.trust DESC, (rp.content_embedding IS NOT NULL) DESC, rp.last_seen_at DESC
        LIMIT 1
      ) br ON true

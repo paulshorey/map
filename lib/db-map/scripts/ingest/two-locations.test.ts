@@ -1741,6 +1741,10 @@ test("a query whose address was trimmed away is judged as locality", () => {
   );
   assert.equal(basisAfterFit("venue", { venue: "Aichi Arts Center" }, "Nagoya, JP"), "locality");
   assert.equal(basisAfterFit("locality", listed, "Mexico"), "locality");
+  // A single comma-free address trimmed inside itself still counts as the address.
+  const long = "Edificio " + "muy largo ".repeat(25) + "Avenida Central 100";
+  const fitted = fitQueryLength(long);
+  assert.equal(basisAfterFit("address", { address: long }, fitted), "address");
 });
 
 test("a retained point that was the earlier inferred result takes the refreshed result", async () => {

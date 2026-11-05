@@ -316,12 +316,19 @@ export function basisAfterFit(
       .filter((t): t is string => !!t)
       .map(fold),
   );
+  // The first kept part may be the trimmed tail of a single over-long component.
+  const head = [...kept][0] ?? "";
   const survives = (text: string | null | undefined) =>
     !!text &&
     text
       .split(/\s*,\s*/)
       .map(fold)
-      .some((part) => part && kept.has(part) && !locality.has(part));
+      .some(
+        (part) =>
+          !!part &&
+          !locality.has(part) &&
+          (kept.has(part) || (head.length >= 8 && !locality.has(head) && part.endsWith(head))),
+      );
   if (basis === "address" && !survives(listed.address))
     return survives(listed.venue) ? "venue" : survives(listed.name) ? "name" : "locality";
   if (basis === "venue" && !survives(listed.venue))

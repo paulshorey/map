@@ -1,5 +1,6 @@
 import { currentLocationAssessmentSql } from "../../sql/location-assessments.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
+import { locationReadySql } from "./location.js";
 import type { Pool } from "pg";
 import { Execution, type AttemptResult } from "./execution.js";
 import {
@@ -80,6 +81,8 @@ async function reusableDownstream(
     WHERE i.run_id=$1 AND i.source_record_id=ANY($3::text[]) AND rp.normalization_state IN ('active','degraded','rejected')
       AND (NOT rp.is_poi OR CASE
         WHEN $2='geocode' THEN rp.lat IS NOT NULL AND rp.lng IS NOT NULL AND (rp.active_geocode_id IS NULL OR g.id IS NOT NULL)
+          -- Reuse only current-version enrichment bound to this normalization and point.
+          AND COALESCE(${locationReadySql("rp")},false)
         WHEN $2='embed' THEN rp.content_embedding IS NOT NULL AND em.id IS NOT NULL
         ELSE ${currentLocationAssessmentSql()} AND b.id IS NOT NULL AND b.builder_version='${PIPELINE_VERSIONS.canonicalBuilder}' AND EXISTS(SELECT 1 FROM canonical_poi_build_inputs bi WHERE bi.build_id=b.id
           AND bi.membership_id=m.id AND bi.normalization_id=n.id
