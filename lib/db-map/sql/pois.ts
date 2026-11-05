@@ -151,6 +151,7 @@ const FEATURE_PROPERTIES = `jsonb_build_object(
   'coordinate_kind', loc.location->>'kind',
   'location_origin', loc.location->>'origin',
   'location_precision', loc.location->>'precision',
+  'location_specificity', p.attributes->>'location_specificity',
   'name', p.name,
   'category', COALESCE(pcat.display_name, (
     SELECT c.display_name FROM canonical_poi_categories pc
@@ -280,7 +281,8 @@ export async function listPoiCategories(db: Pool): Promise<string[]> {
   return rows.map((row) => row.display_name as string);
 }
 
-export async function getPoiById(db: Pool, id: string) {
+async function getPoisByIds(db: Pool, ids: string[]) {
+  if (!ids.length) return [];
   const { rows } = await db.query(
     `SELECT
         p.id, p.name, p.description, p.address, p.website, p.hours, p.phone, p.photo_url,
@@ -313,8 +315,69 @@ export async function getPoiById(db: Pool, id: string) {
         jsonb_build_object('type','Point','coordinates', jsonb_build_array(p.lng, p.lat)) AS geometry
      FROM canonical_pois p
      LEFT JOIN canonical_categories pcat ON pcat.id = p.primary_category_id
-     WHERE p.id = $1`,
-    [id],
+     WHERE p.id = ANY($1::uuid[])`,
+    [ids],
   );
-  return rows[0] ?? null;
+  return rows;
+}
+
+export async function getPoiById(db: Pool, id: string) {
+  return (await getPoisByIds(db, [id]))[0] ?? null;
+}
+
+/** About 1 cm: markers count as the same location only when their stored points are equal. */
+const COLOCATED_EPSILON_DEG = 1e-7;
+
+export interface ColocatedPoisParams {
+  /** The clicked POI; it is always first in the result. */
+  id: string;
+  /** Which of its markers was clicked (`source`, `inferred` or `legacy`); defaults to the first. */
+  kind?: string | null;
+  limit?: number;
+}
+
+/**
+ * Every published POI with a marker at the clicked marker's exact point, clicked POI first.
+ * Coarse locations (country/region/city centroids) stack many records on one point; the
+ * drawer lists all of them. Filters are deliberately not applied: this is a location view.
+ */
+export async function getColocatedPois(db: Pool, params: ColocatedPoisParams) {
+  const anchor = await getPoiById(db, params.id);
+  if (!anchor) return null;
+  const locations = (anchor.locations ?? []) as Array<{
+    lat: number;
+    lng: number;
+    kind: string;
+  }>;
+  const location =
+    locations.find((l) => l.kind === params.kind) ?? locations[0] ?? null;
+  if (!location)
+    return { location: null, pois: [anchor], total: 1, truncated: false };
+  const limit = Math.min(Math.max(params.limit ?? 200, 1), 500);
+  const e = COLOCATED_EPSILON_DEG;
+  const fc = (await listPoisGeoJson(db, {
+    west: location.lng - e,
+    south: location.lat - e,
+    east: location.lng + e,
+    north: location.lat + e,
+    category: null,
+    limit,
+    isWorldView: false,
+  })) as {
+    features: Array<{ properties: { id: string; name: string } }>;
+    total: number;
+  };
+  const ids = [...new Set(fc.features.map((f) => f.properties.id))].filter(
+    (id) => id !== anchor.id,
+  );
+  const others = (await getPoisByIds(db, ids)).sort((a, b) =>
+    String(a.name).localeCompare(String(b.name)),
+  );
+  const total = Math.max(fc.total, others.length + 1);
+  return {
+    location,
+    pois: [anchor, ...others],
+    total,
+    truncated: total > others.length + 1,
+  };
 }

@@ -45,6 +45,13 @@
           "nullable": true
         },
         {
+          "name": "location_specificity",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
           "name": "name",
           "optional": false,
           "kind": "scalar",
@@ -427,6 +434,41 @@
           "optional": false,
           "kind": "model",
           "type": "PoiCoordinateEvidenceRecord",
+          "nullable": false
+        }
+      ]
+    },
+    "PoiColocatedResponse": {
+      "fields": [
+        {
+          "name": "location",
+          "optional": false,
+          "kind": "model",
+          "type": "PoiLocationRecord",
+          "nullable": true
+        },
+        {
+          "name": "pois",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "model",
+            "type": "PoiDetailRecord"
+          },
+          "nullable": false
+        },
+        {
+          "name": "total",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "truncated",
+          "optional": false,
+          "kind": "scalar",
+          "type": "boolean",
           "nullable": false
         }
       ]

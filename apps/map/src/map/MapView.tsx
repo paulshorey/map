@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import maplibregl, { type GeoJSONSource } from 'maplibre-gl';
+import maplibregl, { type GeoJSONSource } from "maplibre-gl";
 import {
   Map,
   NavigationControl,
@@ -8,28 +8,33 @@ import {
   AttributionControl,
   type MapRef,
   type MapLayerMouseEvent,
-} from 'react-map-gl/maplibre';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import { useRef, useCallback, useState, useMemo, useEffect } from 'react';
-import { useBasemap } from '../basemap/useBasemap';
-import { useAuth } from '../auth/useAuth';
-import { usePremiumKey } from '../auth/usePremiumKey';
-import { UserMenu } from '../auth/UserMenu';
-import { BasemapSwitcher } from '../basemap/BasemapSwitcher';
-import { CategorySwitcher } from './CategorySwitcher';
-import { PoiLayer } from './PoiLayer';
-import { usePoiCategory } from './usePoiCategory';
-import { usePoiList, type Bbox } from './usePoiList';
-import { usePoiLocationFilter } from './usePoiLocationFilter';
-import { LocationFilter, ResultCount } from './PoiFilterBar';
-import { PoiDrawer } from './PoiDrawer';
-import { usePoiSelection } from './usePoiSelection';
-import { useDebouncedValue } from '../lib/useDebouncedValue';
+} from "react-map-gl/maplibre";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { useRef, useCallback, useState, useMemo, useEffect } from "react";
+import { useBasemap } from "../basemap/useBasemap";
+import { useAuth } from "../auth/useAuth";
+import { usePremiumKey } from "../auth/usePremiumKey";
+import { UserMenu } from "../auth/UserMenu";
+import { BasemapSwitcher } from "../basemap/BasemapSwitcher";
+import { CategorySwitcher } from "./CategorySwitcher";
+import { PoiLayer } from "./PoiLayer";
+import { usePoiCategory } from "./usePoiCategory";
+import { usePoiList, type Bbox } from "./usePoiList";
+import { usePoiLocationFilter } from "./usePoiLocationFilter";
+import { LocationFilter, ResultCount } from "./PoiFilterBar";
+import { PoiDrawer } from "./PoiDrawer";
+import { usePoiSelection } from "./usePoiSelection";
+import { useDebouncedValue } from "../lib/useDebouncedValue";
 
 const DEFAULT_CENTER: [number, number] = [10, 20];
 const DEFAULT_ZOOM = 2;
-const POI_INTERACTIVE_LAYERS = ['clusters', 'cluster-count', 'poi-points'];
-const MAP_DEFAULT_CURSOR = 'crosshair';
+const POI_INTERACTIVE_LAYERS = [
+  "clusters",
+  "cluster-count",
+  "poi-points",
+  "poi-stack-count",
+];
+const MAP_DEFAULT_CURSOR = "crosshair";
 
 /**
  * Reduce prominence of country/city/place labels on vector basemaps.
@@ -39,10 +44,12 @@ const MAP_DEFAULT_CURSOR = 'crosshair';
 function collapseAttribution(map: maplibregl.Map): boolean {
   const el = map
     .getContainer()
-    .querySelector<HTMLDetailsElement>('.maplibregl-ctrl-attrib.maplibregl-compact');
-  if (!el?.classList.contains('maplibregl-compact-show')) return !!el;
-  el.classList.remove('maplibregl-compact-show');
-  el.setAttribute('open', '');
+    .querySelector<HTMLDetailsElement>(
+      ".maplibregl-ctrl-attrib.maplibregl-compact",
+    );
+  if (!el?.classList.contains("maplibregl-compact-show")) return !!el;
+  el.classList.remove("maplibregl-compact-show");
+  el.setAttribute("open", "");
   return true;
 }
 
@@ -54,32 +61,69 @@ function softenLabels(map: maplibregl.Map) {
     /place|country|city|town|village|state|capital|continent|label|locality/i;
 
   for (const layer of style.layers) {
-    if (layer.type !== 'symbol') continue;
+    if (layer.type !== "symbol") continue;
     if (!placeLabelPattern.test(layer.id)) continue;
 
-    const currentSize = map.getLayoutProperty(layer.id, 'text-size');
+    const currentSize = map.getLayoutProperty(layer.id, "text-size");
     if (currentSize != null) {
-      if (typeof currentSize === 'number') {
-        map.setLayoutProperty(layer.id, 'text-size', Math.round(currentSize * 0.7));
-      } else if (typeof currentSize === 'object' && currentSize.stops) {
+      if (typeof currentSize === "number") {
+        map.setLayoutProperty(
+          layer.id,
+          "text-size",
+          Math.round(currentSize * 0.7),
+        );
+      } else if (typeof currentSize === "object" && currentSize.stops) {
         const scaled = {
           ...currentSize,
-          stops: currentSize.stops.map((s: [number, number]) => [s[0], Math.round(s[1] * 0.7)]),
+          stops: currentSize.stops.map((s: [number, number]) => [
+            s[0],
+            Math.round(s[1] * 0.7),
+          ]),
         };
-        map.setLayoutProperty(layer.id, 'text-size', scaled);
+        map.setLayoutProperty(layer.id, "text-size", scaled);
       }
     }
 
-    map.setPaintProperty(layer.id, 'text-color', 'rgba(60, 60, 60, 0.7)');
-    map.setPaintProperty(layer.id, 'text-halo-color', 'rgba(255, 255, 255, 0.5)');
-    map.setPaintProperty(layer.id, 'text-halo-width', 1);
+    map.setPaintProperty(layer.id, "text-color", "rgba(60, 60, 60, 0.7)");
+    map.setPaintProperty(
+      layer.id,
+      "text-halo-color",
+      "rgba(255, 255, 255, 0.5)",
+    );
+    map.setPaintProperty(layer.id, "text-halo-width", 1);
   }
+}
+
+/**
+ * Tag each marker with how many loaded markers share its exact point (`stack_count`), so
+ * stacked records are visible. The drawer fetches the complete stack from the server.
+ */
+function withStackCounts(
+  data: GeoJSON.FeatureCollection | undefined,
+): GeoJSON.FeatureCollection | undefined {
+  if (!data) return data;
+  const key = (f: GeoJSON.Feature) =>
+    f.geometry.type === "Point" ? f.geometry.coordinates.join(",") : "";
+  const counts = new globalThis.Map<string, number>();
+  for (const f of data.features)
+    counts.set(key(f), (counts.get(key(f)) ?? 0) + 1);
+  return {
+    ...data,
+    features: data.features.map((f) => ({
+      ...f,
+      properties: { ...f.properties, stack_count: counts.get(key(f)) ?? 1 },
+    })),
+  };
 }
 
 export function MapView() {
   const { provider } = useBasemap();
-  const { category, categories, isLoading: categoriesLoading, selectCategory } =
-    usePoiCategory();
+  const {
+    category,
+    categories,
+    isLoading: categoriesLoading,
+    selectCategory,
+  } = usePoiCategory();
   const { location, selectLocation } = usePoiLocationFilter();
   const { user, loading, updatePreferences } = useAuth();
   const key = usePremiumKey(provider.id);
@@ -100,8 +144,13 @@ export function MapView() {
   const [zoom, setZoom] = useState(initialViewState.zoom);
   const [cursor, setCursor] = useState(MAP_DEFAULT_CURSOR);
 
-  const { selectedPoi, isLoadingPoi, selectPoi, clearSelection } = usePoiSelection(mapRef);
+  const { selection, isLoadingPoi, selectPoi, clearSelection } =
+    usePoiSelection(mapRef);
   const pois = usePoiList(bbox, zoom, category, location);
+  const markers = useMemo(
+    () => withStackCounts(pois.data as GeoJSON.FeatureCollection | undefined),
+    [pois.data],
+  );
 
   const [pendingViewport, setPendingViewport] = useState<{
     center: [number, number];
@@ -142,21 +191,21 @@ export function MapView() {
     if (!collapseAttribution(map)) {
       const onData = () => {
         if (collapseAttribution(map)) {
-          map.off('sourcedata', onData);
-          map.off('styledata', onData);
+          map.off("sourcedata", onData);
+          map.off("styledata", onData);
         }
       };
-      map.on('sourcedata', onData);
-      map.on('styledata', onData);
+      map.on("sourcedata", onData);
+      map.on("styledata", onData);
     }
 
-    if (provider.kind === 'vector') {
+    if (provider.kind === "vector") {
       softenLabels(map);
     }
   }, [updateViewport, provider.kind]);
 
   const handleMouseMove = useCallback((e: MapLayerMouseEvent) => {
-    setCursor(e.features?.length ? 'pointer' : MAP_DEFAULT_CURSOR);
+    setCursor(e.features?.length ? "pointer" : MAP_DEFAULT_CURSOR);
   }, []);
 
   const handleMouseLeave = useCallback(() => {
@@ -172,24 +221,24 @@ export function MapView() {
       if (!feature) return;
 
       if (feature.properties?.cluster_id != null) {
-        const source = map.getSource('pois');
-        if (source && 'getClusterExpansionZoom' in source) {
-          (source as GeoJSONSource).getClusterExpansionZoom(
-            feature.properties.cluster_id,
-          ).then((expZoom) => {
-            const geom = feature.geometry;
-            if (geom.type !== 'Point') return;
-            map.easeTo({
-              center: geom.coordinates as [number, number],
-              zoom: expZoom,
+        const source = map.getSource("pois");
+        if (source && "getClusterExpansionZoom" in source) {
+          (source as GeoJSONSource)
+            .getClusterExpansionZoom(feature.properties.cluster_id)
+            .then((expZoom) => {
+              const geom = feature.geometry;
+              if (geom.type !== "Point") return;
+              map.easeTo({
+                center: geom.coordinates as [number, number],
+                zoom: expZoom,
+              });
             });
-          });
         }
         return;
       }
 
       const id = feature.properties?.id;
-      if (id) selectPoi(id);
+      if (id) selectPoi(id, feature.properties?.coordinate_kind ?? null);
     },
     [selectPoi],
   );
@@ -219,7 +268,7 @@ export function MapView() {
         onMoveEnd={updateViewport}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        onDragStart={() => setCursor('grabbing')}
+        onDragStart={() => setCursor("grabbing")}
         onDragEnd={() => setCursor(MAP_DEFAULT_CURSOR)}
         onClick={handleClick}
         cursor={cursor}
@@ -227,17 +276,17 @@ export function MapView() {
         attributionControl={false}
         transformRequest={(url: string) => {
           if (
-            url.includes('tile.thunderforest.com') &&
+            url.includes("tile.thunderforest.com") &&
             key &&
-            !url.includes('apikey=')
+            !url.includes("apikey=")
           ) {
             return {
-              url: url + (url.includes('?') ? '&' : '?') + 'apikey=' + key,
+              url: url + (url.includes("?") ? "&" : "?") + "apikey=" + key,
             };
           }
           return { url };
         }}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: "100%", height: "100%" }}
       >
         <NavigationControl position="top-right" showCompass={false} />
         <GeolocateControl
@@ -247,9 +296,7 @@ export function MapView() {
         />
         <AttributionControl compact />
         <BasemapSwitcher />
-        {bbox && (
-          <PoiLayer data={pois.data as GeoJSON.FeatureCollection | undefined} />
-        )}
+        {bbox && <PoiLayer data={markers} />}
       </Map>
 
       <div className="absolute top-2 left-2 z-10 flex max-w-[calc(100%-4rem)] flex-col items-start gap-2">
@@ -277,8 +324,8 @@ export function MapView() {
         </div>
       )}
 
-      {selectedPoi && !isLoadingPoi && (
-        <PoiDrawer poi={selectedPoi} onClose={clearSelection} />
+      {selection && !isLoadingPoi && (
+        <PoiDrawer selection={selection} onClose={clearSelection} />
       )}
     </div>
   );
