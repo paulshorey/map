@@ -71,3 +71,11 @@ and replaced by the city lookup, 20 city fallbacks after a miss, 11 name results
 2. Decide on the CWGC cemeteries and review the doubtful merges above.
 3. Before the full reset/re-import: address the LocationIQ quota, add territory/parent
    country equivalence, and add stacked-supplied-point detection.
+
+## Purged — 2026-11-05
+
+The owner chose to re-ingest instead of upgrading old data. All import data was purged
+(`ingest:purge`, 1,622,551 rows) with this run unfinished; the geocode query cache (7,155
+entries) was kept, so a fresh BGCI import replays most lookups. Old job journals are archived
+under `lib/db-map/.ingest-archive/pre-purge-20261105/`. Re-import commands are in
+[data-reset-20261105.md](data-reset-20261105.md).

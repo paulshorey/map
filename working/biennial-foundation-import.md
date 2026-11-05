@@ -107,3 +107,8 @@ change) were merged afterwards; the re-run's only centroid match (Adelaide) is u
    until the recapture supplies a city; do not invent a point.
 3. Consider a name-derived city hint (for example "Helsinki Photography Biennial") only as
    a labelled `general` inferred point after the recapture, if pages still lack a city.
+
+## Purged — 2026-11-05
+
+All import data was purged for a clean re-ingestion under the current pipeline; see
+[data-reset-20261105.md](data-reset-20261105.md).
