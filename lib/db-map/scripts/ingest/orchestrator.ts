@@ -8,7 +8,7 @@ import { runRecordScheduler } from "./record-scheduler.js";
 import { EmbeddingBatcher } from "./embedding-batcher.js";
 import { buildEmbedText } from "./embed.js";
 import { configureLlmConcurrency, canonicalLane } from "./concurrency.js";
-import { artifactTransaction } from "./execution.js";
+import { artifactTransaction, fencedTransaction } from "./execution.js";
 import { spawn } from "node:child_process";
 import { Execution, lockSource, type AttemptResult } from "./execution.js";
 import { runGeocode } from "./geocode.js";
@@ -33,6 +33,7 @@ import {
 import { getExtractor } from "./sources.js";
 import type { RawRecord } from "./types.js";
 import { rebuildCanonicalPoi } from "./merge.js";
+import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 
 export type IngestStage =
   | "extract"
@@ -1307,13 +1308,56 @@ export async function runOrchestration(
               // A membership decided by an older matcher is matched again. Pointer and membership
               // stay intact (status, rebuilds and other queries still see the record) until the
               // rematch replaces both atomically in its apply transaction.
-              const rematchLinked =
+              let rematchLinked =
                 !!state.canonical_poi_id && !!state.membership_stale_matcher;
+              if (rematchLinked) {
+                // A sole live member has nothing to split from: keep its canonical and decision,
+                // re-versioning the membership and rebuilding in one fenced transaction.
+                const sole = await canonicalLane.run(() =>
+                  fencedTransaction(db, async (client) => {
+                    await client.query(
+                      "SELECT pg_advisory_xact_lock($1::bigint)",
+                      [CANONICAL_WRITER_LOCK],
+                    );
+                    const others = await client.query(
+                      `SELECT 1 FROM research_canonical_memberships m JOIN research_pois rp ON rp.id=m.research_poi_id
+                      WHERE m.canonical_poi_id=$1 AND m.active AND m.research_poi_id<>$2 AND rp.retired_at IS NULL LIMIT 1`,
+                      [state.canonical_poi_id, item.research_poi_id],
+                    );
+                    if (others.rowCount) return false;
+                    await client.query(
+                      `WITH retired AS (
+                        UPDATE research_canonical_memberships SET active=false, retired_at=now(), retirement_reason='matcher_upgraded'
+                        WHERE research_poi_id=$1 AND active
+                        RETURNING research_poi_id,normalization_id,canonical_poi_id,match_decision_id
+                      ) INSERT INTO research_canonical_memberships(research_poi_id,normalization_id,canonical_poi_id,match_decision_id,matcher_version,run_id)
+                      SELECT research_poi_id,normalization_id,canonical_poi_id,match_decision_id,$2,$3 FROM retired`,
+                      [
+                        item.research_poi_id,
+                        PIPELINE_VERSIONS.matcher,
+                        ctx.runId,
+                      ],
+                    );
+                    await rebuildCanonicalPoi(client, state.canonical_poi_id, {
+                      noLlm: true,
+                    });
+                    return true;
+                  }),
+                );
+                if (sole) {
+                  Object.assign(state, await recordState(db, item));
+                  rematchLinked = false;
+                }
+              }
               const assessment = await assessLocationRecord(
                 db,
                 item.research_poi_id!,
               );
-              if (!rematchLinked && state.canonical_poi_id && state.membership_valid) {
+              if (
+                !rematchLinked &&
+                state.canonical_poi_id &&
+                state.membership_valid
+              ) {
                 if (!(await recordState(db, item)).lineage_ready) {
                   const publication = await canonicalLane.run(() =>
                     artifactTransaction(db, async (client) => {

@@ -189,7 +189,12 @@ export function providerNameAgrees(listedName: string, providerName: string) {
     spelled.length >= 2 &&
     listedName
       .split(/[^\p{L}\p{N}]+/u)
-      .some((w) => w.length >= 2 && /\p{Lu}.*\p{Lu}/u.test(w) && w.toUpperCase() === spelled)
+      .some(
+        (w) =>
+          w.length >= 2 &&
+          /\p{Lu}.*\p{Lu}/u.test(w) &&
+          w.toUpperCase() === spelled,
+      )
   );
 }
 
@@ -219,29 +224,52 @@ export function forwardImplausible(
     return "locality_result_too_specific";
   // A name-only lookup with nothing local listed cannot support a city, region or country it
   // happens to share a word with ("Georgia" in a garden's name).
-  if (
-    basis === "name" &&
-    hit.precision !== "point" &&
-    ![listed.city, listed.region, listed.country_code, listed.country_name].some((v) =>
-      localityValue(v),
-    )
-  )
-    return "name_result_mismatch";
+  if (basis === "name" && hit.precision !== "point") {
+    // A coarse name-only result is general evidence only where it agrees with the listing: the
+    // country filter covers a listed country; otherwise its city or region must match.
+    const address = (hit.raw_response?.address ?? {}) as Record<
+      string,
+      unknown
+    >;
+    const fold = (v: unknown) =>
+      (localityValue(v) ?? "")
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    if (
+      localityValue(listed.country_code) ||
+      localityValue(listed.country_name)
+    ) {
+      // constrained by the provider's country filter
+    } else if (localityValue(listed.city)) {
+      if (resultNamesListedCity(String(listed.city), hit as never) !== true)
+        return "name_result_mismatch";
+    } else if (localityValue(listed.region)) {
+      if (
+        fold(address.state) !== fold(listed.region) &&
+        fold(address.region) !== fold(listed.region)
+      )
+        return "name_result_mismatch";
+    } else return "name_result_mismatch";
+  }
   if (basis === "name" && hit.precision === "point") {
-    const address = hit.raw_response?.address as Record<string, unknown> | undefined;
+    const address = hit.raw_response?.address as
+      | Record<string, unknown>
+      | undefined;
     // LocationIQ may store the feature's name under its category key instead of `name`.
-    const providerName = [
-      "name",
-      "amenity",
-      "tourism",
-      "shop",
-      "leisure",
-      "building",
-      "historic",
-      "office",
-    ]
-      .map((key) => textValue(address?.[key]))
-      .find(Boolean) ?? null;
+    const providerName =
+      [
+        "name",
+        "amenity",
+        "tourism",
+        "shop",
+        "leisure",
+        "building",
+        "historic",
+        "office",
+      ]
+        .map((key) => textValue(address?.[key]))
+        .find(Boolean) ?? null;
     const name = textValue(listed.name);
     if (!name || !providerName || !providerNameAgrees(name, providerName))
       return "name_result_mismatch";
@@ -253,7 +281,14 @@ export function forwardImplausible(
  * return ("Mosaicos Venecianos" for "Cuernavaca, Morelos") is labelled `city`, not `point`.
  */
 export function capLocalityPrecision<
-  T extends { precision: string; precision_evidence?: { value: string; derivation: string; warnings: string[] } },
+  T extends {
+    precision: string;
+    precision_evidence?: {
+      value: string;
+      derivation: string;
+      warnings: string[];
+    };
+  },
 >(basis: string | null, hit: T): T {
   if (basis !== "locality" || hit.precision !== "point") return hit;
   return {
@@ -265,7 +300,10 @@ export function capLocalityPrecision<
             ...hit.precision_evidence,
             value: "city",
             derivation: "locality_query_cap",
-            warnings: [...hit.precision_evidence.warnings, "locality_query_point_capped"],
+            warnings: [
+              ...hit.precision_evidence.warnings,
+              "locality_query_point_capped",
+            ],
           },
         }
       : {}),
@@ -296,7 +334,9 @@ export function reverseForPrecision(
     ...reverse,
     address: null,
     postcode: null,
-    ...(precision === "region" || precision === "country" ? { city: null } : {}),
+    ...(precision === "region" || precision === "country"
+      ? { city: null }
+      : {}),
     ...(precision === "country" ? { region: null, region_code: null } : {}),
   };
 }

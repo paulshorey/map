@@ -16,6 +16,7 @@ import {
   type GeocodeHit,
 } from "./providers/locationiq.js";
 import { artifactTransaction, fencedTransaction } from "./execution.js";
+import { publicationAwaitingLocationSql } from "../../sql/location-assessments.js";
 import { canonicalLane } from "./concurrency.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { rebuildCanonicalPoi } from "./merge.js";
@@ -151,13 +152,17 @@ const bytes = (text: string) => Buffer.byteLength(text, "utf8");
 export function fitQueryLength(display: string): string {
   if (bytes(display) <= MAX_QUERY_BYTES) return display;
   const parts = display.split(/\s*,\s*/);
-  while (parts.length > 1 && bytes(parts.join(", ")) > MAX_QUERY_BYTES) parts.shift();
+  while (parts.length > 1 && bytes(parts.join(", ")) > MAX_QUERY_BYTES)
+    parts.shift();
   let fitted = parts.join(", ");
   // A single over-long part: keep its end, starting at a word boundary.
   while (bytes(fitted) > MAX_QUERY_BYTES) {
     const space = fitted.indexOf(" ");
     // Whole code points only: never leave half a surrogate pair.
-    fitted = space === -1 ? Array.from(fitted).slice(1).join("") : fitted.slice(space + 1);
+    fitted =
+      space === -1
+        ? Array.from(fitted).slice(1).join("")
+        : fitted.slice(space + 1);
   }
   return fitted;
 }
@@ -210,7 +215,10 @@ export function countryOnlyQuery(code: string) {
 }
 
 /** Listed fields a reverse lookup can supply at each point precision (see reverseForPrecision). */
-const REVERSE_FIELDS: Record<string, Array<"country_code" | "region" | "city" | "address">> = {
+const REVERSE_FIELDS: Record<
+  string,
+  Array<"country_code" | "region" | "city" | "address">
+> = {
   point: ["country_code", "region", "city", "address"],
   city: ["country_code", "region", "city"],
   unknown: ["country_code", "region", "city"],
@@ -331,10 +339,15 @@ export function basisAfterFit(
         (part) =>
           !!part &&
           !locality.has(part) &&
-          (kept.has(part) || (head.length >= 8 && !locality.has(head) && part.endsWith(head))),
+          (kept.has(part) ||
+            (head.length >= 8 && !locality.has(head) && part.endsWith(head))),
       );
   if (basis === "address" && !survives(listed.address))
-    return survives(listed.venue) ? "venue" : survives(listed.name) ? "name" : "locality";
+    return survives(listed.venue)
+      ? "venue"
+      : survives(listed.name)
+        ? "name"
+        : "locality";
   if (basis === "venue" && !survives(listed.venue))
     return survives(listed.name) ? "name" : "locality";
   if (basis === "name" && !survives(listed.name)) return "locality";
@@ -541,11 +554,19 @@ async function settleUnlocated(
           WHERE m.research_poi_id=$1 AND m.canonical_poi_id=b.canonical_poi_id AND m.active)`,
         [researchId],
       );
-      for (const { canonical_poi_id } of held.rows)
+      for (const { canonical_poi_id } of held.rows) {
+        // Another member still awaiting its own refresh keeps the snapshot; its completion
+        // (or its own settlement) rebuilds the canonical.
+        const others = await client.query(
+          `SELECT ${publicationAwaitingLocationSql("cp", "$2")} AS held FROM canonical_pois cp WHERE cp.id=$1`,
+          [canonical_poi_id, researchId],
+        );
+        if (others.rows[0]?.held) continue;
         await rebuildCanonicalPoi(client, canonical_poi_id, {
           noLlm: true,
           releaseLocationHoldFor: researchId,
         });
+      }
     }),
   );
 }
@@ -650,7 +671,10 @@ export async function runGeocode(
               provider: "locationiq",
             }
           : null;
-        if ((cached.payload as { invalid_request?: boolean } | undefined)?.invalid_request)
+        if (
+          (cached.payload as { invalid_request?: boolean } | undefined)
+            ?.invalid_request
+        )
           invalidQueries.push(query.display);
         if (!hit) stats.knownMisses++;
         else if (hit.raw_response) {
@@ -674,7 +698,10 @@ export async function runGeocode(
       } catch (error) {
         // "Invalid Request" is about this query, not the provider: treat it as an uncached
         // miss so the fallback chain continues and one record cannot stop a whole file.
-        if (error instanceof GeocodeError && (error as { status?: number }).status === 400) {
+        if (
+          error instanceof GeocodeError &&
+          (error as { status?: number }).status === 400
+        ) {
           stats.apiCalls++;
           invalidQueries.push(query.display);
           // Deterministic for this query: remember it so a resume continues at the fallback.
@@ -763,7 +790,11 @@ export async function runGeocode(
       }
       const implausible =
         forward &&
-        forwardImplausible(forwardBasis, listedLocality(row, captured), forward);
+        forwardImplausible(
+          forwardBasis,
+          listedLocality(row, captured),
+          forward,
+        );
       if (forward && implausible) {
         // Keep the paid result as evidence; it never occupies the inferred slot.
         const current = {
@@ -778,7 +809,11 @@ export async function runGeocode(
       // A retained geocoded point that is itself a rejected result must not survive it.
       // Only a geocode-derived point qualifies: settlement can clear exactly those, so the
       // in-memory and persisted states agree (pre-provenance points are kept).
-      if (rejected && row.coordinate_source === "geocode" && validPoint({ lat, lng })) {
+      if (
+        rejected &&
+        row.coordinate_source === "geocode" &&
+        validPoint({ lat, lng })
+      ) {
         for (let r: any = rejected; r; r = r.previous)
           if (
             validPoint(r.result) &&
@@ -837,8 +872,11 @@ export async function runGeocode(
       if (forward) forward = capLocalityPrecision(forwardBasis, forward);
       // A retained point that is this pipeline's own earlier inferred result takes the refreshed
       // result (and its precision). Pre-slot legacy points and source/URL points are kept.
-      const priorInferred = (row.attributes?.location_enrichment?.coordinate_evidence
-        ?.inferred_coordinates ?? null) as { lat?: number; lng?: number } | null;
+      const priorInferred = (row.attributes?.location_enrichment
+        ?.coordinate_evidence?.inferred_coordinates ?? null) as {
+        lat?: number;
+        lng?: number;
+      } | null;
       if (
         forward &&
         row.coordinate_source === "geocode" &&
@@ -878,10 +916,18 @@ export async function runGeocode(
                 query_norm: forwardQueryNorm,
                 state: !q ? "no_query" : "unresolved",
                 ...(rejected ? { rejected } : {}),
-                ...(invalidQueries.length ? { invalid_queries: invalidQueries } : {}),
+                ...(invalidQueries.length
+                  ? { invalid_queries: invalidQueries }
+                  : {}),
               },
               ...(validPoint({ lat: row.lat, lng: row.lng })
-                ? { cleared_point: { lat: row.lat, lng: row.lng, coordinate_source: row.coordinate_source } }
+                ? {
+                    cleared_point: {
+                      lat: row.lat,
+                      lng: row.lng,
+                      coordinate_source: row.coordinate_source,
+                    },
+                  }
                 : {}),
             },
           );
@@ -925,10 +971,16 @@ export async function runGeocode(
     const queryNorm = `${LOCATION_CACHE_VERSION}:reverse:${lat}:${lng}`;
     // Only fields a reverse lookup may still supply at this precision justify a call; a
     // centroid match already names its country.
-    const reverseNeeded = REVERSE_FIELDS[coordinatePrecision ?? "unknown"]!.some(
+    const reverseNeeded = REVERSE_FIELDS[
+      coordinatePrecision ?? "unknown"
+    ]!.some(
       (key) =>
         !source[key] &&
-        !(key === "country_code" && suppliedCentroid && countryToCode(suppliedCentroid)),
+        !(
+          key === "country_code" &&
+          suppliedCentroid &&
+          countryToCode(suppliedCentroid)
+        ),
     );
     let hit: ReverseLocation | null = null;
     if (reverseNeeded) {
@@ -971,7 +1023,9 @@ export async function runGeocode(
       resolved.warnings.push("reverse_location_incomplete");
     // The matched centroid identifies the country when the listing names none.
     // Vendored codes include non-ISO entries (GZ, AN); only a current ISO code is projected.
-    const centroidCountry = suppliedCentroid ? countryToCode(suppliedCentroid) : undefined;
+    const centroidCountry = suppliedCentroid
+      ? countryToCode(suppliedCentroid)
+      : undefined;
     if (centroidCountry && !resolved.fields.country_code) {
       resolved.fields.country_code = centroidCountry;
       (resolved.provenance as Record<string, unknown>).country_code =
@@ -1012,11 +1066,7 @@ export async function runGeocode(
         : {}),
       ...resolved,
       reverse: hit,
-      lookup_state: hit
-        ? "resolved"
-        : reverseNeeded
-          ? "miss"
-          : "not_needed",
+      lookup_state: hit ? "resolved" : reverseNeeded ? "miss" : "not_needed",
       assessed_at: new Date().toISOString(),
     };
     const inputHash = stableHash({
@@ -1058,7 +1108,7 @@ export async function runGeocode(
         // This artifact certifies enrichment of the original point; it never substitutes a nearby object's point.
         const activated = await client.query(
           `UPDATE research_pois SET lat=$11,lng=$12,coordinate_source=$13,coordinate_precision=$14,geocode_query_norm=$15,country_code=$2,city=$3,region=$4,address=$5,active_geocode_id=$6,
-        attributes=COALESCE(attributes,'{}'::jsonb)||jsonb_build_object('location_enrichment',$7::jsonb),
+        attributes=(COALESCE(attributes,'{}'::jsonb)-'location_unresolved')||jsonb_build_object('location_enrichment',$7::jsonb),
         content_embedding=CASE WHEN city IS DISTINCT FROM $3 OR region IS DISTINCT FROM $4 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE content_embedding END,
         active_embedding_id=CASE WHEN city IS DISTINCT FROM $3 OR region IS DISTINCT FROM $4 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE active_embedding_id END
         WHERE id=$1 AND active_normalization_id=$8 AND lat IS NOT DISTINCT FROM $9::float8 AND lng IS NOT DISTINCT FROM $10::float8`,

@@ -353,3 +353,12 @@ test("names stating different place types never agree", () => {
   assert.equal(providerNameAgrees("Central Garden", "Central Gardens"), true);
   assert.equal(providerNameAgrees("Huntington Library, Art Museum and Botanical Gardens", "Huntington Library"), true);
 });
+
+test("a coarse name-only result must agree with the listed city or region", () => {
+  const georgia = { precision: "region", raw_response: { address: { state: "Georgia", country_code: "us" } } };
+  assert.equal(forwardImplausible("name", { name: "Peach Garden", region: "California" }, georgia), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Peach Garden", region: "Georgia" }, georgia), null);
+  const helsinki = { precision: "city", city: "Helsinki", raw_response: { address: { city: "Helsinki" } } };
+  assert.equal(forwardImplausible("name", { name: "Photo Biennial", city: "Helsinki" }, helsinki), null);
+  assert.equal(forwardImplausible("name", { name: "Photo Biennial", city: "Turku" }, helsinki), "name_result_mismatch");
+});
