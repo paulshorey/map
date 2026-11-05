@@ -824,7 +824,8 @@ The matcher uses a cascade:
    campgrounds, and a directory's listing pages share its domain. The LLM adjudicator sees
    the same full URLs (`matcher-v4`). Paths keep their case and are not decoded; hash
    routes (`#/event/a`, `#!/…`) are kept, in-page anchors dropped.
-   `matcher-v3` checkpoints are not resumable: `event-v2` normalizations must be redone. A
+   No earlier-matcher (v1–v3) checkpoint is resumable: `event-v2` normalizations must be
+   redone, so historical runs need a new run (and a fresh audit for whole-file proofs). A
    membership counts as valid only for the current matcher version: an active membership from
    an older matcher is retired (`matcher_upgraded`) and the record matched again, the old
    canonical's snapshot held until then. Ports other than the default are part of the identity.

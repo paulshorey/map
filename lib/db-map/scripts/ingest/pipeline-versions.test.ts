@@ -99,3 +99,8 @@ for (const [normalizer, prompt] of [
       /Pipeline versions changed/,
     );
   });
+
+test("no earlier-matcher checkpoint is resumable (event-v2 normalizations must be redone)", () => {
+  for (const versions of compatibleCheckpointVersions())
+    assert.equal(versions.matcher, PIPELINE_VERSIONS.matcher);
+});

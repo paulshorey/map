@@ -87,33 +87,10 @@ export function compatibleCheckpointVersions(): Record<string, string>[] {
       canonicalBuilder: "canonical-build-v2",
     })),
   ];
-  return [
-    ...reviewed,
-    // matcher-v4 (full-URL websites) ships with normalization profile event-v2, which the
-    // version map does not encode; matcher-v3 checkpoints are therefore not resumable.
-    // #62 gated publication on an accepted assessment. Those checkpoints remain
-    // resumable; matcher-v3 / canonical-build-v7 publish conflicting evidence.
-    {
-      ...PIPELINE_VERSIONS,
-      matcher: "matcher-v2",
-      canonicalBuilder: "canonical-build-v6",
-    },
-    ...reviewed.map((v) => ({ ...v, matcher: "matcher-v1" })),
-    ...["hybrid-v3", "hybrid-v4", "hybrid-v5", "hybrid-v6"].map(
-      (normalizer) => ({
-        ...PIPELINE_VERSIONS,
-        normalizer,
-        prompt:
-          normalizer === "hybrid-v3"
-            ? "poi-normalize-v2"
-            : normalizer === "hybrid-v4"
-              ? "poi-normalize-v3"
-              : "poi-normalize-v4",
-        matcher: "matcher-v1",
-        canonicalBuilder: "canonical-build-v5",
-      }),
-    ),
-  ];
+  // matcher-v4 (full-URL websites) ships with normalization profile event-v2, which the
+  // version map does not encode; every earlier-matcher checkpoint (v1–v3) predates it and is
+  // therefore not resumable. The entries above all carry the current matcher.
+  return reviewed;
 }
 
 /** This source-preserving upgrade changes pending normalization only, not checkpoint validity. */
