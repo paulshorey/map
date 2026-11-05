@@ -136,8 +136,12 @@ async function resolveSourceId(db: Pool, slug: string): Promise<string> {
  * to wrong matches. Place records (gardens, campgrounds) keep the name: it IS
  * the place name and is often the only usable signal (e.g. ArbNet).
  */
-/** LocationIQ answers HTTP 400 "Invalid Request" for queries over about 200 characters. */
-export const MAX_QUERY_LENGTH = 190;
+/**
+ * LocationIQ answers HTTP 400 "Invalid Request" for queries over about 200 UTF-8 bytes: a
+ * 188-character Cyrillic address is 280 bytes. Lengths are measured in bytes.
+ */
+export const MAX_QUERY_BYTES = 190;
+const bytes = (text: string) => Buffer.byteLength(text, "utf8");
 
 /**
  * Keep the most local, structured end of an over-long query: drop leading comma-separated
@@ -145,14 +149,16 @@ export const MAX_QUERY_LENGTH = 190;
  * country remain ("Departamento de Botánica…, Km 15.5 carr. …, Zapopan, Jalisco, Mexico").
  */
 export function fitQueryLength(display: string): string {
-  if (display.length <= MAX_QUERY_LENGTH) return display;
+  if (bytes(display) <= MAX_QUERY_BYTES) return display;
   const parts = display.split(/\s*,\s*/);
-  while (parts.length > 1 && parts.join(", ").length > MAX_QUERY_LENGTH) parts.shift();
-  const fitted = parts.join(", ");
-  if (fitted.length <= MAX_QUERY_LENGTH) return fitted;
+  while (parts.length > 1 && bytes(parts.join(", ")) > MAX_QUERY_BYTES) parts.shift();
+  let fitted = parts.join(", ");
   // A single over-long part: keep its end, starting at a word boundary.
-  const tail = fitted.slice(-MAX_QUERY_LENGTH);
-  return tail.slice(tail.indexOf(" ") + 1);
+  while (bytes(fitted) > MAX_QUERY_BYTES) {
+    const space = fitted.indexOf(" ");
+    fitted = space === -1 ? fitted.slice(1) : fitted.slice(space + 1);
+  }
+  return fitted;
 }
 
 export function buildQuery(

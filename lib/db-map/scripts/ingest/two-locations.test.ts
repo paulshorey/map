@@ -14,7 +14,7 @@ import {
 import {
   basisAfterFit,
   fitQueryLength,
-  MAX_QUERY_LENGTH,
+  MAX_QUERY_BYTES,
   listedQuery,
   listedQueryBasis,
   runGeocode,
@@ -1632,7 +1632,13 @@ test("over-long queries keep their local end; a 400 is a record-level miss, not 
     fitQueryLength(long),
     "Centro Universitario de Ciencias Biológicas y Agropecuarias, Universidad de Guadalajara, Km 15.5 carr. Guadalajara a Nogales, Las Agujas, Nextipac, Zapopan, Jalisco, Mexico",
   );
-  assert.ok(fitQueryLength("x ".repeat(200)).length <= MAX_QUERY_LENGTH);
+  assert.ok(Buffer.byteLength(fitQueryLength("x ".repeat(200))) <= MAX_QUERY_BYTES);
+  // Bytes, not characters: BGCI 7120's 188-character Cyrillic query is 280 bytes.
+  const moscow =
+    "M.V. Lomonosov Moscow State University Botanical Garden, Российская Федерация, Москва, Ленинские горы, д. 1, Московский государственный университет имени М.В.Ломоносова, Russian Federation";
+  const fitted = fitQueryLength(moscow);
+  assert.ok(Buffer.byteLength(fitted) <= MAX_QUERY_BYTES, fitted);
+  assert.ok(fitted.endsWith("Russian Federation"));
   assert.equal(fitQueryLength("Nagoya, JP"), "Nagoya, JP");
 
   const f = fixture({ ...japan, attributes: { venue_name: "Aichi Arts Center" } });

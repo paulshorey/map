@@ -936,9 +936,9 @@ without averaging or distance-based suppression. One usable point is required to
 publish. Legacy points with insufficient origin evidence keep their existing point
 and an explicit legacy/unknown classification rather than an invented source claim.
 
-Queries over 190 characters drop leading comma-separated parts (institution names) until
+Queries over 190 UTF-8 bytes drop leading comma-separated parts (institution names) until
 they fit, keeping street, city, region and country: LocationIQ answers HTTP 400 "Invalid
-Request" above about 200. Any remaining 400 is cached as an invalid-request miss for that
+Request" above about 200 bytes (a 188-character Cyrillic address is 280). Any remaining 400 is cached as an invalid-request miss for that
 query (so a resume continues at the fallback without a call), recorded in
 `validation.forward.invalid_queries`, and the fallback chain continues. A retained geocoded
 point that was this pipeline's own earlier inferred result takes a refreshed result and its
