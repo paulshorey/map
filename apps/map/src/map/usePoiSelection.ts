@@ -26,19 +26,39 @@ export interface PoiDetail {
   locations?: PoiLocationRecord[];
   coordinate_evidence?: PoiCoordinateEvidenceRecord;
   attributes?: unknown;
+  sources?: string[];
+}
+
+/** Clicked POI first, then every other POI whose marker shares its exact point. */
+export interface PoiSelection {
+  location: PoiLocationRecord | null;
+  pois: PoiDetail[];
+  total: number;
+  truncated: boolean;
+}
+
+interface Selected {
+  id: string;
+  kind: string | null;
 }
 
 export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Selected | null>(null);
+  const selectedId = selected?.id ?? null;
 
-  const { data: selectedPoi, isLoading } = useQuery({
-    queryKey: ["poi-detail", selectedId],
+  const { data: selection, isLoading } = useQuery({
+    queryKey: ["poi-colocated", selected?.id, selected?.kind],
     queryFn: async () => {
-      const r = await fetch(apiUrl(`/api/pois/${selectedId}`));
+      const kind = selected?.kind
+        ? `?kind=${encodeURIComponent(selected.kind)}`
+        : "";
+      const r = await fetch(
+        apiUrl(`/api/pois/${selected!.id}/colocated${kind}`),
+      );
       if (!r.ok) throw new Error("POI detail fetch failed");
-      return r.json() as Promise<PoiDetail>;
+      return r.json() as Promise<PoiSelection>;
     },
-    enabled: !!selectedId,
+    enabled: !!selected,
     staleTime: 60_000,
   });
 
@@ -69,19 +89,19 @@ export function usePoiSelection(mapRef: RefObject<MapRef | null>) {
     };
   }, [mapRef, selectedId]);
 
-  const selectPoi = useCallback((id: string) => {
-    // Either marker opens the shared record, including when its other marker is selected.
-    setSelectedId(id);
+  const selectPoi = useCallback((id: string, kind?: string | null) => {
+    // Either marker opens the shared record; the clicked marker's point decides co-location.
+    setSelected({ id, kind: kind ?? null });
   }, []);
 
   const clearSelection = useCallback(() => {
-    setSelectedId(null);
+    setSelected(null);
   }, []);
 
   return {
     selectedId,
-    selectedPoi: selectedPoi ?? null,
-    isLoadingPoi: isLoading && !!selectedId,
+    selection: selection ?? null,
+    isLoadingPoi: isLoading && !!selected,
     selectPoi,
     clearSelection,
   };

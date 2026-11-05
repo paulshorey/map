@@ -4,6 +4,7 @@ export {
   listPoisGeoJson,
   listPoiCategories,
   getPoiById,
+  getColocatedPois,
   insertPois,
 } from "./sql/pois";
 export type {

@@ -5,6 +5,7 @@ export interface PoiFeatureProperties {
   coordinate_kind: string | null;
   location_origin: string | null;
   location_precision: string | null;
+  location_specificity: string | null;
   name: string;
   category: string | null;
   photo_url: string | null;
@@ -72,6 +73,15 @@ export interface PoiDetailRecord {
   geometry: unknown;
   locations: Array<PoiLocationRecord>;
   coordinate_evidence: PoiCoordinateEvidenceRecord;
+}
+
+/** GET /api/pois/[id]/colocated. `pois[0]` is the clicked POI; the rest share its marker's
+ * exact point. `truncated` when `total` exceeds the POIs returned. */
+export interface PoiColocatedResponse {
+  location: PoiLocationRecord | null;
+  pois: Array<PoiDetailRecord>;
+  total: number;
+  truncated: boolean;
 }
 
 export interface UserPreferencesRecord {
