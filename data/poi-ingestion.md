@@ -945,13 +945,15 @@ decimals (at least two), and a listed country (captured, or `source_location_hin
 other than the centroid's rules the match out, so a full-precision venue near a
 microstate centroid stays a point. A match gets the `source_point_country_centroid` warning and `supplied_centroid` evidence; it
 is never an anchor for the 50 km checks below. When enrichment flips a linked record's point
-between `point` and a coarser precision, or removes or replaces its city, region or
-country (filling a missing field does not), its membership is retired
+between `point` and a coarser precision, or removes or replaces its address, city, region
+or country (filling a missing field does not), its membership is retired
 (`coordinate_precision_changed`) and the record is matched again, because matching ignores
 distance for coarse points; overrides apply first, and the old snapshot is held until then. A reverse lookup is trusted only to the
 point's precision: a `country` point keeps only the country, a `region` point drops the
 city, and any coarse or unknown-precision point drops the street address and postcode. A country centroid
-otherwise reverse-geocodes to whatever village lies under it.
+otherwise reverse-geocodes to whatever village lies under it. A reverse call is made only when
+a field that precision can still supply is missing, and a centroid match fills a missing
+country itself (provenance `supplied_centroid`), so Adelaide needs no provider call.
 
 A venue/name/address lookup is suspect unless one of its city-level fields (city, town,
 village, hamlet, municipality, suburb or city district) equals the listed city's whole

@@ -1553,3 +1553,18 @@ test("location specificity flags POIs that rest only on country, region or city"
     "an artifact that stored `address` for a hint label is read as locality at rebuild",
   );
 });
+
+test("a supplied country centroid names its country without a reverse call", async () => {
+  const f = fixture({ name: "Adelaide Biennial of Australian Art", city: "Various", country_code: null });
+  Object.assign(f.row, { lat: -25.2744, lng: 133.7751, coordinate_source: "source", coordinate_precision: "point" });
+  globalThis.fetch = async () => {
+    throw new Error("no provider call is needed");
+  };
+  const stats = await runGeocode(f.db, { ...opts, geocodeLimit: 0 });
+  assert.equal(stats.apiCalls, 0);
+  assert.ok(f.activated, "activates without provider budget");
+  assert.equal(f.activated.fields.country_code, "AU");
+  assert.equal(f.activated.provenance.country_code, "supplied_centroid");
+  assert.equal(f.activated.coordinate_evidence.source_coordinates.precision, "country");
+  assert.equal(f.activated.lookup_state, "not_needed");
+});
