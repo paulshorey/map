@@ -46,4 +46,9 @@ test("websites compare by full URL, never by shared domain", () => {
     false,
   );
   assert.equal(websiteIdentity("https://example.org:443/event"), "example.org/event");
+  // Adjacent tracking keys are all removed (the keys are copied before deletion).
+  assert.equal(
+    websiteIdentity("https://example.org/a?utm_source=x&utm_medium=y&utm_campaign=z&id=1"),
+    "example.org/a?id=1",
+  );
 });

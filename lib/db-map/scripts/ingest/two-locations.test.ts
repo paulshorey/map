@@ -1708,6 +1708,11 @@ test("a query whose address was trimmed away is judged as locality", () => {
   const listed = { address: "Departamento de Botánica y Zoología, Centro Universitario", venue: null, name: "CUCBA" };
   assert.equal(basisAfterFit("address", listed, "Zapopan, Jalisco, Mexico"), "locality");
   assert.equal(basisAfterFit("address", listed, "Centro Universitario, Zapopan, Jalisco, Mexico"), "address");
+  // Only the listed city survived from a long address ending in that city.
+  assert.equal(
+    basisAfterFit("address", { address: "12 Rue Longue, Bâtiment B, Paris", city: "Paris", country_name: "France" }, "Paris, France"),
+    "locality",
+  );
   assert.equal(basisAfterFit("venue", { venue: "Aichi Arts Center" }, "Nagoya, JP"), "locality");
   assert.equal(basisAfterFit("locality", listed, "Mexico"), "locality");
 });

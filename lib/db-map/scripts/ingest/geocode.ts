@@ -290,13 +290,32 @@ export type QueryBasis = "address" | "venue" | "name" | "locality";
  */
 export function basisAfterFit(
   basis: QueryBasis,
-  listed: { address?: string | null; venue?: string | null; name?: string | null },
+  listed: {
+    address?: string | null;
+    venue?: string | null;
+    name?: string | null;
+    city?: string | null;
+    region?: string | null;
+    country_name?: string | null;
+    country_code?: string | null;
+  },
   display: string,
 ): QueryBasis {
-  const survives = (text: string | null | undefined) => {
-    const last = text?.split(/\s*,\s*/).filter(Boolean).pop();
-    return !!last && display.includes(last);
-  };
+  // A component survives only through a part of its own that is still in the query and is
+  // not just the listed locality: "…, Rue X, Paris" trimmed to "Paris" is locality text.
+  const fold = (t: string) => t.trim().toLowerCase();
+  const kept = new Set(display.split(/\s*,\s*/).map(fold));
+  const locality = new Set(
+    [listed.city, listed.region, listed.country_name, listed.country_code]
+      .filter((t): t is string => !!t)
+      .map(fold),
+  );
+  const survives = (text: string | null | undefined) =>
+    !!text &&
+    text
+      .split(/\s*,\s*/)
+      .map(fold)
+      .some((part) => part && kept.has(part) && !locality.has(part));
   if (basis === "address" && !survives(listed.address))
     return survives(listed.venue) ? "venue" : survives(listed.name) ? "name" : "locality";
   if (basis === "venue" && !survives(listed.venue))
