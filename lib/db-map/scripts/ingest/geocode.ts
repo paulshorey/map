@@ -202,6 +202,15 @@ export function countryOnlyQuery(code: string) {
   return { display, norm };
 }
 
+/** Listed fields a reverse lookup can supply at each point precision (see reverseForPrecision). */
+const REVERSE_FIELDS: Record<string, Array<"country_code" | "region" | "city" | "address">> = {
+  point: ["country_code", "region", "city", "address"],
+  city: ["country_code", "region", "city"],
+  unknown: ["country_code", "region", "city"],
+  region: ["country_code", "region"],
+  country: ["country_code"],
+};
+
 /** A street address supplied by the listing itself, never a location hint label. */
 function capturedStreetAddress(captured: Record<string, any>): string | null {
   const attrs = captured.attributes ?? {};
@@ -782,8 +791,14 @@ export async function runGeocode(
         : null,
     };
     const queryNorm = `${LOCATION_CACHE_VERSION}:reverse:${lat}:${lng}`;
+    // Only fields a reverse lookup may still supply at this precision justify a call; a
+    // centroid match already names its country.
+    const reverseNeeded = REVERSE_FIELDS[coordinatePrecision ?? "unknown"]!.some(
+      (key) =>
+        !source[key] && !(key === "country_code" && suppliedCentroid),
+    );
     let hit: ReverseLocation | null = null;
-    if (Object.values(source).some((value) => !value)) {
+    if (reverseNeeded) {
       const cache = (
         await db.query(
           "SELECT payload FROM research_geocode_cache WHERE query_norm=$1",
@@ -819,8 +834,14 @@ export async function runGeocode(
       forwardCountry !== forward.country_code
     )
       resolved.warnings.push("forward_country_conflict");
-    if (!hit && Object.values(source).some((value) => !value))
+    if (!hit && reverseNeeded)
       resolved.warnings.push("reverse_location_incomplete");
+    // The matched centroid identifies the country when the listing names none.
+    if (suppliedCentroid && !resolved.fields.country_code) {
+      resolved.fields.country_code = suppliedCentroid;
+      (resolved.provenance as Record<string, unknown>).country_code =
+        "supplied_centroid";
+    }
     if (suppliedCentroid)
       resolved.warnings.push("source_point_country_centroid");
     if (Object.values(resolved.fields).some((value) => !value))
@@ -858,7 +879,7 @@ export async function runGeocode(
       reverse: hit,
       lookup_state: hit
         ? "resolved"
-        : Object.values(source).some((value) => !value)
+        : reverseNeeded
           ? "miss"
           : "not_needed",
       assessed_at: new Date().toISOString(),
@@ -933,11 +954,13 @@ export async function runGeocode(
         // point that crosses point/coarse precision, or changed city/region/country, is matched
         // again. Overrides apply first there.
         const coarse = (p: unknown) => p !== "point";
-        // Locality fields feed the locality score and the (cleared) embedding text. Removing or
-        // replacing one can undo the evidence a merge passed on; filling a gap only adds it.
+        // Locality fields (and the address the LLM judge sees) feed matching and the cleared
+        // embedding text. Removing or replacing one can undo the evidence a merge passed on;
+        // filling a gap only adds it.
         const lost = (before: unknown, after: unknown) =>
           before != null && before !== after;
         const localityChanged =
+          lost(row.address, resolved.fields.address) ||
           lost(row.city, resolved.fields.city) ||
           lost(row.region, resolved.fields.region) ||
           lost(row.country_code, resolved.fields.country_code);
