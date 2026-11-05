@@ -567,6 +567,7 @@ export async function runGeocode(
       ? listedQueryBasis(row, captured, temporal)
       : null;
     let rejected: Record<string, unknown> | null = null;
+    let fallbackFrom: { reason: string; query: string } | null = null;
     let cityConfirmation: {
       query: string;
       query_norm: string;
@@ -641,25 +642,49 @@ export async function runGeocode(
         };
         rejected = rejected ? { ...current, previous: rejected } : current;
         forward = null;
-        // Fall back to the recognized listed country, unless a supplied point already locates it.
-        const countryQuery =
-          forwardCountry && !sourcePoint ? countryOnlyQuery(forwardCountry) : null;
-        if (countryQuery && countryQuery.norm !== forwardQuery?.norm) {
-          const retry = await lookup(countryQuery);
-          if (retry.stop === "budget") {
-            stats.budgetHit = true;
+      }
+      // No plausible result and no point at all: fall back to the listed city, then the
+      // recognized country, so the record still publishes as a general location. A record
+      // with a supplied or retained point keeps it.
+      if (!forward && !validPoint({ lat: row.lat, lng: row.lng })) {
+        const tried = new Set([q.norm, forwardQuery?.norm]);
+        const listed = listedLocality(row, captured);
+        const steps = [
+          { query: listedCityQuery(row, captured, temporal), listed },
+          {
+            query: forwardCountry ? countryOnlyQuery(forwardCountry) : null,
+            listed: { city: null },
+          },
+        ];
+        let stop: "budget" | "other" | null = null;
+        for (const step of steps) {
+          if (!step.query || tried.has(step.query.norm)) continue;
+          tried.add(step.query.norm);
+          const retry = await lookup(step.query);
+          if (retry.stop) {
+            stop = retry.stop === "budget" ? "budget" : "other";
             break;
           }
-          if (retry.stop) continue;
-          forwardQuery = countryQuery;
-          forwardBasis = "locality";
-          forwardQueryNorm = retry.key;
-          forward =
+          if (
             retry.hit &&
-            !forwardImplausible("locality", { city: null }, retry.hit)
-              ? retry.hit
-              : null;
+            !forwardImplausible("locality", step.listed, retry.hit)
+          ) {
+            fallbackFrom = {
+              reason: rejected ? "rejected" : "miss",
+              query: q.display,
+            };
+            forward = retry.hit;
+            forwardQuery = step.query;
+            forwardBasis = "locality";
+            forwardQueryNorm = retry.key;
+            break;
+          }
         }
+        if (stop === "budget") {
+          stats.budgetHit = true;
+          break;
+        }
+        if (stop) continue;
       }
     } else stats.noQuery++;
     if (!validPoint({ lat, lng })) {
@@ -764,6 +789,7 @@ export async function runGeocode(
         result: forward,
         ...(rejected ? { rejected } : {}),
         ...(cityConfirmation ? { city_confirmation: cityConfirmation } : {}),
+        ...(fallbackFrom ? { fallback_from: fallbackFrom } : {}),
       },
       coordinate_evidence: coordinateEvidence,
       ...(suppliedCentroid

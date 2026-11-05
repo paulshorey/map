@@ -668,21 +668,22 @@ test("a city-only miss never confirms a conflicting venue without a source point
       : Response.json({ error: "Unable to geocode" }, { status: 404 });
   };
   const stats = await runGeocode(f.db, opts);
-  assert.deepEqual(queries, ["Aichi Arts Center, Nagoya, JP", "Nagoya, JP"]);
-  assert.equal(stats.apiCalls, 2);
+  // After the city miss, the recognized country is the last fallback; it misses here too.
+  assert.deepEqual(queries, ["Aichi Arts Center, Nagoya, JP", "Nagoya, JP", "Japan"]);
+  assert.equal(stats.apiCalls, 3);
   assert.equal(stats.unresolved, 1);
   assert.equal(stats.resolved, 0);
   assert.equal(f.activated, null, "a wrong venue must not become publishable");
   assert.equal(f.heldLookups, 1, "an unlocatable record releases its held snapshot");
   assert.equal(
     f.cache.size,
-    2,
-    "both the paid hit and definitive miss are retained",
+    3,
+    "the paid hit and both definitive misses are retained",
   );
   const replay = await runGeocode(f.db, opts);
   assert.equal(replay.apiCalls, 0);
-  assert.equal(replay.cacheHits, 2);
-  assert.equal(replay.knownMisses, 1);
+  assert.equal(replay.cacheHits, 3);
+  assert.equal(replay.knownMisses, 2);
   assert.equal(replay.unresolved, 1);
   assert.equal(f.activated, null);
 });
@@ -1561,4 +1562,34 @@ test("location specificity flags POIs that rest only on country, region or city"
     "general",
     "an artifact that stored `address` for a hint label is read as locality at rebuild",
   );
+});
+
+test("an address miss without any point falls back to the listed city, flagged as such", async () => {
+  // BGCI record 1: "Estudio Floristico ..., CUERNAVACA Morelos, Mexico" misses.
+  const f = fixture({
+    ...japan,
+    attributes: { venue_name: "Aichi Arts Center" },
+  });
+  Object.assign(f.row, { lat: null, lng: null, coordinate_source: null, coordinate_precision: null });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  const queries: string[] = [];
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith("/reverse"))
+      return Response.json({ lat: "35.18", lon: "136.90", address: { city: "Nagoya", country_code: "jp" } });
+    const q = url.searchParams.get("q")!;
+    queries.push(q);
+    return q === "Nagoya, JP"
+      ? Response.json([{ lat: "35.18", lon: "136.90", class: "boundary", type: "administrative",
+          address: { city: "名古屋市", state: "愛知県", country_code: "jp" } }])
+      : Response.json({ error: "Unable to geocode" }, { status: 404 });
+  };
+  const stats = await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
+  assert.deepEqual(queries, ["Aichi Arts Center, Nagoya, JP", "Nagoya, JP"]);
+  assert.equal(stats.resolved, 1);
+  const forward = f.activated.forward;
+  assert.equal(forward.query, "Nagoya, JP");
+  assert.equal(forward.query_basis, "locality");
+  assert.deepEqual(forward.fallback_from, { reason: "miss", query: "Aichi Arts Center, Nagoya, JP" });
+  assert.equal(f.activated.coordinate_evidence.inferred_coordinates.precision, "city");
 });

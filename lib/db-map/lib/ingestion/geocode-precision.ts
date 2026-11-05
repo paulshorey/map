@@ -11,12 +11,27 @@ export interface PrecisionEvidence {
 // v2 classifies country-level results as `country` (v1 called them region/city).
 // v3 reads an administrative boundary's precision from its finest address field
 // ("England" is a state, not a city) and treats islands, counties and similar areas as regions.
-export const PRECISION_EVIDENCE_VERSION = "geocode-precision-v3";
+// v4: a row without class/type takes its precision from its address fields; it was a point.
+export const PRECISION_EVIDENCE_VERSION = "geocode-precision-v4";
 const READABLE_VERSIONS = new Set([
   "geocode-precision-v1",
   "geocode-precision-v2",
   "geocode-precision-v3",
+  "geocode-precision-v4",
 ]);
+// Address fields finer than a city: their presence means the row names a specific place.
+const POINT_ADDRESS_KEYS = [
+  "house_number",
+  "road",
+  "name",
+  "building",
+  "amenity",
+  "shop",
+  "tourism",
+  "leisure",
+  "neighbourhood",
+  "quarter",
+];
 const CITY_ADDRESS_KEYS = [
   "city",
   "town",
@@ -120,6 +135,19 @@ export function deriveForwardPrecision(
   } else if (cls === "boundary") {
     value = "region";
     derivation = "provider_class";
+  } else if (
+    !cls &&
+    !type &&
+    address.length > 0 &&
+    !address.some((key) => POINT_ADDRESS_KEYS.includes(key))
+  ) {
+    // No granularity fields: "Zongolica, Veracruz, Mexico" names a town, not a point.
+    value = address.some((key) => CITY_ADDRESS_KEYS.includes(key))
+      ? "city"
+      : address.some((key) => REGION_ADDRESS_KEYS.includes(key))
+        ? "region"
+        : "country";
+    derivation = "provider_address";
   }
   const provider_class = text(row.class),
     provider_type = text(row.type);

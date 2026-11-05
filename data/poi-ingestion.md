@@ -989,9 +989,12 @@ name alone must return a place whose own name agrees: every distinctive word of 
 provider's name (generic words such as Biennale, Festival, Art are ignored) must appear
 in the listed name, otherwise `name_result_mismatch` (Ray-Ban for "RAY Fotografieprojekte").
 The rejected hit is kept in `validation.forward.rejected` (an earlier rejection nests under
-`previous`). The lookup then falls back to the recognized listed country's English name
-unless a usable supplied point exists; an unrecognized country text (`East Africa`) leaves
-the record unlocated. An unlocated record is unpublished and its geocode task needs
+`previous`). Whenever a record with no point at all is left without a plausible result
+(a rejection or a plain miss), lookups fall back to the listed city, then the recognized
+listed country's English name, skipping queries already tried. The fallback is
+`query_basis: locality` (so `general`) and records `validation.forward.fallback_from`
+`{reason: miss|rejected, query}`. A record with a supplied or retained point keeps it.
+An unrecognized country text with no city (`East Africa`) leaves the record unlocated. An unlocated record is unpublished and its geocode task needs
 intervention; geocoding releases any snapshot it held, so its old canonical is rebuilt
 without it, or hidden when it was the only member (`releaseLocationHold`).
 
@@ -1014,7 +1017,7 @@ whose new lookup missed stays plottable and is judged by its stored precision.
 publication. A supplied point that repeats a published country centroid (for example
 Google's Australia centroid) is stored as `country` precision, so it counts as coarse.
 
-The `location-v5` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
+The `location-v7` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
 to its normalization/primary point, alongside separate listed text, forward query/result
 and reverse lookup. Canonical builder `canonical-build-v7` writes
 `attributes.coordinate_evidence` with source/research/normalization/geocode IDs for
@@ -1024,25 +1027,28 @@ reserved fields. The query policy remains `listed-location-v1`; unchanged provid
 queries reuse the `location-v2` cache namespace, so a representation upgrade does
 not repeat already-paid geocoding. There is no automatic historical sweep, but the
 location version is part of readiness: `locationReadySql()` treats every artifact
-whose `location_enrichment.version` is not the current `location-v5` (v1–v4) as stale,
+whose `location_enrichment.version` is not the current `location-v7` (v1–v6) as stale,
 so the next geocode stage over any cohort re-enriches all of its records. Re-enrichment
 replays the `location-v2` forward/reverse caches and normally makes no provider calls;
 only records with no cached query or reverse point call the provider. Size a run by
 its cohort, not by records whose source data changed. v5 added coarse-point reverse
-trimming and supplied-centroid precision (above). The
+trimming and supplied-centroid precision; v6 plausibility checks and precision v3; v7 the
+no-point fallback chain and precision v4 (above). The
 additive country-precision migration widens the two storage constraints; it does
 not reclassify stored points or rebuild existing artifacts.
 
 Forward results now retain the complete selected provider row as `raw_response`
 inside the query-cache hit and geocode artifact's `validation.forward.result`.
-Compact `precision_evidence` (`geocode-precision-v3`) records the operational
+Compact `precision_evidence` (`geocode-precision-v4`) records the operational
 value, its derivation, provider class/type, and diagnostic warnings. A provider
 `country` type, or a result whose address holds only country fields (OSM country
 boundaries arrive as `boundary`/`administrative`), is `country`; v1 called these
 `region` or `city`. v3 reads an `administrative`/`boundary` result's precision from
 its own address: a city-level field makes it `city`, a state/region/province/county/island
 field `region`, otherwise `country` (`England` is a region, not a city; Mexico, Missouri
-is a city). Island, archipelago, county and similar types are `region`. Other type/class
+is a city). Island, archipelago, county and similar types are `region`. v4: a row with
+no class/type and no street, house number or place name in its address takes the finest
+of city/region/country from its address (`Zongolica, Veracruz` is a city) instead of `point`. Other type/class
 rules produce the existing city/region values;
 remaining results keep the point fallback with `point_precision_default`, plus
 `provider_granularity_missing` when neither field exists. These are diagnostics,

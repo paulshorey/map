@@ -85,7 +85,8 @@ test("fresh response preserves complete selected provider row and carries compac
     lat: String(sao.forward.result.lat),
     lon: String(sao.forward.result.lng),
     display_name: sao.forward.result.label,
-    address: { country_code: "br", city: "São Paulo" },
+    // A street keeps this granularity-free row on the point fallback (v4 reads addresses).
+    address: { country_code: "br", city: "São Paulo", road: "Avenida Pedro Álvares Cabral" },
     boundingbox: ["-23.58", "-23.56", "-46.67", "-46.65"],
     place_id: "fixture",
     extra_provider_field: { observed: true },
@@ -140,4 +141,16 @@ test("v3 boundaries take their precision from their own address", () => {
   assert.equal(row("island", "place", { island: "Great Britain", country_code: "gb" }).value, "region");
   assert.equal(row("county", "boundary", { county: "Kent", country_code: "gb" }).value, "region");
   assert.equal(row("administrative", "boundary", { country: "Nigeria", country_code: "ng" }).value, "country");
+});
+
+test("v4 rows without class/type take precision from their address fields", () => {
+  const zongolica = deriveForwardPrecision({
+    address: { city: "Zongolica", county: "Zongolica", state: "Veracruz", country: "Mexico", country_code: "mx" },
+  });
+  assert.equal(zongolica.value, "city");
+  assert.equal(zongolica.derivation, "provider_address");
+  assert.ok(zongolica.warnings.includes("provider_granularity_missing"));
+  assert.equal(deriveForwardPrecision({ address: { state: "Yucatán", country_code: "mx" } }).value, "region");
+  assert.equal(deriveForwardPrecision({ address: { road: "Calle 43", city: "Mérida" } }).value, "point");
+  assert.equal(deriveForwardPrecision({ address: { name: "Ray-Ban", city: "Frankfurt" } }).value, "point");
 });
