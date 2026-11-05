@@ -931,6 +931,11 @@ without averaging or distance-based suppression. One usable point is required to
 publish. Legacy points with insufficient origin evidence keep their existing point
 and an explicit legacy/unknown classification rather than an invented source claim.
 
+Queries over 190 characters drop leading comma-separated parts (institution names) until
+they fit, keeping street, city, region and country: LocationIQ answers HTTP 400 "Invalid
+Request" above about 200. Any remaining 400 is an uncached miss for that query, recorded in
+`validation.forward.invalid_queries`, and the fallback chain continues.
+
 Forward queries use immutable captured text and source location hints, never fields
 filled by reverse lookup or model coordinate proposals. Supplied address/locality
 wins over composite venue names for lookup; recognized listed countries constrain

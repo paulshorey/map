@@ -136,6 +136,25 @@ async function resolveSourceId(db: Pool, slug: string): Promise<string> {
  * to wrong matches. Place records (gardens, campgrounds) keep the name: it IS
  * the place name and is often the only usable signal (e.g. ArbNet).
  */
+/** LocationIQ answers HTTP 400 "Invalid Request" for queries over about 200 characters. */
+export const MAX_QUERY_LENGTH = 190;
+
+/**
+ * Keep the most local, structured end of an over-long query: drop leading comma-separated
+ * parts (institution and department names) until it fits, so the street, city, region and
+ * country remain ("Departamento de Botánica…, Km 15.5 carr. …, Zapopan, Jalisco, Mexico").
+ */
+export function fitQueryLength(display: string): string {
+  if (display.length <= MAX_QUERY_LENGTH) return display;
+  const parts = display.split(/\s*,\s*/);
+  while (parts.length > 1 && parts.join(", ").length > MAX_QUERY_LENGTH) parts.shift();
+  const fitted = parts.join(", ");
+  if (fitted.length <= MAX_QUERY_LENGTH) return fitted;
+  // A single over-long part: keep its end, starting at a word boundary.
+  const tail = fitted.slice(-MAX_QUERY_LENGTH);
+  return tail.slice(tail.indexOf(" ") + 1);
+}
+
 export function buildQuery(
   row: GeoRow,
   temporalSlugs: Set<string>,
@@ -159,7 +178,7 @@ export function buildQuery(
       ? locality
       : [row.name?.trim() ?? "", ...locality].filter((p) => p.length > 0);
   if (parts.length === 0) return null;
-  const display = parts.join(", ");
+  const display = fitQueryLength(parts.join(", "));
   const norm = display
     .toLowerCase()
     .normalize("NFKD")
@@ -556,7 +575,19 @@ export async function runGeocode(
         return { key, hit: null, stop: "dry_run" as const };
       }
       if (opts.throttleMs > 0) await sleep(opts.throttleMs);
-      const hit = await geocode(query.display, forwardCountry);
+      let hit: GeocodeHit | null;
+      try {
+        hit = await geocode(query.display, forwardCountry);
+      } catch (error) {
+        // "Invalid Request" is about this query, not the provider: treat it as an uncached
+        // miss so the fallback chain continues and one record cannot stop a whole file.
+        if (error instanceof GeocodeError && (error as { status?: number }).status === 400) {
+          stats.apiCalls++;
+          invalidQueries.push(query.display);
+          return { key, hit: null, stop: null };
+        }
+        throw error;
+      }
       stats.apiCalls++;
       await writeCache(db, key, hit);
       return { key, hit, stop: null };
@@ -569,6 +600,7 @@ export async function runGeocode(
       : null;
     let rejected: Record<string, unknown> | null = null;
     let fallbackFrom: { reason: string; query: string } | null = null;
+    const invalidQueries: string[] = [];
     let cityConfirmation: {
       query: string;
       query_norm: string;
@@ -810,6 +842,7 @@ export async function runGeocode(
         ...(rejected ? { rejected } : {}),
         ...(cityConfirmation ? { city_confirmation: cityConfirmation } : {}),
         ...(fallbackFrom ? { fallback_from: fallbackFrom } : {}),
+        ...(invalidQueries.length ? { invalid_queries: invalidQueries } : {}),
       },
       coordinate_evidence: coordinateEvidence,
       ...(suppliedCentroid

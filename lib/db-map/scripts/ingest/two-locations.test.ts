@@ -12,6 +12,8 @@ import {
   locationSpecificity,
 } from "./canonical-points.js";
 import {
+  fitQueryLength,
+  MAX_QUERY_LENGTH,
   listedQuery,
   listedQueryBasis,
   runGeocode,
@@ -1612,4 +1614,35 @@ test("a retained geocoded point that is itself the rejected result is dropped, n
   assert.equal(stats.unresolved, 1);
   assert.equal(f.activated, null, "the rejected restaurant must not be reactivated");
   assert.equal(f.heldLookups, 1);
+});
+
+test("over-long queries keep their local end; a 400 is a record-level miss, not a run failure", async () => {
+  const long =
+    "Departamento de Botánica y Zoología, Centro Universitario de Ciencias Biológicas y Agropecuarias, Universidad de Guadalajara, Km 15.5 carr. Guadalajara a Nogales, Las Agujas, Nextipac, Zapopan, Jalisco, Mexico";
+  assert.equal(
+    fitQueryLength(long),
+    "Centro Universitario de Ciencias Biológicas y Agropecuarias, Universidad de Guadalajara, Km 15.5 carr. Guadalajara a Nogales, Las Agujas, Nextipac, Zapopan, Jalisco, Mexico",
+  );
+  assert.ok(fitQueryLength("x ".repeat(200)).length <= MAX_QUERY_LENGTH);
+  assert.equal(fitQueryLength("Nagoya, JP"), "Nagoya, JP");
+
+  const f = fixture({ ...japan, attributes: { venue_name: "Aichi Arts Center" } });
+  Object.assign(f.row, { lat: null, lng: null, coordinate_source: null, coordinate_precision: null });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith("/reverse"))
+      return Response.json({ lat: "35.18", lon: "136.90", address: { city: "Nagoya", country_code: "jp" } });
+    return url.searchParams.get("q") === "Nagoya, JP"
+      ? Response.json([{ lat: "35.18", lon: "136.90", class: "boundary", type: "administrative", address: { city: "名古屋市", country_code: "jp" } }])
+      : Response.json({ error: "Invalid Request" }, { status: 400 });
+  };
+  const stats = await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
+  assert.equal(stats.resolved, 1);
+  assert.deepEqual(f.activated.forward.invalid_queries, ["Aichi Arts Center, Nagoya, JP"]);
+  assert.equal(f.activated.forward.query, "Nagoya, JP");
+  assert.ok(
+    ![...f.cache.keys()].some((k) => k.includes("aichi arts center")),
+    "the invalid request is not cached as a miss",
+  );
 });
