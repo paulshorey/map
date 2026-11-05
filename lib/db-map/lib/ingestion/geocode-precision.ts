@@ -31,6 +31,8 @@ const POINT_ADDRESS_KEYS = [
   "leisure",
   "neighbourhood",
   "quarter",
+  "office",
+  "historic",
 ];
 const CITY_ADDRESS_KEYS = [
   "city",

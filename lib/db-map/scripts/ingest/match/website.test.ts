@@ -52,3 +52,15 @@ test("websites compare by full URL, never by shared domain", () => {
     "example.org/a?id=1",
   );
 });
+
+test("an incoming website matches any canonical member's website, not only the best member's", async () => {
+  const { candidateWebsite } = await import("../match.js");
+  const candidate = {
+    best_website: "https://www.fs.usda.gov/recarea/mbs/recarea/?recid=1",
+    canonical_website: null,
+    member_websites: ["https://www.fs.usda.gov/recarea/mbs/recarea/?recid=1", "https://lower-trust.example/garden"],
+  };
+  assert.equal(candidateWebsite("http://lower-trust.example/garden/", candidate), "https://lower-trust.example/garden");
+  assert.equal(candidateWebsite("https://elsewhere.example/", candidate), candidate.best_website);
+  assert.equal(candidateWebsite(null, candidate), candidate.best_website);
+});

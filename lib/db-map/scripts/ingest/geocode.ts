@@ -15,7 +15,7 @@ import {
   GeocodeError,
   type GeocodeHit,
 } from "./providers/locationiq.js";
-import { artifactTransaction } from "./execution.js";
+import { artifactTransaction, fencedTransaction } from "./execution.js";
 import { canonicalLane } from "./concurrency.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { rebuildCanonicalPoi } from "./merge.js";
@@ -476,49 +476,34 @@ export async function writeRowCoords(
   await (linked ? canonicalLane.run(activate) : activate());
 }
 
-/** Persist the unlocated state of a record whose retained geocoded point was rejected. */
-async function clearRejectedPoint(
+/**
+ * Settle a record whose lookups found no plausible point, in one transaction fenced by the
+ * geocode claim: a retained geocoded point that was itself a rejected result is cleared and its
+ * membership retired (`location_rejected`), then each canonical whose active build still
+ * includes the record is rebuilt without it (hidden when no member remains and no other member
+ * awaits a refresh). A stale claim aborts before anything is written.
+ */
+async function settleUnlocated(
   db: Pool,
   researchId: string,
-  lat: number,
-  lng: number,
+  rejectedPoint: { lat: number; lng: number } | null,
 ) {
-  await canonicalLane.run(async () => {
-    const client = await db.connect();
-    try {
-      await client.query("BEGIN");
-      const cleared = await client.query(
-        `UPDATE research_pois SET lat=NULL, lng=NULL, coordinate_source=NULL, coordinate_precision=NULL,
-          active_geocode_id=NULL, canonical_poi_id=NULL, matched_normalization_id=NULL
-        WHERE id=$1 AND coordinate_source='geocode' AND lat=$2 AND lng=$3`,
-        [researchId, lat, lng],
-      );
-      if (cleared.rowCount)
-        await client.query(
-          `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
-          retirement_reason='location_rejected' WHERE research_poi_id=$1 AND active`,
-          [researchId],
+  await canonicalLane.run(() =>
+    fencedTransaction(db, async (client) => {
+      if (rejectedPoint) {
+        const cleared = await client.query(
+          `UPDATE research_pois SET lat=NULL, lng=NULL, coordinate_source=NULL, coordinate_precision=NULL,
+            active_geocode_id=NULL, canonical_poi_id=NULL, matched_normalization_id=NULL
+          WHERE id=$1 AND coordinate_source='geocode' AND lat=$2 AND lng=$3`,
+          [researchId, rejectedPoint.lat, rejectedPoint.lng],
         );
-      await client.query("COMMIT");
-    } catch (error) {
-      await client.query("ROLLBACK").catch(() => {});
-      throw error;
-    } finally {
-      client.release();
-    }
-  });
-}
-
-/**
- * An unlocatable record must not keep serving the snapshot it held while its location was
- * refreshed (for example a restaurant that a region-only lookup returned). Rebuild each
- * canonical whose active build still includes it; one without other members is hidden.
- */
-async function releaseHeldSnapshots(db: Pool, researchId: string) {
-  await canonicalLane.run(async () => {
-    const client = await db.connect();
-    try {
-      await client.query("BEGIN");
+        if (cleared.rowCount)
+          await client.query(
+            `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
+            retirement_reason='location_rejected' WHERE research_poi_id=$1 AND active`,
+            [researchId],
+          );
+      }
       const held = await client.query<{ canonical_poi_id: string }>(
         `SELECT DISTINCT b.canonical_poi_id
         FROM canonical_poi_build_inputs i JOIN canonical_poi_builds b ON b.id=i.build_id
@@ -532,14 +517,8 @@ async function releaseHeldSnapshots(db: Pool, researchId: string) {
           noLlm: true,
           releaseLocationHoldFor: researchId,
         });
-      await client.query("COMMIT");
-    } catch (error) {
-      await client.query("ROLLBACK").catch(() => {});
-      throw error;
-    } finally {
-      client.release();
-    }
-  });
+    }),
+  );
 }
 
 /** Collect an independent listed-location candidate, then source-first reverse enrichment. */
@@ -851,13 +830,16 @@ export async function runGeocode(
       if (!forward) {
         stats.unresolved++;
         // Every lookup finished (budget/provider stops exit above): no plausible point exists.
-        if (!opts.dryRun) {
-          // A retained point dropped above (it was a rejected result) is cleared in the database
-          // too, and its membership retired, so the record is unlocated rather than still served.
-          if (validPoint({ lat: row.lat, lng: row.lng }))
-            await clearRejectedPoint(db, row.id, row.lat, row.lng);
-          await releaseHeldSnapshots(db, row.id);
-        }
+        // A retained point dropped above (it was a rejected result) is cleared in the database
+        // too, so the record is unlocated rather than still served.
+        if (!opts.dryRun)
+          await settleUnlocated(
+            db,
+            row.id,
+            validPoint({ lat: row.lat, lng: row.lng })
+              ? { lat: row.lat as number, lng: row.lng as number }
+              : null,
+          );
         continue;
       }
       lat = forward.lat;

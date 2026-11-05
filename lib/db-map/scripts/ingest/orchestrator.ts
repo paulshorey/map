@@ -8,7 +8,7 @@ import { runRecordScheduler } from "./record-scheduler.js";
 import { EmbeddingBatcher } from "./embedding-batcher.js";
 import { buildEmbedText } from "./embed.js";
 import { configureLlmConcurrency, canonicalLane } from "./concurrency.js";
-import { artifactTransaction } from "./execution.js";
+import { artifactTransaction, fencedTransaction } from "./execution.js";
 import { spawn } from "node:child_process";
 import { Execution, lockSource, type AttemptResult } from "./execution.js";
 import { runGeocode } from "./geocode.js";
@@ -1307,8 +1307,9 @@ export async function runOrchestration(
               // A membership decided by an older matcher is matched again; the old canonical
               // keeps its snapshot until the rematch replaces it.
               if (state.canonical_poi_id && state.membership_stale_matcher) {
+                // Fenced, but the match claim stays running until the rematch below finishes.
                 await canonicalLane.run(() =>
-                  artifactTransaction(db, async (client) => {
+                  fencedTransaction(db, async (client) => {
                     await client.query(
                       `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
                       retirement_reason='matcher_upgraded' WHERE research_poi_id=$1 AND active`,
@@ -1318,7 +1319,6 @@ export async function runOrchestration(
                       "UPDATE research_pois SET canonical_poi_id=NULL, matched_normalization_id=NULL WHERE id=$1",
                       [item.research_poi_id],
                     );
-                    return { value: undefined, output: { status: "succeeded" } };
                   }),
                 );
                 Object.assign(state, await recordState(db, item));

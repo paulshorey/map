@@ -73,6 +73,32 @@ export async function artifactTransaction<T>(
   }
 }
 
+/**
+ * A transaction fenced by the current task claim that does not complete the task: for
+ * preparatory writes (retiring a membership before a rematch, clearing a rejected point)
+ * whose task finishes later. A stale claim aborts before anything is written.
+ */
+export async function fencedTransaction<T>(
+  db: Pool,
+  fn: (client: PoolClient) => Promise<T>,
+): Promise<T> {
+  const ctx = currentAttempt();
+  ctx?.execution.check();
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN");
+    if (ctx?.claim) await fenceTask(client, ctx.claim);
+    const value = await fn(client);
+    await client.query("COMMIT");
+    return value;
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 export const errorDetails = (error: unknown) => ({
   name: error instanceof Error ? error.name : "Error",
   message: error instanceof Error ? error.message : String(error),

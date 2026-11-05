@@ -42,6 +42,7 @@ import { bboxAround, haversineMeters } from "./match/geo.js";
 import { extractStrongIds } from "./match/ids.js";
 import { adjudicateMatch } from "./match/llm.js";
 import { scoreCandidate, type CandidateScore } from "./match/score.js";
+import { websiteIdentity } from "./match/denylist.js";
 import { LlmError } from "./providers/llm.js";
 
 const ADVISORY_LOCK_ID = 0x5018a;
@@ -153,6 +154,8 @@ interface CandidateRow {
   best_name_normalized: string | null;
   best_content_embedding: number[] | null;
   best_website: string | null;
+  /** Every member's website: an exact identity match with any member counts. */
+  member_websites: string[];
   best_phone: string | null;
   best_address: string | null;
   best_city: string | null;
@@ -598,6 +601,7 @@ async function fetchCandidates(
        cp.popularity AS canonical_popularity,
        COALESCE(meta.has_website, cp.website IS NOT NULL) AS canonical_has_website,
        COALESCE(meta.has_wikidata_qid, false) AS canonical_has_wikidata_qid,
+       COALESCE(meta.member_websites, ARRAY[]::text[]) AS member_websites,
        COALESCE(meta.max_source_trust, 0) AS canonical_max_source_trust,
        br.id AS best_research_id,
        br.name AS best_name,
@@ -625,6 +629,7 @@ async function fetchCandidates(
      JOIN LATERAL (
        SELECT
          max(rs.trust)::int AS max_source_trust,
+         array_remove(array_agg(DISTINCT rp.website), NULL) AS member_websites,
          bool_or(rp.website IS NOT NULL OR cp.website IS NOT NULL) AS has_website,
          bool_or(
            rp.attributes->>'wikidata_id' IS NOT NULL
@@ -725,6 +730,18 @@ async function fetchCandidates(
     .slice(0, 40);
 }
 
+/** The canonical's website to compare: a member's URL with the same identity, else its best. */
+export function candidateWebsite(
+  current: string | null,
+  candidate: Pick<CandidateRow, "member_websites" | "best_website" | "canonical_website">,
+): string | null {
+  const identity = websiteIdentity(current);
+  const same =
+    identity &&
+    candidate.member_websites?.find((w) => websiteIdentity(w) === identity);
+  return same || candidate.best_website || candidate.canonical_website;
+}
+
 function scoreCandidates(
   row: ResearchMatchRow,
   candidates: CandidateRow[],
@@ -738,7 +755,7 @@ function scoreCandidates(
         name_normalized:
           candidate.best_name_normalized ?? candidate.canonical_name,
         content_embedding: candidate.best_content_embedding,
-        website: candidate.best_website ?? candidate.canonical_website,
+        website: candidateWebsite(row.website, candidate),
         phone: candidate.best_phone ?? candidate.canonical_phone,
         city: candidate.best_city,
         region: candidate.best_region,
@@ -838,7 +855,7 @@ async function llmDecisionForCandidate(
         country_code: candidate.best_country_code,
         lat: candidate.canonical_lat,
         lng: candidate.canonical_lng,
-        website: candidate.best_website ?? candidate.canonical_website,
+        website: candidateWebsite(row.website, candidate),
         phone: candidate.best_phone ?? candidate.canonical_phone,
         coordinate_precision: candidate.best_coordinate_precision,
         starts_at: candidate.best_starts_at ?? candidate.canonical_starts_at,
