@@ -65,9 +65,37 @@ A replay of the new checks against stored provider rows predicted 5 unlocated re
 records confirmed it: Klima Biennale Wien split from Vienna Biennale; Border, East Africa
 and RAY became unlocated, their stale canonicals hidden after an issue retry.
 
-## Re-run
+## Re-run (revision `1585256`)
 
-Job `4b8d01a4-13e4-4d6b-82ac-2ffd466b36cc` at `1585256` (results to be recorded below).
+Job `4b8d01a4-13e4-4d6b-82ac-2ffd466b36cc`, run `c022802a-e1bb-43a7-b16a-048ad8b62beb`,
+execution `420039ba…`, 03:49–04:07 UTC, `record_intervention_required` (exit 2) with exactly
+the 5 predicted geocode records quarantined; no failed tasks. 299 normalizations (`event-v2`),
+$0.159.
+
+| Measure | First run | Re-run |
+| --- | --- | --- |
+| Geocoded `country` / `region` / `city` / `point` | 193 / 0 / 5 / 6 | 193 / 6 / 0 / 0 |
+| Unlocated (unpublished, needs intervention) | 0 | 5 |
+| Published `general` / `precise` | 199 / 98 | 199 / 96 |
+| Listing-page websites | 205 | 0 (88 official websites remain) |
+| Published canonicals with no members | 3 (after bounded runs) | 0 |
+| Within-source merges | 7 | 4 |
+
+Unlocated: Online Biennale, RAY Fotografieprojekte, Central American Isthmus Biennial,
+Border Biennial, East Africa Art Biennale. Region-level now: Bristol, Coventry, The London
+Open, Yorkshire Sculpture International (England), Larnaca (Cyprus), Emergency Biennale
+(Chechnya; no country code).
+
+Merges: Shenzhen Sculpture/Shenzhen and Klima Biennale Wien/Vienna Biennale split. Kept:
+Les Ateliers/Ateliers de Rennes and Triennale/Yokohama Triennale (true duplicates), ARS +
+Biennale Warszawa (same site and point; plausible), Venice Architecture Biennale + Venice
+Biennale (auto 0.896, same organisation, site and venue; a product call on whether separate
+exhibitions of one organisation are one POI). Lost: Mongolia 360° Land Art Biennial and Land
+Art Mongolia / LAM 360° are one event but no longer merge (0.721, below the gray zone);
+the earlier merge relied on the false website signal.
+
+PR #77 review fixes `7bd8e3d` (exact centroid cells, hint countries, rematch on coarseness
+change) were merged afterwards; the re-run's only centroid match (Adelaide) is unchanged.
 
 ## Next steps
 
