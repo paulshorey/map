@@ -466,14 +466,23 @@ export async function runQueue(id: string) {
     throw error;
   }
   if (!lock) {
-    q.status = (await stopRequested(id)) ? "stopped" : "needs_attention";
-    q.message =
-      q.status === "stopped"
-        ? "Stopped by operator request while waiting to start"
-        : "A plain ingest:run kept the queue lock for over an hour; resume the queue when it finishes";
-    await saveQueue(q);
-    await endPresence();
-    await closeDb();
+    try {
+      if (lockLost) {
+        q.status = "needs_attention";
+        q.message =
+          "The queue's presence connection to the database was lost while waiting to start; check the database connection, then resume";
+      } else if (await stopRequested(id)) {
+        q.status = "stopped";
+        q.message = "Stopped by operator request while waiting to start";
+      } else {
+        q.status = "needs_attention";
+        q.message = "A plain ingest:run kept the queue lock for over an hour; resume the queue when it finishes";
+      }
+      await saveQueue(q);
+    } finally {
+      await endPresence();
+      await closeDb();
+    }
     return;
   }
   const log = queuePath(id, "queue.log");
@@ -967,11 +976,16 @@ async function main() {
       );
     return;
   }
-  console.log(
+  const usage =
     "Usage: ingest:import-queue start --plan <plan.json> | start -- <file>=<category> ...\n" +
-      "       ingest:import-queue status [--queue <id>] [--json] | list | stop [--queue <id>] [--now]\n" +
-      "       ingest:import-queue resume [--queue <id>]",
-  );
+    "       ingest:import-queue status [--queue <id>] [--json] | list | stop [--queue <id>] [--now]\n" +
+    "       ingest:import-queue resume [--queue <id>]";
+  if (!["help", "--help", "-h"].includes(command)) {
+    console.error(`Unknown command: ${command}\n${usage}`);
+    process.exitCode = 1;
+    return;
+  }
+  console.log(usage);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
