@@ -568,6 +568,9 @@ function renderMonitor(m) {
   const qualityHtml = !q
     ? `<div class="monitor-card"><h3>Published data</h3><p>Unavailable right now (the quality query failed); retrying.</p></div>`
     : `<div class="monitor-card"><h3>Published data</h3>
+      <p class="muted-note">As of ${date(m.quality_observed_at)}${
+        m.quality_stale ? " · <strong>stale: the latest refresh failed, retrying</strong>" : ""
+      }</p>
       <p><strong>${number(q.published_pois)}</strong> POIs · ${number(q.precise_pois)} precise · ${number(q.general_pois)} general${
         q.unknown_specificity_pois ? ` · ${number(q.unknown_specificity_pois)} unknown` : ""
       }</p>
@@ -591,7 +594,7 @@ function renderMonitor(m) {
           )
           .join("")}</tbody></table></details>`
     : "";
-  $("monitor").innerHTML = `<h2>Live monitor <small class="muted-note">${date(m.observed_at)} · data quality refreshes every 2 min</small></h2>
+  $("monitor").innerHTML = `<h2>Live monitor <small class="muted-note">${date(m.observed_at)}</small></h2>
     <div class="monitor-grid">${runHtml}${quotaHtml}${queueHtml}${qualityHtml}</div>${sources}`;
 }
 

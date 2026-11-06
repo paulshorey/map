@@ -49,7 +49,13 @@ export function queueWindow<
 const QUALITY_TTL_MS = 120_000;
 const QUALITY_RETRY_MS = 30_000;
 type Quality = Awaited<ReturnType<typeof getQualityMonitor>>;
-let qualityCache: { at: number; value: Quality | null } = { at: 0, value: null };
+// `at` schedules the next refresh; `observedAt` is when `value` was actually computed.
+let qualityCache: {
+  at: number;
+  value: Quality | null;
+  observedAt: string | null;
+  error: string | null;
+} = { at: 0, value: null, observedAt: null, error: null };
 let qualityRefresh: Promise<void> | null = null;
 
 /**
@@ -62,11 +68,15 @@ async function cachedQuality(db: Parameters<typeof getQualityMonitor>[0]): Promi
     void db;
     qualityRefresh ??= getQualityMonitor(getSidePool("ingestion-quality"))
       .then((value) => {
-        qualityCache = { at: Date.now(), value };
+        qualityCache = { at: Date.now(), value, observedAt: new Date().toISOString(), error: null };
       })
       .catch((error) => {
         console.error("Quality monitor refresh failed:", error);
-        qualityCache = { at: Date.now() - QUALITY_TTL_MS + QUALITY_RETRY_MS, value: qualityCache.value };
+        qualityCache = {
+          ...qualityCache,
+          at: Date.now() - QUALITY_TTL_MS + QUALITY_RETRY_MS,
+          error: error instanceof Error ? error.message : String(error),
+        };
       })
       .finally(() => {
         qualityRefresh = null;
@@ -221,7 +231,14 @@ export function createDashboard(port: number) {
             .catch(() => null),
         ]);
         // No cached value yet and the first load failed: unavailable, never fabricated zeros.
-        json(200, { ...monitor, quality: quality ?? null, queue: queueWindow(queue) });
+        json(200, {
+          ...monitor,
+          quality: quality ?? null,
+          // When the shown quality was computed, and whether the latest refresh failed.
+          quality_observed_at: qualityCache.observedAt,
+          quality_stale: !!qualityCache.error,
+          queue: queueWindow(queue),
+        });
         return;
       }
       if (req.method === "GET" && url.pathname === "/api/inventory") {

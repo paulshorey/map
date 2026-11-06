@@ -541,6 +541,7 @@ export async function runQueue(id: string) {
     await saveQueue(q);
     for (let i = 0; i < q.entries.length; i++) {
       const entry = q.entries[i]!;
+      let afterReset = false;
       if (["succeeded", "skipped_complete"].includes(entry.status)) continue;
       q.current = i;
       // An interrupted quota wait (entry reset to pending) still waits for its reset.
@@ -550,6 +551,7 @@ export async function runQueue(id: string) {
         q.message = `${entry.file}: waiting for the geocoding quota reset (${entry.resets_at})`;
         await saveQueue(q);
         if (await waitUntil(id, Date.parse(entry.resets_at))) {
+          afterReset = true;
           q.status = "running";
           q.message = null;
         }
@@ -615,6 +617,7 @@ export async function runQueue(id: string) {
             q.message = `${entry.file}: waiting for the geocoding quota reset (${entry.resets_at})`;
             await saveQueue(q);
             if (!(await waitUntil(id, Date.parse(entry.resets_at)))) continue;
+            afterReset = true;
             q.status = "running";
             q.message = null;
           }
@@ -681,6 +684,8 @@ export async function runQueue(id: string) {
         entry.reason = null;
         await saveQueue(q);
         const launched = Date.now();
+        const resumedAfterReset = afterReset;
+        afterReset = false;
         const { code, result } = await superviseWatch(q, entry, args, log);
         const evidence = (result?.evidence ?? {}) as { stop_reason?: string; status?: string };
         entry.run_id = (result?.run_id as string | undefined) ?? entry.run_id;
@@ -689,8 +694,11 @@ export async function runQueue(id: string) {
           entry.quota_pauses++;
           // A pause within 5 minutes of launch made no real progress; twice means the quota is
           // being used elsewhere or the reset did not happen as expected.
-          entry.quick_quota_pauses =
-            Date.now() - launched < 300_000 ? (entry.quick_quota_pauses ?? 0) + 1 : 0;
+          // Only a launch right after a quota reset can be a failed reset; discovering the
+          // quota on a fresh launch is not counted.
+          if (resumedAfterReset)
+            entry.quick_quota_pauses =
+              Date.now() - launched < 300_000 ? (entry.quick_quota_pauses ?? 0) + 1 : 0;
         }
         if (entry.outcome === "succeeded") {
           const after = await fileState(entry);
@@ -739,6 +747,7 @@ export async function runQueue(id: string) {
           q.message = `${entry.file}: waiting for the geocoding quota reset (${entry.resets_at})`;
           await saveQueue(q);
           if (!(await waitUntil(id, until))) continue; // the loop top records the stop
+          afterReset = true;
           q.status = "running";
           q.message = null;
           continue;
@@ -1020,6 +1029,13 @@ async function main() {
         throw new Error(`${e.file} is classified as ${state.coverage.slice(9)} in the inventory, not ${e.category}`);
       if (state.coverage === "changed_since_scan")
         throw new Error(`${e.file} changed since the last inventory scan: run ingest:inventory --refresh first`);
+      if (state.continuation && (await runMatchesFile(state.continuation, state.sha, state.extractorVersion))) {
+        const check = await continuationSafe(state.continuation);
+        if (!check.safe)
+          throw new Error(
+            `${e.file} has an unfinished run ${state.continuation} (${check.detail}): inspect it with ingest:status --run ${state.continuation} first`,
+          );
+      }
       if (state.needsDiagnosis)
         throw new Error(
           `${e.file} has invalid output, normalization failures or a running/interrupted execution: ` +
