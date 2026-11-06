@@ -66,6 +66,8 @@ export interface QueueEntry {
   run_id: string | null;
   jobs: string[];
   quota_pauses: number;
+  /** Consecutive quota pauses within 5 minutes of launch (persisted across worker restarts). */
+  quick_quota_pauses?: number;
   started_at: string | null;
   finished_at: string | null;
   outcome: string | null;
@@ -187,6 +189,7 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
       action: null as string | null,
       verifyArgs: null as string[] | null,
       sha: null as string | null,
+      extractorVersion: null as string | null,
       needsDiagnosis: false,
     };
   const item = queueItem(row);
@@ -204,6 +207,7 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
     action: item.action as string,
     verifyArgs: item.action === "verify" ? (item.run_args as string[] | null) : null,
     sha,
+    extractorVersion: ((row as { extractor_version?: string | null }).extractor_version ?? null) as string | null,
     needsDiagnosis:
       !!(row as { invalid?: unknown }).invalid ||
       !!(row as { normalization_failed?: unknown }).normalization_failed ||
@@ -211,15 +215,22 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
   };
 }
 
-/** Whether a run was made from the capture version with this SHA-256. */
-async function runMatchesFile(runId: string, sha: string | null): Promise<boolean> {
+/** Whether a run was made from this capture version (file hash and extractor version). */
+async function runMatchesFile(
+  runId: string,
+  sha: string | null,
+  extractorVersion: string | null,
+): Promise<boolean> {
   if (!sha) return false;
   const { rows } = await getDb().query(
-    `SELECT v.file_sha256 FROM research_ingest_runs r
+    `SELECT v.file_sha256, v.extractor_version FROM research_ingest_runs r
      JOIN research_source_file_versions v ON v.id = r.source_file_version_id WHERE r.id=$1`,
     [runId],
   );
-  return rows[0]?.file_sha256 === sha;
+  return (
+    rows[0]?.file_sha256 === sha &&
+    (!extractorVersion || rows[0]?.extractor_version === extractorVersion)
+  );
 }
 
 /** Only runs that stopped for a budget/quota or an operator stop resume without diagnosis. */
@@ -291,9 +302,15 @@ async function superviseWatch(q: QueueState, entry: QueueEntry, args: string[], 
       await writeFile(jobPath(job, "stop.request"), new Date().toISOString(), { mode: 0o600 });
     })().catch(() => undefined);
   }, 5000);
-  const exited = new Promise<number | null>((resolve) =>
-    child.exitCode !== null ? resolve(child.exitCode) : child.once("exit", resolve),
-  );
+  const exited = new Promise<number | null>((resolve) => {
+    if (child.exitCode !== null) return resolve(child.exitCode);
+    child.once("exit", resolve);
+    // A failed spawn (EAGAIN, EMFILE…) may never emit "exit": record it as a failed launch.
+    child.once("error", (error) => {
+      console.error("Supervisor launch failed:", error);
+      resolve(null);
+    });
+  });
   let completed = false;
   let code: number | null = null;
   try {
@@ -427,7 +444,6 @@ export async function runQueue(id: string) {
       const entry = q.entries[i]!;
       if (["succeeded", "skipped_complete"].includes(entry.status)) continue;
       q.current = i;
-      let quickQuotaPauses = 0;
       for (;;) {
         if (await stopRequested(id)) {
           entry.status = "stopped";
@@ -438,9 +454,10 @@ export async function runQueue(id: string) {
         const state = await fileState(entry);
         entry.coverage = state.coverage;
         // A saved run of an older file version can never finish this one: start afresh.
-        if (entry.run_id && !(await runMatchesFile(entry.run_id, state.sha))) {
+        if (entry.run_id && !(await runMatchesFile(entry.run_id, state.sha, state.extractorVersion))) {
           entry.run_id = null;
           entry.quota_pauses = 0;
+          entry.quick_quota_pauses = 0;
         }
         const stop = (reason: string) => {
           entry.status = "needs_attention";
@@ -522,7 +539,8 @@ export async function runQueue(id: string) {
           entry.quota_pauses++;
           // A pause within 5 minutes of launch made no real progress; twice means the quota is
           // being used elsewhere or the reset did not happen as expected.
-          quickQuotaPauses = Date.now() - launched < 300_000 ? quickQuotaPauses + 1 : 0;
+          entry.quick_quota_pauses =
+            Date.now() - launched < 300_000 ? (entry.quick_quota_pauses ?? 0) + 1 : 0;
         }
         if (entry.outcome === "succeeded") entry.coverage = (await fileState(entry)).coverage;
         // A confirmed `stop --now` pauses the import (outcome `paused`): record it as a stop.
@@ -543,7 +561,7 @@ export async function runQueue(id: string) {
           stopReason: evidence.stop_reason,
           coverage: entry.coverage,
           runId: entry.run_id,
-          quickQuotaPauses,
+          quickQuotaPauses: entry.quick_quota_pauses ?? 0,
         });
         if (step.action === "advance") {
           entry.status = "succeeded";
@@ -625,7 +643,11 @@ async function reconcileStale(): Promise<QueueState[]> {
 
 /** Serialize start/resume across processes and hosts until the new worker's handshake. */
 async function withStartLock<T>(fn: () => Promise<T>): Promise<T> {
-  const c = await dedicatedClient("import-queue-start");
+  // Losing this session frees the start lock: abort rather than create a queue unserialized.
+  const c = await dedicatedClient("import-queue-start", () => {
+    console.error("Start lock connection lost: aborting this start/resume");
+    process.exit(1);
+  });
   try {
     await c.query("SELECT pg_advisory_lock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_START_LOCK]);
     return await fn();
@@ -773,10 +795,12 @@ async function main() {
   if (command === "resume") {
     let handshake = "";
     const q = await withStartLock(async () => {
-      await reconcileStale();
+      const all = await reconcileStale();
       const q = await loadQueue(flag("--queue") ?? (await latestId()));
       if (["queued", "running", "waiting"].includes(q.status))
         throw new Error(`Queue ${q.id} is already ${q.status}`);
+      const other = all.find((x) => x.id !== q.id && ["queued", "running", "waiting"].includes(x.status));
+      if (other) throw new Error(`Queue ${other.id} is already ${other.status}; stop it first`);
       if (await queueLockHeld()) throw new Error("An import queue worker is running; stop it first");
       await rm(queuePath(q.id, "stop.request"), { force: true });
       for (const e of q.entries) if (["stopped", "needs_attention"].includes(e.status)) e.status = "pending";
