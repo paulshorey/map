@@ -188,7 +188,7 @@ export class Execution {
     }
     this.journal("execution_started", { host: hostname(), pid: process.pid });
   }
-  private journal(event: string, details: unknown) {
+  journal(event: string, details: unknown) {
     try {
       appendFileSync(
         this.logPath,

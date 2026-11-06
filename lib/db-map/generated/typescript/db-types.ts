@@ -696,6 +696,14 @@ export interface ResearchPoisCurrentRow {
   "last_seen_at": Date | null;
 }
 
+export interface ResearchProviderDailyUsageRow {
+  "provider": string;
+  "usage_day": Date;
+  "requests": number;
+  "rate_limited_at": Date | null;
+  "updated_at": Date;
+}
+
 export interface ResearchSourceFileVersionsRow {
   "id": string;
   "source_file_id": string;
@@ -795,6 +803,7 @@ export interface PostgresDbSchema {
   "research_poi_observations": ResearchPoiObservationsRow;
   "research_pois": ResearchPoisRow;
   "research_pois_current": ResearchPoisCurrentRow;
+  "research_provider_daily_usage": ResearchProviderDailyUsageRow;
   "research_source_file_versions": ResearchSourceFileVersionsRow;
   "research_source_files": ResearchSourceFilesRow;
   "research_sources": ResearchSourcesRow;
