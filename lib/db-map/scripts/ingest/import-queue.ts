@@ -606,6 +606,18 @@ export async function runQueue(id: string) {
                 `ingest:status --run ${state.continuation} before resuming it`,
             );
           entry.run_id = state.continuation;
+          // An adopted quota pause waits for its saved reset before resuming.
+          const resets = await quotaResetsAt(state.continuation);
+          if (resets && Date.parse(resets) > Date.now()) {
+            entry.resets_at = new Date(Date.parse(resets) + 120_000).toISOString();
+            entry.status = "waiting_quota";
+            q.status = "waiting";
+            q.message = `${entry.file}: waiting for the geocoding quota reset (${entry.resets_at})`;
+            await saveQueue(q);
+            if (!(await waitUntil(id, Date.parse(entry.resets_at)))) continue;
+            q.status = "running";
+            q.message = null;
+          }
         }
         // The operator's classification wins over coverage: never count or run it otherwise.
         if (state.action === "review" || state.action === "blocked")
@@ -1005,6 +1017,8 @@ async function main() {
         throw new Error(`${e.file} is not in the inventory: run ingest:inventory --refresh first`);
       if (state.coverage.startsWith("category_"))
         throw new Error(`${e.file} is classified as ${state.coverage.slice(9)} in the inventory, not ${e.category}`);
+      if (state.coverage === "changed_since_scan")
+        throw new Error(`${e.file} changed since the last inventory scan: run ingest:inventory --refresh first`);
       // Known blockers fail now, not after earlier files have spent provider quota.
       if (state.action === "review" || state.action === "blocked")
         throw new Error(
