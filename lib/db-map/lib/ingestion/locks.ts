@@ -22,3 +22,5 @@ export async function importQueueActive(db: {
   );
   return !!rows[0]?.held;
 }
+/** Held exclusively for its whole run by every full-scope import (plain or queued), any host. */
+export const FULL_IMPORT_LOCK = 5;

@@ -5,6 +5,7 @@
  */
 import { getDb } from "../../lib/db/postgres.js";
 import { runOrchestration, type OrchestratorOptions } from "./orchestrator.js";
+import { admitImport } from "./import-admission.js";
 import { resolveSourceFile } from "./source-file.js";
 import { assertValidCategory, listCategorySlugs } from "./taxonomy.js";
 
@@ -36,6 +37,7 @@ async function main() {
     shadow: false, retryFailed: false, noLlm: true,
   };
   const db = getDb();
-  try { await runOrchestration(db, opts); } finally { await db.end(); }
+  const release = await admitImport(db, opts);
+  try { await runOrchestration(db, opts); } finally { await release(); await db.end(); }
 }
 main().catch((error) => { console.error("Extract failed:", error); process.exit(1); });
