@@ -6,7 +6,7 @@ import {
 } from "node:http";
 import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
-import { getDb } from "@lib/db-map/db/postgres";
+import { getDb, getSidePool } from "@lib/db-map/db/postgres";
 import {
   getInventory,
   getInventoryDetail,
@@ -58,7 +58,9 @@ let qualityRefresh: Promise<void> | null = null;
  */
 async function cachedQuality(db: Parameters<typeof getQualityMonitor>[0]): Promise<Quality | null> {
   if (Date.now() - qualityCache.at > QUALITY_TTL_MS) {
-    qualityRefresh ??= getQualityMonitor(db)
+    // Its own one-connection pool: whole-table scans never hold up live progress queries.
+    void db;
+    qualityRefresh ??= getQualityMonitor(getSidePool("ingestion-quality"))
       .then((value) => {
         qualityCache = { at: Date.now(), value };
       })

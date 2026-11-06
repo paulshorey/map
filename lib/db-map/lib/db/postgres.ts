@@ -66,6 +66,23 @@ export async function dedicatedClient(
   return client;
 }
 
+const sidePools = new Map<string, Pool>();
+/**
+ * A small named pool separate from the operational pool, for slow background work (such as
+ * dashboard aggregates) that must never hold up live queries.
+ */
+export function getSidePool(name: string, max = 1): Pool {
+  let side = sidePools.get(name);
+  if (!side) {
+    const connectionString = process.env.DB_MAP_URL;
+    if (!connectionString) throw new Error("DB_MAP_URL environment variable not set");
+    side = new Pool({ connectionString, max, idleTimeoutMillis: 30_000, keepAlive: true });
+    side.on("error", (err) => console.error(`Postgres ${name} pool idle client error:`, err));
+    sidePools.set(name, side);
+  }
+  return side;
+}
+
 export async function closeDb() {
   if (!pool) return;
   const current = pool;
