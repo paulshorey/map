@@ -106,10 +106,12 @@ function withStackCounts(
   data: GeoJSON.FeatureCollection | undefined,
 ): GeoJSON.FeatureCollection | undefined {
   if (!data) return data;
-  const point = (f: GeoJSON.Feature) =>
-    f.geometry.type === "Point"
-      ? (f.geometry.coordinates as [number, number])
-      : null;
+  // ±180 are the same meridian: fold -180 onto 180 so wrapped duplicates share cells.
+  const point = (f: GeoJSON.Feature): [number, number] | null => {
+    if (f.geometry.type !== "Point") return null;
+    const [lng, lat] = f.geometry.coordinates as [number, number];
+    return [lng <= -180 + STACK_EPSILON_DEG ? lng + 360 : lng, lat];
+  };
   // Grid cells of the tolerance size: neighbours within it are in the 3x3 surrounding cells.
   const cell = (v: number) => Math.floor(v / STACK_EPSILON_DEG);
   const grid = new globalThis.Map<string, Array<[number, number]>>();

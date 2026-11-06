@@ -365,13 +365,19 @@ export async function getColocatedPois(db: Pool, params: ColocatedPoisParams) {
   if (location.lng + e > 180) boxes.push(box(-180, location.lng + e - 360));
   if (location.lng - e < -180) boxes.push(box(location.lng - e + 360, 180));
   const collections = await Promise.all(boxes);
+  const features = collections.flatMap((c) => c.features);
+  const distinct = new Set(features.map((f) => f.properties.id));
+  // One POI can match both wrapped windows: count distinct POIs unless a window was truncated.
   const fc = {
-    features: collections.flatMap((c) => c.features),
-    total: collections.reduce((n, c) => n + c.total, 0),
+    features,
+    total:
+      collections.length === 1
+        ? collections[0]!.total
+        : collections.some((c) => new Set(c.features.map((f) => f.properties.id)).size < c.total)
+          ? collections.reduce((n, c) => n + c.total, 0)
+          : distinct.size,
   };
-  const ids = [...new Set(fc.features.map((f) => f.properties.id))].filter(
-    (id) => id !== anchor.id,
-  );
+  const ids = [...distinct].filter((id) => id !== anchor.id);
   const others = (await getPoisByIds(db, ids)).sort((a, b) =>
     String(a.name).localeCompare(String(b.name)),
   );
