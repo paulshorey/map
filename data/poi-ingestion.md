@@ -898,8 +898,8 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
   one full-file import runs at a time on any host, even if a queue worker dies; bounded
   diagnostics are not blocked. A plain import also holds the queue lock in shared mode while
   the queue worker holds it exclusively, so a plain import refuses while a queue runs, and a
-  queue started during a plain import waits for it (reported as "waiting for a plain import
-  to finish", up to an hour, then `needs_attention`). If an import's lock connection drops,
+  queue started during a plain import waits until it finishes (reported as "waiting for a
+  plain import to finish"); a plain full import is refused while a queue is active or waiting. If an import's lock connection drops,
   the import exits at once (resume it later) rather than run unfenced. A confirmed `stop --now`
   is recorded as an operator stop;
 - an unfinished earlier run of a file is adopted automatically only if it stopped at the daily
