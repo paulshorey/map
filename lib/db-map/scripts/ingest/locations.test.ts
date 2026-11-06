@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { recordLocations, locationRole } from "./record-locations.js";
-import { groupCanonicalLocations, type MemberLocation } from "./canonical-locations.js";
+import { canonicalLocationId, groupCanonicalLocations, type MemberLocation } from "./canonical-locations.js";
 
 test("a record keeps every location it knows: source, inferred and rejected", () => {
   const locations = recordLocations({
@@ -75,4 +75,12 @@ test("a canonical maps the union of its members' locations, de-duplicated by poi
   assert.equal(grouped[0]!.specificity, "precise");
   assert.equal(grouped.at(-1)!.specificity, "general");
   assert.deepEqual(grouped.map((g) => g.ordinal), [0, 1, 2]);
+});
+
+test("canonical location IDs are stable per build and point", () => {
+  const id = canonicalLocationId("00000000-0000-4000-8000-000000000001", 45.4375, 12.3358);
+  assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  assert.equal(id, canonicalLocationId("00000000-0000-4000-8000-000000000001", 45.43750000001, 12.3358));
+  assert.notEqual(id, canonicalLocationId("00000000-0000-4000-8000-000000000002", 45.4375, 12.3358));
+  assert.notEqual(id, canonicalLocationId("00000000-0000-4000-8000-000000000001", 45.4376, 12.3358));
 });

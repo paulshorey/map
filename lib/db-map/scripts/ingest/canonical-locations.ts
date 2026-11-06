@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 /**
  * All known locations of a canonical POI: the accepted locations of every active member,
  * de-duplicated by point. Written per build to `canonical_poi_locations`; the map renders one
@@ -86,6 +87,15 @@ export function groupCanonicalLocations(
   return rows;
 }
 
+/**
+ * Stable per build and point, so an idempotent rebuild keeps every `location_id` (and the map's
+ * marker IDs derived from it).
+ */
+export function canonicalLocationId(buildId: string, lat: number, lng: number): string {
+  const h = createHash("sha256").update(`${buildId}:${key(lat, lng)}`).digest("hex");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-5${h.slice(13, 16)}-${((parseInt(h[16]!, 16) & 3) | 8).toString(16)}${h.slice(17, 20)}-${h.slice(20, 32)}`;
+}
+
 /** Replace a build's locations from its members' active, accepted location rows. */
 export async function writeCanonicalLocations(
   client: PoolClient,
@@ -110,9 +120,9 @@ export async function writeCanonicalLocations(
   await client.query("DELETE FROM canonical_poi_locations WHERE build_id = $1", [buildId]);
   for (const g of grouped)
     await client.query(
-      `INSERT INTO canonical_poi_locations(canonical_poi_id, build_id, lat, lng, precision, specificity,
+      `INSERT INTO canonical_poi_locations(id, canonical_poi_id, build_id, lat, lng, precision, specificity,
          kinds, origins, roles, label, is_primary, research_location_ids, research_poi_ids, sources, ordinal)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+       VALUES ($16,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
       [
         canonicalId,
         buildId,
@@ -129,6 +139,7 @@ export async function writeCanonicalLocations(
         g.research_poi_ids,
         g.sources,
         g.ordinal,
+        canonicalLocationId(buildId, g.lat, g.lng),
       ],
     );
   return grouped;

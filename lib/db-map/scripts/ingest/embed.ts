@@ -109,6 +109,8 @@ export async function writeEmbedding(
     text,
     model: ingestConfig.embeddings.model,
     dim: ingestConfig.embeddings.dim,
+    // A version change creates a new artifact; older artifacts are never relabelled.
+    version: PIPELINE_VERSIONS.embedding,
   });
   const linked = (
     await db.query("SELECT canonical_poi_id FROM research_pois WHERE id=$1", [
@@ -130,7 +132,7 @@ export async function writeEmbedding(
        FROM research_pois
        WHERE id = $1 AND active_normalization_id IS NOT NULL
        ON CONFLICT (normalization_id, input_hash) DO UPDATE SET
-         embedding = EXCLUDED.embedding, model_version = EXCLUDED.model_version, activated_at = now()
+         embedding = EXCLUDED.embedding, activated_at = now()
        RETURNING id
      )
      UPDATE research_pois SET content_embedding = $4,
