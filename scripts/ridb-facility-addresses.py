@@ -59,7 +59,9 @@ US_COUNTRY = {"USA", "US", "UNITED STATES"}
 NOT_PHYSICAL = re.compile(
     r"\b(P\.?\s*O\.?\s*(?:BOX|DRAWER)(?:\s*\d+)?|BOX\s*\d+|DRAWER\s*\d+|OFFICES?|DISTRICTS?|HEADQUARTERS|"
     r"C/O|MAILING|CORPS\s+OF\s+ENGINEERS|NATIONAL\s+FORESTS?|"
-    r"(?:FIELD|RANGER|GUARD)\s+STATIONS?|WORK\s+CENTERS?|ADMINISTRATIVE|ADMIN\s+SITES?)\b",
+    r"(?:FIELD|RANGER|GUARD)\s+STATIONS?|WORK\s+CENTERS?|ADMINISTRATIVE|ADMIN\s+SITES?|"
+    # Explicit source labels: "(Not Physical Address)", "Managed By ...", "(For Information)".
+    r"NOT\s+(?:A\s+)?PHYSICAL|NON-?\s*PHYSICAL|MANAGED\s+BY|FOR\s+INFORMATION)\b",
     re.I,
 )
 _SUFFIX = (r"ROAD|RD|STREET|ST|AVENUE|AVE|DRIVE|DR|LANE|LN|HIGHWAY|HWY|ROUTE|RTE|"
@@ -170,6 +172,23 @@ def select_address(rows):
     return fields, ";".join(dict.fromkeys(reasons))
 
 
+def coordinate(value, limit):
+    try:
+        v = float(clean(value))
+    except ValueError:
+        return None
+    return v if -limit <= v <= limit else None
+
+
+def point(row):
+    """(lat, lng) when both components are valid and the pair is not (0,0); else None."""
+    lat = coordinate(row.get("FacilityLatitude"), 90)
+    lng = coordinate(row.get("FacilityLongitude"), 180)
+    if lat is None or lng is None or (lat == 0 and lng == 0):
+        return None
+    return lat, lng
+
+
 def main(argv):
     if len(argv) != 5:
         sys.exit(__doc__)
@@ -204,16 +223,13 @@ def main(argv):
                 if c in current and c != "Activities":
                     row[c] = current[c]
             # The export rounds to 6 decimals: keep the more precise captured point unless the
-            # export moved it, and never replace a captured point with a blank or (0,0) one.
-            def num(r, c):
-                try:
-                    return float(clean(r.get(c)) or 0)
-                except ValueError:
-                    return 0.0
-            moved = max(abs(num(old, c) - num(current, c))
-                        for c in ("FacilityLatitude", "FacilityLongitude")) > 1e-6
-            blank = num(current, "FacilityLatitude") == 0 and num(current, "FacilityLongitude") == 0
-            if blank or not moved:
+            # export moved it. Use the export point only when both of its components are
+            # present and valid and it is not the (0,0) sentinel.
+            new_point = point(current)
+            old_point = point(old)
+            moved = new_point is not None and (old_point is None or max(
+                abs(a - b) for a, b in zip(old_point, new_point)) > 1e-6)
+            if not moved:
                 row["FacilityLatitude"] = old["FacilityLatitude"]
                 row["FacilityLongitude"] = old["FacilityLongitude"]
             else:
@@ -223,7 +239,7 @@ def main(argv):
         rows = sorted(addresses.get(fid, []), key=lambda r: r.get("FacilityAddressID", ""))
         fields, selection = select_address(rows)
         row.update(fields)
-        sentinel = all(float(row[c] or 0) == 0 for c in ("FacilityLatitude", "FacilityLongitude"))
+        sentinel = point(row) is None
         if sentinel and not row["country_code"]:
             # RIDB lists only US federal recreation sites; without a point or usable locality
             # the country is the one location fact left, so the POI can still be mapped.
