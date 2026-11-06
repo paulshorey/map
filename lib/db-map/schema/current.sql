@@ -125,6 +125,7 @@ CREATE TABLE public.canonical_poi_locations (
     research_poi_ids uuid[] NOT NULL,
     sources text[] NOT NULL,
     ordinal integer NOT NULL,
+    queries text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT canonical_poi_locations_precision_check CHECK (("precision" = ANY (ARRAY['point'::text, 'city'::text, 'region'::text, 'country'::text]))),
     CONSTRAINT canonical_poi_locations_specificity_check CHECK ((specificity = ANY (ARRAY['general'::text, 'precise'::text])))
 );
@@ -1945,6 +1946,13 @@ CREATE INDEX research_ingest_run_items_observation_idx ON public.research_ingest
 --
 
 CREATE INDEX research_ingest_run_items_poi_idx ON public.research_ingest_run_items USING btree (research_poi_id);
+
+
+--
+-- Name: research_ingest_run_records_research_poi_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_run_records_research_poi_idx ON public.research_ingest_run_records USING btree (research_poi_id) WHERE (research_poi_id IS NOT NULL);
 
 
 --

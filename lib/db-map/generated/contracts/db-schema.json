@@ -247,6 +247,11 @@
       "column": "ordinal",
       "nullable": false,
       "type": "number"
+    },
+    {
+      "column": "queries",
+      "nullable": false,
+      "type": "Array<string>"
     }
   ],
   "canonical_poi_occurrences": [

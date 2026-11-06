@@ -4,16 +4,27 @@
  * Usage:
  *   pnpm --filter @lib/db-map ingest:review-flags            # published POIs per flag
  *   pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's flags
+ *     (refuses while ingestion is active: rebuilds refresh their own POIs meanwhile)
  */
 import { pathToFileURL } from "node:url";
 import { getDb } from "../../lib/db/postgres.js";
 import { refreshReviewFlags, reviewFlagCounts } from "../../sql/review-flags.js";
+import { inspectControl } from "./control.js";
 
 async function main() {
   const args = process.argv.slice(2);
   const db = getDb();
   try {
-    if (args.includes("--refresh")) console.log(`Refreshed ${await refreshReviewFlags(db, null)} POI(s).`);
+    if (args.includes("--refresh")) {
+      // A global rewrite must not race canonical rebuilds, which refresh their own POI's flags.
+      const control = await inspectControl(db);
+      if (!control.quiescent)
+        throw new Error(
+          "Ingestion is active (workers, source locks or scripts); refresh after it is quiescent " +
+            "(see ingest:control list --json). Rebuilds keep their own POIs' flags current meanwhile.",
+        );
+      console.log(`Refreshed ${await refreshReviewFlags(db, null)} POI(s).`);
+    }
     const counts = await reviewFlagCounts(db);
     if (args.includes("--json")) console.log(JSON.stringify(counts, null, 2));
     else console.table(counts);

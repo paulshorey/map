@@ -878,7 +878,8 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
 Canonical POIs carry `review_flags` (text array, GIN-indexed), a filterable list of content to
 troubleshoot later. Flags never block publication. They are derived, not part of a build:
 `rebuildCanonicalPoi` refreshes them for its POI, and `ingest:review-flags --refresh`
-recomputes all of them (run it after reclassifying a capture in the inventory).
+recomputes all of them (run it after reclassifying a capture in the inventory; it refuses
+while ingestion is active, when rebuilds keep their own POIs current).
 
 | Flag | Meaning |
 | --- | --- |
