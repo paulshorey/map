@@ -196,13 +196,16 @@ export async function getIngestionMonitor(
       await client.query(
         `SELECT r.id, s.slug AS source, f.logical_path AS file, r.category_slug, r.status, r.stop_reason,
            r.current_stage, r.started_at, r.heartbeat_at, r.verified_at, r.counters->'providerQuota' AS provider_quota,
+           (r.heartbeat_at IS NULL OR r.heartbeat_at <= now() - interval '2 minutes') AS heartbeat_stale,
            (SELECT count(*)::int FROM research_ingest_run_items WHERE run_id=r.id) AS records
          FROM research_ingest_runs r
          JOIN research_sources s ON s.id=r.source_id
          LEFT JOIN research_source_file_versions v ON v.id=r.source_file_version_id
          LEFT JOIN research_source_files f ON f.id=v.source_file_id
          WHERE r.started_at IS NOT NULL
-         ORDER BY (r.status='running') DESC, COALESCE(r.heartbeat_at, r.started_at) DESC LIMIT 1`,
+         -- A 'running' run with a stale heartbeat is a suspected interruption, not the current run.
+         ORDER BY (r.status='running' AND r.heartbeat_at > now() - interval '2 minutes') DESC,
+           COALESCE(r.heartbeat_at, r.started_at) DESC LIMIT 1`,
       )
     ).rows[0];
 
@@ -234,7 +237,8 @@ export async function getIngestionMonitor(
         source: run.source,
         file: run.file,
         category: run.category_slug,
-        status: run.status,
+        status:
+          run.status === "running" && run.heartbeat_stale ? "suspected_interrupted" : run.status,
         stop_reason: run.stop_reason,
         current_stage: run.current_stage,
         started_at: run.started_at?.toISOString?.() ?? run.started_at,
