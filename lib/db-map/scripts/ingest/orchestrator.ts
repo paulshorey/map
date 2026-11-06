@@ -1476,9 +1476,6 @@ export async function runOrchestration(
         return result;
       },
     });
-    // Capture provenance can change without a rebuild (reused observations): refresh the
-    // review flags of every canonical this run touched.
-    if (!opts.shadow && !opts.dryRun) await refreshRunReviewFlags(db, ctx.runId);
     if (schedule.budget || schedule.partial || schedule.paused) {
       finalStatus = schedule.budget
         ? "waiting_budget"
@@ -1597,6 +1594,12 @@ export async function runOrchestration(
     await ex.finish("failed", reason, error);
     throw error;
   } finally {
+    // Capture provenance can change without a rebuild (a reused observation repointed during
+    // extraction), so every exit refreshes the review flags of the canonicals this run touched.
+    if (!opts.shadow)
+      await refreshRunReviewFlags(db, ctx.runId).catch((error) =>
+        console.error("Review-flag refresh failed (run ingest:review-flags --refresh):", error),
+      );
     // Catch already finalized failures above; successful/paused returns finalize here.
     await ex.finish(finalStatus, reason);
     console.log(
