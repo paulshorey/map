@@ -14,7 +14,7 @@
  * Add a flag by adding one entry to REVIEW_FLAG_RULES (an SQL predicate over canonical `p`).
  */
 import type { Pool, PoolClient } from "pg";
-// Extensionless: this module is bundled by the map app (Next/webpack via index.ts).
+// Extensionless: this module is bundled into apps/map by Next.js, which cannot map ".js" to ".ts".
 import { CANONICAL_WRITER_LOCK } from "../lib/ingestion/locks";
 
 export const REVIEW_FLAG_RULES = {
