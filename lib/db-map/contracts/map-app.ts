@@ -60,6 +60,7 @@ export interface PoiMapLocationRecord {
   roles: Array<string>;
   label: string | null;
   query: string | null;
+  queries: Array<string>;
   is_primary: boolean;
   sources: Array<string>;
 }

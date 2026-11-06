@@ -346,21 +346,38 @@ export async function getColocatedPois(db: Pool, params: ColocatedPoisParams) {
     return { location: null, pois: [anchor], total: 1, truncated: false };
   const limit = Math.min(Math.max(params.limit ?? 200, 1), 500);
   const e = COLOCATED_EPSILON_DEG;
-  const fc = (await listPoisGeoJson(db, {
-    west: location.lng - e,
-    south: location.lat - e,
-    east: location.lng + e,
-    north: location.lat + e,
-    category: null,
-    limit,
-    isWorldView: false,
-  })) as {
+  type Collection = {
     features: Array<{ properties: { id: string; name: string } }>;
     total: number;
   };
-  const ids = [...new Set(fc.features.map((f) => f.properties.id))].filter(
-    (id) => id !== anchor.id,
-  );
+  const box = (west: number, east: number) =>
+    listPoisGeoJson(db, {
+      west,
+      south: location.lat - e,
+      east,
+      north: location.lat + e,
+      category: null,
+      limit,
+      isWorldView: false,
+    }) as Promise<Collection>;
+  // Near the antimeridian the window wraps: ±180 are the same meridian.
+  const boxes = [box(Math.max(-180, location.lng - e), Math.min(180, location.lng + e))];
+  if (location.lng + e > 180) boxes.push(box(-180, location.lng + e - 360));
+  if (location.lng - e < -180) boxes.push(box(location.lng - e + 360, 180));
+  const collections = await Promise.all(boxes);
+  const features = collections.flatMap((c) => c.features);
+  const distinct = new Set(features.map((f) => f.properties.id));
+  // One POI can match both wrapped windows: count distinct POIs unless a window was truncated.
+  const fc = {
+    features,
+    total:
+      collections.length === 1
+        ? collections[0]!.total
+        : collections.some((c) => new Set(c.features.map((f) => f.properties.id)).size < c.total)
+          ? collections.reduce((n, c) => n + c.total, 0)
+          : distinct.size,
+  };
+  const ids = [...distinct].filter((id) => id !== anchor.id);
   const others = (await getPoisByIds(db, ids)).sort((a, b) =>
     String(a.name).localeCompare(String(b.name)),
   );

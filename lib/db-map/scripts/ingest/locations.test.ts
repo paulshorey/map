@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { recordLocations, locationRole } from "./record-locations.js";
-import { canonicalLocationId, groupCanonicalLocations, type MemberLocation } from "./canonical-locations.js";
+import { canonicalLocationId, groupCanonicalLocations, sourceOnlyLocation, type MemberLocation } from "./canonical-locations.js";
 
 test("a record keeps every location it knows: source, inferred and rejected", () => {
   const locations = recordLocations({
@@ -83,4 +83,16 @@ test("canonical location IDs are stable per build and point", () => {
   assert.equal(id, canonicalLocationId("00000000-0000-4000-8000-000000000001", 45.43750000001, 12.3358));
   assert.notEqual(id, canonicalLocationId("00000000-0000-4000-8000-000000000002", 45.4375, 12.3358));
   assert.notEqual(id, canonicalLocationId("00000000-0000-4000-8000-000000000001", 45.4376, 12.3358));
+});
+
+test("a member linked before geocoding maps its supplied point; geocoded points never synthesize", () => {
+  const point = sourceOnlyLocation({ id: "m1", source_slug: "s", lat: 45.4, lng: 12.3, coordinate_precision: "point", coordinate_source: "source" });
+  assert.equal(point?.kind, "source");
+  assert.equal(point?.origin, "source_coordinates");
+  assert.equal(point?.role, "venue");
+  assert.equal(sourceOnlyLocation({ id: "m2", lat: 45.4, lng: 12.3, coordinate_source: "geocode" }), null);
+  assert.equal(sourceOnlyLocation({ id: "m3", lat: 0, lng: 0, coordinate_source: "source" }), null);
+  const grouped = groupCanonicalLocations([point!], { lat: 45.4, lng: 12.3 });
+  assert.deepEqual(grouped[0]!.research_location_ids, [], "no research location row exists for it");
+  assert.deepEqual(grouped[0]!.research_poi_ids, ["m1"]);
 });

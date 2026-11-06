@@ -125,6 +125,7 @@ CREATE TABLE public.canonical_poi_locations (
     research_poi_ids uuid[] NOT NULL,
     sources text[] NOT NULL,
     ordinal integer NOT NULL,
+    queries text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT canonical_poi_locations_precision_check CHECK (("precision" = ANY (ARRAY['point'::text, 'city'::text, 'region'::text, 'country'::text]))),
     CONSTRAINT canonical_poi_locations_specificity_check CHECK ((specificity = ANY (ARRAY['general'::text, 'precise'::text])))
 );

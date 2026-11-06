@@ -62,6 +62,7 @@ export interface CanonicalPoiLocationsRow {
   "research_poi_ids": Array<string>;
   "sources": Array<string>;
   "ordinal": number;
+  "queries": Array<string>;
 }
 
 export interface CanonicalPoiOccurrencesRow {
