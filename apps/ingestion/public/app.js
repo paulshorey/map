@@ -505,7 +505,11 @@ function renderMonitor(m) {
     ? `<div class="monitor-card wide">
         <h3>${esc(run.source)} · ${badge(run.status)}</h3>
         <p class="muted-note">${esc(run.file ?? "")} · run <code>${esc(run.run_id)}</code>${
-          run.stop_reason ? ` · stopped: ${esc(label(run.stop_reason))}` : ""
+          run.stop_reason
+            ? run.status === "succeeded"
+              ? ` · result: ${esc(label(run.stop_reason))}`
+              : ` · stopped: ${esc(label(run.stop_reason))}`
+            : ""
         } · heartbeat ${date(run.heartbeat_at)}</p>
         <table class="monitor-stages"><tbody>${run.stages
           .map(

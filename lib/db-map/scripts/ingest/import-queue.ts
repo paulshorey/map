@@ -1020,6 +1020,11 @@ async function main() {
         throw new Error(`${e.file} is classified as ${state.coverage.slice(9)} in the inventory, not ${e.category}`);
       if (state.coverage === "changed_since_scan")
         throw new Error(`${e.file} changed since the last inventory scan: run ingest:inventory --refresh first`);
+      if (state.needsDiagnosis)
+        throw new Error(
+          `${e.file} has invalid output, normalization failures or a running/interrupted execution: ` +
+            "inspect it (dashboard file drawer or ingest:status) first",
+        );
       // Known blockers fail now, not after earlier files have spent provider quota.
       if (state.action === "review" || state.action === "blocked")
         throw new Error(
