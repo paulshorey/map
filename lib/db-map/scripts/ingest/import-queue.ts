@@ -118,16 +118,30 @@ export async function listQueues(): Promise<QueueState[]> {
     .filter((q): q is QueueState => !!q)
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
-const stopRequested = (id: string) =>
-  access(queuePath(id, "stop.request")).then(
-    () => true,
-    () => false,
-  );
-const stopNowRequested = (id: string) =>
-  readFile(queuePath(id, "stop.request"), "utf8").then(
-    (text) => text.startsWith("now"),
-    () => false,
-  );
+/**
+ * Stop requests are separate, uniquely named files (`stop-<epoch ms>-<rand>.request`), never
+ * overwritten: a resume can delete exactly the requests older than itself and no newer one.
+ */
+async function stopRequests(id: string): Promise<Array<{ file: string; at: number }>> {
+  const names = await readdir(join(QUEUES, id)).catch(() => [] as string[]);
+  return names.flatMap((name) => {
+    const m = name.match(/^stop-(\d+)-[0-9a-f]+\.request$/);
+    return m ? [{ file: name, at: Number(m[1]) }] : [];
+  });
+}
+export async function writeStopRequest(id: string, kind: "now" | "next", note = "") {
+  const at = Date.now();
+  const name = `stop-${at}-${randomUUID().slice(0, 8)}.request`;
+  await writeFile(queuePath(id, name), `${kind} ${new Date(at).toISOString()} ${note}`.trim(), {
+    mode: 0o600,
+  });
+}
+const stopRequested = async (id: string) => (await stopRequests(id)).length > 0;
+const stopNowRequested = async (id: string) => {
+  for (const r of await stopRequests(id))
+    if ((await readFile(queuePath(id, r.file), "utf8").catch(() => "")).startsWith("now")) return true;
+  return false;
+};
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /**
  * Set when the worker must halt on its own (a lock connection dropped, or it was signalled);
@@ -145,9 +159,7 @@ async function acquireQueueLock(id: string): Promise<Client | null> {
   // Losing the lock connection releases ownership: stop this queue and its current import.
   const client = await dedicatedClient(`import-queue:${id}`, () => {
     lockLost = true;
-    void writeFile(queuePath(id, "stop.request"), `now lock connection lost ${new Date().toISOString()}`, {
-      mode: 0o600,
-    }).catch(() => undefined);
+    void writeStopRequest(id, "now", "lock connection lost").catch(() => undefined);
   });
   try {
     const { rows } = await client.query("SELECT pg_try_advisory_lock($1, $2) AS ok", [
@@ -471,7 +483,7 @@ export async function runQueue(id: string) {
     try {
       const waiting = await loadQueue(id);
       waiting.message = "Waiting for a running plain import to finish";
-      await saveQueue(waiting).catch(() => undefined);
+      await saveQueue(waiting); // a failed heartbeat write ends the wait and releases presence
     } catch (error) {
       // Never keep presence (or a lock) if the state cannot be read.
       await endPresence();
@@ -506,8 +518,7 @@ export async function runQueue(id: string) {
     try {
       if (lockLost) {
         q.status = "needs_attention";
-        q.message =
-          "The queue's presence connection to the database was lost while waiting to start; check the database connection, then resume";
+        q.message = `Stopped while waiting to start: ${haltReason}; check it, then resume`;
       } else if (await stopRequested(id)) {
         q.status = "stopped";
         q.message = "Stopped by operator request while waiting to start";
@@ -532,6 +543,17 @@ export async function runQueue(id: string) {
       const entry = q.entries[i]!;
       if (["succeeded", "skipped_complete"].includes(entry.status)) continue;
       q.current = i;
+      // An interrupted quota wait (entry reset to pending) still waits for its reset.
+      if (entry.run_id && entry.resets_at && Date.parse(entry.resets_at) > Date.now()) {
+        entry.status = "waiting_quota";
+        q.status = "waiting";
+        q.message = `${entry.file}: waiting for the geocoding quota reset (${entry.resets_at})`;
+        await saveQueue(q);
+        if (await waitUntil(id, Date.parse(entry.resets_at))) {
+          q.status = "running";
+          q.message = null;
+        }
+      }
       for (;;) {
         if (lockLost || (await stopRequested(id))) {
           entry.status = "stopped";
@@ -801,6 +823,8 @@ async function awaitHandshake(id: string): Promise<string> {
         return "waiting for a plain import to finish";
     }
     const q = await loadQueue(id).catch(() => null);
+    // A queue whose files were all already complete can finish before the first poll.
+    if (q?.status === "finished") return "running";
     if (q && !["queued", "running", "waiting"].includes(q.status)) return `${q.status}: ${q.message ?? ""}`;
     await sleep(1000);
   }
@@ -1003,9 +1027,9 @@ async function main() {
       const other = all.find((x) => x.id !== q.id && ["queued", "running", "waiting"].includes(x.status));
       if (other) throw new Error(`Queue ${other.id} is already ${other.status}; stop it first`);
       if (await queueLockHeld()) throw new Error("An import queue worker is running; stop it first");
-      // Only an older stop request is cleared: one written during this resume is kept.
-      const request = await stat(queuePath(q.id, "stop.request")).catch(() => null);
-      if (request && request.mtimeMs < resumedAt) await rm(queuePath(q.id, "stop.request"), { force: true });
+      // Only requests older than this resume are cleared; one written meanwhile is kept.
+      for (const r of await stopRequests(q.id))
+        if (r.at < resumedAt) await rm(queuePath(q.id, r.file), { force: true });
       for (const e of q.entries)
         if (["stopped", "needs_attention"].includes(e.status)) {
           e.status = "pending";
@@ -1052,9 +1076,7 @@ async function main() {
     {
     const q = await loadQueue(flag("--queue") ?? (await latestId()));
     const now = rest.includes("--now");
-    await writeFile(queuePath(q.id, "stop.request"), `${now ? "now" : "next"} ${new Date().toISOString()}`, {
-      mode: 0o600,
-    });
+    await writeStopRequest(q.id, now ? "now" : "next");
     const current = q.current !== null ? q.entries[q.current] : null;
     const job = current?.status === "running" ? current.jobs.at(-1) : undefined;
     if (now && job) {
