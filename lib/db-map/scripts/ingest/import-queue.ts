@@ -1061,7 +1061,8 @@ async function main() {
           e.reason = null;
           e.outcome = null;
           e.finished_at = null;
-          e.resets_at = null;
+          // A quota deadline still in the future is kept, so the resumed entry waits for it.
+          if (!e.resets_at || Date.parse(e.resets_at) <= Date.now()) e.resets_at = null;
         }
       q.status = "queued";
       q.message = null;
