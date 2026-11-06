@@ -40,3 +40,5 @@ export async function importQueueActive(db: {
 }
 /** Held exclusively for its whole run by every full-scope import (plain or queued), any host. */
 export const FULL_IMPORT_LOCK = 5;
+/** Serializes `ingest:import-queue start`/`resume` until the new worker holds the queue lock. */
+export const IMPORT_QUEUE_START_LOCK = 6;

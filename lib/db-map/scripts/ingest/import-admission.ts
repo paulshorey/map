@@ -35,15 +35,49 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
   if (fromQueue && !full) return async () => {};
   // Held for the whole run on its own connection, outside the operational pool.
   void db;
-  // Losing this connection releases the fence: stop the import gracefully (its SIGTERM handler
-  // pauses the run) rather than continue unfenced.
-  const fence: Client = await dedicatedClient("ingest-admission", () =>
-    process.kill(process.pid, "SIGTERM"),
-  );
-  const held: string[] = [];
+  const locks = (): Array<[string, number, string]> => [
+    ...(!fromQueue && full
+      ? ([["pg_try_advisory_lock_shared", IMPORT_QUEUE_LOCK, "pg_advisory_unlock_shared"]] as Array<
+          [string, number, string]
+        >)
+      : []),
+    ...(full
+      ? ([["pg_try_advisory_lock", FULL_IMPORT_LOCK, "pg_advisory_unlock"]] as Array<[string, number, string]>)
+      : []),
+  ];
+  let fence: Client;
+  let ended = false;
+  // Losing the connection releases the fence at once. Retake it on a new connection; if that
+  // fails, exit immediately (work is checkpointed and crash-safe) rather than wind down unfenced.
+  const onLost = () => {
+    void (async () => {
+      for (let attempt = 0; attempt < 3 && !ended; attempt++) {
+        try {
+          const next = await dedicatedClient("ingest-admission", onLost);
+          let ok = true;
+          for (const [take, key] of locks())
+            ok &&= !!(await next.query(`SELECT ${take}($1, $2) AS ok`, [INGEST_LOCK_NAMESPACE, key])).rows[0]?.ok;
+          if (ok) {
+            fence = next;
+            console.error("Admission fence connection lost and re-established");
+            return;
+          }
+          await next.end().catch(() => undefined);
+          break;
+        } catch {
+          await new Promise((r) => setTimeout(r, 1000));
+        }
+      }
+      if (ended) return;
+      console.error("Admission fence lost and not re-established: stopping this import now");
+      process.exit(143);
+    })();
+  };
+  fence = await dedicatedClient("ingest-admission", onLost);
   const release = async () => {
-    for (const sql of held.reverse())
-      await fence.query(sql, [INGEST_LOCK_NAMESPACE]).catch(() => undefined);
+    ended = true;
+    for (const [, key, unlock] of locks().reverse())
+      await fence.query(`SELECT ${unlock}($1, $2)`, [INGEST_LOCK_NAMESPACE, key]).catch(() => undefined);
     await fence.end().catch(() => undefined);
   };
   try {
@@ -57,7 +91,6 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
         throw new Error(
           "An import queue is running (ingest:import-queue status); stop it or add this file to a queue",
         );
-      held.push(`SELECT pg_advisory_unlock_shared($1, ${IMPORT_QUEUE_LOCK})`);
     }
     if (full) {
       const { rows } = await fence.query("SELECT pg_try_advisory_lock($1, $2) AS ok", [
@@ -68,9 +101,8 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
         throw new Error(
           "Another full-file import is running (one at a time); wait for it, or use --limit for a bounded diagnostic",
         );
-      held.push(`SELECT pg_advisory_unlock($1, ${FULL_IMPORT_LOCK})`);
     }
-    return release;
+  return release;
   } catch (error) {
     await release();
     throw error;
