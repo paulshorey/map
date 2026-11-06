@@ -887,6 +887,11 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
   blindly, so diagnose it (see the troubleshooting sections) and start a new queue;
 - before each launch the pipeline must be quiescent and out of maintenance (it waits up to an
   hour, then stops).
+- a file counts as complete only when its inventory category matches the entry and the file on
+  disk still has the scanned SHA-256; an unfinished full-file run of that file is resumed with
+  its UUID (cohort and checkpoints kept), never restarted;
+- one queue worker runs at a time on any host (a database advisory lock it holds for life);
+  a queue whose worker died is marked `stopped` as interrupted, and `resume` continues it.
 
 ```bash
 cd ~/git/map
@@ -894,6 +899,7 @@ pnpm --silent --filter @lib/db-map ingest:import-queue start --plan data/import-
 pnpm --silent --filter @lib/db-map ingest:import-queue status          # latest queue
 pnpm --silent --filter @lib/db-map ingest:import-queue stop            # before the next launch
 pnpm --silent --filter @lib/db-map ingest:import-queue stop --now      # also stop the current import gracefully
+pnpm --silent --filter @lib/db-map ingest:import-queue resume          # continue a stopped/interrupted queue
 # or ad hoc: ingest:import-queue start -- data/poi/x.json=art_fair data/poi/y.json=hostel
 ```
 
