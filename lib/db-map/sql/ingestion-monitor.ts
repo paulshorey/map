@@ -175,6 +175,7 @@ export async function getIngestionMonitor(
   quality?: IngestionMonitor["quality"],
 ): Promise<IngestionMonitor> {
   const client = await db.connect();
+  let progress: RunProgress | null = null;
   try {
     await client.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
     await client.query("SET LOCAL statement_timeout='10s'");
@@ -191,7 +192,7 @@ export async function getIngestionMonitor(
          ORDER BY (r.status='running') DESC, COALESCE(r.heartbeat_at, r.started_at) DESC LIMIT 1`,
       )
     ).rows[0];
-    let progress: RunProgress | null = null;
+
     if (run) {
       const { rows } = await client.query(
         `SELECT stage, state, count(*)::int AS records,
@@ -237,23 +238,24 @@ export async function getIngestionMonitor(
       };
     }
     await client.query("COMMIT");
-    let quota: ProviderUsageToday | null = null;
-    try {
-      quota = await providerUsageToday(db);
-    } catch {
-      quota = null;
-    }
-    return {
-      observed_at: new Date().toISOString(),
-      window_minutes: WINDOW_MINUTES,
-      run: progress,
-      quota,
-      quality: quality ?? (await getQualityMonitor(db)),
-    };
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     throw error;
   } finally {
+    // Release before any pool-level query, so a small or busy pool cannot deadlock.
     client.release();
   }
+  let quota: ProviderUsageToday | null = null;
+  try {
+    quota = await providerUsageToday(db);
+  } catch {
+    quota = null;
+  }
+  return {
+    observed_at: new Date().toISOString(),
+    window_minutes: WINDOW_MINUTES,
+    run: progress,
+    quota,
+    quality: quality ?? (await getQualityMonitor(db)),
+  };
 }
