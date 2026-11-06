@@ -59,8 +59,16 @@ evidence records while one marker is rendered. Physical roles are not assumed.
 `location=general` shows only POIs whose canonical build flagged
 `attributes.location_specificity = 'general'` (located just by country, region or city);
 `location=precise` shows every other POI, including legacy builds without the flag. The
-drawer notes a general location. The flag is set at canonical build time; existing POIs
-are not backfilled.
+drawer notes a general location. The flag is set at canonical build time (existing builds
+keep theirs until rebuilt).
+
+## Review filter
+
+`review=<flag>` (the "Review" dropdown, `usePoiReviewFilter`) shows only POIs carrying that
+`canonical_pois.review_flags` entry: `general_location`, `source_needs_review`, and flags added
+later in `lib/db-map/sql/review-flags.ts` (add a label in `REVIEW_FLAG_LABELS`). Flags are
+derived: each rebuild refreshes its POI, migration `202611060710` backfilled existing POIs, and
+`ingest:review-flags --refresh` recomputes all. The drawer lists a POI's flags.
 
 ## Quirks
 

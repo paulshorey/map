@@ -5,8 +5,8 @@
  *
  * - `general_location`: only a country/region/city-level location is known
  *   (`attributes.location_specificity = 'general'`).
- * - `source_needs_review`: a member came from a capture whose inventory disposition is still
- *   `needs_review` (its category or import decision is unconfirmed).
+ * - `source_needs_review`: a member's active observation came from a capture whose inventory
+ *   disposition is still `needs_review` (its category or import decision is unconfirmed).
  *
  * Add a flag by adding one entry to REVIEW_FLAG_RULES (an SQL predicate over canonical `p`).
  */
@@ -14,9 +14,12 @@ import type { Pool, PoolClient } from "pg";
 
 export const REVIEW_FLAG_RULES = {
   general_location: `p.attributes->>'location_specificity' = 'general'`,
+  // The capture of each member's active observation (not older captures of the same record).
   source_needs_review: `EXISTS (
     SELECT 1 FROM research_canonical_memberships m
-    JOIN research_ingest_run_records rr ON rr.research_poi_id = m.research_poi_id
+    JOIN research_pois rp ON rp.id = m.research_poi_id
+    JOIN research_ingest_run_records rr ON rr.research_poi_id = rp.id
+      AND rr.observation_id = rp.active_observation_id
     JOIN research_source_file_versions v ON v.id = rr.source_file_version_id
     JOIN research_source_files f ON f.id = v.source_file_id
     JOIN research_ingest_inventory i ON i.logical_path = f.logical_path
