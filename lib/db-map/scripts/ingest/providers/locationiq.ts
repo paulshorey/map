@@ -38,8 +38,8 @@ async function statusError(
   }
   if (status === 429 && /rate limited day/i.test(body))
     return markProviderRateLimitedDay(PROVIDER);
-  // LocationIQ does not charge unsuccessful requests.
-  if (status === 429 || status >= 500) await release();
+  // LocationIQ does not charge unsuccessful requests (400 invalid query, 429, 5xx, ...).
+  await release();
   return new GeocodeError(
     `${label} status ${status}`,
     status === 429 || status >= 500,

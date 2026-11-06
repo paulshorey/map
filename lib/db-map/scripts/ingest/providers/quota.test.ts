@@ -120,3 +120,13 @@ test("without a ledger the in-process 'Rate Limited Day' flag still holds", asyn
   await assert.rejects(reserveProviderRequest("locationiq"), ProviderQuotaExhausted);
   assert.equal(calls, 1);
 });
+
+test("an invalid-query 400 is not charged and releases its reservation", async () => {
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  const db = ledger(3);
+  useProviderQuotaLedger(db as never);
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ error: "Invalid Request" }), { status: 400 });
+  await assert.rejects(geocode("x".repeat(10), "US"), (error: any) => error.status === 400);
+  assert.equal(db.state.requests, 3);
+});
