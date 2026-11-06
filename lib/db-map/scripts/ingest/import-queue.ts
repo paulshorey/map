@@ -438,7 +438,7 @@ export async function runQueue(id: string) {
 }
 
 /** Active-status queues whose worker is gone (no host holds the lock) become `stopped`. */
-async function reconcileStale(): Promise<QueueState[]> {
+export async function reconcileStale(): Promise<QueueState[]> {
   const queues = await listQueues();
   // A just-launched worker takes the lock within seconds: give `queued` a 2-minute grace.
   const starting = (q: QueueState) =>

@@ -18,7 +18,7 @@ import { refreshInventory } from "@lib/db-map/ingestion/inventory-scan";
 import { inspectRun, parseStatusArgs } from "@lib/db-map/ingest/status";
 import { controlState } from "@lib/db-map/sql/ingestion-control";
 import { getIngestionMonitor, getQualityMonitor } from "@lib/db-map/sql/ingestion-monitor";
-import { currentQueue } from "@lib/db-map/ingest/import-queue";
+import { currentQueue, reconcileStale } from "@lib/db-map/ingest/import-queue";
 
 const QUALITY_TTL_MS = 120_000;
 let qualityCache: {
@@ -163,7 +163,11 @@ export function createDashboard(port: number) {
           qualityCache = { at: Date.now(), value: await getQualityMonitor(db) };
         const [monitor, queue] = await Promise.all([
           getIngestionMonitor(db, qualityCache.value),
-          currentQueue().catch(() => null),
+          // Reconcile first so a queue whose worker died is not shown as running.
+          reconcileStale()
+            .catch(() => undefined)
+            .then(() => currentQueue())
+            .catch(() => null),
         ]);
         json(200, { ...monitor, queue });
         return;

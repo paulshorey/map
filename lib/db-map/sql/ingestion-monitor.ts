@@ -76,6 +76,8 @@ export function stageProgress(
   stage: string,
   counts: Array<{ state: string; records: number }>,
   finishedInWindow: number,
+  /** Minutes since the stage's first task started, if under the window. */
+  elapsedMinutes: number = WINDOW_MINUTES,
 ): StageProgress {
   const sum = (states: string[]) =>
     counts.filter((c) => states.includes(c.state)).reduce((n, c) => n + c.records, 0);
@@ -85,7 +87,8 @@ export function stageProgress(
   const pending = sum(["pending", "paused", "retryable", "blocked"]);
   const waiting = sum(["waiting_budget"]);
   const quarantined = sum(["quarantined"]);
-  const perMinute = finishedInWindow / WINDOW_MINUTES;
+  // A stage younger than the window is measured over its own elapsed time (at least a minute).
+  const perMinute = finishedInWindow / Math.max(1, Math.min(WINDOW_MINUTES, elapsedMinutes));
   const remaining = total - done - quarantined;
   return {
     stage,
@@ -192,7 +195,8 @@ export async function getIngestionMonitor(
     if (run) {
       const { rows } = await client.query(
         `SELECT stage, state, count(*)::int AS records,
-           count(*) FILTER (WHERE state = ANY($2::text[]) AND finished_at > now() - make_interval(mins => $3))::int AS recent
+           count(*) FILTER (WHERE state = ANY($2::text[]) AND finished_at > now() - make_interval(mins => $3))::int AS recent,
+           extract(epoch FROM now() - min(started_at))::float / 60 AS elapsed_minutes
          FROM research_ingest_tasks WHERE run_id=$1 GROUP BY stage, state`,
         [run.id, DONE, WINDOW_MINUTES],
       );
@@ -200,10 +204,14 @@ export async function getIngestionMonitor(
         .filter((stage) => rows.some((r) => r.stage === stage))
         .map((stage) => {
           const mine = rows.filter((r) => r.stage === stage);
+          const started = mine
+            .map((r) => r.elapsed_minutes)
+            .filter((m): m is number => typeof m === "number");
           return stageProgress(
             stage,
             mine,
             mine.reduce((n, r) => n + r.recent, 0),
+            started.length ? Math.max(...started) : WINDOW_MINUTES,
           );
         });
       const etas = stages.map((s) => s.eta_minutes);
