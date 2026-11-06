@@ -214,24 +214,44 @@ async function superviseWatch(q: QueueState, entry: QueueEntry, args: string[], 
       await writeFile(jobPath(job, "stop.request"), new Date().toISOString(), { mode: 0o600 });
     })().catch(() => undefined);
   }, 5000);
-  const lines = createInterface({ input: child.stdout! });
-  for await (const line of lines) {
-    await out.write(`${line}\n`);
-    try {
-      const value = JSON.parse(line);
-      if (value?.event === "ingestion.started" && typeof value.job_id === "string") {
-        entry.jobs.push(value.job_id);
-        await saveQueue(q);
-      } else if (value && typeof value === "object" && "outcome" in value) result = value;
-    } catch {
-      // Non-JSON output is kept in the log only.
-    }
-  }
-  const code = await new Promise<number | null>((resolve) =>
+  const exited = new Promise<number | null>((resolve) =>
     child.exitCode !== null ? resolve(child.exitCode) : child.once("exit", resolve),
   );
-  clearInterval(forward);
-  await out.close();
+  let completed = false;
+  let code: number | null = null;
+  try {
+    const lines = createInterface({ input: child.stdout! });
+    for await (const line of lines) {
+      await out.write(`${line}\n`).catch(() => undefined);
+      let value: Record<string, unknown> | null = null;
+      try {
+        value = JSON.parse(line);
+      } catch {
+        continue; // Non-JSON output is kept in the log only.
+      }
+      if (value?.event === "ingestion.started" && typeof value.job_id === "string") {
+        entry.jobs.push(value.job_id);
+        // A failed state write must not abandon the running import.
+        await saveQueue(q).catch((error) => console.error("Queue state write failed:", error));
+      } else if (value && typeof value === "object" && "outcome" in value) result = value;
+    }
+    completed = true; // stdout closed: the supervisor has finished
+  } finally {
+    // Whatever happened above, never leave the supervised import running unsupervised: ask it
+    // to stop gracefully (the supervisor handles SIGTERM) and wait for it before returning,
+    // so the queue lock is released only after the child has exited.
+    if (!completed && child.exitCode === null && child.signalCode === null) {
+      const job = entry.jobs.length > jobsBefore ? entry.jobs.at(-1) : undefined;
+      if (job)
+        await writeFile(jobPath(job, "stop.request"), new Date().toISOString(), { mode: 0o600 }).catch(
+          () => undefined,
+        );
+      child.kill("SIGTERM");
+    }
+    code = await exited;
+    clearInterval(forward);
+    await out.close().catch(() => undefined);
+  }
   return { code, result };
 }
 
@@ -352,8 +372,9 @@ export async function runQueue(id: string) {
           quickQuotaPauses = Date.now() - launched < 300_000 ? quickQuotaPauses + 1 : 0;
         }
         if (entry.outcome === "succeeded") entry.coverage = (await fileState(entry)).coverage;
-        // An operator `stop --now` pauses the import: record it as a stop, not a failure.
-        if (entry.outcome !== "succeeded" && (await stopRequested(id))) {
+        // A confirmed `stop --now` pauses the import (outcome `paused`): record it as a stop.
+        // A plain `stop` (after the current file) never masks a real failure.
+        if (entry.outcome === "paused" && (await stopNowRequested(id))) {
           entry.status = "stopped";
           entry.reason = `Stopped by operator request (run ${entry.run_id ?? "unknown"} can be resumed)`;
           q.status = "stopped";
