@@ -565,7 +565,7 @@ export async function runQueue(id: string) {
             );
         }
         // A saved run (e.g. kept after an interrupted worker) resumes only if it stopped safely.
-        if (entry.run_id) {
+        if (entry.run_id && entry.coverage !== "complete") {
           const check = await continuationSafe(entry.run_id);
           if (!check.safe)
             return stop(
@@ -753,7 +753,8 @@ export async function reconcileStale(): Promise<QueueState[]> {
   // import (it heartbeats every minute); the lock holder is the one running worker.
   // (Also covers a worker heartbeating while it shuts down after losing its lock.)
   const starting = (q: QueueState) => Date.now() - Date.parse(q.updated_at) < 120_000;
-  const holder = await queueLockHolder();
+  // A worker that lost presence but still owns the exclusive queue lock is alive too.
+  const holder = (await queueLockHolder()) ?? (await importQueueLockHolder(getDb()));
   const active = queues.filter(
     (q) => ["queued", "running", "waiting"].includes(q.status) && !starting(q) && q.id !== holder,
   );
@@ -1018,6 +1019,7 @@ async function main() {
   }
   if (command === "resume") {
     let handshake = "";
+    const resumedAt = Date.now();
     const q = await withStartLock(async () => {
       const all = await reconcileStale();
       const q = await loadQueue(flag("--queue") ?? (await latestId()));
@@ -1026,7 +1028,9 @@ async function main() {
       const other = all.find((x) => x.id !== q.id && ["queued", "running", "waiting"].includes(x.status));
       if (other) throw new Error(`Queue ${other.id} is already ${other.status}; stop it first`);
       if (await queueLockHeld()) throw new Error("An import queue worker is running; stop it first");
-      await rm(queuePath(q.id, "stop.request"), { force: true });
+      // Only an older stop request is cleared: one written during this resume is kept.
+      const request = await stat(queuePath(q.id, "stop.request")).catch(() => null);
+      if (request && request.mtimeMs < resumedAt) await rm(queuePath(q.id, "stop.request"), { force: true });
       for (const e of q.entries)
         if (["stopped", "needs_attention"].includes(e.status)) {
           e.status = "pending";
@@ -1068,8 +1072,9 @@ async function main() {
     return;
   }
   if (command === "stop") {
-    // Serialized with start/resume, so a resume cannot discard a concurrent stop request.
-    await withStartLock(async () => {
+    // Written straight to the queue's files (an explicit --queue needs no database session);
+    // a concurrent resume keeps any stop request newer than its own start.
+    {
     const q = await loadQueue(flag("--queue") ?? (await latestId()));
     const now = rest.includes("--now");
     await writeFile(queuePath(q.id, "stop.request"), `${now ? "now" : "next"} ${new Date().toISOString()}`, {
@@ -1086,7 +1091,7 @@ async function main() {
           ? `Stop requested for queue ${q.id}; its current import is stopped gracefully as soon as it starts.`
           : `Stop requested for queue ${q.id}; it stops before the next launch.`,
       );
-    });
+    }
     await closeDb();
     return;
   }
