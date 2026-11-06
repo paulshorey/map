@@ -38,6 +38,7 @@ import {
   IMPORT_QUEUE_ENV,
   IMPORT_QUEUE_LOCK,
   INGEST_LOCK_NAMESPACE,
+  importQueueActive,
 } from "../../lib/ingestion/locks.js";
 
 const PACKAGE = fileURLToPath(new URL("../../", import.meta.url));
@@ -126,14 +127,8 @@ async function acquireQueueLock(): Promise<PoolClient | null> {
   return null;
 }
 
-/** Whether any host's queue worker holds the lock right now. */
-async function queueLockHeld(): Promise<boolean> {
-  const lock = await acquireQueueLock();
-  if (!lock) return true;
-  await lock.query("SELECT pg_advisory_unlock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_LOCK]);
-  lock.release();
-  return false;
-}
+/** Whether any host's queue worker holds the lock right now (plain imports hold it shared). */
+const queueLockHeld = () => importQueueActive(getDb());
 
 /** Wait until `until`, waking every 30 s to honour a stop request. Returns false if stopped. */
 async function waitUntil(id: string, until: number): Promise<boolean> {
@@ -209,9 +204,11 @@ async function superviseWatch(q: QueueState, entry: QueueEntry, args: string[], 
   let result: Record<string, unknown> | null = null;
   // `stop --now` may arrive before the job id is known: forward it once the id is.
   let forwarded = false;
+  const jobsBefore = entry.jobs.length;
   const forward = setInterval(() => {
     void (async () => {
-      const job = entry.jobs.at(-1);
+      // Only the job this launch created (earlier attempts' jobs are terminal).
+      const job = entry.jobs.length > jobsBefore ? entry.jobs.at(-1) : undefined;
       if (forwarded || !job || !(await stopNowRequested(q.id))) return;
       forwarded = true;
       await writeFile(jobPath(job, "stop.request"), new Date().toISOString(), { mode: 0o600 });
@@ -277,7 +274,8 @@ export async function runQueue(id: string) {
   const lock = await acquireQueueLock();
   if (!lock) {
     q.status = "needs_attention";
-    q.message = "Another import queue worker holds the queue lock (possibly on another host)";
+    q.message =
+      "The queue lock is taken: another import queue worker or a plain ingest:run is active (any host)";
     await saveQueue(q);
     await closeDb();
     return;
@@ -309,6 +307,23 @@ export async function runQueue(id: string) {
           entry.finished_at ??= new Date().toISOString();
           await saveQueue(q);
           break;
+        }
+        if (!entry.run_id && entry.coverage !== null && /^(changed_since_scan|category_)/.test(entry.coverage)) {
+          entry.status = "needs_attention";
+          entry.reason =
+            entry.coverage === "changed_since_scan"
+              ? "The capture changed since the last inventory scan: run ingest:inventory --refresh, then resume"
+              : `The inventory classifies this file as ${entry.coverage.slice(9)}: reclassify it or fix the plan, then resume`;
+          q.status = "needs_attention";
+          q.message = `${entry.file}: ${entry.reason}`;
+          return;
+        }
+        if (entry.coverage === null) {
+          entry.status = "needs_attention";
+          entry.reason = "The file is not in the inventory: run ingest:inventory --refresh, then resume";
+          q.status = "needs_attention";
+          q.message = `${entry.file}: ${entry.reason}`;
+          return;
         }
         const blocked = await admissionClear(id);
         if (blocked) {
@@ -387,20 +402,29 @@ export async function runQueue(id: string) {
     q.status = "needs_attention";
     q.message = `Queue worker error: ${error instanceof Error ? error.message : String(error)}`;
   } finally {
-    q.pid = null;
-    await saveQueue(q);
-    await lock
-      .query("SELECT pg_advisory_unlock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_LOCK])
-      .catch(() => undefined);
-    lock.release();
-    await closeDb();
+    try {
+      q.pid = null;
+      await saveQueue(q);
+    } finally {
+      // Always free the global lock, even if the state file cannot be written.
+      await lock
+        .query("SELECT pg_advisory_unlock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_LOCK])
+        .catch(() => undefined);
+      lock.release();
+      await closeDb();
+    }
   }
 }
 
 /** Active-status queues whose worker is gone (no host holds the lock) become `stopped`. */
 async function reconcileStale(): Promise<QueueState[]> {
   const queues = await listQueues();
-  const active = queues.filter((q) => ["queued", "running", "waiting"].includes(q.status));
+  // A just-launched worker takes the lock within seconds: give `queued` a 2-minute grace.
+  const starting = (q: QueueState) =>
+    q.status === "queued" && Date.now() - Date.parse(q.updated_at) < 120_000;
+  const active = queues.filter(
+    (q) => ["queued", "running", "waiting"].includes(q.status) && !starting(q),
+  );
   if (!active.length || (await queueLockHeld())) return queues;
   for (const q of active) {
     q.status = "stopped";
