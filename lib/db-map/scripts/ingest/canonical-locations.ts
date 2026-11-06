@@ -17,6 +17,7 @@ export interface MemberLocation {
   lat: number;
   lng: number;
   label: string | null;
+  query?: string | null;
 }
 
 export interface CanonicalLocation {
@@ -28,6 +29,7 @@ export interface CanonicalLocation {
   origins: string[];
   roles: string[];
   label: string | null;
+  queries: string[];
   is_primary: boolean;
   research_location_ids: string[];
   research_poi_ids: string[];
@@ -68,8 +70,10 @@ export function groupCanonicalLocations(
       origins: uniq(list.map((m) => m.origin)),
       roles: uniq(list.map((m) => m.role)),
       label: list.find((m) => m.label)?.label ?? null,
+      queries: uniq(list.flatMap((m) => (m.query ? [m.query] : []))),
       is_primary: k === primaryKey,
-      research_location_ids: uniq(list.map((m) => m.id)),
+      // Synthesized source-only points have no research location row.
+      research_location_ids: uniq(list.map((m) => m.id).filter((id) => !id.startsWith("member:"))),
       research_poi_ids: uniq(list.map((m) => m.research_poi_id)),
       sources: uniq(list.map((m) => m.source)),
       ordinal: 0,
@@ -87,6 +91,44 @@ export function groupCanonicalLocations(
   return rows;
 }
 
+const PRECISIONS = new Set(["point", "city", "region", "country"]);
+
+/**
+ * The stored point of a member with no geocode artifact: supplied (or URL) coordinates only.
+ * Geocode-derived points always come from an artifact, so they are never synthesized here.
+ */
+export function sourceOnlyLocation(m: {
+  id: string;
+  source_slug?: string;
+  lat?: number | null;
+  lng?: number | null;
+  coordinate_precision?: string | null;
+  coordinate_source?: string | null;
+}): MemberLocation | null {
+  const lat = m.lat, lng = m.lng;
+  if (
+    typeof lat !== "number" || typeof lng !== "number" ||
+    !Number.isFinite(lat) || !Number.isFinite(lng) ||
+    Math.abs(lat) > 90 || Math.abs(lng) > 180 || (lat === 0 && lng === 0) ||
+    !["source", "url"].includes(m.coordinate_source ?? "")
+  )
+    return null;
+  const precision = PRECISIONS.has(m.coordinate_precision ?? "") ? m.coordinate_precision! : "point";
+  return {
+    id: `member:${m.id}`,
+    research_poi_id: m.id,
+    source: m.source_slug ?? "",
+    kind: "source",
+    origin: m.coordinate_source === "url" ? "url_coordinates" : "source_coordinates",
+    role: precision === "point" ? "venue" : precision === "city" ? "locality" : precision,
+    precision,
+    lat,
+    lng,
+    label: null,
+    query: null,
+  };
+}
+
 /**
  * Stable per build and point, so an idempotent rebuild keeps every `location_id` (and the map's
  * marker IDs derived from it).
@@ -101,13 +143,21 @@ export async function writeCanonicalLocations(
   client: PoolClient,
   canonicalId: string,
   buildId: string,
-  members: Array<{ id: string; active_geocode_id: string | null }>,
+  members: Array<{
+    id: string;
+    active_geocode_id: string | null;
+    source_slug?: string;
+    lat?: number | null;
+    lng?: number | null;
+    coordinate_precision?: string | null;
+    coordinate_source?: string | null;
+  }>,
   primary: { lat: number; lng: number } | null,
 ): Promise<CanonicalLocation[]> {
   const pairs = members.filter((m) => m.active_geocode_id);
   const { rows } = await client.query<MemberLocation>(
     `SELECT l.id, l.research_poi_id, s.slug AS source, l.kind, l.origin, l.role, l.precision,
-       l.lat, l.lng, l.label
+       l.lat, l.lng, l.label, l.query
      FROM research_poi_locations l
      JOIN research_pois rp ON rp.id = l.research_poi_id
      JOIN research_sources s ON s.id = rp.source_id
@@ -116,13 +166,19 @@ export async function writeCanonicalLocations(
          SELECT * FROM unnest($1::uuid[], $2::uuid[]))`,
     [pairs.map((m) => m.id), pairs.map((m) => m.active_geocode_id)],
   );
+  // A member linked before geocoding (standalone ingest:match) still maps its stored point.
+  for (const m of members)
+    if (!m.active_geocode_id) {
+      const point = sourceOnlyLocation(m);
+      if (point) rows.push(point);
+    }
   const grouped = groupCanonicalLocations(rows, primary);
   await client.query("DELETE FROM canonical_poi_locations WHERE build_id = $1", [buildId]);
   for (const g of grouped)
     await client.query(
       `INSERT INTO canonical_poi_locations(id, canonical_poi_id, build_id, lat, lng, precision, specificity,
-         kinds, origins, roles, label, is_primary, research_location_ids, research_poi_ids, sources, ordinal)
-       VALUES ($16,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+         kinds, origins, roles, label, is_primary, research_location_ids, research_poi_ids, sources, ordinal, queries)
+       VALUES ($16,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$17)`,
       [
         canonicalId,
         buildId,
@@ -140,6 +196,7 @@ export async function writeCanonicalLocations(
         g.sources,
         g.ordinal,
         canonicalLocationId(buildId, g.lat, g.lng),
+        g.queries,
       ],
     );
   return grouped;
