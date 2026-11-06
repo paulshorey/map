@@ -538,6 +538,17 @@ function renderMonitor(m) {
   const queueHtml = queue
     ? `<div class="monitor-card"><h3>Import queue · ${badge(queue.status)}</h3>
         ${queue.message ? `<p>${esc(queue.message)}</p>` : ""}
+        ${
+          queue.entry_counts
+            ? `<p class="muted-note">${Object.entries(queue.entry_counts)
+                .map(([s, n]) => `${number(n)} ${esc(label(s))}`)
+                .join(" · ")}${
+                queue.entries_total > queue.entries.length
+                  ? ` · showing ${number(queue.entries_offset + 1)}–${number(queue.entries_offset + queue.entries.length)} of ${number(queue.entries_total)}`
+                  : ""
+              }</p>`
+            : ""
+        }
         <ol class="queue-list">${queue.entries
           .map(
             (e) =>

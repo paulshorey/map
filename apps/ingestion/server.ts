@@ -24,6 +24,28 @@ import {
 } from "@lib/db-map/sql/ingestion-monitor";
 import { activeOrLocalQueue, reconcileStale } from "@lib/db-map/ingest/import-queue";
 
+/**
+ * A bounded view of a queue for the dashboard: up to 30 entries around the current one, plus
+ * counts by status for the whole plan (plans can be long).
+ */
+export function queueWindow<
+  Q extends { entries: Array<{ status: string }>; current?: number | null },
+>(queue: Q | null) {
+  if (!queue) return null;
+  const total = queue.entries.length;
+  const center = queue.current ?? queue.entries.findIndex((e) => e.status !== "succeeded" && e.status !== "skipped_complete");
+  const start = Math.max(0, Math.min(Math.max(0, center) - 5, total - 30));
+  const counts: Record<string, number> = {};
+  for (const e of queue.entries) counts[e.status] = (counts[e.status] ?? 0) + 1;
+  return {
+    ...queue,
+    entries: queue.entries.slice(start, start + 30),
+    entries_offset: start,
+    entries_total: total,
+    entry_counts: counts,
+  };
+}
+
 const QUALITY_TTL_MS = 120_000;
 const QUALITY_RETRY_MS = 30_000;
 type Quality = Awaited<ReturnType<typeof getQualityMonitor>>;
@@ -197,7 +219,7 @@ export function createDashboard(port: number) {
             .catch(() => null),
         ]);
         // No cached value yet and the first load failed: unavailable, never fabricated zeros.
-        json(200, { ...monitor, quality: quality ?? null, queue });
+        json(200, { ...monitor, quality: quality ?? null, queue: queueWindow(queue) });
         return;
       }
       if (req.method === "GET" && url.pathname === "/api/inventory") {
