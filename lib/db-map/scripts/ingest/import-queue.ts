@@ -129,8 +129,12 @@ const stopNowRequested = (id: string) =>
     () => false,
   );
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-/** Set when the worker's lock connection drops; it then heartbeats until it has shut down. */
+/**
+ * Set when the worker must halt on its own (a lock connection dropped, or it was signalled);
+ * it then stops the current import gracefully and heartbeats until it has shut down.
+ */
 let lockLost = false;
+let haltReason = "the queue's lock connection was lost";
 
 /**
  * Session advisory lock on a dedicated connection, held until the worker exits. The connection
@@ -310,7 +314,7 @@ async function superviseWatch(q: QueueState, entry: QueueEntry, args: string[], 
       // reconciliation does not treat it as dead while the import winds down.
       if (lockLost && Date.now() - lastBeat > 60_000) {
         lastBeat = Date.now();
-        q.message = "Stopping: the queue lock connection was lost";
+        q.message = `Stopping: ${haltReason}`;
         await saveQueue(q).catch(() => undefined);
       }
       // Only the job this launch created (earlier attempts' jobs are terminal).
@@ -402,6 +406,14 @@ export function classifyResult(r: {
 }
 
 export async function runQueue(id: string) {
+  // A signalled worker stops its current import gracefully instead of dying under it (the
+  // default exit would skip cleanup and leave the supervised import running untracked).
+  for (const signal of ["SIGTERM", "SIGINT"] as const)
+    process.on(signal, () => {
+      if (lockLost) process.exit(signal === "SIGINT" ? 130 : 143);
+      lockLost = true;
+      haltReason = `the queue worker received ${signal}`;
+    });
   // Presence: one live queue worker at a time anywhere, visible while it waits or runs.
   const presence = await dedicatedClient(`import-queue:${id}`, () => {
     lockLost = true;
@@ -522,7 +534,7 @@ export async function runQueue(id: string) {
         if (lockLost || (await stopRequested(id))) {
           entry.status = "stopped";
           q.status = "stopped";
-          q.message = lockLost ? "Stopped: the queue's lock connection was lost" : "Stopped by operator request";
+          q.message = lockLost ? `Stopped: ${haltReason}` : "Stopped by operator request";
           return;
         }
         const state = await fileState(entry);
@@ -550,7 +562,11 @@ export async function runQueue(id: string) {
               `The inventory classifies this file as ${entry.coverage.slice(9)}: reclassify it or fix the plan, then resume`,
             );
         }
-        if (!entry.run_id && state.continuation) {
+        if (
+          !entry.run_id &&
+          state.continuation &&
+          (await runMatchesFile(state.continuation, state.sha, state.extractorVersion))
+        ) {
           const check = await continuationSafe(state.continuation);
           if (!check.safe)
             return stop(
@@ -611,7 +627,7 @@ export async function runQueue(id: string) {
           entry.status = "stopped";
           q.status = "stopped";
           q.message = lockLost
-            ? "Stopped before launch: the queue's lock connection was lost"
+            ? `Stopped before launch: ${haltReason}`
             : "Stopped by operator request before the next launch";
           return;
         }
@@ -1024,6 +1040,8 @@ async function main() {
     return;
   }
   if (command === "stop") {
+    // Serialized with start/resume, so a resume cannot discard a concurrent stop request.
+    await withStartLock(async () => {
     const q = await loadQueue(flag("--queue") ?? (await latestId()));
     const now = rest.includes("--now");
     await writeFile(queuePath(q.id, "stop.request"), `${now ? "now" : "next"} ${new Date().toISOString()}`, {
@@ -1040,6 +1058,8 @@ async function main() {
           ? `Stop requested for queue ${q.id}; its current import is stopped gracefully as soon as it starts.`
           : `Stop requested for queue ${q.id}; it stops before the next launch.`,
       );
+    });
+    await closeDb();
     return;
   }
   const usage =
