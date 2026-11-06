@@ -61,12 +61,21 @@ NOT_PHYSICAL = re.compile(
     r"C/O|MAILING|CORPS\s+OF\s+ENGINEERS|NATIONAL\s+FORESTS?|"
     r"(?:FIELD|RANGER|GUARD)\s+STATIONS?|WORK\s+CENTERS?|ADMINISTRATIVE|ADMIN\s+SITES?|"
     # Explicit source labels: "(Not Physical Address)", "Managed By ...", "(For Information)".
-    r"NOT\s+(?:A\s+)?PHYSICAL|NON-?\s*PHYSICAL|MANAGED\s+BY|FOR\s+INFORMATION)\b",
+    r"(?:NOT|NO)\s+(?:A\s+)?PHYSICAL|NON-?\s*PHYSICAL|MANAGED\s+BY|FOR\s+INFORMATION)\b",
     re.I,
 )
 _SUFFIX = (r"ROAD|RD|STREET|ST|AVENUE|AVE|DRIVE|DR|LANE|LN|HIGHWAY|HWY|ROUTE|RTE|"
            r"PARKWAY|PKWY|BOULEVARD|BLVD|WAY|TRAIL|TRL|PIKE|CIRCLE|CIR|COURT|CT|PLACE|PL|"
            r"LOOP|SPUR")
+# Directions that mention a road ("8 miles west of Ely on Highway 50") are not addresses.
+# Mileposts on parkways ("Milepost 238, Blue Ridge Parkway") are how such sites are addressed.
+DIRECTIONS = re.compile(
+    r"\b\d+(?:\.\d+)?\s*(?:MILES?|MI|KM|KILOMETERS?)\b(?!\s*\d)|\bMILES?\s+(?:NORTH|SOUTH|EAST|"
+    r"WEST|FROM|PAST|OFF|UP|DOWN)\b|\b(?:NORTH|SOUTH|EAST|WEST|N|S|E|W)\.?\s+OF\b|\bAPPROX|"
+    r"\bINTERSECTION\b|\bJUNCTION\b|\bJCT\b|\bNEAR\b|\bLOCATED\b|\bTURN\b|\bPAST\b|"
+    r"\bEND\s+OF\b|\bFROM\s+THE\b|\bDIRECTIONS?\b",
+    re.I,
+)
 ROAD = re.compile(
     # A numbered road ("Forest Road 27", "Hwy 89", "FR 424").
     r"\b(ROAD|RD|STREET|ST|AVENUE|AVE|DRIVE|DR|LANE|LN|HIGHWAY|HWY|ROUTE|RTE|"
@@ -111,7 +120,7 @@ def street_of(row):
 
 def physical_street(street):
     """A street line that locates the facility: a house number or a numbered/named road."""
-    if not street or NOT_PHYSICAL.search(street):
+    if not street or NOT_PHYSICAL.search(street) or DIRECTIONS.search(street):
         return False
     return bool(re.match(r"^#?\d+[A-Za-z]?\s+\S", street) or ROAD.search(street))
 
