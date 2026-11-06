@@ -45,35 +45,15 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
       ? ([["pg_try_advisory_lock", FULL_IMPORT_LOCK, "pg_advisory_unlock"]] as Array<[string, number, string]>)
       : []),
   ];
-  let fence: Client;
   let ended = false;
-  // Losing the connection releases the fence at once. Retake it on a new connection; if that
-  // fails, exit immediately (work is checkpointed and crash-safe) rather than wind down unfenced.
+  // Losing the connection releases the fence at once, so stop the import at once: no work may
+  // continue unfenced, even briefly. Work is checkpointed and crash-safe; resume the run later.
   const onLost = () => {
-    void (async () => {
-      for (let attempt = 0; attempt < 3 && !ended; attempt++) {
-        try {
-          const next = await dedicatedClient("ingest-admission", onLost);
-          let ok = true;
-          for (const [take, key] of locks())
-            ok &&= !!(await next.query(`SELECT ${take}($1, $2) AS ok`, [INGEST_LOCK_NAMESPACE, key])).rows[0]?.ok;
-          if (ok) {
-            fence = next;
-            console.error("Admission fence connection lost and re-established");
-            return;
-          }
-          await next.end().catch(() => undefined);
-          break;
-        } catch {
-          await new Promise((r) => setTimeout(r, 1000));
-        }
-      }
-      if (ended) return;
-      console.error("Admission fence lost and not re-established: stopping this import now");
-      process.exit(143);
-    })();
+    if (ended) return;
+    console.error("Admission fence connection lost: stopping this import now (resume it later)");
+    process.exit(143);
   };
-  fence = await dedicatedClient("ingest-admission", onLost);
+  const fence: Client = await dedicatedClient("ingest-admission", onLost);
   const release = async () => {
     ended = true;
     for (const [, key, unlock] of locks().reverse())
