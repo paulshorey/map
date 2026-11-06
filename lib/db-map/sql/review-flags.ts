@@ -11,16 +11,17 @@
  * Add a flag by adding one entry to REVIEW_FLAG_RULES (an SQL predicate over canonical `p`).
  */
 import type { Pool, PoolClient } from "pg";
+import { CANONICAL_WRITER_LOCK } from "../lib/ingestion/locks.js";
 
 export const REVIEW_FLAG_RULES = {
   general_location: `p.attributes->>'location_specificity' = 'general'`,
-  // The capture of each member's active observation (not older captures of the same record).
+  // The capture the member's active observation currently points to (observations are reused
+  // across identical captures, which update their source_file_version_id).
   source_needs_review: `EXISTS (
     SELECT 1 FROM research_canonical_memberships m
     JOIN research_pois rp ON rp.id = m.research_poi_id
-    JOIN research_ingest_run_records rr ON rr.research_poi_id = rp.id
-      AND rr.observation_id = rp.active_observation_id
-    JOIN research_source_file_versions v ON v.id = rr.source_file_version_id
+    JOIN research_poi_observations o ON o.id = rp.active_observation_id
+    JOIN research_source_file_versions v ON v.id = o.source_file_version_id
     JOIN research_source_files f ON f.id = v.source_file_id
     JOIN research_ingest_inventory i ON i.logical_path = f.logical_path
     WHERE m.canonical_poi_id = p.id AND m.active AND i.disposition = 'needs_review')`,
@@ -37,7 +38,11 @@ const flagsSql = `ARRAY(SELECT flag FROM (VALUES ${REVIEW_FLAGS.map(
   (flag) => `('${flag}', ${REVIEW_FLAG_RULES[flag]})`,
 ).join(", ")}) AS r(flag, hit) WHERE hit ORDER BY flag)`;
 
-/** Recompute flags for the given canonicals (all when `ids` is null). Returns rows changed. */
+/**
+ * Recompute flags for the given canonicals (all when `ids` is null). Returns rows changed.
+ * Callers outside a canonical rebuild should use `refreshAllReviewFlags`, which serializes with
+ * rebuilds.
+ */
 export async function refreshReviewFlags(
   db: Pick<Pool | PoolClient, "query">,
   ids: string[] | null,
@@ -50,6 +55,27 @@ export async function refreshReviewFlags(
     [ids],
   );
   return rowCount ?? 0;
+}
+
+/**
+ * Recompute every POI's flags under the canonical writer lock, so a concurrent rebuild (which
+ * refreshes its POI's flags while holding that lock) is never overwritten by an older snapshot.
+ */
+export async function refreshAllReviewFlags(db: Pool): Promise<number> {
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [CANONICAL_WRITER_LOCK]);
+    // READ COMMITTED: this statement's snapshot is taken after the lock is held.
+    const changed = await refreshReviewFlags(client, null);
+    await client.query("COMMIT");
+    return changed;
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 /** Published POIs per flag. */

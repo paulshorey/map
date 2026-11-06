@@ -8,11 +8,13 @@
  */
 import { pathToFileURL } from "node:url";
 import { getDb } from "../../lib/db/postgres.js";
-import { refreshReviewFlags, reviewFlagCounts } from "../../sql/review-flags.js";
+import { refreshAllReviewFlags, reviewFlagCounts } from "../../sql/review-flags.js";
 import { inspectControl } from "./control.js";
 
 async function main() {
   const args = process.argv.slice(2);
+  const json = args.includes("--json");
+  let refreshed: number | null = null;
   const db = getDb();
   try {
     if (args.includes("--refresh")) {
@@ -32,10 +34,11 @@ async function main() {
           "Ingestion is active (workers, source locks or scripts); refresh after it is quiescent " +
             "(see ingest:control list --json). Rebuilds keep their own POIs' flags current meanwhile.",
         );
-      console.log(`Refreshed ${await refreshReviewFlags(db, null)} POI(s).`);
+      refreshed = await refreshAllReviewFlags(db);
+      if (!json) console.log(`Refreshed ${refreshed} POI(s).`);
     }
     const counts = await reviewFlagCounts(db);
-    if (args.includes("--json")) console.log(JSON.stringify(counts, null, 2));
+    if (json) console.log(JSON.stringify({ refreshed, counts }, null, 2));
     else console.table(counts);
   } finally {
     await db.end();
