@@ -928,10 +928,16 @@ pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's
   its UUID (cohort and checkpoints kept), never restarted;
 - one queue worker runs at a time on any host (a database advisory lock it holds for life);
   a queue whose worker died is marked `stopped` as interrupted, and `resume` continues it.
-- a plain `ingest:run` (other than `--dry-run`) holds the queue lock in shared mode for its
-  whole run and the queue worker holds it exclusively, so a queue and a plain import are never
-  admitted together: a plain run refuses while a queue runs, and a queue started during a plain
-  run stops as `needs_attention`. `stop --now` is recorded as an operator stop;
+- every full-scope import (`ingest:run`/`ingest:extract` without `--limit`, `--record`,
+  `--shadow` or `--dry-run`), plain or queued, holds a database lock for its whole run, so only
+  one full-file import runs at a time on any host, even if a queue worker dies; bounded
+  diagnostics are not blocked. A plain import also holds the queue lock in shared mode while
+  the queue worker holds it exclusively, so a plain import refuses while a queue runs and a
+  queue started during a plain import stops as `needs_attention`. A confirmed `stop --now`
+  is recorded as an operator stop;
+- an unfinished earlier run of a file is adopted automatically only if it stopped for a
+  budget/quota or an operator stop; anything else stops the queue for inspection. Files the
+  inventory marks `needs_review` or not importable also stop it (set the disposition first);
 - an entry whose file changed since the last inventory scan, is missing from the inventory or
   is classified under another category stops the queue before launching (refresh or reclassify,
   then `resume`).

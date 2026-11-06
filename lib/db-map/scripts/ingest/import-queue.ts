@@ -154,7 +154,7 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
     files: Array<Parameters<typeof queueItem>[0]>;
   };
   const row = inventory.files.find((f) => f.logical_path === entry.file) ?? null;
-  if (!row) return { coverage: null, continuation: null };
+  if (!row) return { coverage: null, continuation: null, action: null as string | null };
   const item = queueItem(row);
   const sameCategory = row.category_slug === entry.category;
   const sameFile = !!row.file_sha256 && row.file_sha256 === (await sha256(entry.file).catch(() => null));
@@ -166,7 +166,23 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
         : row.coverage,
     // An unfinished full-file run keeps its cohort and checkpoints: resume it, never restart.
     continuation: sameCategory && sameFile ? item.continuation_run_id : null,
+    action: item.action as string,
   };
+}
+
+/** Only runs that stopped for a budget/quota or an operator stop resume without diagnosis. */
+async function continuationSafe(runId: string): Promise<{ safe: boolean; detail: string }> {
+  const { rows } = await getDb().query(
+    "SELECT status, stop_reason FROM research_ingest_runs WHERE id=$1",
+    [runId],
+  );
+  const r = rows[0];
+  if (!r) return { safe: false, detail: "run not found" };
+  const safe =
+    r.status === "waiting_budget" ||
+    (r.status === "paused" &&
+      ["operator_stop", "SIGTERM", "SIGINT", "supervisor_signal"].includes(r.stop_reason ?? ""));
+  return { safe, detail: `${r.status}${r.stop_reason ? ` (${r.stop_reason})` : ""}` };
 }
 
 async function quotaResetsAt(runId: string): Promise<string | null> {
@@ -300,12 +316,12 @@ export async function runQueue(id: string) {
     await closeDb();
     return;
   }
-  q.pid = process.pid;
-  q.status = "running";
-  q.message = null;
-  await saveQueue(q);
   const log = queuePath(id, "queue.log");
   try {
+    q.pid = process.pid;
+    q.status = "running";
+    q.message = null;
+    await saveQueue(q);
     for (let i = 0; i < q.entries.length; i++) {
       const entry = q.entries[i]!;
       if (["succeeded", "skipped_complete"].includes(entry.status)) continue;
@@ -320,30 +336,42 @@ export async function runQueue(id: string) {
         }
         const state = await fileState(entry);
         entry.coverage = state.coverage;
-        entry.run_id ??= state.continuation;
+        const stop = (reason: string) => {
+          entry.status = "needs_attention";
+          entry.reason = reason;
+          q.status = "needs_attention";
+          q.message = `${entry.file}: ${reason}`;
+        };
+        if (entry.coverage !== "complete") {
+          // Stale or excluded inventory metadata stops the queue, with or without a saved run.
+          if (entry.coverage === null)
+            return stop("The file is not in the inventory: run ingest:inventory --refresh, then resume");
+          if (entry.coverage === "changed_since_scan")
+            return stop("The capture changed since the last inventory scan: run ingest:inventory --refresh, then resume");
+          if (entry.coverage.startsWith("category_"))
+            return stop(
+              `The inventory classifies this file as ${entry.coverage.slice(9)}: reclassify it or fix the plan, then resume`,
+            );
+          if (state.action === "review" || state.action === "blocked")
+            return stop(
+              `The inventory marks this file ${state.action === "review" ? "needs_review" : "not importable"}: set its disposition to import (dashboard file drawer), then resume`,
+            );
+        }
+        if (!entry.run_id && state.continuation) {
+          const check = await continuationSafe(state.continuation);
+          if (!check.safe)
+            return stop(
+              `An unfinished run ${state.continuation} exists (${check.detail}); inspect it with ` +
+                `ingest:status --run ${state.continuation} before resuming it`,
+            );
+          entry.run_id = state.continuation;
+        }
         if (entry.coverage === "complete") {
           if (entry.status === "pending") entry.status = "skipped_complete";
           else entry.status = "succeeded";
           entry.finished_at ??= new Date().toISOString();
           await saveQueue(q);
           break;
-        }
-        if (!entry.run_id && entry.coverage !== null && /^(changed_since_scan|category_)/.test(entry.coverage)) {
-          entry.status = "needs_attention";
-          entry.reason =
-            entry.coverage === "changed_since_scan"
-              ? "The capture changed since the last inventory scan: run ingest:inventory --refresh, then resume"
-              : `The inventory classifies this file as ${entry.coverage.slice(9)}: reclassify it or fix the plan, then resume`;
-          q.status = "needs_attention";
-          q.message = `${entry.file}: ${entry.reason}`;
-          return;
-        }
-        if (entry.coverage === null) {
-          entry.status = "needs_attention";
-          entry.reason = "The file is not in the inventory: run ingest:inventory --refresh, then resume";
-          q.status = "needs_attention";
-          q.message = `${entry.file}: ${entry.reason}`;
-          return;
         }
         const blocked = await admissionClear(id);
         if (blocked) {

@@ -16,11 +16,7 @@ import {
 } from "./orchestrator.js";
 import { holdSystemAwake } from "./sleep-inhibitor.js";
 import { providerUsageToday, useProviderQuotaLedger } from "./providers/quota.js";
-import {
-  IMPORT_QUEUE_ENV,
-  IMPORT_QUEUE_LOCK,
-  INGEST_LOCK_NAMESPACE,
-} from "../../lib/ingestion/locks.js";
+import { admitImport } from "./import-admission.js";
 
 const STAGES = new Set<IngestStage>([
   "extract",
@@ -169,23 +165,11 @@ async function main() {
   try {
     process.env.PG_POOL_MAX ||= "16";
     const db = getDb();
-    let fence: import("pg").PoolClient | null = null;
+    let releaseAdmission: (() => Promise<void>) | null = null;
     try {
       useProviderQuotaLedger(db);
-      // One full import at a time: a plain import holds the queue lock in shared mode for its
-      // whole run, the queue worker holds it exclusively, so admission is atomic. Imports the
-      // queue launches itself carry IMPORT_QUEUE_ENV and skip it.
-      if (!opts.dryRun && !process.env[IMPORT_QUEUE_ENV]) {
-        fence = await db.connect();
-        const { rows } = await fence.query("SELECT pg_try_advisory_lock_shared($1, $2) AS ok", [
-          INGEST_LOCK_NAMESPACE,
-          IMPORT_QUEUE_LOCK,
-        ]);
-        if (!rows[0]?.ok)
-          throw new Error(
-            "An import queue is running (ingest:import-queue status); stop it or add this file to a queue",
-          );
-      }
+      // One full-file import at a time, and none beside a running import queue (any host).
+      releaseAdmission = await admitImport(db, opts);
       if (!opts.dryRun) {
         const usage = await providerUsageToday(db);
         console.log(
@@ -195,12 +179,7 @@ async function main() {
       }
       await runOrchestration(db, opts);
     } finally {
-      if (fence) {
-        await fence
-          .query("SELECT pg_advisory_unlock_shared($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_LOCK])
-          .catch(() => undefined);
-        fence.release();
-      }
+      if (releaseAdmission) await releaseAdmission();
       await db.end();
     }
   } finally {
