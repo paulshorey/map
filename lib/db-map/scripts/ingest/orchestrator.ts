@@ -9,6 +9,7 @@ import { EmbeddingBatcher } from "./embedding-batcher.js";
 import { buildEmbedText } from "./embed.js";
 import { configureLlmConcurrency, canonicalLane } from "./concurrency.js";
 import { artifactTransaction } from "./execution.js";
+import { assertSourceCurrent } from "./staleness.js";
 import { spawn } from "node:child_process";
 import { Execution, lockSource, type AttemptResult } from "./execution.js";
 import { runGeocode } from "./geocode.js";
@@ -901,7 +902,10 @@ async function recordState(db: Pool, item: RunItem) {
     ${currentLocationAssessmentSql()} AS location_assessed,
     (rp.content_embedding IS NOT NULL) AS has_embedding,rp.active_embedding_id,rp.active_geocode_id,
     rp.canonical_poi_id,rp.retired_at,cp.active_build_id,cp.status AS canonical_status,
-    EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id) AS membership_valid,
+    EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
+      AND m.matcher_version='${PIPELINE_VERSIONS.matcher}') AS membership_valid,
+    EXISTS(SELECT 1 FROM research_canonical_memberships m WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
+      AND m.matcher_version IS DISTINCT FROM '${PIPELINE_VERSIONS.matcher}') AS membership_stale_matcher,
     EXISTS(SELECT 1 FROM research_canonical_memberships m JOIN canonical_poi_build_inputs b ON b.membership_id=m.id
       WHERE m.research_poi_id=rp.id AND m.active AND m.normalization_id=rp.active_normalization_id AND m.canonical_poi_id=cp.id
         AND b.build_id=cp.active_build_id AND EXISTS(SELECT 1 FROM canonical_poi_builds cb
@@ -1022,6 +1026,8 @@ export async function runOrchestration(
     throw new Error("Extractor version changed; start a new run");
   if (previous && hashed.sha256 !== previous.file_sha256)
     throw new Error("Source file changed; start a new run for this version");
+  // Outdated records are re-ingested, never upgraded: a new run refuses a source holding any.
+  if (!previous) await assertSourceCurrent(db, resolved.source.meta.slug);
   if (opts.dryRun) {
     console.log(
       JSON.stringify(
@@ -1301,6 +1307,16 @@ export async function runOrchestration(
               };
             }
             if (stage === "match") {
+              // Records produced by older pipeline logic are never upgraded in place: purge and
+              // re-ingest them (see ingest:staleness). New runs refuse such sources up front.
+              if (state.canonical_poi_id && state.membership_stale_matcher)
+                throw Object.assign(
+                  new Error(
+                    `Record ${item.source_record_id} was matched by an older matcher than ${PIPELINE_VERSIONS.matcher}; ` +
+                      "purge its source and re-import it (pnpm --filter @lib/db-map ingest:staleness)",
+                  ),
+                  { code: "outdated_data" },
+                );
               const assessment = await assessLocationRecord(
                 db,
                 item.research_poi_id!,

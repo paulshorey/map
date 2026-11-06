@@ -11,6 +11,9 @@ const aliases: Record<string, string> = {
   wales: "GB",
   "northern ireland": "GB",
   "south korea": "KR",
+  // Listings say "Korea" for the Republic of Korea (Anyang, Gwangju, Busan).
+  korea: "KR",
+  brasil: "BR",
   "north korea": "KP",
   russia: "RU",
   turkey: "TR",

@@ -85,7 +85,8 @@ test("fresh response preserves complete selected provider row and carries compac
     lat: String(sao.forward.result.lat),
     lon: String(sao.forward.result.lng),
     display_name: sao.forward.result.label,
-    address: { country_code: "br", city: "São Paulo" },
+    // A street keeps this granularity-free row on the point fallback (v4 reads addresses).
+    address: { country_code: "br", city: "São Paulo", road: "Avenida Pedro Álvares Cabral" },
     boundingbox: ["-23.58", "-23.56", "-46.67", "-46.65"],
     place_id: "fixture",
     extra_provider_field: { observed: true },
@@ -128,4 +129,37 @@ test("fresh response preserves complete selected provider row and carries compac
   );
   assert.equal(slots.source_coordinates, null);
   assert.equal((slots.inferred_coordinates as any).raw_response, undefined);
+});
+
+test("v3 boundaries take their precision from their own address", () => {
+  const row = (type: string, cls: string, address: Record<string, string>) =>
+    deriveForwardPrecision({ type, class: cls, address });
+  // "England" is a state boundary, not a city; Missouri's Mexico is a city.
+  assert.equal(row("administrative", "boundary", { state: "England", country: "United Kingdom", country_code: "gb" }).value, "region");
+  assert.equal(row("administrative", "boundary", { city: "Mexico", county: "Audrain County", state: "Missouri", country_code: "us" }).value, "city");
+  assert.equal(row("administrative", "boundary", { state: "Κύπρος", country: "Κύπρος - Kıbrıs", country_code: "cy" }).value, "region");
+  assert.equal(row("island", "place", { island: "Great Britain", country_code: "gb" }).value, "region");
+  assert.equal(row("county", "boundary", { county: "Kent", country_code: "gb" }).value, "region");
+  assert.equal(row("administrative", "boundary", { country: "Nigeria", country_code: "ng" }).value, "country");
+});
+
+test("v4 rows without class/type take precision from their address fields", () => {
+  const zongolica = deriveForwardPrecision({
+    address: { city: "Zongolica", county: "Zongolica", state: "Veracruz", country: "Mexico", country_code: "mx" },
+  });
+  assert.equal(zongolica.value, "city");
+  assert.equal(zongolica.derivation, "provider_address");
+  assert.ok(zongolica.warnings.includes("provider_granularity_missing"));
+  assert.equal(deriveForwardPrecision({ address: { state: "Yucatán", country_code: "mx" } }).value, "region");
+  assert.equal(deriveForwardPrecision({ address: { road: "Calle 43", city: "Mérida" } }).value, "point");
+  assert.equal(deriveForwardPrecision({ address: { name: "Ray-Ban", city: "Frankfurt" } }).value, "point");
+});
+
+test("an untyped postcode-only row is a city-sized area, not a country", () => {
+  assert.equal(deriveForwardPrecision({ address: { postcode: "62210", country_code: "mx" } }).value, "city");
+});
+
+test("typed postcode rows are city-sized", () => {
+  assert.equal(deriveForwardPrecision({ class: "place", type: "postcode", address: { postcode: "75001" } }).value, "city");
+  assert.equal(deriveForwardPrecision({ addresstype: "postcode", address: { postcode: "75001" } }).value, "city");
 });

@@ -59,7 +59,7 @@ Paths below are relative to `scripts/ingest/` unless shown otherwise.
 | Published canonical fields and builds                   | `merge.ts`                                                                                        |
 | Status, lineage, integrity                              | `status.ts`, `report.ts`, `trace.ts`, `verify.ts`, `../../sql/lineage.ts`                         |
 | Artifact versioning                                     | `pipeline-versions.ts`, `normalize/contracts.ts`, source/profile versions                         |
-| Targeted cleanup and legacy reflow                      | `clean.ts`, `reflow.ts`                                                                           |
+| Outdated data (re-ingest, never upgrade), cleanup       | `staleness.ts`, `purge.ts`, `clean.ts`                                                            |
 
 Inventory/discovery lives in `lib/ingestion/inventory-scan.ts`, shared coverage assessment in
 `lib/ingestion/assessment.ts`, and application queries in `sql/ingestion-inventory.ts`.

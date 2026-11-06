@@ -12,6 +12,9 @@ import {
   locationSpecificity,
 } from "./canonical-points.js";
 import {
+  basisAfterFit,
+  fitQueryLength,
+  MAX_QUERY_BYTES,
   listedQuery,
   listedQueryBasis,
   runGeocode,
@@ -62,6 +65,9 @@ function fixture(captured: any = source) {
   };
   const cache = new Map<string, any>();
   let activated: any = null;
+  let heldLookups = 0;
+  let unresolved: any = null;
+  const cleared: string[] = [];
   const client = {
     release() {},
     async query(sql: string, args: any[] = []) {
@@ -90,9 +96,26 @@ function fixture(captured: any = source) {
         );
       } else if (sql.includes("INSERT INTO research_poi_geocodes")) {
         return { rows: [{ id: "geocode-new" }] };
+      } else if (sql.startsWith("SELECT pg_advisory_xact_lock")) {
+        return { rows: [], rowCount: 1 };
+      } else if (
+        sql.startsWith("UPDATE research_pois SET attributes=(") ||
+        sql.startsWith("UPDATE research_pois SET attributes=COALESCE(attributes,'{}'::jsonb)\n")
+      ) {
+        unresolved = JSON.parse(args[1]);
+        return { rows: [], rowCount: 1 };
+      } else if (sql.startsWith("UPDATE research_pois SET lat=NULL")) {
+        cleared.push(args[0]);
+        return { rows: [], rowCount: 1 };
+      } else if (sql.includes("retirement_reason='location_rejected'")) {
+        return { rows: [], rowCount: 1 };
       } else if (sql.startsWith("UPDATE research_pois SET lat="))
         activated = JSON.parse(args[6]);
-      else
+      else if (sql.startsWith("SELECT DISTINCT b.canonical_poi_id")) {
+        // An unlocatable record releases held snapshots; this fixture holds none.
+        heldLookups++;
+        return { rows: [] };
+      } else
         assert.ok(
           ["BEGIN", "COMMIT", "ROLLBACK"].includes(sql),
           `Unexpected fixture SQL: ${sql}`,
@@ -106,6 +129,13 @@ function fixture(captured: any = source) {
     get activated() {
       return activated;
     },
+    get heldLookups() {
+      return heldLookups;
+    },
+    get unresolved() {
+      return unresolved;
+    },
+    cleared,
     db: { ...client, connect: async () => client } as unknown as Pool,
   };
 }
@@ -441,19 +471,6 @@ test("canonical buckets are selected independently by provenance, with exact art
   );
 });
 
-test("single-location pipeline checkpoints remain structurally compatible without a backfill", () => {
-  const previous = {
-    ...PIPELINE_VERSIONS,
-    geocode: "locationiq-location-v2",
-    canonicalBuilder: "canonical-build-v2",
-  };
-  assert.ok(resumePipelineUpgrade(previous));
-  assert.throws(
-    () => resumePipelineUpgrade({ ...previous, matcher: "unreviewed" }),
-    /Pipeline versions changed/,
-  );
-});
-
 test("legacy canonical points retain known coordinate provenance without inventing evidence", () => {
   const row = {
     id: "legacy",
@@ -660,20 +677,22 @@ test("a city-only miss never confirms a conflicting venue without a source point
       : Response.json({ error: "Unable to geocode" }, { status: 404 });
   };
   const stats = await runGeocode(f.db, opts);
-  assert.deepEqual(queries, ["Aichi Arts Center, Nagoya, JP", "Nagoya, JP"]);
-  assert.equal(stats.apiCalls, 2);
+  // After the city miss, the recognized country is the last fallback; it misses here too.
+  assert.deepEqual(queries, ["Aichi Arts Center, Nagoya, JP", "Nagoya, JP", "Japan"]);
+  assert.equal(stats.apiCalls, 3);
   assert.equal(stats.unresolved, 1);
   assert.equal(stats.resolved, 0);
   assert.equal(f.activated, null, "a wrong venue must not become publishable");
+  assert.equal(f.unresolved.forward.state, "unresolved", "why the record is unlocated is kept");
   assert.equal(
     f.cache.size,
-    2,
-    "both the paid hit and definitive miss are retained",
+    3,
+    "the paid hit and both definitive misses are retained",
   );
   const replay = await runGeocode(f.db, opts);
   assert.equal(replay.apiCalls, 0);
-  assert.equal(replay.cacheHits, 2);
-  assert.equal(replay.knownMisses, 1);
+  assert.equal(replay.cacheHits, 3);
+  assert.equal(replay.knownMisses, 2);
   assert.equal(replay.unresolved, 1);
   assert.equal(f.activated, null);
 });
@@ -1554,6 +1573,78 @@ test("location specificity flags POIs that rest only on country, region or city"
   );
 });
 
+test("an address miss without any point falls back to the listed city, flagged as such", async () => {
+  // BGCI record 1: "Estudio Floristico ..., CUERNAVACA Morelos, Mexico" misses.
+  const f = fixture({
+    ...japan,
+    attributes: { venue_name: "Aichi Arts Center" },
+  });
+  Object.assign(f.row, { lat: null, lng: null, coordinate_source: null, coordinate_precision: null });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  const queries: string[] = [];
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith("/reverse"))
+      return Response.json({ lat: "35.18", lon: "136.90", address: { city: "Nagoya", country_code: "jp" } });
+    const q = url.searchParams.get("q")!;
+    queries.push(q);
+    return q === "Nagoya, JP"
+      ? Response.json([{ lat: "35.18", lon: "136.90", class: "boundary", type: "administrative",
+          address: { city: "名古屋市", state: "愛知県", country_code: "jp" } }])
+      : Response.json({ error: "Unable to geocode" }, { status: 404 });
+  };
+  const stats = await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
+  assert.deepEqual(queries, ["Aichi Arts Center, Nagoya, JP", "Nagoya, JP"]);
+  assert.equal(stats.resolved, 1);
+  const forward = f.activated.forward;
+  assert.equal(forward.query, "Nagoya, JP");
+  assert.equal(forward.query_basis, "locality");
+  assert.deepEqual(forward.fallback_from, { reason: "miss", query: "Aichi Arts Center, Nagoya, JP" });
+  assert.equal(f.activated.coordinate_evidence.inferred_coordinates.precision, "city");
+});
+
+test("over-long queries keep their local end; a 400 is a record-level miss, not a run failure", async () => {
+  const long =
+    "Departamento de Botánica y Zoología, Centro Universitario de Ciencias Biológicas y Agropecuarias, Universidad de Guadalajara, Km 15.5 carr. Guadalajara a Nogales, Las Agujas, Nextipac, Zapopan, Jalisco, Mexico";
+  assert.equal(
+    fitQueryLength(long),
+    "Centro Universitario de Ciencias Biológicas y Agropecuarias, Universidad de Guadalajara, Km 15.5 carr. Guadalajara a Nogales, Las Agujas, Nextipac, Zapopan, Jalisco, Mexico",
+  );
+  assert.ok(Buffer.byteLength(fitQueryLength("x ".repeat(200))) <= MAX_QUERY_BYTES);
+  // Bytes, not characters: BGCI 7120's 188-character Cyrillic query is 280 bytes.
+  const moscow =
+    "M.V. Lomonosov Moscow State University Botanical Garden, Российская Федерация, Москва, Ленинские горы, д. 1, Московский государственный университет имени М.В.Ломоносова, Russian Federation";
+  const fitted = fitQueryLength(moscow);
+  assert.ok(Buffer.byteLength(fitted) <= MAX_QUERY_BYTES, fitted);
+  assert.ok(fitted.endsWith("Russian Federation"));
+  assert.equal(fitQueryLength("Nagoya, JP"), "Nagoya, JP");
+  // Never split a surrogate pair.
+  const emoji = fitQueryLength("🌸" + "x".repeat(188));
+  assert.ok(!/[\uD800-\uDFFF]/.test(emoji.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, "")));
+  assert.ok(Buffer.byteLength(emoji) <= MAX_QUERY_BYTES);
+
+  const f = fixture({ ...japan, attributes: { venue_name: "Aichi Arts Center" } });
+  Object.assign(f.row, { lat: null, lng: null, coordinate_source: null, coordinate_precision: null });
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith("/reverse"))
+      return Response.json({ lat: "35.18", lon: "136.90", address: { city: "Nagoya", country_code: "jp" } });
+    return url.searchParams.get("q") === "Nagoya, JP"
+      ? Response.json([{ lat: "35.18", lon: "136.90", class: "boundary", type: "administrative", address: { city: "名古屋市", country_code: "jp" } }])
+      : Response.json({ error: "Invalid Request" }, { status: 400 });
+  };
+  const stats = await runGeocode(f.db, { ...opts, geocodeLimit: 4 });
+  assert.equal(stats.resolved, 1);
+  assert.deepEqual(f.activated.forward.invalid_queries, ["Aichi Arts Center, Nagoya, JP"]);
+  assert.equal(f.activated.forward.query, "Nagoya, JP");
+  // Remembered as an invalid request: a resume continues at the fallback without a call.
+  const invalidKey = [...f.cache.keys()].find((k) => k.includes("aichi arts center"))!;
+  assert.equal(f.cache.get(invalidKey).payload.invalid_request, true);
+  const replay = await runGeocode(f.db, { ...opts, geocodeLimit: 0 });
+  assert.equal(replay.apiCalls, 0);
+});
+
 test("a supplied country centroid names its country without a reverse call", async () => {
   const f = fixture({ name: "Adelaide Biennial of Australian Art", city: "Various", country_code: null });
   Object.assign(f.row, { lat: -25.2744, lng: 133.7751, coordinate_source: "source", coordinate_precision: "point" });
@@ -1568,3 +1659,67 @@ test("a supplied country centroid names its country without a reverse call", asy
   assert.equal(f.activated.coordinate_evidence.source_coordinates.precision, "country");
   assert.equal(f.activated.lookup_state, "not_needed");
 });
+
+test("a miss-driven fallback earns no address priority and is general", () => {
+  // Member A: its street-address lookup missed; the city fallback was used.
+  const fallback = {
+    listed: { address: "Calle 43 130", city: "Mérida" },
+    forward: {
+      query_basis: "locality",
+      fallback_from: { reason: "miss", query: "Calle 43 130, Mérida, Mexico" },
+      result: { lat: 20.97, lng: -89.62, city: "Mérida" },
+    },
+  };
+  const evidence = {
+    source_coordinates: null,
+    inferred_coordinates: { lat: 20.97, lng: -89.62, kind: "inferred", origin: "listed_address_geocode", precision: "city", research_id: "a" },
+  } as any;
+  assert.equal(locationSpecificity(evidence, [{ id: "a", location_validation: fallback } as any]), "general");
+});
+
+test("a city fallback after an address miss never outranks another member's venue point", () => {
+  const member = (id: string, trust: number, listed: object, forward: object, lat: number, lng: number, precision: string) => ({
+    id, source_id: id, source_slug: id, source_trust: trust,
+    lat, lng, coordinate_source: "geocode", coordinate_precision: precision,
+    active_normalization_id: `n-${id}`, active_geocode_id: `g-${id}`,
+    location_validation: {
+      version: LOCATION_VERSION, normalization_id: `n-${id}`, point: { lat, lng }, listed,
+      forward: { ...forward, result: { lat, lng, city: "Nagoya" } },
+      coordinate_evidence: {
+        source_coordinates: null,
+        inferred_coordinates: { lat, lng, kind: "inferred", origin: "listed_address_geocode", precision, label: null, query: "q" },
+      },
+    },
+  });
+  // Higher trust, a listed street address, but its lookup missed and the city fallback was used.
+  const fallback = member("a", 90, { city: "Nagoya", address: "1-13-2 Higashisakura" },
+    { query_basis: "locality", fallback_from: { reason: "miss", query: "1-13-2 Higashisakura, Nagoya, JP" } },
+    35.18, 136.9, "city");
+  const venue = member("b", 50, { city: "Nagoya", address: null }, { query_basis: "venue" }, 35.1719, 136.9167, "point");
+  const e = canonicalCoordinateEvidence([fallback, venue] as any, fallback as any);
+  assert.equal(e.inferred_coordinates!.research_id, "b");
+  assert.equal(e.inferred_coordinates!.precision, "point");
+});
+
+test("a query whose address was trimmed away is judged as locality", () => {
+  const listed = { address: "Departamento de Botánica y Zoología, Centro Universitario", venue: null, name: "CUCBA" };
+  assert.equal(basisAfterFit("address", listed, "Zapopan, Jalisco, Mexico"), "locality");
+  assert.equal(basisAfterFit("address", listed, "Centro Universitario, Zapopan, Jalisco, Mexico"), "address");
+  // Only the listed city survived from a long address ending in that city.
+  assert.equal(
+    basisAfterFit("address", { address: "12 Rue Longue, Bâtiment B, Paris", city: "Paris", country_name: "France" }, "Paris, France"),
+    "locality",
+  );
+  assert.equal(basisAfterFit("venue", { venue: "Aichi Arts Center" }, "Nagoya, JP"), "locality");
+  assert.equal(basisAfterFit("locality", listed, "Mexico"), "locality");
+  // A composite listed city contributes its parts ("Paris, Île-de-France").
+  assert.equal(
+    basisAfterFit("address", { address: "12 Rue Longue, Bâtiment B, Paris", city: "Paris, Île-de-France" }, "Paris, France"),
+    "locality",
+  );
+  // A single comma-free address trimmed inside itself still counts as the address.
+  const long = "Edificio " + "muy largo ".repeat(25) + "Avenida Central 100";
+  const fitted = fitQueryLength(long);
+  assert.equal(basisAfterFit("address", { address: long }, fitted), "address");
+});
+

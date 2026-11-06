@@ -42,6 +42,8 @@ import { bboxAround, haversineMeters } from "./match/geo.js";
 import { extractStrongIds } from "./match/ids.js";
 import { adjudicateMatch } from "./match/llm.js";
 import { scoreCandidate, type CandidateScore } from "./match/score.js";
+import { websiteIdentity } from "./match/denylist.js";
+import { stalenessBySource } from "./staleness.js";
 import { LlmError } from "./providers/llm.js";
 
 const ADVISORY_LOCK_ID = 0x5018a;
@@ -152,7 +154,9 @@ interface CandidateRow {
   best_name: string | null;
   best_name_normalized: string | null;
   best_content_embedding: number[] | null;
-  best_website_domain: string | null;
+  best_website: string | null;
+  /** Every member's website: an exact identity match with any member counts. */
+  member_websites: string[];
   best_phone: string | null;
   best_address: string | null;
   best_city: string | null;
@@ -598,12 +602,13 @@ async function fetchCandidates(
        cp.popularity AS canonical_popularity,
        COALESCE(meta.has_website, cp.website IS NOT NULL) AS canonical_has_website,
        COALESCE(meta.has_wikidata_qid, false) AS canonical_has_wikidata_qid,
+       COALESCE(meta.member_websites, ARRAY[]::text[]) AS member_websites,
        COALESCE(meta.max_source_trust, 0) AS canonical_max_source_trust,
        br.id AS best_research_id,
        br.name AS best_name,
        br.name_normalized AS best_name_normalized,
        br.content_embedding AS best_content_embedding,
-       br.website_domain AS best_website_domain,
+       br.website AS best_website,
        br.phone AS best_phone,
        br.address AS best_address,
        br.city AS best_city,
@@ -625,6 +630,10 @@ async function fetchCandidates(
      JOIN LATERAL (
        SELECT
          max(rs.trust)::int AS max_source_trust,
+         -- Only live members: an excluded/retired row keeps its pointer but not its website.
+         array_remove(array_agg(DISTINCT rp.website) FILTER (WHERE rp.retired_at IS NULL
+           AND EXISTS(SELECT 1 FROM research_canonical_memberships am
+             WHERE am.research_poi_id=rp.id AND am.canonical_poi_id=cp.id AND am.active)), NULL) AS member_websites,
          bool_or(rp.website IS NOT NULL OR cp.website IS NOT NULL) AS has_website,
          bool_or(
            rp.attributes->>'wikidata_id' IS NOT NULL
@@ -641,7 +650,10 @@ async function fetchCandidates(
        SELECT rp.*, rs.trust
        FROM research_pois rp
        JOIN research_sources rs ON rs.id = rp.source_id
-       WHERE rp.canonical_poi_id = cp.id AND rp.is_poi
+       -- The representative member must be live: an excluded row keeps its pointer only.
+       WHERE rp.canonical_poi_id = cp.id AND rp.is_poi AND rp.retired_at IS NULL
+         AND EXISTS(SELECT 1 FROM research_canonical_memberships bm
+           WHERE bm.research_poi_id=rp.id AND bm.canonical_poi_id=cp.id AND bm.active)
        ORDER BY rs.trust DESC, (rp.content_embedding IS NOT NULL) DESC, rp.last_seen_at DESC
        LIMIT 1
      ) br ON true
@@ -725,6 +737,21 @@ async function fetchCandidates(
     .slice(0, 40);
 }
 
+/** The canonical's website to compare: a member's URL with the same identity, else its best. */
+export function candidateWebsite(
+  current: string | null,
+  candidate: Pick<
+    CandidateRow,
+    "member_websites" | "best_website" | "canonical_website"
+  >,
+): string | null {
+  const identity = websiteIdentity(current);
+  const same =
+    identity &&
+    candidate.member_websites?.find((w) => websiteIdentity(w) === identity);
+  return same || candidate.best_website || candidate.canonical_website;
+}
+
 function scoreCandidates(
   row: ResearchMatchRow,
   candidates: CandidateRow[],
@@ -738,8 +765,7 @@ function scoreCandidates(
         name_normalized:
           candidate.best_name_normalized ?? candidate.canonical_name,
         content_embedding: candidate.best_content_embedding,
-        website_domain:
-          candidate.best_website_domain ?? candidate.canonical_website,
+        website: candidateWebsite(row.website, candidate),
         phone: candidate.best_phone ?? candidate.canonical_phone,
         city: candidate.best_city,
         region: candidate.best_region,
@@ -839,7 +865,7 @@ async function llmDecisionForCandidate(
         country_code: candidate.best_country_code,
         lat: candidate.canonical_lat,
         lng: candidate.canonical_lng,
-        website: candidate.best_website_domain ?? candidate.canonical_website,
+        website: candidateWebsite(row.website, candidate),
         phone: candidate.best_phone ?? candidate.canonical_phone,
         coordinate_precision: candidate.best_coordinate_precision,
         starts_at: candidate.best_starts_at ?? candidate.canonical_starts_at,
@@ -1562,6 +1588,17 @@ async function main() {
   let stats: MatchStats | undefined;
 
   try {
+    // Outdated records are re-ingested, never upgraded in place (reclustering resets all).
+    if (!opts.recluster) {
+      const outdated = (await stalenessBySource(db, opts.source ?? null)).filter(
+        (row) => row.outdated > 0,
+      );
+      if (outdated.length)
+        throw new Error(
+          `Outdated records in ${outdated.map((r) => `${r.source} (${r.outdated})`).join(", ")}; ` +
+            "purge and re-ingest them first (see ingest:staleness).",
+        );
+    }
     stats = await runMatch(db, opts, shutdown);
 
     if (stats.stopped) {

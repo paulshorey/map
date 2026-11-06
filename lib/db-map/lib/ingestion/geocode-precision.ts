@@ -9,11 +9,49 @@ export interface PrecisionEvidence {
 }
 
 // v2 classifies country-level results as `country` (v1 called them region/city).
-export const PRECISION_EVIDENCE_VERSION = "geocode-precision-v2";
+// v3 reads an administrative boundary's precision from its finest address field
+// ("England" is a state, not a city) and treats islands, counties and similar areas as regions.
+// v4: a row without class/type takes its precision from its address fields; it was a point.
+export const PRECISION_EVIDENCE_VERSION = "geocode-precision-v4";
 const READABLE_VERSIONS = new Set([
   "geocode-precision-v1",
   "geocode-precision-v2",
+  "geocode-precision-v3",
+  "geocode-precision-v4",
 ]);
+// Address fields finer than a city: their presence means the row names a specific place.
+const POINT_ADDRESS_KEYS = [
+  "house_number",
+  "road",
+  "name",
+  "building",
+  "amenity",
+  "shop",
+  "tourism",
+  "leisure",
+  "neighbourhood",
+  "quarter",
+  "office",
+  "historic",
+];
+const CITY_ADDRESS_KEYS = [
+  "city",
+  "town",
+  "village",
+  "hamlet",
+  "municipality",
+  "suburb",
+  "city_district",
+];
+const REGION_ADDRESS_KEYS = [
+  "state",
+  "region",
+  "province",
+  "state_district",
+  "county",
+  "island",
+  "archipelago",
+];
 const text = (v: unknown) =>
   typeof v === "string" && v.trim() ? v.trim() : null;
 
@@ -62,25 +100,59 @@ export function deriveForwardPrecision(
     // A country boundary arrives as administrative/boundary with only country fields.
     value = "country";
     derivation = "provider_address";
-  } else if (type === "state") {
+  } else if (
+    [
+      "state",
+      "region",
+      "province",
+      "state_district",
+      "county",
+      "island",
+      "archipelago",
+    ].includes(type)
+  ) {
     value = "region";
     derivation = "provider_type";
   } else if (
-    [
-      "city",
-      "town",
-      "village",
-      "administrative",
-      "county",
-      "suburb",
-      "municipality",
-    ].includes(type)
+    ["city", "town", "village", "hamlet", "suburb", "municipality", "postcode"].includes(
+      type,
+    ) ||
+    row.addresstype === "postcode"
   ) {
+    // A postal area is about city-sized.
+    value = "city";
+    derivation = "provider_type";
+  } else if (
+    (type === "administrative" || cls === "boundary") &&
+    address.length > 0
+  ) {
+    // A boundary is as specific as the finest place its own address names.
+    value = address.some((key) => CITY_ADDRESS_KEYS.includes(key))
+      ? "city"
+      : address.some((key) => REGION_ADDRESS_KEYS.includes(key))
+        ? "region"
+        : "country";
+    derivation = "provider_address";
+  } else if (type === "administrative") {
     value = "city";
     derivation = "provider_type";
   } else if (cls === "boundary") {
     value = "region";
     derivation = "provider_class";
+  } else if (
+    !cls &&
+    !type &&
+    address.length > 0 &&
+    !address.some((key) => POINT_ADDRESS_KEYS.includes(key))
+  ) {
+    // No granularity fields: "Zongolica, Veracruz, Mexico" names a town, not a point.
+    // A postal area is about city-sized, never a whole country.
+    value = address.some((key) => CITY_ADDRESS_KEYS.includes(key) || key === "postcode")
+      ? "city"
+      : address.some((key) => REGION_ADDRESS_KEYS.includes(key))
+        ? "region"
+        : "country";
+    derivation = "provider_address";
   }
   const provider_class = text(row.class),
     provider_type = text(row.type);

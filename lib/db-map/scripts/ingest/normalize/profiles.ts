@@ -10,7 +10,8 @@ export interface NormalizationProfile {
 const PROFILES: Record<string, NormalizationProfile> = {
   event: {
     id: "event",
-    version: "event-v1",
+    // v2: biennialfoundation.org is a directory; its listing pages are never official sites.
+    version: "event-v2",
     kind: "event",
     listingDomains: [
       "jambase.com",
@@ -22,6 +23,7 @@ const PROFILES: Record<string, NormalizationProfile> = {
       "eventbrite.com",
       "artsy.net",
       "festivism.com",
+      "biennialfoundation.org",
     ],
     hardFalsePaths: ["$.raw.is_festival"],
     descriptionLimit: 3000,
@@ -57,6 +59,11 @@ const PROFILES: Record<string, NormalizationProfile> = {
     descriptionLimit: 3000,
   },
 };
+
+/** Every current profile version (used to detect normalizations from older profiles). */
+export function allNormalizationProfileVersions(): string[] {
+  return Object.values(PROFILES).map((profile) => profile.version);
+}
 
 export function getNormalizationProfile(
   id: string | undefined,

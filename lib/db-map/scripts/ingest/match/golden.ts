@@ -338,7 +338,7 @@ async function resolveDecision(a: GoldenRow, b: GoldenRow, useLlm: boolean): Pro
     city: row.city,
     region: row.region,
     country_code: row.country_code,
-    website: row.website_domain,
+    website: row.website,
     phone: row.phone,
     categories: row.category_slugs,
     coordinate_precision: row.coordinate_precision,

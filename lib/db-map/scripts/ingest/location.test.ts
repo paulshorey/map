@@ -3,7 +3,10 @@ import { test, afterEach } from "node:test";
 import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
 import {
+  capLocalityPrecision,
   localityValue,
+  forwardImplausible,
+  providerNameAgrees,
   resolveLocation,
   reverseForPrecision,
   type ReverseLocation,
@@ -276,6 +279,51 @@ test("a supplied point repeating a published country centroid is country precisi
   assert.equal(suppliedCountryCentroid({ lat: null, lng: null }), null);
 });
 
+test("region/country-only lookups never yield a venue; name lookups must name the place", () => {
+  const shop = { precision: "point", raw_response: { class: "amenity", address: { name: "East Africa" } } };
+  // "East Africa" (no listed city) returned a Göteborg restaurant.
+  assert.equal(forwardImplausible("locality", { city: null, name: "East Africa Art Biennale" }, shop), "locality_result_too_specific");
+  assert.equal(forwardImplausible("locality", { city: "Various", name: "x" }, { precision: "city" }), "locality_result_too_specific");
+  assert.equal(forwardImplausible("locality", { city: null }, { precision: "region" }), null);
+  assert.equal(forwardImplausible("locality", { city: null }, { precision: "country" }), null);
+  // With a listed city, a city/point result is the existing city path.
+  assert.equal(forwardImplausible("locality", { city: "Nagoya" }, { precision: "city" }), null);
+  // Name lookups: "Ray-Ban" for RAY Fotografieprojekte, bare "Biennale" for Online Biennale.
+  const named = (name: string) => ({ precision: "point", raw_response: { address: { name } } });
+  assert.equal(forwardImplausible("name", { name: "RAY Fotografieprojekte Frankfurt/RheinMain" }, named("Ray-Ban")), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Online Biennale" }, named("Biennale")), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Dhaka Art Summit" }, { precision: "point", raw_response: {} }), "name_result_mismatch");
+  // Conservative: a provider name with a distinctive word the listing lacks is not trusted.
+  assert.equal(forwardImplausible("name", { name: "Zeitz MOCAA" }, named("Zeitz Museum of Contemporary Art Africa")), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Museo Tamayo Arte Contemporáneo" }, named("Museo Tamayo")), null);
+  // A coarse name-only result needs listed locality: with none it may be a shared word only.
+  assert.equal(forwardImplausible("name", { name: "Helsinki Biennial" }, { precision: "city" }), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Georgia Botanical Garden" }, { precision: "region" }), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Helsinki Biennial", country_code: "FI" }, { precision: "city" }), null);
+  assert.equal(forwardImplausible("venue", { name: "x" }, shop), null);
+  assert.equal(providerNameAgrees("Les Ateliers de Rennes", "Ateliers"), true);
+});
+
+test("a locality-only lookup never yields a point", () => {
+  const business = {
+    precision: "point",
+    precision_evidence: { value: "point", derivation: "fallback", warnings: ["point_precision_default"] },
+  };
+  const capped = capLocalityPrecision("locality", business);
+  assert.equal(capped.precision, "city");
+  assert.equal(capped.precision_evidence.derivation, "locality_query_cap");
+  assert.ok(capped.precision_evidence.warnings.includes("locality_query_point_capped"));
+  assert.equal(capLocalityPrecision("venue", business), business);
+  assert.equal(capLocalityPrecision("locality", { precision: "country" }).precision, "country");
+});
+
+test("a provider name stored under its category key is read", () => {
+  const museum = { precision: "point", raw_response: { address: { tourism: "Museo Tamayo", city: "Mexico City" } } };
+  assert.equal(forwardImplausible("name", { name: "Museo Tamayo Arte Contemporáneo" }, museum), null);
+  const shop = { precision: "point", raw_response: { address: { shop: "Ray-Ban", city: "Frankfurt" } } };
+  assert.equal(forwardImplausible("name", { name: "RAY Fotografieprojekte" }, shop), "name_result_mismatch");
+});
+
 test("qualified Various placeholders and non-ISO centroid codes never project", () => {
   for (const filler of ["Various villages", "Various (England)", "Various (nationwide)", "TBA (online)", "Multiple towns"])
     assert.equal(localityValue(filler), null, filler);
@@ -283,4 +331,39 @@ test("qualified Various placeholders and non-ISO centroid codes never project", 
   // Gaza's vendored centroid code GZ is not ISO; it identifies precision, never a country code.
   assert.equal(suppliedCountryCentroid({ lat: 31.354676, lng: 34.308825 }), "GZ");
   assert.equal(countryToCode("GZ"), undefined);
+});
+
+test("short acronyms and non-Latin names still count as distinctive", () => {
+  assert.equal(providerNameAgrees("TD Garden", "TD Garden"), true);
+  assert.equal(providerNameAgrees("故宫", "故宫"), true);
+  assert.equal(providerNameAgrees("TD Garden", "BB Garden"), false);
+  // Short lowercase Latin words remain noise.
+  assert.equal(providerNameAgrees("Jardin de la Ville", "de la"), false);
+});
+
+test("a listed acronym matches its expanded provider name; postcodes and astral characters stay safe", () => {
+  assert.equal(providerNameAgrees("MoMA", "Museum of Modern Art"), true);
+  assert.equal(providerNameAgrees("MoMA PS1", "Museum of Modern Art"), true);
+  assert.equal(providerNameAgrees("MoMA", "Metropolitan Opera"), false);
+  assert.equal(providerNameAgrees("moma", "Museum of Modern Art"), false);
+});
+
+test("names stating different place types never agree", () => {
+  assert.equal(providerNameAgrees("Central Garden", "Central Park"), false);
+  assert.equal(providerNameAgrees("Central Garden", "Central Gardens"), true);
+  assert.equal(providerNameAgrees("Huntington Library, Art Museum and Botanical Gardens", "Huntington Library"), true);
+});
+
+test("a coarse name-only result must agree with the listed city or region", () => {
+  const georgia = { precision: "region", raw_response: { address: { state: "Georgia", country_code: "us" } } };
+  assert.equal(forwardImplausible("name", { name: "Peach Garden", region: "California" }, georgia), "name_result_mismatch");
+  assert.equal(forwardImplausible("name", { name: "Peach Garden", region: "Georgia" }, georgia), null);
+  const helsinki = { precision: "city", city: "Helsinki", raw_response: { address: { city: "Helsinki" } } };
+  assert.equal(forwardImplausible("name", { name: "Photo Biennial", city: "Helsinki" }, helsinki), null);
+  assert.equal(forwardImplausible("name", { name: "Photo Biennial", city: "Turku" }, helsinki), "name_result_mismatch");
+});
+
+test("a coarse name-only result may match the listed region under any region field", () => {
+  const hit = { precision: "region", raw_response: { address: { province: "Ontario", country_code: "ca" } } };
+  assert.equal(forwardImplausible("name", { name: "Lakeside Garden", region: "Ontario" }, hit), null);
 });

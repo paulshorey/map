@@ -7,7 +7,8 @@ export interface ScoreInput {
     name: string | null;
     name_normalized: string | null;
     content_embedding: number[] | null;
-    website_domain: string | null;
+    /** Full website URL; compared by `websiteIdentity`, never by domain. */
+    website: string | null;
     phone: string | null;
     city: string | null;
     region: string | null;
@@ -18,7 +19,8 @@ export interface ScoreInput {
     name: string | null;
     name_normalized: string | null;
     content_embedding: number[] | null;
-    website_domain: string | null;
+    /** Full website URL; compared by `websiteIdentity`, never by domain. */
+    website: string | null;
     phone: string | null;
     city: string | null;
     region: string | null;
@@ -82,8 +84,8 @@ export function scoreCandidate(input: ScoreInput): CandidateScore {
   const distance = coarseCoordinate ? null : distanceScore(input.distanceM, input.radiusM);
   const locality = localityScore(input.current, input.candidate);
   const contact = strongContactSignal(
-    input.current.website_domain,
-    input.candidate.website_domain,
+    input.current.website,
+    input.candidate.website,
     input.current.phone,
     input.candidate.phone,
   );

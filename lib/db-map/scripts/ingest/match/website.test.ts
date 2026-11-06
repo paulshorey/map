@@ -1,0 +1,66 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { strongContactSignal, websiteIdentity } from "./denylist.js";
+
+test("websites compare by full URL, never by shared domain", () => {
+  // Distinct Forest Service campgrounds share fs.usda.gov.
+  const a = "https://www.fs.usda.gov/recarea/mbs/recarea/?recid=17880";
+  const b = "https://www.fs.usda.gov/recarea/mbs/recarea/?recid=18420";
+  assert.equal(strongContactSignal(a, b, null, null).website, false);
+  assert.equal(strongContactSignal(a, a, null, null).website, true);
+  // www, scheme, trailing slash, case and tracking parameters do not matter.
+  assert.equal(websiteIdentity("http://WWW.hpb.fi/?utm_source=x"), "hpb.fi");
+  assert.equal(websiteIdentity("hpb.fi"), "hpb.fi");
+  assert.equal(strongContactSignal("https://hpb.fi/", "http://www.hpb.fi", null, null).website, true);
+  // Directory listing pages differ by path; denied hosts never identify.
+  assert.equal(
+    strongContactSignal(
+      "https://biennialfoundation.org/biennials/vienna-biennale/",
+      "https://biennialfoundation.org/biennials/klima-biennale-wien/",
+      null,
+      null,
+    ).website,
+    false,
+  );
+  assert.equal(websiteIdentity("https://facebook.com/somegarden"), null);
+  assert.equal(websiteIdentity(""), null);
+  assert.equal(websiteIdentity("not a url"), null);
+  // A truncated escape (a real BGCI website) never throws; paths keep their case.
+  assert.equal(
+    websiteIdentity("https://www.northcentralcollege.edu/sites/default/files/documents/2017-10/Tree%2..."),
+    "northcentralcollege.edu/sites/default/files/documents/2017-10/Tree%2...",
+  );
+  assert.equal(websiteIdentity("https://example.com/%ZZ"), "example.com/%ZZ");
+  assert.equal(strongContactSignal("https://example.org/EventA", "https://example.org/eventa", null, null).website, false);
+  assert.equal(websiteIdentity("HTTPS://Example.ORG/EventA/"), "example.org/EventA");
+  // Hash-routed pages are distinct; ordinary anchors are not.
+  assert.equal(
+    strongContactSignal("https://tickets.example/#/event/a", "https://tickets.example/#/event/b", null, null).website,
+    false,
+  );
+  assert.equal(websiteIdentity("https://tickets.example/#!/event/a"), "tickets.example#!/event/a");
+  assert.equal(websiteIdentity("https://hpb.fi/#programme"), "hpb.fi");
+  // Non-default ports are distinct applications; default ports are dropped by URL parsing.
+  assert.equal(
+    strongContactSignal("https://example.org:8443/event", "https://example.org:9443/event", null, null).website,
+    false,
+  );
+  assert.equal(websiteIdentity("https://example.org:443/event"), "example.org/event");
+  // Adjacent tracking keys are all removed (the keys are copied before deletion).
+  assert.equal(
+    websiteIdentity("https://example.org/a?utm_source=x&utm_medium=y&utm_campaign=z&id=1"),
+    "example.org/a?id=1",
+  );
+});
+
+test("an incoming website matches any canonical member's website, not only the best member's", async () => {
+  const { candidateWebsite } = await import("../match.js");
+  const candidate = {
+    best_website: "https://www.fs.usda.gov/recarea/mbs/recarea/?recid=1",
+    canonical_website: null,
+    member_websites: ["https://www.fs.usda.gov/recarea/mbs/recarea/?recid=1", "https://lower-trust.example/garden"],
+  };
+  assert.equal(candidateWebsite("http://lower-trust.example/garden/", candidate), "https://lower-trust.example/garden");
+  assert.equal(candidateWebsite("https://elsewhere.example/", candidate), candidate.best_website);
+  assert.equal(candidateWebsite(null, candidate), candidate.best_website);
+});

@@ -14,104 +14,18 @@ export const PIPELINE_VERSIONS = {
   examples: EXAMPLES_VERSION,
   geocode: "locationiq-location-v4",
   embedding: "jina-match-v1",
-  matcher: "matcher-v3",
+  matcher: "matcher-v4",
   canonicalBuilder: "canonical-build-v7",
 } as const;
 
-/** Only reviewed checkpoint versions; older proofs also require a fresh full-run audit in inventory. */
+/**
+ * Reviewed older version sets whose checkpoints may resume under the current code. Empty by
+ * policy: data produced by older pipeline logic is never upgraded in place; it is purged and
+ * re-ingested from the raw captures (ingest:staleness, ingest:purge, ingest:clean). A future
+ * change that is genuinely checkpoint-compatible may list its predecessor here after review.
+ */
 export function compatibleCheckpointVersions(): Record<string, string>[] {
-  if (
-    PIPELINE_VERSIONS.normalizer !== "hybrid-v6" ||
-    PIPELINE_VERSIONS.prompt !== "poi-normalize-v4"
-  )
-    return [];
-  const reviewed = [
-    {
-      ...PIPELINE_VERSIONS,
-      normalizer: "hybrid-v3",
-      prompt: "poi-normalize-v2",
-    },
-    {
-      ...PIPELINE_VERSIONS,
-      normalizer: "hybrid-v4",
-      prompt: "poi-normalize-v3",
-    },
-    {
-      ...PIPELINE_VERSIONS,
-      normalizer: "hybrid-v5",
-      prompt: "poi-normalize-v4",
-    },
-    // Reviewed pre-slot geocode/build formats remain structural history. Deliberate
-    // resumes recheck format binding and reuse unchanged provider query caches.
-    ...["canonical-build-v3", "canonical-build-v4"].flatMap(
-      (canonicalBuilder) =>
-        [
-          ["hybrid-v3", "poi-normalize-v2"],
-          ["hybrid-v4", "poi-normalize-v3"],
-          ["hybrid-v5", "poi-normalize-v4"],
-          ["hybrid-v6", "poi-normalize-v4"],
-        ].map(([normalizer, prompt]) => ({
-          ...PIPELINE_VERSIONS,
-          normalizer: normalizer!,
-          prompt: prompt!,
-          geocode: "locationiq-location-v3",
-          canonicalBuilder,
-        })),
-    ),
-    // Historical coordinate-only proofs remain structural evidence. Location audit is separate;
-    // a deliberate resume rechecks the exact location binding in seedTasks.
-    ...[
-      ["hybrid-v3", "poi-normalize-v2"],
-      ["hybrid-v4", "poi-normalize-v3"],
-      ["hybrid-v5", "poi-normalize-v4"],
-      ["hybrid-v6", "poi-normalize-v4"],
-    ].map(([normalizer, prompt]) => ({
-      ...PIPELINE_VERSIONS,
-      normalizer: normalizer!,
-      prompt: prompt!,
-      geocode: "locationiq-v1",
-      canonicalBuilder: "canonical-build-v1",
-    })),
-    // Existing single-location imports stay valid. A deliberate new run/resume can
-    // collect two locations; deploying the code does not rewrite old builds.
-    ...[
-      ["hybrid-v3", "poi-normalize-v2"],
-      ["hybrid-v4", "poi-normalize-v3"],
-      ["hybrid-v5", "poi-normalize-v4"],
-      ["hybrid-v6", "poi-normalize-v4"],
-    ].map(([normalizer, prompt]) => ({
-      ...PIPELINE_VERSIONS,
-      normalizer: normalizer!,
-      prompt: prompt!,
-      geocode: "locationiq-location-v2",
-      canonicalBuilder: "canonical-build-v2",
-    })),
-  ];
-  return [
-    ...reviewed,
-    // #62 gated publication on an accepted assessment. Those checkpoints remain
-    // resumable; matcher-v3 / canonical-build-v7 publish conflicting evidence.
-    {
-      ...PIPELINE_VERSIONS,
-      matcher: "matcher-v2",
-      canonicalBuilder: "canonical-build-v6",
-    },
-    ...reviewed.map((v) => ({ ...v, matcher: "matcher-v1" })),
-    ...["hybrid-v3", "hybrid-v4", "hybrid-v5", "hybrid-v6"].map(
-      (normalizer) => ({
-        ...PIPELINE_VERSIONS,
-        normalizer,
-        prompt:
-          normalizer === "hybrid-v3"
-            ? "poi-normalize-v2"
-            : normalizer === "hybrid-v4"
-              ? "poi-normalize-v3"
-              : "poi-normalize-v4",
-        matcher: "matcher-v1",
-        canonicalBuilder: "canonical-build-v5",
-      }),
-    ),
-  ];
+  return [];
 }
 
 /** This source-preserving upgrade changes pending normalization only, not checkpoint validity. */

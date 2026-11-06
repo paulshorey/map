@@ -617,6 +617,10 @@ legacy attempt records.
 - **Normalize:** deterministic facts plus evidence-validated model interpretation. Source/URL
   coordinates are authoritative; models cannot invent coordinates, contacts, or identifiers.
   Cache inputs come from immutable captured evidence, never derived projections. Keys include model, prompt/schema/examples/profile/normalizer versions.
+  A profile's `listingDomains` drop directory pages from the official `website` (warning
+  `listing_url_not_official`). `event-v2` adds `biennialfoundation.org`, whose records list
+  their own directory page as the website. A source's own official site (Aurillac's
+  `aurillac.net` is both `source_url` and website) stays official.
   Failed refresh keeps prior valid output and marks it stale. Accepted changes clear derived
   embeddings/geocode pointers, invalidate old geocoded coordinates, and refresh or retire
   memberships/builds according to match changes. Prompt output must retain the input UUID.
@@ -814,7 +818,15 @@ The matcher uses a cascade:
 2. Strong IDs, such as Wikidata QIDs and OSM identifiers.
 3. Aggressive proximity rules for same-category nearby features.
 4. Candidate scoring from name, stored embedding similarity, distance, locality, contact
-   fields, coordinate precision, and date compatibility.
+   fields, coordinate precision, and date compatibility. Websites compare by full URL
+   identity (`websiteIdentity`: host without `www.`, path, query without tracking
+   parameters), never by domain: `fs.usda.gov` alone is shared by thousands of
+   campgrounds, and a directory's listing pages share its domain. The LLM adjudicator sees
+   the same full URLs (`matcher-v4`). Paths keep their case and are not decoded; hash
+   routes (`#/event/a`, `#!/…`) are kept, in-page anchors dropped.
+   Ports other than the default are part of the identity. A membership is valid only for
+   the current matcher version; records from older logic are re-ingested, never rematched
+   in place (see [Outdated data](#outdated-data-re-ingest-never-upgrade)).
 5. LLM adjudication for ambiguous gray-zone pairs when LLM is enabled.
 
 Each non-dry-run decision writes `research_match_decisions`.
@@ -860,6 +872,28 @@ columns:
 
 The canonical row stores the representative occurrence: next upcoming when available,
 otherwise the most recent. Status such as upcoming, ongoing, or past is derived at read time.
+
+## Outdated data: re-ingest, never upgrade
+
+Records produced by older pipeline logic (normalizer/prompt/schema/profile, location
+enrichment, geocoder, matcher or canonical builder versions) are **never upgraded in place**.
+The raw captures are kept, LLM normalization is cheap and paid geocode lookups are cached, so
+the fix is always to remove the source's data and import it again.
+
+```bash
+pnpm --filter @lib/db-map ingest:staleness            # per-source outdated counts (read-only)
+pnpm --filter @lib/db-map ingest:clean <file> --dry-run   # one file: review, then without --dry-run
+pnpm --filter @lib/db-map ingest:purge --dry-run          # everything
+pnpm --filter @lib/db-map ingest:purge --maintenance-token <owned-token> --confirm purge-all-imports
+```
+
+New runs refuse a source holding outdated records (`assertSourceCurrent`, error code
+`outdated_data`); standalone `ingest:match` refuses too (except `--recluster`). Only exact
+current-version checkpoints resume (`compatibleCheckpointVersions()` is empty by policy).
+`ingest:purge` truncates every import, run and canonical table and keeps the geocode query
+cache, category taxonomy, users, ingestion controls, capture inventory and centroid
+references; `purge.test.ts` keeps its table list aligned with `schema/current.sql`. When a
+change bumps a version, purge (or clean) the affected sources before re-running them.
 
 ## Targeted cleanup
 
@@ -922,6 +956,14 @@ without averaging or distance-based suppression. One usable point is required to
 publish. Legacy points with insufficient origin evidence keep their existing point
 and an explicit legacy/unknown classification rather than an invented source claim.
 
+Queries over 190 UTF-8 bytes drop leading comma-separated parts (institution names) until
+they fit, keeping street, city, region and country: LocationIQ answers HTTP 400 "Invalid
+Request" above about 200 bytes (a 188-character Cyrillic address is 280). Any remaining 400 is cached as an invalid-request miss for that
+query (so a resume continues at the fallback without a call), recorded in
+`validation.forward.invalid_queries`, and the fallback chain continues. A retained geocoded
+point that was this pipeline's own earlier inferred result takes a refreshed result and its
+precision; pre-slot legacy points and source/URL points are kept.
+
 Forward queries use immutable captured text and source location hints, never fields
 filled by reverse lookup or model coordinate proposals. Supplied address/locality
 wins over composite venue names for lookup; recognized listed countries constrain
@@ -944,12 +986,7 @@ precision. Each axis must equal the centroid rounded or truncated to that axis's
 decimals (at least two), and a listed country (captured, or `source_location_hints.country`)
 other than the centroid's rules the match out, so a full-precision venue near a
 microstate centroid stays a point. A match gets the `source_point_country_centroid` warning and `supplied_centroid` evidence; it
-is never an anchor for the 50 km checks below. When enrichment flips a linked record's point
-between `point` and a coarser precision, or removes or replaces its address, city, region
-or country (filling a missing field does not), its membership is retired
-(`coordinate_precision_changed`) and the record is matched again, because matching ignores
-distance for coarse points; overrides apply first, and the old canonical is not rebuilt: its
-snapshot is held until the rematch. A centroid's country fills a missing listed country only
+is never an anchor for the 50 km checks below. A centroid's country fills a missing listed country only
 when it is a current ISO code (not the vendored `GZ`/`AN`). A reverse lookup is trusted only to the
 point's precision: a `country` point keeps only the country, a `region` point drops the
 city, and any coarse or unknown-precision point drops the street address and postcode. A country centroid
@@ -978,6 +1015,25 @@ remain cached for provider-free retries. Names compare in any script
 `名古屋市`), or a result with no city-level field, is not a match and follows the same
 distance verification. Only a record with no listed city skips this check. Both lookups share the call budget.
 
+Two plausibility checks follow (`forwardImplausible`, `location.ts`). A lookup of only
+region/country text, with no listed city (`England`, `East Africa`, `USA / Mexico`), may
+locate at most a region or country: a city, village, shop or restaurant it returns is a
+name coincidence and is rejected as `locality_result_too_specific`. A lookup by the POI's
+name alone must return a place whose own name agrees: every distinctive word of the
+provider's name (generic words such as Biennale, Festival, Art are ignored) must appear
+in the listed name, otherwise `name_result_mismatch` (Ray-Ban for "RAY Fotografieprojekte").
+The rejected hit is kept in `validation.forward.rejected` (an earlier rejection nests under
+`previous`). Whenever a record with no point at all is left without a plausible result
+(a rejection or a plain miss), lookups fall back to the listed city, then the recognized
+listed country's English name, skipping queries already tried. The fallback is
+`query_basis: locality` (so `general`) and records `validation.forward.fallback_from`
+`{reason: miss|rejected, query}`; canonical ranking gives such a fallback no address priority. When
+query fitting drops the address, venue or name, the basis is what survived (`basisAfterFit`). Any locality-only result that comes back as a `point` (a business that
+shares the city's name) is labelled `city` (`locality_query_cap`). A record with a supplied or retained point keeps it.
+An unrecognized country text with no city (`East Africa`) leaves the record unlocated. An unlocated record is unpublished, its geocode task needs
+intervention, and `attributes.location_unresolved` records why (query, basis, rejected
+results, invalid queries). A later successful geocode removes it; canonicals never publish it.
+
 Each canonical build writes `attributes.location_specificity`: `precise` when a
 point-precision source coordinate exists, or a point-precision lookup used an address,
 venue or name (`validation.forward.query_basis`); otherwise `general`. General covers
@@ -997,7 +1053,7 @@ whose new lookup missed stays plottable and is judged by its stored precision.
 publication. A supplied point that repeats a published country centroid (for example
 Google's Australia centroid) is stored as `country` precision, so it counts as coarse.
 
-The `location-v5` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
+The `location-v8` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
 to its normalization/primary point, alongside separate listed text, forward query/result
 and reverse lookup. Canonical builder `canonical-build-v7` writes
 `attributes.coordinate_evidence` with source/research/normalization/geocode IDs for
@@ -1006,23 +1062,28 @@ inferred point or retained legacy point. Raw/model attributes cannot publish the
 reserved fields. The query policy remains `listed-location-v1`; unchanged provider
 queries reuse the `location-v2` cache namespace, so a representation upgrade does
 not repeat already-paid geocoding. There is no automatic historical sweep, but the
-location version is part of readiness: `locationReadySql()` treats every artifact
-whose `location_enrichment.version` is not the current `location-v5` (v1–v4) as stale,
-so the next geocode stage over any cohort re-enriches all of its records. Re-enrichment
-replays the `location-v2` forward/reverse caches and normally makes no provider calls;
-only records with no cached query or reverse point call the provider. Size a run by
-its cohort, not by records whose source data changed. v5 added coarse-point reverse
-trimming and supplied-centroid precision (above). The
+location version is part of readiness (`locationReadySql()`, also required for batch
+geocode reuse). Records from an older location version are not re-enriched in place: the
+staleness guard requires purging and re-ingesting the source; the `location-v2` query cache
+makes that re-ingestion mostly free of provider calls. v5 added coarse-point reverse
+trimming and supplied-centroid precision; v6 plausibility checks and precision v3; v7 the
+no-point fallback chain and precision v4; v8 caps locality-only results at `city` (above). The
 additive country-precision migration widens the two storage constraints; it does
 not reclassify stored points or rebuild existing artifacts.
 
 Forward results now retain the complete selected provider row as `raw_response`
 inside the query-cache hit and geocode artifact's `validation.forward.result`.
-Compact `precision_evidence` (`geocode-precision-v2`) records the operational
+Compact `precision_evidence` (`geocode-precision-v4`) records the operational
 value, its derivation, provider class/type, and diagnostic warnings. A provider
 `country` type, or a result whose address holds only country fields (OSM country
 boundaries arrive as `boundary`/`administrative`), is `country`; v1 called these
-`region` or `city`. Other type/class rules produce the existing city/region values;
+`region` or `city`. v3 reads an `administrative`/`boundary` result's precision from
+its own address: a city-level field makes it `city`, a state/region/province/county/island
+field `region`, otherwise `country` (`England` is a region, not a city; Mexico, Missouri
+is a city). Island, archipelago, county and similar types are `region`. v4: a row with
+no class/type and no street, house number or place name in its address takes the finest
+of city/region/country from its address (`Zongolica, Veracruz` is a city) instead of `point`. Other type/class
+rules produce the existing city/region values;
 remaining results keep the point fallback with `point_precision_default`, plus
 `provider_granularity_missing` when neither field exists. These are diagnostics,
 not venue-accuracy claims or matching/publication gates. The selected response
@@ -1215,7 +1276,7 @@ variable unset, the SQL test is explicitly skipped; no shared database is used.
 ### Canonical origin repair and resume
 
 `canonical-build-v7` preserves fixed source/inferred coordinate provenance and legacy origins, and publishes conflicting candidates. Deploying it does not
-rewrite historical data. `canonical-build-v5` and the acceptance-gated `canonical-build-v6` remain resumable predecessors. On an explicitly selected new run or compatible resume,
+rewrite historical data. Older builders are not resumable (outdated data is re-ingested). On a new run or exact-version resume,
 completed downstream tasks and batch/attempt caches reject older builders. The
 match stage rebuilds the existing canonical from its active members when its build
 is stale; it retains memberships and does not repeat match adjudication. Current

@@ -375,6 +375,7 @@ function mergeAttributes(rows: MergeRow[]): Record<string, unknown> {
         value === null ||
         key.startsWith("_") ||
         key === "location_enrichment" ||
+        key === "location_unresolved" ||
         key === "map_locations" ||
         key === "coordinate_evidence"
       )

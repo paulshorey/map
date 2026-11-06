@@ -89,6 +89,7 @@ function inferredRank(
     forward?: {
       result?: Parameters<typeof forwardLocalityConflict>[1];
       rejected?: unknown;
+      fallback_from?: unknown;
       city_confirmation?: { result?: { lat: number; lng: number } };
     };
   } | null;
@@ -100,9 +101,10 @@ function inferredRank(
   const listedAddress = localityValue(v?.listed?.address);
   const result = v?.forward?.result;
   const confirmation = v?.forward?.city_confirmation?.result;
-  // After a rejected venue/address hit, the stored result is the listed city's own lookup;
-  // the venue-conflict test does not apply to it (Nagoya → 名古屋市 is the accepted answer).
-  const cityFallback = !!v?.forward?.rejected;
+  // After a rejected or missed venue/address lookup, the stored result is the listed city's
+  // (or country's) own lookup: the venue-conflict test does not apply to it (Nagoya → 名古屋市
+  // is the accepted answer), and it earns no address priority.
+  const cityFallback = !!v?.forward?.rejected || !!v?.forward?.fallback_from;
   const conflict =
     !cityFallback &&
     !!result &&
@@ -116,7 +118,7 @@ function inferredRank(
     );
   return [
     conflict ? 0 : 1,
-    listedAddress && !v?.forward?.rejected ? 1 : 0,
+    listedAddress && !cityFallback ? 1 : 0,
     PRECISION_RANK[p.precision] ?? PRECISION_RANK.point!,
   ];
 }
@@ -196,7 +198,7 @@ export function locationSpecificity(
     const v = rows.find((r) => r.id === inferred.research_id)
       ?.location_validation as {
       listed?: { address?: unknown };
-      forward?: { query_basis?: unknown; rejected?: unknown };
+      forward?: { query_basis?: unknown; rejected?: unknown; fallback_from?: unknown };
     } | null;
     const forward = v?.forward;
     // `listed.address` holds only captured street-address fields. A stored `address` basis
@@ -207,7 +209,8 @@ export function locationSpecificity(
         ? "locality"
         : forward?.query_basis;
     // A rejected venue/address hit leaves the listed city's own lookup.
-    if (basis !== "locality" && !forward?.rejected) return "precise";
+    if (basis !== "locality" && !forward?.rejected && !forward?.fallback_from)
+      return "precise";
   }
   return "general";
 }

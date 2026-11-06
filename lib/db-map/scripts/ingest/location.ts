@@ -2,7 +2,7 @@
 import { countryToCode } from "./normalize/country.js";
 import { haversineMeters } from "./match/geo.js";
 import { validPoint } from "../../lib/ingestion/location-points.js";
-export const LOCATION_VERSION = "location-v5";
+export const LOCATION_VERSION = "location-v8";
 export const LOCATION_GEOCODER_VERSION = "locationiq-location-v4";
 export const LOCATION_CACHE_VERSION = "location-v2";
 export const LOCATION_QUERY_VERSION = "listed-location-v1";
@@ -118,6 +118,199 @@ export function forwardLocalityConflict(
     ? true
     : haversineMeters(anchor, hit) > LOCALITY_CONFLICT_M;
 }
+// Words that name the kind of place, not which one: "Biennale" alone identifies nothing.
+const GENERIC_NAME_TOKENS = new Set(
+  (
+    "biennale biennial biennal bienal bienale biennalen triennale triennial trienal " +
+    "quadriennale festival festivals fair art arts artes international internacional " +
+    "contemporary contemporanea contemporain the and for of de la le les del della di du des " +
+    "der und van een museum gallery galerie center centre park garden gardens online"
+  ).split(" "),
+);
+// Short tokens still identify a place when they are an acronym ("TD Garden") or non-Latin
+// ("故宫"); only short lowercase Latin words are noise.
+const significantTokens = (value: string) =>
+  value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .split(/[^\p{L}\p{M}\p{N}]+/u)
+    .filter(
+      (t) =>
+        t &&
+        !GENERIC_NAME_TOKENS.has(t.toLowerCase()) &&
+        (t.length >= 3 ||
+          /[^\p{Script=Latin}\p{N}]/u.test(t) ||
+          (t.length === 2 && /^\p{Lu}+$/u.test(t))),
+    )
+    .map((t) => t.toUpperCase());
+
+// Place-type words: two names that each state a type must share one ("Central Garden" is
+// not "Central Park").
+const PLACE_TYPE_TOKENS = new Set(
+  (
+    "park garden gardens museum gallery galerie center centre festival fair biennale biennial " +
+    "triennale triennial arboretum zoo cemetery church cathedral temple library theatre theater " +
+    "hall school university college market stadium arena"
+  ).split(" "),
+);
+const placeTypes = (value: string) =>
+  new Set(
+    foldTokens(value)
+      .map((t) => t.toLowerCase())
+      .filter((t) => PLACE_TYPE_TOKENS.has(t))
+      .map((t) => t.replace(/s$/, "")),
+  );
+
+/** Initials of every word ("Museum of Modern Art" -> "MOMA"). */
+const initials = (value: string) =>
+  value
+    .normalize("NFKD")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
+
+/** True when every distinctive word of the provider's place name appears in the listed name,
+ * or a listed acronym spells the provider name's initials (MoMA, Museum of Modern Art). */
+export function providerNameAgrees(listedName: string, providerName: string) {
+  const listedTypes = placeTypes(listedName);
+  const providerTypes = placeTypes(providerName);
+  if (
+    listedTypes.size &&
+    providerTypes.size &&
+    ![...providerTypes].some((t) => listedTypes.has(t))
+  )
+    return false;
+  const listed = new Set(significantTokens(listedName));
+  const provider = significantTokens(providerName);
+  if (provider.length > 0 && provider.every((t) => listed.has(t))) return true;
+  const spelled = initials(providerName);
+  return (
+    spelled.length >= 2 &&
+    listedName
+      .split(/[^\p{L}\p{N}]+/u)
+      .some(
+        (w) =>
+          w.length >= 2 &&
+          /\p{Lu}.*\p{Lu}/u.test(w) &&
+          w.toUpperCase() === spelled,
+      )
+  );
+}
+
+/**
+ * Why a forward result cannot stand for the listed text, or null when it can. A lookup of only
+ * region/country text ("England", "East Africa", "USA / Mexico") locates at most a region: a
+ * city, village, shop or restaurant it returns is a coincidence of names. A lookup by the POI's
+ * name alone must return a place whose own name matches (not "Ray-Ban" for "RAY Fotografie").
+ */
+export function forwardImplausible(
+  basis: string | null,
+  listed: {
+    city?: unknown;
+    name?: unknown;
+    region?: unknown;
+    country_code?: unknown;
+    country_name?: unknown;
+  },
+  hit: { precision: string; raw_response?: Record<string, unknown> | null },
+): "locality_result_too_specific" | "name_result_mismatch" | null {
+  if (
+    basis === "locality" &&
+    !localityValue(listed.city) &&
+    hit.precision !== "region" &&
+    hit.precision !== "country"
+  )
+    return "locality_result_too_specific";
+  // A name-only lookup with nothing local listed cannot support a city, region or country it
+  // happens to share a word with ("Georgia" in a garden's name).
+  if (basis === "name" && hit.precision !== "point") {
+    // A coarse name-only result is general evidence only where it agrees with the listing: the
+    // country filter covers a listed country; otherwise its city or region must match.
+    const address = (hit.raw_response?.address ?? {}) as Record<
+      string,
+      unknown
+    >;
+    const fold = (v: unknown) =>
+      (localityValue(v) ?? "")
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    if (
+      localityValue(listed.country_code) ||
+      localityValue(listed.country_name)
+    ) {
+      // constrained by the provider's country filter
+    } else if (localityValue(listed.city)) {
+      if (resultNamesListedCity(String(listed.city), hit as never) !== true)
+        return "name_result_mismatch";
+    } else if (localityValue(listed.region)) {
+      const region = fold(listed.region);
+      if (
+        !["state", "region", "province", "state_district", "county"].some(
+          (key) => fold(address[key]) === region,
+        )
+      )
+        return "name_result_mismatch";
+    } else return "name_result_mismatch";
+  }
+  if (basis === "name" && hit.precision === "point") {
+    const address = hit.raw_response?.address as
+      | Record<string, unknown>
+      | undefined;
+    // LocationIQ may store the feature's name under its category key instead of `name`.
+    const providerName =
+      [
+        "name",
+        "amenity",
+        "tourism",
+        "shop",
+        "leisure",
+        "building",
+        "historic",
+        "office",
+      ]
+        .map((key) => textValue(address?.[key]))
+        .find(Boolean) ?? null;
+    const name = textValue(listed.name);
+    if (!name || !providerName || !providerNameAgrees(name, providerName))
+      return "name_result_mismatch";
+  }
+  return null;
+}
+/**
+ * A lookup of only locality text locates at most that locality: a business it happens to
+ * return ("Mosaicos Venecianos" for "Cuernavaca, Morelos") is labelled `city`, not `point`.
+ */
+export function capLocalityPrecision<
+  T extends {
+    precision: string;
+    precision_evidence?: {
+      value: string;
+      derivation: string;
+      warnings: string[];
+    };
+  },
+>(basis: string | null, hit: T): T {
+  if (basis !== "locality" || hit.precision !== "point") return hit;
+  return {
+    ...hit,
+    precision: "city",
+    ...(hit.precision_evidence
+      ? {
+          precision_evidence: {
+            ...hit.precision_evidence,
+            value: "city",
+            derivation: "locality_query_cap",
+            warnings: [
+              ...hit.precision_evidence.warnings,
+              "locality_query_point_capped",
+            ],
+          },
+        }
+      : {}),
+  };
+}
 export function locationReadySql(alias = "rp"): string {
   return `(${alias}.attributes->'location_enrichment'->>'version'='${LOCATION_VERSION}'
     AND ${alias}.attributes->'location_enrichment'->>'normalization_id'=${alias}.active_normalization_id::text
@@ -143,7 +336,9 @@ export function reverseForPrecision(
     ...reverse,
     address: null,
     postcode: null,
-    ...(precision === "region" || precision === "country" ? { city: null } : {}),
+    ...(precision === "region" || precision === "country"
+      ? { city: null }
+      : {}),
     ...(precision === "country" ? { region: null, region_code: null } : {}),
   };
 }

@@ -15,7 +15,7 @@ import {
   GeocodeError,
   type GeocodeHit,
 } from "./providers/locationiq.js";
-import { artifactTransaction } from "./execution.js";
+import { artifactTransaction, fencedTransaction } from "./execution.js";
 import { canonicalLane } from "./concurrency.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { rebuildCanonicalPoi } from "./merge.js";
@@ -25,6 +25,8 @@ import {
   LOCATION_GEOCODER_VERSION,
   LOCATION_QUERY_VERSION,
   LOCALITY_CONFLICT_M,
+  capLocalityPrecision,
+  forwardImplausible,
   forwardLocalityConflict,
   localityValue,
   locationReadySql,
@@ -33,6 +35,7 @@ import {
   reverseForPrecision,
   type ReverseLocation,
 } from "./location.js";
+import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
 import { suppliedCountryCentroid } from "./supplied-centroids.js";
 import { stableHash } from "./hash.js";
@@ -133,6 +136,36 @@ async function resolveSourceId(db: Pool, slug: string): Promise<string> {
  * to wrong matches. Place records (gardens, campgrounds) keep the name: it IS
  * the place name and is often the only usable signal (e.g. ArbNet).
  */
+/**
+ * LocationIQ answers HTTP 400 "Invalid Request" for queries over about 200 UTF-8 bytes: a
+ * 188-character Cyrillic address is 280 bytes. Lengths are measured in bytes.
+ */
+export const MAX_QUERY_BYTES = 190;
+const bytes = (text: string) => Buffer.byteLength(text, "utf8");
+
+/**
+ * Keep the most local, structured end of an over-long query: drop leading comma-separated
+ * parts (institution and department names) until it fits, so the street, city, region and
+ * country remain ("Departamento de Botánica…, Km 15.5 carr. …, Zapopan, Jalisco, Mexico").
+ */
+export function fitQueryLength(display: string): string {
+  if (bytes(display) <= MAX_QUERY_BYTES) return display;
+  const parts = display.split(/\s*,\s*/);
+  while (parts.length > 1 && bytes(parts.join(", ")) > MAX_QUERY_BYTES)
+    parts.shift();
+  let fitted = parts.join(", ");
+  // A single over-long part: keep its end, starting at a word boundary.
+  while (bytes(fitted) > MAX_QUERY_BYTES) {
+    const space = fitted.indexOf(" ");
+    // Whole code points only: never leave half a surrogate pair.
+    fitted =
+      space === -1
+        ? Array.from(fitted).slice(1).join("")
+        : fitted.slice(space + 1);
+  }
+  return fitted;
+}
+
 export function buildQuery(
   row: GeoRow,
   temporalSlugs: Set<string>,
@@ -156,7 +189,7 @@ export function buildQuery(
       ? locality
       : [row.name?.trim() ?? "", ...locality].filter((p) => p.length > 0);
   if (parts.length === 0) return null;
-  const display = parts.join(", ");
+  const display = fitQueryLength(parts.join(", "));
   const norm = display
     .toLowerCase()
     .normalize("NFKD")
@@ -167,8 +200,24 @@ export function buildQuery(
   return { display, norm };
 }
 
+/** The listed country's English name, for a fallback after an implausible lookup. */
+export function countryOnlyQuery(code: string) {
+  const display = countries.getName(code, "en");
+  if (!display) return null;
+  const norm = display
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return { display, norm };
+}
+
 /** Listed fields a reverse lookup can supply at each point precision (see reverseForPrecision). */
-const REVERSE_FIELDS: Record<string, Array<"country_code" | "region" | "city" | "address">> = {
+const REVERSE_FIELDS: Record<
+  string,
+  Array<"country_code" | "region" | "city" | "address">
+> = {
   point: ["country_code", "region", "city", "address"],
   city: ["country_code", "region", "city"],
   unknown: ["country_code", "region", "city"],
@@ -249,6 +298,61 @@ export function listedQuery(
 
 export type QueryBasis = "address" | "venue" | "name" | "locality";
 
+/**
+ * `fitQueryLength` may drop the address, venue or name from an over-long query; the basis is
+ * then what survived (normally the locality), so locality guards still apply to the result.
+ */
+export function basisAfterFit(
+  basis: QueryBasis,
+  listed: {
+    address?: string | null;
+    venue?: string | null;
+    name?: string | null;
+    city?: string | null;
+    region?: string | null;
+    country_name?: string | null;
+    country_code?: string | null;
+  },
+  display: string,
+): QueryBasis {
+  // A component survives only through a part of its own that is still in the query and is
+  // not just the listed locality: "…, Rue X, Paris" trimmed to "Paris" is locality text.
+  const fold = (t: string) => t.trim().toLowerCase();
+  const kept = new Set(display.split(/\s*,\s*/).map(fold));
+  // Same comma parts as the query: "Paris, Île-de-France" contributes "paris".
+  const locality = new Set(
+    [listed.city, listed.region, listed.country_name, listed.country_code]
+      .filter((t): t is string => !!t)
+      .flatMap((t) => t.split(/\s*,\s*/))
+      .map(fold)
+      .filter(Boolean),
+  );
+  // The first kept part may be the trimmed tail of a single over-long component.
+  const head = [...kept][0] ?? "";
+  const survives = (text: string | null | undefined) =>
+    !!text &&
+    text
+      .split(/\s*,\s*/)
+      .map(fold)
+      .some(
+        (part) =>
+          !!part &&
+          !locality.has(part) &&
+          (kept.has(part) ||
+            (head.length >= 8 && !locality.has(head) && part.endsWith(head))),
+      );
+  if (basis === "address" && !survives(listed.address))
+    return survives(listed.venue)
+      ? "venue"
+      : survives(listed.name)
+        ? "name"
+        : "locality";
+  if (basis === "venue" && !survives(listed.venue))
+    return survives(listed.name) ? "name" : "locality";
+  if (basis === "name" && !survives(listed.name)) return "locality";
+  return basis;
+}
+
 /** The most specific listing text in `listedQuery`'s lookup. `locality` means only
  * city/region/country text, so its result is a general location, never a venue or address. */
 export function listedQueryBasis(
@@ -317,6 +421,7 @@ async function writeCache(
   db: Pool,
   norm: string,
   hit: GeocodeHit | null,
+  extra: Record<string, unknown> = {},
 ): Promise<void> {
   await db.query(
     `INSERT INTO research_geocode_cache (query_norm, lat, lng, precision, provider, payload)
@@ -331,7 +436,7 @@ async function writeCache(
       hit?.lng ?? null,
       hit?.precision ?? null,
       hit?.provider ?? "locationiq",
-      JSON.stringify({ hit }),
+      JSON.stringify({ hit, ...extra }),
     ],
   );
 }
@@ -398,6 +503,21 @@ export async function writeRowCoords(
       };
     });
   await (linked ? canonicalLane.run(activate) : activate());
+}
+
+/** Record why a record has no plausible point (shown by location review); nothing else changes. */
+async function recordUnlocated(
+  db: Pool,
+  researchId: string,
+  evidence: Record<string, unknown>,
+) {
+  await fencedTransaction(db, (client) =>
+    client.query(
+      `UPDATE research_pois SET attributes=COALESCE(attributes,'{}'::jsonb)
+        || jsonb_build_object('location_unresolved',$2::jsonb) WHERE id=$1`,
+      [researchId, JSON.stringify(evidence)],
+    ),
+  );
 }
 
 /** Collect an independent listed-location candidate, then source-first reverse enrichment. */
@@ -500,6 +620,11 @@ export async function runGeocode(
               provider: "locationiq",
             }
           : null;
+        if (
+          (cached.payload as { invalid_request?: boolean } | undefined)
+            ?.invalid_request
+        )
+          invalidQueries.push(query.display);
         if (!hit) stats.knownMisses++;
         else if (hit.raw_response) {
           // The saved provider row reproduces the current classifier without a paid refetch.
@@ -516,7 +641,24 @@ export async function runGeocode(
         return { key, hit: null, stop: "dry_run" as const };
       }
       if (opts.throttleMs > 0) await sleep(opts.throttleMs);
-      const hit = await geocode(query.display, forwardCountry);
+      let hit: GeocodeHit | null;
+      try {
+        hit = await geocode(query.display, forwardCountry);
+      } catch (error) {
+        // "Invalid Request" is about this query, not the provider: treat it as an uncached
+        // miss so the fallback chain continues and one record cannot stop a whole file.
+        if (
+          error instanceof GeocodeError &&
+          (error as { status?: number }).status === 400
+        ) {
+          stats.apiCalls++;
+          invalidQueries.push(query.display);
+          // Deterministic for this query: remember it so a resume continues at the fallback.
+          await writeCache(db, key, null, { invalid_request: true });
+          return { key, hit: null, stop: null };
+        }
+        throw error;
+      }
       stats.apiCalls++;
       await writeCache(db, key, hit);
       return { key, hit, stop: null };
@@ -525,9 +667,15 @@ export async function runGeocode(
     let forwardQueryNorm: string | null = null;
     let forwardQuery = q;
     let forwardBasis: QueryBasis | null = q
-      ? listedQueryBasis(row, captured, temporal)
+      ? basisAfterFit(
+          listedQueryBasis(row, captured, temporal),
+          listedLocality(row, captured),
+          q.display,
+        )
       : null;
     let rejected: Record<string, unknown> | null = null;
+    let fallbackFrom: { reason: string; query: string } | null = null;
+    const invalidQueries: string[] = [];
     let cityConfirmation: {
       query: string;
       query_norm: string;
@@ -589,10 +737,91 @@ export async function runGeocode(
           forward = retry.hit ?? null;
         }
       }
+      const implausible =
+        forward &&
+        forwardImplausible(
+          forwardBasis,
+          listedLocality(row, captured),
+          forward,
+        );
+      if (forward && implausible) {
+        // Keep the paid result as evidence; it never occupies the inferred slot.
+        const current = {
+          reason: implausible,
+          query: forwardQuery?.display ?? q.display,
+          query_norm: forwardQueryNorm,
+          result: forward,
+        };
+        rejected = rejected ? { ...current, previous: rejected } : current;
+        forward = null;
+      }
+      // No plausible result and no point at all: fall back to the listed city, then the
+      // recognized country, so the record still publishes as a general location. A record
+      // with a supplied or retained point keeps it.
+      if (!forward && !validPoint({ lat, lng })) {
+        const tried = new Set([q.norm, forwardQuery?.norm]);
+        const listed = listedLocality(row, captured);
+        const steps = [
+          { query: listedCityQuery(row, captured, temporal), listed },
+          {
+            query: forwardCountry ? countryOnlyQuery(forwardCountry) : null,
+            listed: { city: null },
+          },
+        ];
+        let stop: "budget" | "other" | null = null;
+        for (const step of steps) {
+          if (!step.query || tried.has(step.query.norm)) continue;
+          tried.add(step.query.norm);
+          const retry = await lookup(step.query);
+          if (retry.stop) {
+            stop = retry.stop === "budget" ? "budget" : "other";
+            break;
+          }
+          if (
+            retry.hit &&
+            !forwardImplausible("locality", step.listed, retry.hit)
+          ) {
+            fallbackFrom = {
+              reason: rejected ? "rejected" : "miss",
+              query: q.display,
+            };
+            forward = retry.hit;
+            forwardQuery = step.query;
+            forwardBasis = "locality";
+            forwardQueryNorm = retry.key;
+            break;
+          }
+        }
+        if (stop === "budget") {
+          stats.budgetHit = true;
+          break;
+        }
+        if (stop) continue;
+      }
+      if (forward) forward = capLocalityPrecision(forwardBasis, forward);
     } else stats.noQuery++;
     if (!validPoint({ lat, lng })) {
       if (!forward) {
         stats.unresolved++;
+        // Every lookup finished (budget/provider stops exit above): no plausible point exists.
+        if (!opts.dryRun)
+          await recordUnlocated(db, row.id, {
+            version: LOCATION_VERSION,
+            normalization_id: row.active_normalization_id,
+            settled_at: new Date().toISOString(),
+            forward: {
+              query_version: LOCATION_QUERY_VERSION,
+              country_filter: forwardCountry,
+              query: q?.display ?? null,
+              query_basis: forwardBasis,
+              query_norm: forwardQueryNorm,
+              state: !q ? "no_query" : "unresolved",
+              ...(rejected ? { rejected } : {}),
+              ...(invalidQueries.length
+                ? { invalid_queries: invalidQueries }
+                : {}),
+            },
+          });
         continue;
       }
       lat = forward.lat;
@@ -633,10 +862,16 @@ export async function runGeocode(
     const queryNorm = `${LOCATION_CACHE_VERSION}:reverse:${lat}:${lng}`;
     // Only fields a reverse lookup may still supply at this precision justify a call; a
     // centroid match already names its country.
-    const reverseNeeded = REVERSE_FIELDS[coordinatePrecision ?? "unknown"]!.some(
+    const reverseNeeded = REVERSE_FIELDS[
+      coordinatePrecision ?? "unknown"
+    ]!.some(
       (key) =>
         !source[key] &&
-        !(key === "country_code" && suppliedCentroid && countryToCode(suppliedCentroid)),
+        !(
+          key === "country_code" &&
+          suppliedCentroid &&
+          countryToCode(suppliedCentroid)
+        ),
     );
     let hit: ReverseLocation | null = null;
     if (reverseNeeded) {
@@ -679,7 +914,9 @@ export async function runGeocode(
       resolved.warnings.push("reverse_location_incomplete");
     // The matched centroid identifies the country when the listing names none.
     // Vendored codes include non-ISO entries (GZ, AN); only a current ISO code is projected.
-    const centroidCountry = suppliedCentroid ? countryToCode(suppliedCentroid) : undefined;
+    const centroidCountry = suppliedCentroid
+      ? countryToCode(suppliedCentroid)
+      : undefined;
     if (centroidCountry && !resolved.fields.country_code) {
       resolved.fields.country_code = centroidCountry;
       (resolved.provenance as Record<string, unknown>).country_code =
@@ -705,6 +942,8 @@ export async function runGeocode(
         result: forward,
         ...(rejected ? { rejected } : {}),
         ...(cityConfirmation ? { city_confirmation: cityConfirmation } : {}),
+        ...(fallbackFrom ? { fallback_from: fallbackFrom } : {}),
+        ...(invalidQueries.length ? { invalid_queries: invalidQueries } : {}),
       },
       coordinate_evidence: coordinateEvidence,
       ...(suppliedCentroid
@@ -718,11 +957,7 @@ export async function runGeocode(
         : {}),
       ...resolved,
       reverse: hit,
-      lookup_state: hit
-        ? "resolved"
-        : reverseNeeded
-          ? "miss"
-          : "not_needed",
+      lookup_state: hit ? "resolved" : reverseNeeded ? "miss" : "not_needed",
       assessed_at: new Date().toISOString(),
     };
     const inputHash = stableHash({
@@ -764,7 +999,7 @@ export async function runGeocode(
         // This artifact certifies enrichment of the original point; it never substitutes a nearby object's point.
         const activated = await client.query(
           `UPDATE research_pois SET lat=$11,lng=$12,coordinate_source=$13,coordinate_precision=$14,geocode_query_norm=$15,country_code=$2,city=$3,region=$4,address=$5,active_geocode_id=$6,
-        attributes=COALESCE(attributes,'{}'::jsonb)||jsonb_build_object('location_enrichment',$7::jsonb),
+        attributes=(COALESCE(attributes,'{}'::jsonb)-'location_unresolved')||jsonb_build_object('location_enrichment',$7::jsonb),
         content_embedding=CASE WHEN city IS DISTINCT FROM $3 OR region IS DISTINCT FROM $4 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE content_embedding END,
         active_embedding_id=CASE WHEN city IS DISTINCT FROM $3 OR region IS DISTINCT FROM $4 OR country_code IS DISTINCT FROM $2 THEN NULL ELSE active_embedding_id END
         WHERE id=$1 AND active_normalization_id=$8 AND lat IS NOT DISTINCT FROM $9::float8 AND lng IS NOT DISTINCT FROM $10::float8`,
@@ -791,38 +1026,7 @@ export async function runGeocode(
             new Error("Location input changed during activation"),
             { code: "lineage_invalid" },
           );
-        // Matching drops the distance signal for a coarse point and scores locality fields, so a
-        // point that crosses point/coarse precision, or changed city/region/country, is matched
-        // again. Overrides apply first there.
-        const coarse = (p: unknown) => p !== "point";
-        // Locality fields (and the address the LLM judge sees) feed matching and the cleared
-        // embedding text. Removing or replacing one can undo the evidence a merge passed on;
-        // filling a gap only adds it.
-        const lost = (before: unknown, after: unknown) =>
-          before != null && before !== after;
-        const localityChanged =
-          lost(row.address, resolved.fields.address) ||
-          lost(row.city, resolved.fields.city) ||
-          lost(row.region, resolved.fields.region) ||
-          lost(row.country_code, resolved.fields.country_code);
-        const rematch =
-          !!row.canonical_poi_id &&
-          (coarse(row.coordinate_precision) !== coarse(coordinatePrecision) ||
-            localityChanged);
-        if (rematch) {
-          await client.query(
-            `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
-            retirement_reason='coordinate_precision_changed' WHERE research_poi_id=$1 AND active`,
-            [row.id],
-          );
-          await client.query(
-            "UPDATE research_pois SET canonical_poi_id=NULL, matched_normalization_id=NULL WHERE id=$1",
-            [row.id],
-          );
-        }
-        // A rematch keeps the old canonical's accepted snapshot until a replacement membership
-        // exists (matching rebuilds the prior canonical then), as normalization activation does.
-        if (row.canonical_poi_id && !rematch)
+        if (row.canonical_poi_id)
           await rebuildCanonicalPoi(client, row.canonical_poi_id, {
             noLlm: true,
           });
