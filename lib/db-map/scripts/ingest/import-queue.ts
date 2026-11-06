@@ -391,12 +391,20 @@ export async function runQueue(id: string) {
   const presence = await dedicatedClient(`import-queue:${id}`, () => {
     lockLost = true;
   });
-  const present = (
-    await presence.query("SELECT pg_try_advisory_lock($1, $2) AS ok", [
-      INGEST_LOCK_NAMESPACE,
-      IMPORT_QUEUE_PRESENCE_LOCK,
-    ])
-  ).rows[0]?.ok;
+  let present = false;
+  try {
+    present = !!(
+      await presence.query("SELECT pg_try_advisory_lock($1, $2) AS ok", [
+        INGEST_LOCK_NAMESPACE,
+        IMPORT_QUEUE_PRESENCE_LOCK,
+      ])
+    ).rows[0]?.ok;
+  } catch (error) {
+    // Ending the session releases anything it may hold.
+    await presence.end().catch(() => undefined);
+    await closeDb();
+    throw error;
+  }
   if (!present) {
     await presence.end().catch(() => undefined);
     const holder = await queueLockHolder();
@@ -427,9 +435,9 @@ export async function runQueue(id: string) {
     await closeDb();
     throw error;
   }
-  const deadline = Date.now() + 3600_000;
   // (Presence guarantees no other queue worker; only a plain import can hold the lock now.)
-  while (!lock && Date.now() < deadline && !lockLost && !(await stopRequested(id))) {
+  // Waits as long as the plain import runs (it was admitted first); stop requests end the wait.
+  while (!lock && !lockLost && !(await stopRequested(id))) {
     // Heartbeat: a recently updated `queued` state is a live, waiting worker (see reconcileStale).
     try {
       const waiting = await loadQueue(id);
@@ -476,7 +484,7 @@ export async function runQueue(id: string) {
         q.message = "Stopped by operator request while waiting to start";
       } else {
         q.status = "needs_attention";
-        q.message = "A plain ingest:run kept the queue lock for over an hour; resume the queue when it finishes";
+        q.message = "The queue lock could not be acquired; check ingest:control list --json, then resume";
       }
       await saveQueue(q);
     } finally {
@@ -587,7 +595,9 @@ export async function runQueue(id: string) {
         if (lockLost || (await stopRequested(id))) {
           entry.status = "stopped";
           q.status = "stopped";
-          q.message = "Stopped by operator request before the next launch";
+          q.message = lockLost
+            ? "Stopped before launch: the queue's lock connection was lost"
+            : "Stopped by operator request before the next launch";
           return;
         }
         entry.status = "running";
@@ -888,7 +898,8 @@ async function main() {
     const own = dash >= 0 ? rest.slice(0, dash) : rest;
     for (let i = 0; i < own.length; i++) {
       const arg = own[i]!;
-      if (!arg.startsWith("--")) continue;
+      // Control commands take no positional arguments (a bare id must be --queue <id>).
+      if (!arg.startsWith("--")) throw new Error(`Unexpected argument for ${command}: ${arg} (use --queue <id>)`);
       if (!allowed[command]!.includes(arg)) throw new Error(`Unknown option for ${command}: ${arg}`);
       if (["--plan", "--queue"].includes(arg)) i++;
     }

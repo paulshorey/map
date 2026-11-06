@@ -65,11 +65,6 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
   try {
     // Bounded diagnostics (--limit/--record/--shadow) run beside a queue; full imports do not.
     if (!fromQueue && full) {
-      // A queue waiting to start (presence held, queue lock not yet) also has priority.
-      if (await importQueuePresenceHolder(fence))
-        throw new Error(
-          "An import queue is active or waiting to start (ingest:import-queue status); stop it or add this file to a queue",
-        );
       const { rows } = await fence.query("SELECT pg_try_advisory_lock_shared($1, $2) AS ok", [
         INGEST_LOCK_NAMESPACE,
         IMPORT_QUEUE_LOCK,
@@ -77,6 +72,12 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
       if (!rows[0]?.ok)
         throw new Error(
           "An import queue is running (ingest:import-queue status); stop it or add this file to a queue",
+        );
+      // Checked while holding the shared lock: a queue that became present first has priority;
+      // one that becomes present after this point waits for this import to finish.
+      if (await importQueuePresenceHolder(fence))
+        throw new Error(
+          "An import queue is active or waiting to start (ingest:import-queue status); stop it or add this file to a queue",
         );
     }
     if (full) {
