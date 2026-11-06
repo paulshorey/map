@@ -164,7 +164,7 @@ const queueLockHolder = () => importQueuePresenceHolder(getDb());
 /** Wait until `until`, waking every 30 s to honour a stop request. Returns false if stopped. */
 async function waitUntil(id: string, until: number): Promise<boolean> {
   while (Date.now() < until) {
-    if (await stopRequested(id)) return false;
+    if (lockLost || (await stopRequested(id))) return false;
     await sleep(Math.min(30_000, until - Date.now()));
   }
   return true;
@@ -424,9 +424,16 @@ export async function runQueue(id: string) {
   // (Presence guarantees no other queue worker; only a plain import can hold the lock now.)
   while (!lock && Date.now() < deadline && !lockLost && !(await stopRequested(id))) {
     // Heartbeat: a recently updated `queued` state is a live, waiting worker (see reconcileStale).
-    const waiting = await loadQueue(id);
-    waiting.message = "Waiting for a running plain import to finish";
-    await saveQueue(waiting).catch(() => undefined);
+    try {
+      const waiting = await loadQueue(id);
+      waiting.message = "Waiting for a running plain import to finish";
+      await saveQueue(waiting).catch(() => undefined);
+    } catch (error) {
+      // Never keep presence (or a lock) if the state cannot be read.
+      await endPresence();
+      await closeDb();
+      throw error;
+    }
     await sleep(60_000);
     lock = await acquireQueueLock(id);
   }
@@ -526,6 +533,7 @@ export async function runQueue(id: string) {
           await saveQueue(q);
           break;
         }
+        const waitedFrom = Date.now();
         const blocked = await admissionClear(id);
         if (blocked) {
           entry.status = blocked === "stop requested" ? "stopped" : "needs_attention";
@@ -533,6 +541,18 @@ export async function runQueue(id: string) {
           q.status = entry.status === "stopped" ? "stopped" : "needs_attention";
           q.message = entry.reason;
           return;
+        }
+        // After a wait the inventory may have changed: re-check everything before launching.
+        if (Date.now() - waitedFrom > 5_000) {
+          const again = await fileState(entry);
+          if (
+            again.coverage !== state.coverage ||
+            again.action !== state.action ||
+            again.sha !== state.sha ||
+            again.extractorVersion !== state.extractorVersion ||
+            again.needsDiagnosis !== state.needsDiagnosis
+          )
+            continue;
         }
         // Resumes keep the run's saved limits (runs this queue started are unlimited anyway).
         // Ready-to-verify output only needs the report/verification stages.
@@ -579,6 +599,7 @@ export async function runQueue(id: string) {
         if (
           entry.outcome === "paused" &&
           evidence.status === "paused" &&
+          !lockLost &&
           (await stopNowRequested(id))
         ) {
           entry.status = "stopped";
