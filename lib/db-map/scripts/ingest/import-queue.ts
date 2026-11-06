@@ -914,7 +914,8 @@ export async function activeOrLocalQueue(): Promise<
   QueueState | { id: string; remote: true; status: "running"; message: string; entries: []; updated_at: string }
   | null
 > {
-  const holder = await queueLockHolder();
+  // Presence, or the exclusive lock of a worker shutting down after losing presence.
+  const holder = (await queueLockHolder()) ?? (await importQueueLockHolder(getDb()));
   if (holder && !(await listQueues()).some((q) => q.id === holder))
     return {
       id: holder,
