@@ -105,6 +105,13 @@ operator notes/classification on scans; never infer full-file completion from th
   alone do not guarantee a stage reruns. Prove the affected sample recomputes and then resumes
   without unnecessary provider calls.
 
+## Imports reachable from the map app
+
+`apps/map` bundles everything `index.ts` reaches with Next.js, which does not map a `.js`
+specifier to a `.ts` file. Relative imports in those modules (`sql/pois.ts`,
+`sql/review-flags.ts`, their dependencies) must be extensionless; scripts may keep `.js`.
+Check with `pnpm --filter ./apps/map build` (Railway runs the same build).
+
 ## Validation and diagnostic tooling
 
 Use the bounded recipes and existing checks in the runbook. Read the CLI parser before
