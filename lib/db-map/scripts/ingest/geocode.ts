@@ -40,6 +40,7 @@ import { countryToCode } from "./normalize/country.js";
 import { suppliedCountryCentroid } from "./supplied-centroids.js";
 import { recordLocations } from "./record-locations.js";
 import { stableHash } from "./hash.js";
+import { assertNoOutdatedSources } from "./staleness.js";
 import { haversineMeters } from "./match/geo.js";
 import {
   validPoint,
@@ -1086,8 +1087,13 @@ export async function runGeocode(
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
-  const stats = await runGeocode(db, opts);
-  await db.end();
+  let stats: Awaited<ReturnType<typeof runGeocode>>;
+  try {
+    if (!opts.dryRun) await assertNoOutdatedSources(db, opts.source ?? null);
+    stats = await runGeocode(db, opts);
+  } finally {
+    await db.end();
+  }
 
   const mode = opts.dryRun ? " (dry-run)" : "";
   console.log(

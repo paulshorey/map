@@ -590,6 +590,7 @@ export interface ResearchPoiNormalizationsRow {
   "match_fingerprint": string | null;
   "activated_at": Date | null;
   "created_at": Date;
+  "profile_version": string | null;
 }
 
 export interface ResearchPoiObservationsRow {

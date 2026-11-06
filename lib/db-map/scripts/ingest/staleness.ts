@@ -12,6 +12,7 @@ import { pathToFileURL } from "node:url";
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
+import { ingestConfig } from "./config.js";
 import { LOCATION_VERSION } from "./location.js";
 import { allNormalizationProfileVersions } from "./normalize/profiles.js";
 import { PROMPT_VERSION, SCHEMA_VERSION } from "./normalize/contracts.js";
@@ -24,6 +25,7 @@ export interface StalenessRow {
   normalization: number;
   location: number;
   geocoder: number;
+  embedding: number;
   matcher: number;
   canonical_build: number;
 }
@@ -39,12 +41,15 @@ export async function stalenessBySource(
   const { rows } = await db.query(
     `WITH r AS (
       SELECT s.slug,
+        -- Deterministic (--no-llm) artifacts have no request; their profile version is on the
+        -- artifact. An artifact with no known profile version is treated as outdated.
         (n.id IS NOT NULL AND (n.normalizer_version <> $2
-          OR (q.id IS NOT NULL AND (q.prompt_version <> $3 OR q.schema_version <> $4
-            OR NOT (q.profile_version = ANY($5::text[])))))) AS normalization,
+          OR (q.id IS NOT NULL AND (q.prompt_version <> $3 OR q.schema_version <> $4))
+          OR NOT (COALESCE(q.profile_version, n.profile_version, '') = ANY($5::text[])))) AS normalization,
         (rp.attributes->'location_enrichment'->>'version' IS NOT NULL
           AND rp.attributes->'location_enrichment'->>'version' <> $6) AS location,
         (g.id IS NOT NULL AND g.provider_version <> $7) AS geocoder,
+        (e.id IS NOT NULL AND (e.model <> $10 OR e.model_version <> $11)) AS embedding,
         (m.id IS NOT NULL AND m.matcher_version <> $8) AS matcher,
         (b.id IS NOT NULL AND b.builder_version <> $9) AS canonical_build
       FROM research_pois rp
@@ -52,16 +57,18 @@ export async function stalenessBySource(
       LEFT JOIN research_poi_normalizations n ON n.id=rp.active_normalization_id
       LEFT JOIN research_normalization_requests q ON q.id=n.request_id
       LEFT JOIN research_poi_geocodes g ON g.id=rp.active_geocode_id
+      LEFT JOIN research_poi_embeddings e ON e.id=rp.active_embedding_id
       LEFT JOIN research_canonical_memberships m ON m.research_poi_id=rp.id AND m.active
       LEFT JOIN canonical_pois c ON c.id=rp.canonical_poi_id
       LEFT JOIN canonical_poi_builds b ON b.id=c.active_build_id
       WHERE rp.retired_at IS NULL AND ($1::text IS NULL OR s.slug=$1)
     )
     SELECT slug AS source, count(*)::int AS records,
-      count(*) FILTER (WHERE normalization OR location OR geocoder OR matcher OR canonical_build)::int AS outdated,
+      count(*) FILTER (WHERE normalization OR location OR geocoder OR embedding OR matcher OR canonical_build)::int AS outdated,
       count(*) FILTER (WHERE normalization)::int AS normalization,
       count(*) FILTER (WHERE location)::int AS location,
       count(*) FILTER (WHERE geocoder)::int AS geocoder,
+      count(*) FILTER (WHERE embedding)::int AS embedding,
       count(*) FILTER (WHERE matcher)::int AS matcher,
       count(*) FILTER (WHERE canonical_build)::int AS canonical_build
     FROM r GROUP BY slug ORDER BY records DESC`,
@@ -75,6 +82,8 @@ export async function stalenessBySource(
       PIPELINE_VERSIONS.geocode,
       PIPELINE_VERSIONS.matcher,
       PIPELINE_VERSIONS.canonicalBuilder,
+      ingestConfig.embeddings.model,
+      PIPELINE_VERSIONS.embedding,
     ],
   );
   return rows as StalenessRow[];
@@ -88,9 +97,27 @@ export async function assertSourceCurrent(db: Pool, source: string): Promise<voi
     new Error(
       `${row.outdated} of ${row.records} ${source} records were produced by older pipeline logic ` +
         `(normalization ${row.normalization}, location ${row.location}, geocoder ${row.geocoder}, ` +
+        `embedding ${row.embedding}, ` +
         `matcher ${row.matcher}, canonical build ${row.canonical_build}). They are not upgraded in place: ` +
         "remove them with `pnpm --filter @lib/db-map ingest:clean <file>` for each of the source's files " +
         "(or `ingest:purge` for everything), then re-import. See `ingest:staleness`.",
+    ),
+    { code: "outdated_data" },
+  );
+}
+
+/**
+ * Guard for the standalone stage commands (`ingest:normalize`, `ingest:geocode`,
+ * `ingest:match`): they write over every selected record, so they refuse to run while any
+ * selected source (all sources when none is named) holds outdated records.
+ */
+export async function assertNoOutdatedSources(db: Pool, source: string | null): Promise<void> {
+  const outdated = (await stalenessBySource(db, source)).filter((row) => row.outdated > 0);
+  if (!outdated.length) return;
+  throw Object.assign(
+    new Error(
+      `Outdated records in ${outdated.map((r) => `${r.source} (${r.outdated})`).join(", ")}; ` +
+        "they are not upgraded in place. Purge and re-ingest them first (see ingest:staleness).",
     ),
     { code: "outdated_data" },
   );

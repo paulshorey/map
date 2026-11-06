@@ -2432,6 +2432,11 @@
       "column": "created_at",
       "nullable": false,
       "type": "Date"
+    },
+    {
+      "column": "profile_version",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "research_poi_observations": [

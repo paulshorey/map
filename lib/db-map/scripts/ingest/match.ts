@@ -43,7 +43,7 @@ import { extractStrongIds } from "./match/ids.js";
 import { adjudicateMatch } from "./match/llm.js";
 import { scoreCandidate, type CandidateScore } from "./match/score.js";
 import { websiteIdentity } from "./match/denylist.js";
-import { stalenessBySource } from "./staleness.js";
+import { assertNoOutdatedSources } from "./staleness.js";
 import { LlmError } from "./providers/llm.js";
 
 const ADVISORY_LOCK_ID = 0x5018a;
@@ -1590,14 +1590,7 @@ async function main() {
   try {
     // Outdated records are re-ingested, never upgraded in place (reclustering resets all).
     if (!opts.recluster) {
-      const outdated = (await stalenessBySource(db, opts.source ?? null)).filter(
-        (row) => row.outdated > 0,
-      );
-      if (outdated.length)
-        throw new Error(
-          `Outdated records in ${outdated.map((r) => `${r.source} (${r.outdated})`).join(", ")}; ` +
-            "purge and re-ingest them first (see ingest:staleness).",
-        );
+      await assertNoOutdatedSources(db, opts.source ?? null);
     }
     stats = await runMatch(db, opts, shutdown);
 

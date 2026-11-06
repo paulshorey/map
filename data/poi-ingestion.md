@@ -876,7 +876,7 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
 ## Outdated data: re-ingest, never upgrade
 
 Records produced by older pipeline logic (normalizer/prompt/schema/profile, location
-enrichment, geocoder, matcher or canonical builder versions) are **never upgraded in place**.
+enrichment, geocoder, embedding, matcher or canonical builder versions) are **never upgraded in place**.
 The raw captures are kept, LLM normalization is cheap and paid geocode lookups are cached, so
 the fix is always to remove the source's data and import it again.
 
@@ -888,7 +888,11 @@ pnpm --filter @lib/db-map ingest:purge --maintenance-token <owned-token> --confi
 ```
 
 New runs refuse a source holding outdated records (`assertSourceCurrent`, error code
-`outdated_data`); standalone `ingest:match` refuses too (except `--recluster`). Only exact
+`outdated_data`); the standalone `ingest:normalize` (except `--shadow`), `ingest:geocode`
+(except `--dry-run`) and `ingest:match` (except `--recluster`) refuse too. Every
+normalization artifact records its profile version (`profile_version`), including
+deterministic `--no-llm` ones; an artifact with no known profile version counts as outdated.
+Embeddings record `PIPELINE_VERSIONS.embedding` in `model_version`. Only exact
 current-version checkpoints resume (`compatibleCheckpointVersions()` is empty by policy).
 `ingest:purge` truncates every import, run and canonical table and keeps the geocode query
 cache, category taxonomy, users, ingestion controls, capture inventory and centroid

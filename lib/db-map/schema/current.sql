@@ -943,6 +943,7 @@ CREATE TABLE public.research_poi_normalizations (
     match_fingerprint text,
     activated_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    profile_version text,
     CONSTRAINT research_poi_normalizations_date_precision_check CHECK ((date_precision = ANY (ARRAY['datetime'::text, 'day'::text, 'month'::text, 'year'::text]))),
     CONSTRAINT research_poi_normalizations_status_check CHECK ((status = ANY (ARRAY['accepted'::text, 'rejected'::text, 'degraded'::text, 'failed'::text])))
 );
