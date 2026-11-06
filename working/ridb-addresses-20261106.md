@@ -32,11 +32,13 @@ on 2026-11-06.
 - 5,706 have at least one export address row (Default 4,357 alone; Mailing 604 alone;
   Physical 87 alone; the rest have a mix of types); 273 have none.
 - After selection (below): **1,839 get a street address**, 2,355 a city, 2,379 a street
-  address or city, 1,836 a ZIP code, and 5,032 a state (`region`) plus `country_code = US`.
+  address or city, 1,836 a ZIP code, and 3,561 a state (`region`) plus `country_code`.
   4,140 have no street address and will carry `missing_address`.
 - 434 have `(0,0)` sentinel coordinates (1 is fixed in the export). 41 of those get a street
-  address and 54 a city, so forward geocoding can now place them. The rest fall back to the
-  pipeline's normal general-location handling.
+  address and 54 a city, so forward geocoding can now place them. 266 have a state. The 168
+  with no usable locality get `country_code = US` (`address_selection` includes
+  `country_assumed_us`, because RIDB lists only US federal sites) so they are still mapped,
+  at the country fallback and flagged.
 - 4,929 get a longer (untruncated) description from the export.
 - Coordinates: 2,607 are identical, 3,361 differ only by the export's 6-decimal rounding (the
   original 8-decimal value is kept), and 6 moved (the export value is used).
@@ -52,10 +54,12 @@ The rules are deterministic:
 2. Accept a street line only if it starts with a house number or names a numbered/named road,
    and contains no PO box, office, district, ranger/guard station, work center,
    headquarters, c/o or mailing wording.
-3. A row whose street line is rejected contributes only its state; its city and ZIP are the
-   office's. City and ZIP come from rows whose street is accepted or empty.
-4. States are normalized to USPS codes (122 full names and blanks are fixed). `country_code` is
-   `US` when a state code exists (`AddressCountryCode` contains noise such as `1`).
+3. A row whose street line is rejected contributes nothing: its city, ZIP and even its state
+   can be the managing office's (e.g. a Nebraska campground's office in South Dakota). City,
+   ZIP and state come only from rows whose street is accepted or empty.
+4. States are normalized to USPS codes, and full names are converted. `country_code` is `US`
+   when a state code exists, or the territory's own code (PR, GU, AS, VI, MP). Raw
+   `AddressCountryCode` is not trusted because it contains noise such as `1`.
 5. ALL-CAPS values are title-cased for display. Every export address row is kept verbatim as
    JSON in `facility_addresses`, and rejection reasons are kept in `address_selection`.
 
@@ -72,11 +76,18 @@ reports far-apart pairs. Review those in the location review workflow, not by ha
   `FacilityDirections`, `FacilityMapURL`, `FacilityAdaAccess`, `Enabled`, `address`, `city`,
   `region`, `postal_code`, `country_code`, `address_type`, `address_selection`,
   `export_status` and `facility_addresses`. `facilities.csv` is unchanged.
+- `facility_addresses` is left out of the normalization model context
+  (`normalizationOmitFields`), so the model cannot bring back a rejected mailing or office
+  address. It stays in the stored observation.
 - `sources.ts`: the `ridb` source now registers the new file (extractor version 3). The
   extractor maps the address fields and parses `facility_addresses` into attributes.
 - `expected-captures.json`: new file `import` (required); `facilities.csv` becomes `alternate`
   (superseded, kept for provenance); `campsites_rv_hookup.csv` becomes `supporting` (child
-  campsite data, never imported as campgrounds).
+  campsite data, never imported as campgrounds). An inventory scan never overwrites
+  dispositions set by an operator, so both existing dev-database rows were edited on
+  2026-11-06 with `ingest:inventory --file ... --edit-file`. They went from `needs_review` to
+  `alternate` / `supporting`, and the earlier notes were kept. The new file gets `import`
+  on its first scan.
 - Review flag `missing_address` (`lib/db-map/sql/review-flags.ts`): no active member has a
   non-empty source address. An address filled in by reverse geocoding
   (`location_enrichment.provenance.address = 'reverse_geocode'`) does not count. Map label "No address".
@@ -129,15 +140,16 @@ python3 scripts/coordinator-ingestion.py start -- \
 
 ## Validation (2026-11-06, dev database)
 
-Three single-record managed runs (record limit 1, `--max-llm-requests 3 --max-cost-usd 0.05
---geocode-limit 4`), each `requested_scope_verified` in about 24 s. They used 7 LocationIQ
-requests and cost $0.0035 in normalization in total:
+Four single-record managed runs (record limit 1, `--max-llm-requests 3 --max-cost-usd 0.05
+--geocode-limit 4`), each `requested_scope_verified` in about 24 s. They used 8 LocationIQ
+requests and cost $0.0082 in normalization in total:
 
 | Record | Case | Run | Result |
 | --- | --- | --- | --- |
 | 261822 White Sandy Campground | Point + street address | `7254453c-848e-4ebc-a696-8ef914348e0e` | Published at source point; address/city/region `source`; flags `{}` |
 | 10054711 Cove Creek (AR) | `(0,0)` + street address | `5cf641e2-c61c-4010-b8fa-aac42ae48744` | Forward-geocoded to a point from `734 Cove Creek Road, Quitman, AR`; flags `{}` |
 | 236553 Moore Campground | `(0,0)`, state only | `28163199-ff98-4f2d-b315-5092fd6f8873` | Published at the US country fallback; flags `{general_location, missing_address}` |
+| 10367801 Wetmore Campground | `(0,0)`, mailing row only (rejected), country assumed | `16bdf224-6f01-4403-95eb-d7215a574d17` | Previously quarantined; now published at the US fallback, flags `{general_location, missing_address}`. The model request never contained the mailing row |
 
 Static checks: `pnpm --filter @lib/db-map check-types`, `tsc --noEmit` for `apps/map`, and
 `tsx --test` on `registered-captures`, `discovery` and `source-file` tests.
@@ -145,7 +157,7 @@ Static checks: `pnpm --filter @lib/db-map check-types`, `tsc --noEmit` for `apps
 ## Follow-up
 
 The location pipeline falls back from a rejected venue lookup to a city, then to a country;
-there is no state/region level. About 380 `(0,0)` facilities have a state but no city, so they
+there is no state/region level. 379 `(0,0)` facilities have no street or city (212 of them have a state), so they
 land on the US centroid (still flagged `general_location` and `missing_address`). A
 region-level fallback would place them in the right state. It is a pipeline-wide change, so
 it is left for a separate task.

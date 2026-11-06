@@ -168,6 +168,9 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
   {
     meta: { slug: "ridb", name: "RIDB", trust: 90 },
     extractor: ridbFacilitiesExtractor,
+    // Verbatim address rows include the mailing/office rows the capture rejected; the model
+    // must not restore them over the selected top-level address.
+    normalizationOmitFields: ["facility_addresses"],
     files: [
       {
         // facilities.csv (no addresses) is kept as the superseded original capture.

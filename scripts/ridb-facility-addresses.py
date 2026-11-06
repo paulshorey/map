@@ -52,6 +52,7 @@ US_STATES = {
     "NORTHERN MARIANA ISLANDS": "MP",
 }
 STATE_CODES = set(US_STATES.values())
+TERRITORIES = {"PR", "GU", "AS", "VI", "MP"}
 US_COUNTRY = {"USA", "US", "UNITED STATES"}
 
 # An administrative or mail-only line, not where the facility is.
@@ -125,8 +126,8 @@ def select_address(rows):
         street = street_of(r)
         if street and not physical_street(street):
             reasons.append(f"{r['FacilityAddressType']}:street_not_physical")
-            # An office/PO-box row's city is the office's; its state is still the facility's.
-            fields["region"] = fields["region"] or state_code(r.get("AddressStateCode"))
+            # An office/PO-box row describes the managing office, which can be in another
+            # state; none of its locality is used.
             continue
         if street and not fields["address"]:
             fields["address"] = display_case(street)
@@ -139,8 +140,11 @@ def select_address(rows):
                 fields["postal_code"] = postal
         fields["region"] = fields["region"] or state_code(r.get("AddressStateCode"))
     # Only US state/territory codes survive state_code(); AddressCountryCode is noisy ("1").
+    # Territories carry their own ISO code, which equals their USPS code.
     countries = {clean(r.get("AddressCountryCode")).upper() for r in usable} - {""}
-    if fields["region"] or (fields["city"] and countries & US_COUNTRY):
+    if fields["region"] in TERRITORIES:
+        fields["country_code"] = fields["region"]
+    elif fields["region"] or (fields["city"] and countries & US_COUNTRY):
         fields["country_code"] = "US"
     if not usable:
         reasons.append("mailing_only" if rows else "no_address_rows")
@@ -200,6 +204,13 @@ def main(argv):
         rows = sorted(addresses.get(fid, []), key=lambda r: r.get("FacilityAddressID", ""))
         fields, selection = select_address(rows)
         row.update(fields)
+        sentinel = all(float(row[c] or 0) == 0 for c in ("FacilityLatitude", "FacilityLongitude"))
+        if sentinel and not row["country_code"]:
+            # RIDB lists only US federal recreation sites; without a point or usable locality
+            # the country is the one location fact left, so the POI can still be mapped.
+            row["country_code"] = "US"
+            selection = ";".join(filter(None, [selection, "country_assumed_us"]))
+            stats["sentinel_country_assumed_us"] += 1
         row["address_selection"] = selection
         row["facility_addresses"] = json.dumps(rows, ensure_ascii=False) if rows else ""
         out.append(row)
@@ -209,11 +220,11 @@ def main(argv):
             stats[f"with_{k}"] += bool(row[k])
         stats["with_city_or_address"] += bool(row["address"] or row["city"])
         stats["without_address"] += not row["address"]
-        sentinel = all(float(row[c] or 0) == 0 for c in ("FacilityLatitude", "FacilityLongitude"))
         if sentinel:
             stats["sentinel_coordinates"] += 1
             stats["sentinel_with_address"] += bool(row["address"])
             stats["sentinel_with_city"] += bool(row["city"])
+            stats["sentinel_with_region"] += bool(row["region"])
         if len(row["FacilityDescription"]) > len(old["FacilityDescription"]):
             stats["longer_description"] += 1
     with open(out_path, "w", encoding="utf-8", newline="") as f:
