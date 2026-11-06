@@ -18,6 +18,7 @@ import { canonicalLane } from "./concurrency.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { rebuildCanonicalPoi } from "./merge.js";
 import { stableHash } from "./hash.js";
+import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
 
 const DEFAULT_THROTTLE_MS = 200;
 
@@ -108,6 +109,8 @@ export async function writeEmbedding(
     text,
     model: ingestConfig.embeddings.model,
     dim: ingestConfig.embeddings.dim,
+    // A version change creates a new artifact; older artifacts are never relabelled.
+    version: PIPELINE_VERSIONS.embedding,
   });
   const linked = (
     await db.query("SELECT canonical_poi_id FROM research_pois WHERE id=$1", [
@@ -125,7 +128,7 @@ export async function writeEmbedding(
        INSERT INTO research_poi_embeddings (
        normalization_id, input_hash, model, model_version, embedding, activated_at
        )
-       SELECT active_normalization_id, $2, $3, $3, $4, now()
+       SELECT active_normalization_id, $2, $3, $5, $4, now()
        FROM research_pois
        WHERE id = $1 AND active_normalization_id IS NOT NULL
        ON CONFLICT (normalization_id, input_hash) DO UPDATE SET
@@ -135,7 +138,7 @@ export async function writeEmbedding(
      UPDATE research_pois SET content_embedding = $4,
        active_embedding_id = (SELECT id FROM artifact)
      WHERE id = $1 RETURNING active_embedding_id,canonical_poi_id`,
-        [id, inputHash, ingestConfig.embeddings.model, vector],
+        [id, inputHash, ingestConfig.embeddings.model, vector, PIPELINE_VERSIONS.embedding],
       );
       if (rows[0]?.canonical_poi_id) {
         if (!linked)

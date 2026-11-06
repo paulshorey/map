@@ -638,6 +638,7 @@ async function insertNormalization(
   requestId: string | null,
   resolved: ResolvedNormalization,
   modelOutput: unknown,
+  profileVersion: string,
 ): Promise<string> {
   const { rows } = await db.query<{ id: string }>(
     `INSERT INTO research_poi_normalizations (
@@ -646,10 +647,10 @@ async function insertNormalization(
        edition_year, aliases, description, website, website_domain, phone, email,
        address, venue, city, region, country_code, category_slugs,
        starts_at, ends_at, date_precision, attributes, field_evidence,
-       model_output, warnings, match_fingerprint
+       model_output, warnings, match_fingerprint, profile_version
      ) VALUES (
        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,
-       $19,$20,$21,$22,$23,$24,$25,$26,$27,$28::jsonb,$29::jsonb,$30::jsonb,$31,$32
+       $19,$20,$21,$22,$23,$24,$25,$26,$27,$28::jsonb,$29::jsonb,$30::jsonb,$31,$32,$33
      )
      ON CONFLICT (research_poi_id, input_hash) DO UPDATE SET
        request_id = EXCLUDED.request_id
@@ -687,6 +688,7 @@ async function insertNormalization(
       JSON.stringify(modelOutput ?? {}),
       resolved.warnings,
       resolved.matchFingerprint,
+      profileVersion,
     ],
   );
   const id = rows[0]!.id;
@@ -1048,6 +1050,7 @@ export async function runHybridNormalize(
         requestId,
         resolved,
         output,
+        profile.version,
       );
       stats.artifactId = normalizationId;
       await activateNormalization(

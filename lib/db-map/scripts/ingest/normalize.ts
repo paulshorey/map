@@ -6,6 +6,7 @@
  */
 import { getDb } from "../../lib/db/postgres.js";
 import { runHybridNormalize, type NormalizeOptions } from "./normalize/runner.js";
+import { assertNoOutdatedSources } from "./staleness.js";
 
 function parseArgs(argv: string[]): NormalizeOptions {
   const opts: NormalizeOptions = {
@@ -47,6 +48,8 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
   try {
+    // Shadow runs never activate, so they cannot upgrade outdated records in place.
+    if (!opts.shadow) await assertNoOutdatedSources(db, opts.source ?? null);
     const stats = await runHybridNormalize(db, opts);
     console.log(
       `Normalize${opts.source ? ` ${opts.source}` : ""}: selected=${stats.selected} ` +

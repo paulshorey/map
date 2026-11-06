@@ -367,3 +367,12 @@ test("a coarse name-only result may match the listed region under any region fie
   const hit = { precision: "region", raw_response: { address: { province: "Ontario", country_code: "ca" } } };
   assert.equal(forwardImplausible("name", { name: "Lakeside Garden", region: "Ontario" }, hit), null);
 });
+
+test("a coarse name-only cache hit without its raw response is judged by its parsed region", () => {
+  const listed = { name: "Georgia Botanical Garden", region: "Georgia" };
+  assert.equal(forwardImplausible("name", listed, { precision: "region", region: "Georgia", raw_response: null }), null);
+  assert.equal(
+    forwardImplausible("name", listed, { precision: "region", region: "Alabama", raw_response: null }),
+    "name_result_mismatch",
+  );
+});

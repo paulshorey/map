@@ -38,7 +38,9 @@ import {
 import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
 import { suppliedCountryCentroid } from "./supplied-centroids.js";
+import { recordLocations } from "./record-locations.js";
 import { stableHash } from "./hash.js";
+import { assertNoOutdatedSources } from "./staleness.js";
 import { haversineMeters } from "./match/geo.js";
 import {
   validPoint,
@@ -996,6 +998,39 @@ export async function runGeocode(
             ],
           )
         ).rows[0];
+        // Every location this artifact knows (accepted and rejected), immutable per artifact.
+        for (const location of recordLocations({
+          source: coordinateEvidence.source_coordinates
+            ? { ...coordinateEvidence.source_coordinates, coordinate_source: row.coordinate_source }
+            : null,
+          inferred: coordinateEvidence.inferred_coordinates,
+          basis: forwardBasis,
+          fallbackFrom,
+          rejected: rejected as never,
+        }))
+          await client.query(
+            `INSERT INTO research_poi_locations(research_poi_id,geocode_id,normalization_id,kind,origin,role,precision,status,reason,lat,lng,label,query,query_basis,evidence,logic_version)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb,$16)
+            ON CONFLICT (geocode_id, kind, origin, status, lat, lng) DO NOTHING`,
+            [
+              row.id,
+              artifact.id,
+              row.active_normalization_id,
+              location.kind,
+              location.origin,
+              location.role,
+              location.precision,
+              location.status,
+              location.reason,
+              location.lat,
+              location.lng,
+              location.label,
+              location.query,
+              location.query_basis,
+              JSON.stringify(location.evidence),
+              location.logic_version,
+            ],
+          );
         // This artifact certifies enrichment of the original point; it never substitutes a nearby object's point.
         const activated = await client.query(
           `UPDATE research_pois SET lat=$11,lng=$12,coordinate_source=$13,coordinate_precision=$14,geocode_query_norm=$15,country_code=$2,city=$3,region=$4,address=$5,active_geocode_id=$6,
@@ -1052,8 +1087,13 @@ export async function runGeocode(
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
-  const stats = await runGeocode(db, opts);
-  await db.end();
+  let stats: Awaited<ReturnType<typeof runGeocode>>;
+  try {
+    if (!opts.dryRun) await assertNoOutdatedSources(db, opts.source ?? null);
+    stats = await runGeocode(db, opts);
+  } finally {
+    await db.end();
+  }
 
   const mode = opts.dryRun ? " (dry-run)" : "";
   console.log(

@@ -1,3 +1,4 @@
+import { writeCanonicalLocations } from "./canonical-locations.js";
 import {
   ensureLocationAssessment,
   publicationAwaitingLocationSql,
@@ -803,6 +804,8 @@ export async function rebuildCanonicalPoi(
       ],
     );
   }
+  // Every accepted location of every member, mapped (the primary point first).
+  await writeCanonicalLocations(client, canonicalId, builds[0]!.id, rows, finalCoords);
   await client.query(
     `UPDATE canonical_pois SET active_build_id = $2 WHERE id = $1`,
     [canonicalId, builds[0]!.id],

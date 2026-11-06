@@ -17,6 +17,13 @@
           "nullable": false
         },
         {
+          "name": "location_id",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
           "name": "location_index",
           "optional": false,
           "kind": "scalar",
@@ -39,6 +46,13 @@
         },
         {
           "name": "location_precision",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "location_specificity",
           "optional": false,
           "kind": "scalar",
           "type": "string",
@@ -246,6 +260,130 @@
         }
       ]
     },
+    "PoiMapLocationRecord": {
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "lat",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "lng",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "precision",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "specificity",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "kind",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "kinds",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        },
+        {
+          "name": "origin",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "origins",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        },
+        {
+          "name": "roles",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        },
+        {
+          "name": "label",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "query",
+          "optional": false,
+          "kind": "scalar",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "queries",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        },
+        {
+          "name": "is_primary",
+          "optional": false,
+          "kind": "scalar",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "sources",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        }
+      ]
+    },
     "PoiCoordinateEvidenceRecord": {
       "fields": [
         {
@@ -418,7 +556,7 @@
           "kind": "array",
           "items": {
             "kind": "model",
-            "type": "PoiLocationRecord"
+            "type": "PoiMapLocationRecord"
           },
           "nullable": false
         },
@@ -427,6 +565,41 @@
           "optional": false,
           "kind": "model",
           "type": "PoiCoordinateEvidenceRecord",
+          "nullable": false
+        }
+      ]
+    },
+    "PoiColocatedResponse": {
+      "fields": [
+        {
+          "name": "location",
+          "optional": false,
+          "kind": "model",
+          "type": "PoiMapLocationRecord",
+          "nullable": true
+        },
+        {
+          "name": "pois",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "model",
+            "type": "PoiDetailRecord"
+          },
+          "nullable": false
+        },
+        {
+          "name": "total",
+          "optional": false,
+          "kind": "scalar",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "name": "truncated",
+          "optional": false,
+          "kind": "scalar",
+          "type": "boolean",
           "nullable": false
         }
       ]

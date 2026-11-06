@@ -157,6 +157,12 @@ async function cleanRecord(
       sourceId,
       sourceRecordId,
     );
+    // Verification receipts reference observations without a cascade.
+    await client.query(
+      `DELETE FROM research_ingest_record_verifications
+       WHERE observation_id IN (SELECT id FROM research_poi_observations WHERE research_poi_id = $1)`,
+      [poi.id],
+    );
     await client.query(`DELETE FROM research_pois WHERE id = $1`, [poi.id]);
 
     let canonical: CleanResult["canonical"] = "none";

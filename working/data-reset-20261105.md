@@ -44,3 +44,12 @@ LocationIQ's free plan allows 5,000 calls a day. The Dyrt has 43,272 rows with c
 but only 18,311 addresses and 24,377 cities, so roughly 25,000 reverse lookups are needed
 (the cache holds 2,884). Before importing it, upgrade the plan or stop calling reverse
 lookups for address-only gaps.
+
+## Multi-location storage — before any re-import
+
+`claude/multi-location` adds `research_poi_locations` and `canonical_poi_locations` (migration
+`202611051600__multi_location_storage.sql`, applied on dev). Every known location of a record is
+stored, every accepted location of a canonical is mapped, and the drawer lists them all. A
+5-record `biennale_com` smoke confirmed the path end to end and was cleaned afterwards; the dev
+database is empty again. Re-import with the commands above once that branch is merged or
+checked out.

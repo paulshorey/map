@@ -876,7 +876,7 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
 ## Outdated data: re-ingest, never upgrade
 
 Records produced by older pipeline logic (normalizer/prompt/schema/profile, location
-enrichment, geocoder, matcher or canonical builder versions) are **never upgraded in place**.
+enrichment, geocoder, embedding, matcher or canonical builder versions) are **never upgraded in place**.
 The raw captures are kept, LLM normalization is cheap and paid geocode lookups are cached, so
 the fix is always to remove the source's data and import it again.
 
@@ -888,7 +888,11 @@ pnpm --filter @lib/db-map ingest:purge --maintenance-token <owned-token> --confi
 ```
 
 New runs refuse a source holding outdated records (`assertSourceCurrent`, error code
-`outdated_data`); standalone `ingest:match` refuses too (except `--recluster`). Only exact
+`outdated_data`); the standalone `ingest:normalize` (except `--shadow`), `ingest:geocode`
+(except `--dry-run`) and `ingest:match` (except `--recluster`) refuse too. Every
+normalization artifact records its profile version (`profile_version`), including
+deterministic `--no-llm` ones; an artifact with no known profile version counts as outdated.
+Embeddings record `PIPELINE_VERSIONS.embedding` in `model_version`. Only exact
 current-version checkpoints resume (`compatibleCheckpointVersions()` is empty by policy).
 `ingest:purge` truncates every import, run and canonical table and keeps the geocode query
 cache, category taxonomy, users, ingestion controls, capture inventory and centroid
@@ -919,6 +923,27 @@ and the shared geocode cache remain. Cleanup does **not** filter by category; it
 `--category` argument is ignored. Do not use it expecting a category-only deletion.
 
 ## Standardized location enrichment
+
+### All known locations (`research_poi_locations`, `canonical_poi_locations`)
+
+Each geocode activation stores **every location its artifact knows** for the record in
+`research_poi_locations`, in the same transaction: the supplied point (`source_coordinates` /
+`url_coordinates`), the listed-text lookup or its `city_fallback` / `country_fallback`, and each
+rejected lookup (`status = rejected`, with its reason; never mapped). Rows are immutable per
+artifact and carry `kind`, `origin`, `role` (venue, address, locality, region, country),
+`precision`, query, basis and `logic_version`; the active set is the one for the record's
+`active_geocode_id`.
+
+Each canonical build writes `canonical_poi_locations`: the accepted locations of all active
+members, de-duplicated by point (~1 cm), each with the merged kinds/origins/roles, contributing
+research records and sources, a per-location `specificity` (`precise` only where a member places
+a venue or address at point precision) and `is_primary` for the canonical's lat/lng. The map
+API renders **one marker per row** (`marker_id` `<poi>:<location id>`), admits a POI to a
+viewport through any of its locations, and returns them all in the detail; a POI without rows
+(manual or legacy) falls back to its stored point (`<poi>:legacy`). The two-slot
+`coordinate_evidence` below still selects the primary point and the POI-level
+`location_specificity`. Future multi-venue captures add more `research_poi_locations` rows
+per record; the canonical and map side already handle any number.
 
 Future processing stores a fixed `coordinate_evidence` object with two independently
 nullable fields:
@@ -1053,9 +1078,11 @@ whose new lookup missed stays plottable and is judged by its stored precision.
 publication. A supplied point that repeats a published country centroid (for example
 Google's Australia centroid) is stored as `country` precision, so it counts as coarse.
 
-The `location-v8` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
+The `location-v9` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
 to its normalization/primary point, alongside separate listed text, forward query/result
-and reverse lookup. Canonical builder `canonical-build-v7` writes
+and reverse lookup, and records every known location in `research_poi_locations`.
+Canonical builder `canonical-build-v8` writes `canonical_poi_locations` (with the members'
+lookup `queries`; a member linked before geocoding contributes its supplied point) and
 `attributes.coordinate_evidence` with source/research/normalization/geocode IDs for
 each value. Legacy lat/lng is the selected source point when available, otherwise the
 inferred point or retained legacy point. Raw/model attributes cannot publish these

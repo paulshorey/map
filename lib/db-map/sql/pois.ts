@@ -1,5 +1,5 @@
 import type { Pool } from "pg";
-import { mapLocationsSql, coordinateEvidenceSql } from "./map-locations";
+import { canonicalLocationsSql, coordinateEvidenceSql } from "./map-locations";
 
 export interface NewPoi {
   name: string;
@@ -146,11 +146,13 @@ export type PoiLocationFilter = "general" | "precise";
 // falls back to the junction lateral if it is not set.
 const FEATURE_PROPERTIES = `jsonb_build_object(
   'id', p.id,
-  'marker_id', p.id::text || ':' || (loc.location->>'kind'),
+  'marker_id', p.id::text || ':' || (loc.location->>'id'),
+  'location_id', loc.location->>'id',
   'location_index', loc.location_index,
   'coordinate_kind', loc.location->>'kind',
   'location_origin', loc.location->>'origin',
   'location_precision', loc.location->>'precision',
+  'location_specificity', loc.location->>'specificity',
   'name', p.name,
   'category', COALESCE(pcat.display_name, (
     SELECT c.display_name FROM canonical_poi_categories pc
@@ -201,24 +203,14 @@ export async function listPoisGeoJson(
 
   const inBbox = `(loc.location->>'lng')::float8 >= $1 AND (loc.location->>'lat')::float8 >= $2
     AND (loc.location->>'lng')::float8 <= $3 AND (loc.location->>'lat')::float8 <= $4`;
-  // Filter stored points before expanding their detailed JSON evidence. Evaluating the
-  // full rendering expression for every row triggers expensive plans/JIT on legacy data.
-  const evidenceInBbox = (slot: string, kind: string, origin: string) => {
-    const p = `(p.attributes->'coordinate_evidence'->'${slot}')`;
-    return `CASE WHEN jsonb_typeof(${p}->'lat')='number' AND jsonb_typeof(${p}->'lng')='number'
-      AND ${p}->>'kind'='${kind}' AND ${p}->>'origin'='${origin}'
-      THEN CASE WHEN (${p}->>'lat')::numeric BETWEEN -90 AND 90 AND (${p}->>'lng')::numeric BETWEEN -180 AND 180
-        THEN (${p}->>'lng')::float8 BETWEEN $1 AND $3 AND (${p}->>'lat')::float8 BETWEEN $2 AND $4
-        ELSE false END ELSE false END`;
-  };
   const matching = `p.status='published'
         AND ${CATEGORY_FILTER("$5")}
         AND ${DATE_FILTER("$7", "$8")}
         AND ${LOCATION_FILTER("$10")}
         AND ($9::boolean OR (p.lng BETWEEN $1 AND $3 AND p.lat BETWEEN $2 AND $4)
-          OR (${evidenceInBbox("source_coordinates", "source", "source_coordinates")})
-          OR (${evidenceInBbox("inferred_coordinates", "inferred", "listed_address_geocode")}))`;
-  // Limit entities before expanding markers: either named point may admit the POI.
+          OR EXISTS (SELECT 1 FROM canonical_poi_locations l WHERE l.build_id = p.active_build_id
+            AND l.lng BETWEEN $1 AND $3 AND l.lat BETWEEN $2 AND $4))`;
+  // Limit entities before expanding markers: any of a POI's locations may admit it.
   // `total` counts every matching POI, so the app can report results beyond the limit.
   const { rows } = await db.query(
     `
@@ -235,14 +227,14 @@ export async function listPoisGeoJson(
       'limit',$6::int) AS geojson
     FROM (
       SELECT p.id AS poi_id,loc.location_index,jsonb_build_object(
-        'type','Feature','id',p.id::text || ':' || (loc.location->>'kind'),
+        'type','Feature','id',p.id::text || ':' || (loc.location->>'id'),
         'geometry',jsonb_build_object('type','Point','coordinates',
           jsonb_build_array((loc.location->>'lng')::float8,(loc.location->>'lat')::float8)),
         'properties',${FEATURE_PROPERTIES}
       ) AS feature
       FROM selected p
       LEFT JOIN canonical_categories pcat ON pcat.id=p.primary_category_id
-      CROSS JOIN LATERAL jsonb_array_elements(${mapLocationsSql()}) WITH ORDINALITY AS loc(location,location_index)
+      CROSS JOIN LATERAL jsonb_array_elements(${canonicalLocationsSql()}) WITH ORDINALITY AS loc(location,location_index)
       WHERE $9::boolean OR (${inBbox})
     ) markers`,
     [
@@ -280,12 +272,13 @@ export async function listPoiCategories(db: Pool): Promise<string[]> {
   return rows.map((row) => row.display_name as string);
 }
 
-export async function getPoiById(db: Pool, id: string) {
+async function getPoisByIds(db: Pool, ids: string[]) {
+  if (!ids.length) return [];
   const { rows } = await db.query(
     `SELECT
         p.id, p.name, p.description, p.address, p.website, p.hours, p.phone, p.photo_url,
         p.lng, p.lat, p.attributes, p.popularity,
-        ${mapLocationsSql()} AS locations,
+        ${canonicalLocationsSql()} AS locations,
         ${coordinateEvidenceSql()} AS coordinate_evidence,
         p.starts_at, p.ends_at, p.date_precision,
         CASE
@@ -313,8 +306,86 @@ export async function getPoiById(db: Pool, id: string) {
         jsonb_build_object('type','Point','coordinates', jsonb_build_array(p.lng, p.lat)) AS geometry
      FROM canonical_pois p
      LEFT JOIN canonical_categories pcat ON pcat.id = p.primary_category_id
-     WHERE p.id = $1`,
-    [id],
+     WHERE p.id = ANY($1::uuid[])`,
+    [ids],
   );
-  return rows[0] ?? null;
+  return rows;
+}
+
+export async function getPoiById(db: Pool, id: string) {
+  return (await getPoisByIds(db, [id]))[0] ?? null;
+}
+
+/** About 1 cm: markers count as the same location only when their stored points are equal. */
+const COLOCATED_EPSILON_DEG = 1e-7;
+
+export interface ColocatedPoisParams {
+  /** The clicked POI; it is always first in the result. */
+  id: string;
+  /** Which of its locations was clicked (a location id); defaults to the first (primary). */
+  location?: string | null;
+  limit?: number;
+}
+
+/**
+ * Every published POI with a marker at the clicked marker's exact point, clicked POI first.
+ * Coarse locations (country/region/city centroids) stack many records on one point; the
+ * drawer lists all of them. Filters are deliberately not applied: this is a location view.
+ */
+export async function getColocatedPois(db: Pool, params: ColocatedPoisParams) {
+  const anchor = await getPoiById(db, params.id);
+  if (!anchor) return null;
+  const locations = (anchor.locations ?? []) as Array<{
+    lat: number;
+    lng: number;
+    id: string;
+  }>;
+  const location =
+    locations.find((l) => l.id === params.location) ?? locations[0] ?? null;
+  if (!location)
+    return { location: null, pois: [anchor], total: 1, truncated: false };
+  const limit = Math.min(Math.max(params.limit ?? 200, 1), 500);
+  const e = COLOCATED_EPSILON_DEG;
+  type Collection = {
+    features: Array<{ properties: { id: string; name: string } }>;
+    total: number;
+  };
+  const box = (west: number, east: number) =>
+    listPoisGeoJson(db, {
+      west,
+      south: location.lat - e,
+      east,
+      north: location.lat + e,
+      category: null,
+      limit,
+      isWorldView: false,
+    }) as Promise<Collection>;
+  // Near the antimeridian the window wraps: ±180 are the same meridian.
+  const boxes = [box(Math.max(-180, location.lng - e), Math.min(180, location.lng + e))];
+  if (location.lng + e > 180) boxes.push(box(-180, location.lng + e - 360));
+  if (location.lng - e < -180) boxes.push(box(location.lng - e + 360, 180));
+  const collections = await Promise.all(boxes);
+  const features = collections.flatMap((c) => c.features);
+  const distinct = new Set(features.map((f) => f.properties.id));
+  // One POI can match both wrapped windows: count distinct POIs unless a window was truncated.
+  const fc = {
+    features,
+    total:
+      collections.length === 1
+        ? collections[0]!.total
+        : collections.some((c) => new Set(c.features.map((f) => f.properties.id)).size < c.total)
+          ? collections.reduce((n, c) => n + c.total, 0)
+          : distinct.size,
+  };
+  const ids = [...distinct].filter((id) => id !== anchor.id);
+  const others = (await getPoisByIds(db, ids)).sort((a, b) =>
+    String(a.name).localeCompare(String(b.name)),
+  );
+  const total = Math.max(fc.total, others.length + 1);
+  return {
+    location,
+    pois: [anchor, ...others],
+    total,
+    truncated: total > others.length + 1,
+  };
 }

@@ -1,10 +1,12 @@
 export interface PoiFeatureProperties {
   id: string;
   marker_id: string;
+  location_id: string;
   location_index: number;
   coordinate_kind: string | null;
   location_origin: string | null;
   location_precision: string | null;
+  location_specificity: string | null;
   name: string;
   category: string | null;
   photo_url: string | null;
@@ -15,7 +17,7 @@ export interface PoiFeatureProperties {
 }
 
 /** GET /api/pois. `total` counts every matching POI; `returned` POIs (up to `limit`) are
- * expanded into one or two marker features each. */
+ * expanded into one marker feature per known location. */
 export interface PoiListResponse {
   type: string;
   features: Array<unknown>;
@@ -44,6 +46,25 @@ export interface PoiLocationRecord {
   precision_evidence?: PoiPrecisionEvidenceRecord;
 }
 
+/** One known location of a POI (the union of its members' accepted locations). */
+export interface PoiMapLocationRecord {
+  id: string;
+  lat: number;
+  lng: number;
+  precision: string;
+  specificity: string;
+  kind: string;
+  kinds: Array<string>;
+  origin: string;
+  origins: Array<string>;
+  roles: Array<string>;
+  label: string | null;
+  query: string | null;
+  queries: Array<string>;
+  is_primary: boolean;
+  sources: Array<string>;
+}
+
 export interface PoiCoordinateEvidenceRecord {
   source_coordinates: PoiLocationRecord | null;
   inferred_coordinates: PoiLocationRecord | null;
@@ -70,8 +91,17 @@ export interface PoiDetailRecord {
   lng: number;
   lat: number;
   geometry: unknown;
-  locations: Array<PoiLocationRecord>;
+  locations: Array<PoiMapLocationRecord>;
   coordinate_evidence: PoiCoordinateEvidenceRecord;
+}
+
+/** GET /api/pois/[id]/colocated. `pois[0]` is the clicked POI; the rest share its marker's
+ * exact point. `truncated` when `total` exceeds the POIs returned. */
+export interface PoiColocatedResponse {
+  location: PoiMapLocationRecord | null;
+  pois: Array<PoiDetailRecord>;
+  total: number;
+  truncated: boolean;
 }
 
 export interface UserPreferencesRecord {
