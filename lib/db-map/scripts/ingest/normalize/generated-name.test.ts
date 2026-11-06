@@ -200,3 +200,12 @@ test("the model can still reject a nameless record that is not a place", () => {
   assert.equal(resolved.displayName, null);
   assert.equal(Object.hasOwn(resolved.attributes, "name_generated"), false);
 });
+
+test("a nameless place without a location yet still gets a name and reaches geocoding", () => {
+  const resolved = resolve(
+    input({ lat: null, lng: null, attributes: { osm_tags: { tourism: "camp_site", "addr:street": "Park Road" } } }),
+  );
+  assert.equal(resolved.isPoi, true);
+  assert.equal(resolved.displayName, "Campsite on Park Road");
+  assert.equal(resolved.attributes.name_generated, true);
+});

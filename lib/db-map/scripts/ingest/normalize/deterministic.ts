@@ -321,11 +321,9 @@ export function buildDeterministicFacts(
     : realNameFromTags(sourceTags(input.attributes, input.raw));
   if (capturedName && !normalizedName) warnings.push("placeholder_source_name");
   let generated: ReturnType<typeof generatePlaceName> | null = null;
-  if (
-    !normalizedName &&
-    input.generatedNameCategory &&
-    ((lat !== null && lng !== null) || input.city || input.region || countryCode)
-  ) {
+  // Every nameless place gets a subject even without a location yet: an address/operator-only
+  // record can still be geocoded, and the canonical attaches its resolved locality later.
+  if (!normalizedName && input.generatedNameCategory) {
     generated = generatePlaceName({
       ingestCategory: input.generatedNameCategory,
       attributes: input.attributes,

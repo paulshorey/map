@@ -908,7 +908,8 @@ Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
   `official_name`, `name:<lang>`, `alt_name`, `loc_name`, `short_name`) is used as the name.
 - **Generated name.** For place profiles (not events), deterministic normalization composes a
   descriptive name from the kind of place (`tourism=caravan_site` → "Caravan site", else the
-  ingest category), operator/brand and `ref`, street, and locality, else coordinates:
+  ingest category), operator/brand and `ref`, street, and locality, else coordinates (a record
+  with no location yet still gets a name and proceeds to geocoding):
   "Campsite (Westward Bound Campgrounds) near Springfield, United States",
   "Caravan site in Alberta, Canada" (region/country only), "Caravan site at 47.8282, -59.1928". It is added to the deterministic facts (and warning
   `source_name_missing_generated_name`) only for nameless records, so named records' cache keys
@@ -921,7 +922,10 @@ Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
 - **Matching.** A generated name describes a kind of place, not which place it is, so the
   matcher compares nameless rows and canonicals by identifiers, contacts and location only
   (name and embedding signals are blanked on either side; the LLM adjudicator sees
-  "(no name in source)").
+  "(no name in source)"). A nameless row is never auto-merged as a satellite of a nearby
+  anchor: it goes to anchor LLM adjudication, or stays separate with `--no-llm`. A canonical
+  counts as nameless only when no live member has a real name (a real-named member is its
+  matching representative).
 - **Canonical name.** A member with a real name always wins. Otherwise the canonical takes the
   most trusted generated member's subject plus the canonical's resolved locality (reverse
   geocoding may fill it after normalization), sets `attributes.name_generated = true` and

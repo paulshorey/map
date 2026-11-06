@@ -690,7 +690,9 @@ async function fetchCandidates(
        WHERE rp.canonical_poi_id = cp.id AND rp.is_poi AND rp.retired_at IS NULL
          AND EXISTS(SELECT 1 FROM research_canonical_memberships bm
            WHERE bm.research_poi_id=rp.id AND bm.canonical_poi_id=cp.id AND bm.active)
-       ORDER BY rs.trust DESC, (rp.content_embedding IS NOT NULL) DESC, rp.last_seen_at DESC
+       -- A real-named member represents the canonical (as its published name does), so
+       -- best_name_generated holds only when no live member has a real name.
+       ORDER BY (rp.attributes->>'name_generated' IS DISTINCT FROM 'true') DESC, rs.trust DESC, (rp.content_embedding IS NOT NULL) DESC, rp.last_seen_at DESC
        LIMIT 1
      ) br ON true
      WHERE cp.status <> 'hidden'
@@ -951,6 +953,12 @@ async function decideRow(
   opts: CliOptions,
 ): Promise<Decision> {
   const row = withoutGeneratedName(matchRow);
+  // A blank generated name scores 0 similarity, which would make every nameless row
+  // "satellite-like" and auto-merge it into any nearby anchor. Nameless rows instead go
+  // through anchor LLM adjudication (or stay separate without an LLM).
+  const nameGenerated = matchRow.attributes?.name_generated === true;
+  const satelliteLike = (similarity: number) =>
+    !nameGenerated && isSatelliteLikeResearch(row, similarity);
   const overrides = await loadOverrideDecision(client, row.id);
   if (overrides.forceNew) {
     return {
@@ -1020,7 +1028,7 @@ async function decideRow(
     );
     if (
       !dateSignal.conflict &&
-      isSatelliteLikeResearch(row, candidateSimilarity)
+      satelliteLike(candidateSimilarity)
     ) {
       return {
         decision: "merge",
@@ -1132,7 +1140,7 @@ async function decideRow(
     (candidate) =>
       candidate.via.includes("proximity") &&
       isAnchor(candidateAnchorMeta(candidate)) &&
-      !isSatelliteLikeResearch(row, candidate.score!.signals.name) &&
+      !satelliteLike(candidate.score!.signals.name) &&
       !candidate.dateCompatibility!.conflict,
   );
   if (anchorProximity) {
@@ -1219,7 +1227,7 @@ async function decideRow(
 
   if (
     !isAnchor(candidateAnchorMeta(best)) &&
-    isSatelliteLikeResearch(row, score.signals.name)
+    satelliteLike(score.signals.name)
   ) {
     return {
       decision: "new",
