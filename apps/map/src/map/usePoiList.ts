@@ -12,11 +12,12 @@ export function usePoiList(
   zoom: number,
   category: string | null,
   location: PoiLocationFilter,
+  review: string = "all",
 ) {
   const debounced = useDebouncedValue(bbox, 250);
 
   return useQuery({
-    queryKey: ["pois", debounced, zoom, category, location],
+    queryKey: ["pois", debounced, zoom, category, location, review],
     enabled: debounced !== null,
     queryFn: async () => {
       const [w, s, e, n] = debounced!;
@@ -26,6 +27,7 @@ export function usePoiList(
       });
       if (category) params.set("category", category);
       if (location !== "all") params.set("location", location);
+      if (review !== "all") params.set("review", review);
       const r = await fetch(apiUrl(`/api/pois?${params}`));
       if (!r.ok) throw new Error("POI fetch failed");
       return r.json() as Promise<PoiListResponse>;

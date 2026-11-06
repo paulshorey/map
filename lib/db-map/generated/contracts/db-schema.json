@@ -428,6 +428,11 @@
       "column": "origin",
       "nullable": false,
       "type": "string"
+    },
+    {
+      "column": "review_flags",
+      "nullable": false,
+      "type": "Array<string>"
     }
   ],
   "geo_centroids": [

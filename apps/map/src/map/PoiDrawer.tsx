@@ -1,5 +1,6 @@
 "use client";
 
+import { REVIEW_FLAG_LABELS } from "./usePoiReviewFilter";
 import { HtmlDescription } from "@/components/HtmlDescription";
 import { useEffect, useRef } from "react";
 import type { PoiMapLocationRecord } from "@lib/db-map/contracts/map-app";
@@ -167,6 +168,13 @@ export function PoiDrawer({ selection, onClose }: Props) {
   );
 }
 
+/** Review flags other than the general-location note shown above them. */
+function reviewFlagsBeyondLocation(poi: Poi): string[] {
+  return ((poi as { review_flags?: string[] }).review_flags ?? []).filter(
+    (flag) => flag !== "general_location",
+  );
+}
+
 function isGeneral(poi: Poi): boolean {
   return (
     (poi.attributes as { location_specificity?: string } | null)
@@ -276,6 +284,14 @@ function PoiBody({ poi }: { poi: Poi }) {
                   ?.location_specificity === "general" && (
                   <p className="text-xs font-medium text-amber-700">
                     General location: only a country, region or city is known
+                  </p>
+                )}
+                {reviewFlagsBeyondLocation(poi).length > 0 && (
+                  <p className="text-xs font-medium text-amber-700">
+                    Needs review:{" "}
+                    {reviewFlagsBeyondLocation(poi)
+                      .map((flag) => REVIEW_FLAG_LABELS[flag]?.label ?? flag)
+                      .join(", ")}
                   </p>
                 )}
                 {locations.map((location) => (

@@ -1,6 +1,7 @@
 "use client";
 
 import type { PoiLocationFilter } from "./usePoiLocationFilter";
+import { REVIEW_FLAG_LABELS } from "./usePoiReviewFilter";
 
 const LOCATION_OPTIONS: Array<{
   value: PoiLocationFilter;
@@ -93,5 +94,35 @@ export function ResultCount({
     >
       {text}
     </div>
+  );
+}
+
+/** Troubleshooting filter: only POIs carrying one review flag. */
+export function ReviewFilter({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+}) {
+  return (
+    <label className="flex items-center rounded-lg bg-white px-2 py-1 shadow-lg border border-gray-200 text-sm">
+      <span className="sr-only">Review flag</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        title="Show only POIs flagged for review"
+        className={`bg-transparent font-medium cursor-pointer outline-none ${
+          value === "all" ? "text-gray-600" : "text-amber-700"
+        }`}
+      >
+        <option value="all">All POIs</option>
+        {Object.entries(REVIEW_FLAG_LABELS).map(([flag, { label, title }]) => (
+          <option key={flag} value={flag} title={title}>
+            Review: {label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

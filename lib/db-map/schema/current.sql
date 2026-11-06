@@ -192,6 +192,7 @@ END) STORED,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     active_build_id uuid,
     origin text DEFAULT 'research'::text NOT NULL,
+    review_flags text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT canonical_pois_date_precision_check CHECK ((date_precision = ANY (ARRAY['datetime'::text, 'day'::text, 'month'::text, 'year'::text]))),
     CONSTRAINT canonical_pois_origin_check CHECK ((origin = ANY (ARRAY['research'::text, 'manual'::text]))),
     CONSTRAINT canonical_pois_status_check CHECK ((status = ANY (ARRAY['published'::text, 'draft'::text, 'hidden'::text])))
@@ -1801,6 +1802,13 @@ CREATE INDEX canonical_pois_primary_cat_idx ON public.canonical_pois USING btree
 
 
 --
+-- Name: canonical_pois_review_flags_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX canonical_pois_review_flags_idx ON public.canonical_pois USING gin (review_flags);
+
+
+--
 -- Name: canonical_pois_starts_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1938,6 +1946,13 @@ CREATE INDEX research_ingest_run_items_observation_idx ON public.research_ingest
 --
 
 CREATE INDEX research_ingest_run_items_poi_idx ON public.research_ingest_run_items USING btree (research_poi_id);
+
+
+--
+-- Name: research_ingest_run_records_research_poi_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX research_ingest_run_records_research_poi_idx ON public.research_ingest_run_records USING btree (research_poi_id) WHERE (research_poi_id IS NOT NULL);
 
 
 --

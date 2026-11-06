@@ -921,6 +921,29 @@ Queue state is in `lib/db-map/.ingest-queues/<id>/` (`state.json`, `queue.log`, 
 each file's supervisor job keeps its usual journal under `.ingest-jobs/`. Only one queue runs
 at a time, and the queue counts as a supervisor (not a worker) for quiescence checks.
 
+## Review flags
+
+Canonical POIs carry `review_flags` (text array, GIN-indexed), a filterable list of content to
+troubleshoot later. Flags never block publication. They are derived, not part of a build:
+`rebuildCanonicalPoi` refreshes them for its POI, and `ingest:review-flags --refresh`
+recomputes all of them (run it after reclassifying a capture in the inventory; it refuses
+while ingestion is active, and takes the canonical writer lock so it never races a rebuild).
+
+| Flag | Meaning |
+| --- | --- |
+| `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
+| `source_needs_review` | A member's active observation comes from a capture whose inventory disposition is still `needs_review` |
+
+Rules live in `lib/db-map/sql/review-flags.ts` (`REVIEW_FLAG_RULES`, one SQL predicate per
+flag); add a flag there and a label in `apps/map/src/map/usePoiReviewFilter.ts`. The map API
+filters with `/api/pois?review=<flag>`, the map's review dropdown does the same, and the drawer
+lists a POI's flags.
+
+```bash
+pnpm --filter @lib/db-map ingest:review-flags            # published POIs per flag
+pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's flags
+```
+
 ## Daily geocoding quota
 
 LocationIQ's free plan allows 5,000 requests a day (2 a second, 60 a minute) and resets at

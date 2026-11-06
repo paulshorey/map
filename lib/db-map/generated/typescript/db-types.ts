@@ -106,6 +106,7 @@ export interface CanonicalPoisRow {
   "updated_at": Date;
   "active_build_id": string | null;
   "origin": string;
+  "review_flags": Array<string>;
 }
 
 export interface GeoCentroidsRow {
