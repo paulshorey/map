@@ -356,6 +356,13 @@ export async function runQueue(id: string) {
             return stop(
               `The inventory marks this file ${state.action === "review" ? "needs_review" : "not importable"}: set its disposition to import (dashboard file drawer), then resume`,
             );
+          // "inspect" without a safe continuation (failed/invalid output, normalization failures)
+          // needs diagnosis before any new unlimited import.
+          if (state.action === "inspect" && !state.continuation && !entry.run_id)
+            return stop(
+              "The inventory requires inspection of this file's earlier output before another import " +
+                "(see the dashboard file drawer or ingest:status); fix it, then resume",
+            );
         }
         if (!entry.run_id && state.continuation) {
           const check = await continuationSafe(state.continuation);
@@ -381,9 +388,17 @@ export async function runQueue(id: string) {
           q.message = entry.reason;
           return;
         }
+        // Resumes keep the run's saved limits (runs this queue started are unlimited anyway).
         const args = entry.run_id
-          ? ["--resume", entry.run_id, "--unlimited"]
+          ? ["--resume", entry.run_id]
           : [entry.file, "--category", entry.category, "--unlimited"];
+        // A stop requested while the checks above ran is honoured before anything launches.
+        if (await stopRequested(id)) {
+          entry.status = "stopped";
+          q.status = "stopped";
+          q.message = "Stopped by operator request before the next launch";
+          return;
+        }
         entry.status = "running";
         entry.started_at ??= new Date().toISOString();
         entry.reason = null;

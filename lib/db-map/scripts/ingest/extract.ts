@@ -37,7 +37,11 @@ async function main() {
     shadow: false, retryFailed: false, noLlm: true,
   };
   const db = getDb();
-  const release = await admitImport(db, opts);
-  try { await runOrchestration(db, opts); } finally { await release(); await db.end(); }
+  try {
+    const release = await admitImport(db, opts);
+    try { await runOrchestration(db, opts); } finally { await release(); }
+  } finally {
+    await db.end();
+  }
 }
 main().catch((error) => { console.error("Extract failed:", error); process.exit(1); });
