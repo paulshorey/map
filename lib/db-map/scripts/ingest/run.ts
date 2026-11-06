@@ -169,7 +169,18 @@ async function main() {
     try {
       useProviderQuotaLedger(db);
       // One full-file import at a time, and none beside a running import queue (any host).
-      releaseAdmission = await admitImport(db, opts);
+      // A resume keeps its saved scope: admit it as the run it continues (bounded or full).
+      const saved = opts.resume
+        ? (
+            await db.query("SELECT options FROM research_ingest_runs WHERE id=$1", [opts.resume])
+          ).rows[0]?.options ?? {}
+        : {};
+      releaseAdmission = await admitImport(db, {
+        dryRun: opts.dryRun,
+        limit: opts.resume ? (saved.limit ?? undefined) : opts.limit,
+        record: opts.resume ? (saved.record ?? undefined) : opts.record,
+        shadow: opts.resume ? !!saved.shadow : opts.shadow,
+      });
       if (!opts.dryRun) {
         const usage = await providerUsageToday(db);
         console.log(

@@ -154,7 +154,13 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
     files: Array<Parameters<typeof queueItem>[0]>;
   };
   const row = inventory.files.find((f) => f.logical_path === entry.file) ?? null;
-  if (!row) return { coverage: null, continuation: null, action: null as string | null };
+  if (!row)
+    return {
+      coverage: null,
+      continuation: null,
+      action: null as string | null,
+      verifyArgs: null as string[] | null,
+    };
   const item = queueItem(row);
   const sameCategory = row.category_slug === entry.category;
   const sameFile = !!row.file_sha256 && row.file_sha256 === (await sha256(entry.file).catch(() => null));
@@ -167,6 +173,7 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
     // An unfinished full-file run keeps its cohort and checkpoints: resume it, never restart.
     continuation: sameCategory && sameFile ? item.continuation_run_id : null,
     action: item.action as string,
+    verifyArgs: item.action === "verify" ? (item.run_args as string[] | null) : null,
   };
 }
 
@@ -306,12 +313,27 @@ export function classifyResult(r: {
 }
 
 export async function runQueue(id: string) {
+  // A plain import may still be running (it holds the queue lock shared): wait for it, like
+  // the quiescence wait, up to an hour, honouring stop requests.
+  let lock = await acquireQueueLock();
+  const deadline = Date.now() + 3600_000;
+  while (!lock && Date.now() < deadline && !(await queueLockHeld()) && !(await stopRequested(id))) {
+    await sleep(60_000);
+    lock = await acquireQueueLock();
+  }
   const q = await loadQueue(id);
-  const lock = await acquireQueueLock();
   if (!lock) {
-    q.status = "needs_attention";
+    // Another worker (maybe for this very queue) owns ingestion: never overwrite its state.
+    if (await queueLockHeld()) {
+      console.error(`Queue ${id}: another queue worker holds the lock; exiting without changes`);
+      await closeDb();
+      return;
+    }
+    q.status = (await stopRequested(id)) ? "stopped" : "needs_attention";
     q.message =
-      "The queue lock is taken: another import queue worker or a plain ingest:run is active (any host)";
+      q.status === "stopped"
+        ? "Stopped by operator request while waiting to start"
+        : "A plain ingest:run kept the queue lock for over an hour; resume the queue when it finishes";
     await saveQueue(q);
     await closeDb();
     return;
@@ -389,9 +411,12 @@ export async function runQueue(id: string) {
           return;
         }
         // Resumes keep the run's saved limits (runs this queue started are unlimited anyway).
+        // Ready-to-verify output only needs the report/verification stages.
         const args = entry.run_id
           ? ["--resume", entry.run_id]
-          : [entry.file, "--category", entry.category, "--unlimited"];
+          : state.verifyArgs
+            ? [...state.verifyArgs, "--unlimited"]
+            : [entry.file, "--category", entry.category, "--unlimited"];
         // A stop requested while the checks above ran is honoured before anything launches.
         if (await stopRequested(id)) {
           entry.status = "stopped";
@@ -575,7 +600,10 @@ async function main() {
   const [command = "help", ...rest] = process.argv.slice(2);
   const flag = (name: string) => {
     const i = rest.indexOf(name);
-    return i >= 0 ? rest[i + 1] : undefined;
+    if (i < 0) return undefined;
+    const value = rest[i + 1];
+    if (!value || value.startsWith("--")) throw new Error(`${name} requires a value`);
+    return value;
   };
   if (command === "worker") return runQueue(flag("--queue")!);
   if (command === "start") {
