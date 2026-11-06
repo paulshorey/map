@@ -122,7 +122,12 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  */
 async function acquireQueueLock(id: string): Promise<Client | null> {
   // Its own connection, outside the operational pool, held for the worker's lifetime.
-  const client = await dedicatedClient(`import-queue:${id}`);
+  // Losing the lock connection releases ownership: stop this queue and its current import.
+  const client = await dedicatedClient(`import-queue:${id}`, () => {
+    void writeFile(queuePath(id, "stop.request"), `now lock connection lost ${new Date().toISOString()}`, {
+      mode: 0o600,
+    }).catch(() => undefined);
+  });
   try {
     const { rows } = await client.query("SELECT pg_try_advisory_lock($1, $2) AS ok", [
       INGEST_LOCK_NAMESPACE,
