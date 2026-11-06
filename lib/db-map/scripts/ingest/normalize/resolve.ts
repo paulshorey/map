@@ -262,6 +262,9 @@ export function resolveNormalization(input: {
   return {
     ...resultWithoutFingerprint,
     matchFingerprint: stableHash({
+      // Generated names change which evidence matching may use; the key is omitted for named
+      // records so their fingerprints (and memberships) are unchanged.
+      ...(nameGenerated ? { nameGenerated: true } : {}),
       isPoi: resultWithoutFingerprint.isPoi,
       matchName: resultWithoutFingerprint.matchName,
       aliases: resultWithoutFingerprint.aliases,

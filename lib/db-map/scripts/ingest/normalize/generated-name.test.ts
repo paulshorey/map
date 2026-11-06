@@ -231,3 +231,19 @@ test("a captured address qualifies the subject when no street tag exists", () =>
   assert.equal(resolved.attributes.generated_name_subject, "Campground at 12 Park Rd");
   assert.equal(resolved.displayName, "Campground at 12 Park Rd near Springfield, United States");
 });
+
+test("flat OSM captures keep alternate names as raw columns", () => {
+  const resolved = resolve(
+    input({ attributes: {}, raw: { name: "", tourism: "caravan_site", alt_name: "Mill Camp", all_tags: "{}" } }),
+  );
+  assert.equal(resolved.displayName, "Mill Camp");
+  assert.equal(Object.hasOwn(resolved.attributes, "name_generated"), false);
+  assert.equal(realNameFromTags({ name_fr: "Aire du Lac" }), "Aire du Lac");
+});
+
+test("the match fingerprint distinguishes a generated name from the same real name", () => {
+  const generated = resolve(input({ attributes: {}, raw: { tourism: "caravan_site" }, lat: null, lng: null, city: "Lyon", country_code: "FR" }));
+  const named = resolve(input({ name: generated.displayName, attributes: {}, raw: {}, lat: null, lng: null, city: "Lyon", country_code: "FR" }));
+  assert.equal(generated.matchName, named.matchName);
+  assert.notEqual(generated.matchFingerprint, named.matchFingerprint);
+});

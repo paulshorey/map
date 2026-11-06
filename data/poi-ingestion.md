@@ -905,7 +905,10 @@ Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
 
 - **Real names first.** A blank or placeholder name (`unnamed`, `N/A`, …; warning
   `placeholder_source_name`) is not a name. A real name in another OSM tag (`name:en`,
-  `official_name`, `name:<lang>`, `alt_name`, `loc_name`, `short_name`) is used as the name.
+  `official_name`, `name:<lang>`, `alt_name`, `loc_name`, `short_name`; read from
+  `attributes.osm_tags`, `raw.all_tags`, or a flat export's raw columns such as `name_en`) is
+  used as the name. The match fingerprint includes the generated-name state (only when
+  generated, so named records' fingerprints are unchanged).
 - **Generated name.** For place profiles (not events), deterministic normalization composes a
   descriptive name from the kind of place (`tourism=caravan_site` → "Caravan site", else the
   ingest category), operator/brand and `ref`, street (else the captured address's first part),

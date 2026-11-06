@@ -53,26 +53,36 @@ function text(value: unknown): string | null {
   return trimmed || null;
 }
 
-/** OSM-style tags captured with the record (`attributes.osm_tags`, else `raw.all_tags`). */
+/**
+ * OSM-style tags captured with the record: `attributes.osm_tags`, else `raw.all_tags`, else
+ * the flat raw record itself (flat OSM CSV exports keep `alt_name`, `name_en`, … as columns).
+ */
 export function sourceTags(
   attributes: Record<string, unknown>,
   raw: unknown,
 ): Record<string, unknown> {
   const tags = asRecord(attributes.osm_tags);
   if (Object.keys(tags).length) return tags;
-  const allTags = asRecord(raw).all_tags;
+  const record = asRecord(raw);
+  const allTags = record.all_tags;
+  let parsed: Record<string, unknown> = {};
   if (typeof allTags === "string") {
     try {
-      return asRecord(JSON.parse(allTags));
+      parsed = asRecord(JSON.parse(allTags));
     } catch {
-      return {};
+      parsed = {};
     }
-  }
-  return asRecord(allTags);
+  } else parsed = asRecord(allTags);
+  if (Object.keys(parsed).length) return parsed;
+  const { all_tags: _ignored, ...flat } = record;
+  return flat;
 }
 
-/** Language-specific (`name:de`) values are names; `name:signed` and similar flags are not. */
-const NAME_LANGUAGE_KEY = /^name:[a-z]{2,3}(?:-[a-z]{2,4})?$/i;
+/**
+ * Language-specific (`name:de`, or `name_de` in flat exports) values are names; `name:signed`
+ * and similar flags are not.
+ */
+const NAME_LANGUAGE_KEY = /^name[:_][a-z]{2,3}(?:-[a-z]{2,4})?$/i;
 
 /**
  * A real name the source gives outside its primary name field: an OSM `name:en`, another
@@ -81,10 +91,11 @@ const NAME_LANGUAGE_KEY = /^name:[a-z]{2,3}(?:-[a-z]{2,4})?$/i;
 export function realNameFromTags(tags: Record<string, unknown>): string | null {
   const ordered = [
     "name:en",
+    "name_en",
     "official_name",
     "int_name",
     ...Object.keys(tags)
-      .filter((key) => NAME_LANGUAGE_KEY.test(key) && key !== "name:en")
+      .filter((key) => NAME_LANGUAGE_KEY.test(key) && !/^name[:_]en$/i.test(key))
       .sort(),
     "alt_name",
     "loc_name",
