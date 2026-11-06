@@ -2,6 +2,7 @@ import {
   assessLocationRecord,
   currentLocationAssessmentSql,
 } from "../../sql/location-assessments.js";
+import { refreshRunReviewFlags } from "../../sql/review-flags.js";
 import { locationReadySql } from "./location.js";
 import { measureDatabase } from "./database-telemetry.js";
 import { runRecordScheduler } from "./record-scheduler.js";
@@ -1475,6 +1476,9 @@ export async function runOrchestration(
         return result;
       },
     });
+    // Capture provenance can change without a rebuild (reused observations): refresh the
+    // review flags of every canonical this run touched.
+    if (!opts.shadow && !opts.dryRun) await refreshRunReviewFlags(db, ctx.runId);
     if (schedule.budget || schedule.partial || schedule.paused) {
       finalStatus = schedule.budget
         ? "waiting_budget"
