@@ -72,6 +72,19 @@ export interface IngestionMonitor {
   };
 }
 
+export const EMPTY_QUALITY: IngestionMonitor["quality"] = {
+  published_pois: 0,
+  hidden_pois: 0,
+  precise_pois: 0,
+  general_pois: 0,
+  review_flags: {},
+  research_records: 0,
+  unlocated_records: 0,
+  normalization_failed: 0,
+  degraded: 0,
+  by_source: [],
+};
+
 export function stageProgress(
   stage: string,
   counts: Array<{ state: string; records: number }>,
@@ -256,6 +269,6 @@ export async function getIngestionMonitor(
     window_minutes: WINDOW_MINUTES,
     run: progress,
     quota,
-    quality: quality ?? (await getQualityMonitor(db)),
+    quality: quality ?? (await getQualityMonitor(db).catch(() => EMPTY_QUALITY)),
   };
 }

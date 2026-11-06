@@ -17,14 +17,41 @@ import {
 import { refreshInventory } from "@lib/db-map/ingestion/inventory-scan";
 import { inspectRun, parseStatusArgs } from "@lib/db-map/ingest/status";
 import { controlState } from "@lib/db-map/sql/ingestion-control";
-import { getIngestionMonitor, getQualityMonitor } from "@lib/db-map/sql/ingestion-monitor";
+import {
+  EMPTY_QUALITY,
+  getIngestionMonitor,
+  getQualityMonitor,
+} from "@lib/db-map/sql/ingestion-monitor";
 import { currentQueue, reconcileStale } from "@lib/db-map/ingest/import-queue";
 
 const QUALITY_TTL_MS = 120_000;
-let qualityCache: {
-  at: number;
-  value: Awaited<ReturnType<typeof getQualityMonitor>>;
-} | null = null;
+const QUALITY_RETRY_MS = 30_000;
+type Quality = Awaited<ReturnType<typeof getQualityMonitor>>;
+let qualityCache: { at: number; value: Quality | null } = { at: 0, value: null };
+let qualityRefresh: Promise<void> | null = null;
+
+/**
+ * Whole-table quality aggregates, refreshed at most every two minutes by one shared request.
+ * A failed refresh keeps serving the previous value and retries after 30 seconds.
+ */
+async function cachedQuality(db: Parameters<typeof getQualityMonitor>[0]): Promise<Quality | null> {
+  if (Date.now() - qualityCache.at > QUALITY_TTL_MS) {
+    qualityRefresh ??= getQualityMonitor(db)
+      .then((value) => {
+        qualityCache = { at: Date.now(), value };
+      })
+      .catch((error) => {
+        console.error("Quality monitor refresh failed:", error);
+        qualityCache = { at: Date.now() - QUALITY_TTL_MS + QUALITY_RETRY_MS, value: qualityCache.value };
+      })
+      .finally(() => {
+        qualityRefresh = null;
+      });
+    // The first load waits; later refreshes serve the previous value meanwhile.
+    if (!qualityCache.value) await qualityRefresh;
+  }
+  return qualityCache.value;
+}
 
 export function dashboardContentSecurityPolicy(
   extraOrigins = process.env.INGESTION_FRAME_ORIGINS ?? "",
@@ -159,10 +186,9 @@ export function createDashboard(port: number) {
       }
       if (req.method === "GET" && url.pathname === "/api/monitor") {
         // Whole-table quality aggregates are cached; run progress and quota stay live.
-        if (!qualityCache || Date.now() - qualityCache.at > QUALITY_TTL_MS)
-          qualityCache = { at: Date.now(), value: await getQualityMonitor(db) };
+        const quality = await cachedQuality(db);
         const [monitor, queue] = await Promise.all([
-          getIngestionMonitor(db, qualityCache.value),
+          getIngestionMonitor(db, quality ?? EMPTY_QUALITY),
           // Reconcile first so a queue whose worker died is not shown as running.
           reconcileStale()
             .catch(() => undefined)
