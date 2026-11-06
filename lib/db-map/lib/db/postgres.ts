@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Client, Pool } from "pg";
 
 let pool: Pool | undefined;
 
@@ -29,6 +29,24 @@ export const getDb = () => {
 
   return pool;
 };
+
+/**
+ * A connection outside the shared pool, for session-level advisory locks held for a whole run,
+ * so a small pool can never be exhausted by its own lock holders. Close it with `end()`.
+ */
+export async function dedicatedClient(applicationName?: string): Promise<Client> {
+  const connectionString = process.env.DB_MAP_URL;
+  if (!connectionString) throw new Error("DB_MAP_URL environment variable not set");
+  const client = new Client({
+    connectionString,
+    connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS || 10_000),
+    keepAlive: true,
+    application_name: applicationName,
+  });
+  client.on("error", (err) => console.error("Postgres lock connection error:", err));
+  await client.connect();
+  return client;
+}
 
 export async function closeDb() {
   if (!pool) return;

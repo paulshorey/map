@@ -9,7 +9,8 @@
  *
  * The locks belong to the import process itself, so they hold even if a queue worker dies.
  */
-import type { Pool, PoolClient } from "pg";
+import type { Client, Pool } from "pg";
+import { dedicatedClient } from "../../lib/db/postgres.js";
 import {
   FULL_IMPORT_LOCK,
   IMPORT_QUEUE_ENV,
@@ -32,12 +33,14 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
   const fromQueue = !!process.env[IMPORT_QUEUE_ENV];
   const full = isFullScope(scope);
   if (fromQueue && !full) return async () => {};
-  const fence: PoolClient = await db.connect();
+  // Held for the whole run on its own connection, outside the operational pool.
+  void db;
+  const fence: Client = await dedicatedClient("ingest-admission");
   const held: string[] = [];
   const release = async () => {
     for (const sql of held.reverse())
       await fence.query(sql, [INGEST_LOCK_NAMESPACE]).catch(() => undefined);
-    fence.release();
+    await fence.end().catch(() => undefined);
   };
   try {
     // Bounded diagnostics (--limit/--record/--shadow) run beside a queue; full imports do not.

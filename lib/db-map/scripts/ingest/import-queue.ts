@@ -28,8 +28,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { createInterface } from "node:readline";
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import type { PoolClient } from "pg";
-import { getDb, closeDb } from "../../lib/db/postgres.js";
+import type { Client } from "pg";
+import { getDb, closeDb, dedicatedClient } from "../../lib/db/postgres.js";
 import { getInventory } from "../../sql/ingestion-inventory.js";
 import { inspectControl } from "./control.js";
 import { atomicJson, jobPath, UUID } from "./supervisor-state.js";
@@ -120,19 +120,19 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * Session advisory lock on a dedicated connection, held until the worker exits. The connection
  * is named `import-queue:<id>`, so other commands can tell which queue owns ingestion.
  */
-async function acquireQueueLock(id: string): Promise<PoolClient | null> {
-  const client = await getDb().connect();
+async function acquireQueueLock(id: string): Promise<Client | null> {
+  // Its own connection, outside the operational pool, held for the worker's lifetime.
+  const client = await dedicatedClient(`import-queue:${id}`);
   try {
-    await client.query("SELECT set_config('application_name', $1, false)", [`import-queue:${id}`]);
     const { rows } = await client.query("SELECT pg_try_advisory_lock($1, $2) AS ok", [
       INGEST_LOCK_NAMESPACE,
       IMPORT_QUEUE_LOCK,
     ]);
     if (rows[0]?.ok) return client;
-    client.release();
+    await client.end();
     return null;
   } catch (error) {
-    client.release(true);
+    await client.end().catch(() => undefined);
     throw error;
   }
 }
@@ -171,10 +171,12 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
       continuation: null,
       action: null as string | null,
       verifyArgs: null as string[] | null,
+      sha: null as string | null,
     };
   const item = queueItem(row);
   const sameCategory = row.category_slug === entry.category;
-  const sameFile = !!row.file_sha256 && row.file_sha256 === (await sha256(entry.file).catch(() => null));
+  const sha = await sha256(entry.file).catch(() => null);
+  const sameFile = !!row.file_sha256 && row.file_sha256 === sha;
   return {
     coverage: !sameCategory
       ? `category_${row.category_slug ?? "unset"}`
@@ -185,7 +187,19 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
     continuation: sameCategory && sameFile ? item.continuation_run_id : null,
     action: item.action as string,
     verifyArgs: item.action === "verify" ? (item.run_args as string[] | null) : null,
+    sha,
   };
+}
+
+/** Whether a run was made from the capture version with this SHA-256. */
+async function runMatchesFile(runId: string, sha: string | null): Promise<boolean> {
+  if (!sha) return false;
+  const { rows } = await getDb().query(
+    `SELECT v.file_sha256 FROM research_ingest_runs r
+     JOIN research_source_file_versions v ON v.id = r.source_file_version_id WHERE r.id=$1`,
+    [runId],
+  );
+  return rows[0]?.file_sha256 === sha;
 }
 
 /** Only runs that stopped for a budget/quota or an operator stop resume without diagnosis. */
@@ -337,7 +351,20 @@ export async function runQueue(id: string) {
     await sleep(60_000);
     lock = await acquireQueueLock(id);
   }
-  const q = await loadQueue(id);
+  let q: QueueState;
+  try {
+    q = await loadQueue(id);
+  } catch (error) {
+    // Never keep the global lock if the queue state cannot even be read.
+    if (lock) {
+      await lock
+        .query("SELECT pg_advisory_unlock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_LOCK])
+        .catch(() => undefined);
+      await lock.end().catch(() => undefined);
+    }
+    await closeDb();
+    throw error;
+  }
   if (!lock) {
     const holder = await queueLockHolder();
     // A duplicate worker of this same queue owns ingestion: never overwrite its state.
@@ -409,6 +436,11 @@ export async function runQueue(id: string) {
               "The inventory requires inspection of this file's earlier output before another import " +
                 "(see the dashboard file drawer or ingest:status); fix it, then resume",
             );
+        }
+        // A saved run of an older file version can never finish this one: start afresh.
+        if (entry.run_id && !(await runMatchesFile(entry.run_id, state.sha))) {
+          entry.run_id = null;
+          entry.quota_pauses = 0;
         }
         if (!entry.run_id && state.continuation) {
           const check = await continuationSafe(state.continuation);
@@ -523,7 +555,7 @@ export async function runQueue(id: string) {
       await lock
         .query("SELECT pg_advisory_unlock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_LOCK])
         .catch(() => undefined);
-      lock.release(true); // drop the connection named after this queue
+      await lock.end().catch(() => undefined); // the connection named after this queue
       await closeDb();
     }
   }
