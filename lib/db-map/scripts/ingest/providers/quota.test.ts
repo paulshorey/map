@@ -65,7 +65,7 @@ test("the local limit refuses a request before it is sent", async () => {
   process.env.LOCATIONIQ_API_KEY = "fixture";
   process.env.LOCATIONIQ_DAILY_LIMIT = "2";
   const db = ledger(1);
-  useProviderQuotaLedger(db);
+  useProviderQuotaLedger(db as never);
   let calls = 0;
   globalThis.fetch = async () => {
     calls++;
@@ -85,7 +85,7 @@ test("the local limit refuses a request before it is sent", async () => {
 test("'Rate Limited Day' stops all later lookups without retrying; per-second limits stay retryable", async () => {
   process.env.LOCATIONIQ_API_KEY = "fixture";
   const db = ledger(10);
-  useProviderQuotaLedger(db);
+  useProviderQuotaLedger(db as never);
   let calls = 0;
   globalThis.fetch = async () => {
     calls++;
