@@ -209,3 +209,17 @@ test("a nameless place without a location yet still gets a name and reaches geoc
   assert.equal(resolved.displayName, "Campsite on Park Road");
   assert.equal(resolved.attributes.name_generated, true);
 });
+
+test("a model-echoed placeholder falls back to the real tagged name", () => {
+  const resolved = resolve(
+    input({ name: "Unnamed", attributes: { osm_tags: { tourism: "caravan_site", "name:de": "Stellplatz Am See" } } }),
+    modelOutput({
+      display_name: "Unnamed",
+      evidence: [{ field: "display_name", paths: ["$.captured.name"] }],
+    }),
+  );
+  assert.equal(resolved.displayName, "Stellplatz Am See");
+  assert.equal(resolved.matchName, "stellplatz am see");
+  assert.ok(resolved.warnings.includes("placeholder_name"));
+  assert.equal(Object.hasOwn(resolved.attributes, "name_generated"), false);
+});

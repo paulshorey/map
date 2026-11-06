@@ -923,7 +923,8 @@ Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
   matcher compares nameless rows and canonicals by identifiers, contacts and location only
   (name and embedding signals are blanked on either side; the LLM adjudicator sees
   "(no name in source)"). A nameless row is never auto-merged as a satellite of a nearby
-  anchor: it goes to anchor LLM adjudication, or stays separate with `--no-llm`. A canonical
+  anchor: it goes to anchor LLM adjudication, or stays separate with `--no-llm`. Global
+  consolidation likewise never merges a nameless canonical by proximity alone. A canonical
   counts as nameless only when no live member has a real name (a real-named member is its
   matching representative).
 - **Canonical name.** A member with a real name always wins. Otherwise the canonical takes the

@@ -31,6 +31,8 @@ interface CanonicalRow extends AnchorMeta {
   primary_slug: string | null;
   category_slugs: string[];
   updated_at: Date;
+  /** No member has a real name (see normalize/generated-name.ts). */
+  name_generated: boolean;
 }
 
 interface MemoVerdict {
@@ -131,6 +133,7 @@ async function loadCanonicals(client: PoolClient): Promise<CanonicalRow[]> {
        cp.address,
        cp.updated_at,
        cp.popularity,
+       COALESCE(cp.attributes->>'name_generated' = 'true', false) AS name_generated,
        primary_cat.slug AS primary_slug,
        COALESCE(array_remove(array_agg(DISTINCT cc.slug), NULL), ARRAY[]::text[]) AS category_slugs,
        COALESCE(max(rs.trust), 0)::int AS max_source_trust,
@@ -349,8 +352,10 @@ async function planMerges(
     const anchors = groupRows
       .filter((row) => isAnchor(meta(row)))
       .sort(strongerFirst);
+    // A nameless canonical has only proximity as evidence; never merge it by proximity
+    // alone (neither into an anchor nor into a satellite cluster).
     const satellites = groupRows
-      .filter((row) => !isAnchor(meta(row)))
+      .filter((row) => !isAnchor(meta(row)) && !row.name_generated)
       .sort(strongerFirst);
     const anchorIndex = buildIndex(anchors, deg);
 

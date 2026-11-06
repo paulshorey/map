@@ -137,7 +137,8 @@ export function resolveNormalization(input: {
   }
   if (displayName && isPlaceholderName(displayName)) {
     warnings.push("placeholder_name");
-    displayName = null;
+    // A real name from another tag survives the model echoing the placeholder.
+    displayName = deterministic.normalizedName;
   }
   const nameGenerated = isPoi && Boolean(generatedName);
   if (nameGenerated) displayName = generatedName;
