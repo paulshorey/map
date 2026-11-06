@@ -49,3 +49,4 @@ lib/db-map/.ingest-archive/
 
 # Private continuity and task records for local Codex scheduled runs.
 /.codex/project-coordinator/
+lib/db-map/.ingest-queues/
