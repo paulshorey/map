@@ -34,6 +34,7 @@ import { getInventory } from "../../sql/ingestion-inventory.js";
 import { inspectControl } from "./control.js";
 import { atomicJson, jobPath, UUID } from "./supervisor-state.js";
 import { queueItem } from "../../lib/ingestion/queue.js";
+import { assertValidCategory } from "./taxonomy.js";
 import {
   IMPORT_QUEUE_ENV,
   IMPORT_QUEUE_LOCK,
@@ -115,6 +116,8 @@ const stopNowRequested = (id: string) =>
     () => false,
   );
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Set when the worker's lock connection drops; it then heartbeats until it has shut down. */
+let lockLost = false;
 
 /**
  * Session advisory lock on a dedicated connection, held until the worker exits. The connection
@@ -124,6 +127,7 @@ async function acquireQueueLock(id: string): Promise<Client | null> {
   // Its own connection, outside the operational pool, held for the worker's lifetime.
   // Losing the lock connection releases ownership: stop this queue and its current import.
   const client = await dedicatedClient(`import-queue:${id}`, () => {
+    lockLost = true;
     void writeFile(queuePath(id, "stop.request"), `now lock connection lost ${new Date().toISOString()}`, {
       mode: 0o600,
     }).catch(() => undefined);
@@ -259,8 +263,16 @@ async function superviseWatch(q: QueueState, entry: QueueEntry, args: string[], 
   // `stop --now` may arrive before the job id is known: forward it once the id is.
   let forwarded = false;
   const jobsBefore = entry.jobs.length;
+  let lastBeat = Date.now();
   const forward = setInterval(() => {
     void (async () => {
+      // A worker stopping after losing its lock is still alive: keep its state fresh so
+      // reconciliation does not treat it as dead while the import winds down.
+      if (lockLost && Date.now() - lastBeat > 60_000) {
+        lastBeat = Date.now();
+        q.message = "Stopping: the queue lock connection was lost";
+        await saveQueue(q).catch(() => undefined);
+      }
       // Only the job this launch created (earlier attempts' jobs are terminal).
       const job = entry.jobs.length > jobsBefore ? entry.jobs.at(-1) : undefined;
       if (forwarded || !job || !(await stopNowRequested(q.id))) return;
@@ -414,6 +426,11 @@ export async function runQueue(id: string) {
         }
         const state = await fileState(entry);
         entry.coverage = state.coverage;
+        // A saved run of an older file version can never finish this one: start afresh.
+        if (entry.run_id && !(await runMatchesFile(entry.run_id, state.sha))) {
+          entry.run_id = null;
+          entry.quota_pauses = 0;
+        }
         const stop = (reason: string) => {
           entry.status = "needs_attention";
           entry.reason = reason;
@@ -441,11 +458,6 @@ export async function runQueue(id: string) {
               "The inventory requires inspection of this file's earlier output before another import " +
                 "(see the dashboard file drawer or ingest:status); fix it, then resume",
             );
-        }
-        // A saved run of an older file version can never finish this one: start afresh.
-        if (entry.run_id && !(await runMatchesFile(entry.run_id, state.sha))) {
-          entry.run_id = null;
-          entry.quota_pauses = 0;
         }
         if (!entry.run_id && state.continuation) {
           const check = await continuationSafe(state.continuation);
@@ -503,7 +515,11 @@ export async function runQueue(id: string) {
         if (entry.outcome === "succeeded") entry.coverage = (await fileState(entry)).coverage;
         // A confirmed `stop --now` pauses the import (outcome `paused`): record it as a stop.
         // A plain `stop` (after the current file) never masks a real failure.
-        if (entry.outcome === "paused" && (await stopNowRequested(id))) {
+        if (
+          entry.outcome === "paused" &&
+          evidence.status === "paused" &&
+          (await stopNowRequested(id))
+        ) {
           entry.status = "stopped";
           entry.reason = `Stopped by operator request (run ${entry.run_id ?? "unknown"} can be resumed)`;
           q.status = "stopped";
@@ -571,8 +587,8 @@ async function reconcileStale(): Promise<QueueState[]> {
   const queues = await listQueues();
   // A `queued` state updated in the last 2 minutes is a worker starting or waiting for a plain
   // import (it heartbeats every minute); the lock holder is the one running worker.
-  const starting = (q: QueueState) =>
-    q.status === "queued" && Date.now() - Date.parse(q.updated_at) < 120_000;
+  // (Also covers a worker heartbeating while it shuts down after losing its lock.)
+  const starting = (q: QueueState) => Date.now() - Date.parse(q.updated_at) < 120_000;
   const holder = await queueLockHolder();
   const active = queues.filter(
     (q) => ["queued", "running", "waiting"].includes(q.status) && !starting(q) && q.id !== holder,
@@ -611,7 +627,8 @@ export function parseEntries(argv: string[]): Array<{ file: string; category: st
 
 function newEntry(e: { file: string; category: string }): QueueEntry {
   if (!e.file.startsWith("data/poi/")) throw new Error(`Capture paths start with data/poi/: ${e.file}`);
-  if (!/^[a-z_]+$/.test(e.category)) throw new Error(`Invalid category: ${e.category}`);
+  // The code-owned taxonomy: a misspelled category fails now, not days into the queue.
+  assertValidCategory(e.category);
   return {
     file: e.file,
     category: e.category,
