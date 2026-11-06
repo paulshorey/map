@@ -147,3 +147,35 @@ export function recordLocations(input: {
   }
   return out;
 }
+
+/** Store an artifact's locations (immutable per artifact; re-recording is a no-op). */
+export async function writeRecordLocations(
+  client: { query: (sql: string, params?: unknown[]) => Promise<unknown> },
+  owner: { research_poi_id: string; geocode_id: string; normalization_id: string },
+  locations: RecordLocation[],
+): Promise<void> {
+  for (const location of locations)
+    await client.query(
+      `INSERT INTO research_poi_locations(research_poi_id,geocode_id,normalization_id,kind,origin,role,precision,status,reason,lat,lng,label,query,query_basis,evidence,logic_version)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb,$16)
+      ON CONFLICT (geocode_id, kind, origin, status, lat, lng) DO NOTHING`,
+      [
+        owner.research_poi_id,
+        owner.geocode_id,
+        owner.normalization_id,
+        location.kind,
+        location.origin,
+        location.role,
+        location.precision,
+        location.status,
+        location.reason,
+        location.lat,
+        location.lng,
+        location.label,
+        location.query,
+        location.query_basis,
+        JSON.stringify(location.evidence),
+        location.logic_version,
+      ],
+    );
+}
