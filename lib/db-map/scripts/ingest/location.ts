@@ -213,7 +213,11 @@ export function forwardImplausible(
     country_code?: unknown;
     country_name?: unknown;
   },
-  hit: { precision: string; raw_response?: Record<string, unknown> | null },
+  hit: {
+    precision: string;
+    region?: string | null;
+    raw_response?: Record<string, unknown> | null;
+  },
 ): "locality_result_too_specific" | "name_result_mismatch" | null {
   if (
     basis === "locality" &&
@@ -246,7 +250,9 @@ export function forwardImplausible(
         return "name_result_mismatch";
     } else if (localityValue(listed.region)) {
       const region = fold(listed.region);
+      // Legacy cache hits may lack the raw response; their parsed region still counts.
       if (
+        fold(hit.region) !== region &&
         !["state", "region", "province", "state_district", "county"].some(
           (key) => fold(address[key]) === region,
         )
