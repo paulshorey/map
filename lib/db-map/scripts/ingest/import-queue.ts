@@ -419,7 +419,14 @@ export async function runQueue(id: string) {
   };
   // A plain import may still be running (it holds the queue lock shared): wait for it, like
   // the quiescence wait, up to an hour, honouring stop requests.
-  let lock = await acquireQueueLock(id);
+  let lock: Client | null;
+  try {
+    lock = await acquireQueueLock(id);
+  } catch (error) {
+    await endPresence();
+    await closeDb();
+    throw error;
+  }
   const deadline = Date.now() + 3600_000;
   // (Presence guarantees no other queue worker; only a plain import can hold the lock now.)
   while (!lock && Date.now() < deadline && !lockLost && !(await stopRequested(id))) {
@@ -435,7 +442,13 @@ export async function runQueue(id: string) {
       throw error;
     }
     await sleep(60_000);
-    lock = await acquireQueueLock(id);
+    try {
+      lock = await acquireQueueLock(id);
+    } catch (error) {
+      await endPresence();
+      await closeDb();
+      throw error;
+    }
   }
   let q: QueueState;
   try {
@@ -794,6 +807,15 @@ export async function currentQueue(): Promise<QueueState | null> {
 }
 
 async function latestId(): Promise<string> {
+  const queues = await listQueues();
+  // The live queue may run on another host, whose state files only that host has.
+  const holder = await queueLockHolder();
+  if (holder) {
+    if (queues.some((q) => q.id === holder)) return holder;
+    throw new Error(
+      `The active import queue ${holder} runs on another host; run this command there (or pass --queue for a local queue)`,
+    );
+  }
   const latest = await currentQueue();
   if (!latest) throw new Error("No import queue exists");
   return latest.id;
