@@ -908,7 +908,8 @@ Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
   `official_name`, `name:<lang>`, `alt_name`, `loc_name`, `short_name`) is used as the name.
 - **Generated name.** For place profiles (not events), deterministic normalization composes a
   descriptive name from the kind of place (`tourism=caravan_site` → "Caravan site", else the
-  ingest category), operator/brand and `ref`, street, and locality, else coordinates (a record
+  ingest category), operator/brand and `ref`, street (else the captured address's first part),
+  and locality, else coordinates (a record
   with no location yet still gets a name and proceeds to geocoding):
   "Campsite (Westward Bound Campgrounds) near Springfield, United States",
   "Caravan site in Alberta, Canada" (region/country only), "Caravan site at 47.8282, -59.1928". It is added to the deterministic facts (and warning
@@ -924,7 +925,8 @@ Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
   (name and embedding signals are blanked on either side; the LLM adjudicator sees
   "(no name in source)"). A nameless row is never auto-merged as a satellite of a nearby
   anchor: it goes to anchor LLM adjudication, or stays separate with `--no-llm`. Global
-  consolidation likewise never merges a nameless canonical by proximity alone. A canonical
+  consolidation likewise never merges a nameless canonical by proximity alone, as satellite or
+  as anchor target. A canonical
   counts as nameless only when no live member has a real name (a real-named member is its
   matching representative).
 - **Canonical name.** A member with a real name always wins. Otherwise the canonical takes the

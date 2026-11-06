@@ -219,10 +219,12 @@ export function generatePlaceName(input: GeneratedNameInput): GeneratedName {
     text(tags["addr:street"]) ??
     text(input.attributes.addr_street) ??
     text(tags["addr:place"]);
+  // A free-form captured address: its first part ("12 Park Rd"); the locality follows.
+  const address = street ? null : (text(input.address)?.split(",")[0]?.trim() || null);
   const subject = [
     kind,
     qualifiers.length ? `(${qualifiers.join(", ")})` : null,
-    street ? `on ${street}` : null,
+    street ? `on ${street}` : address ? `at ${address}` : null,
   ]
     .filter((part): part is string => Boolean(part))
     .join(" ");

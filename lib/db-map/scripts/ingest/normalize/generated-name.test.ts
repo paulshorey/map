@@ -223,3 +223,11 @@ test("a model-echoed placeholder falls back to the real tagged name", () => {
   assert.ok(resolved.warnings.includes("placeholder_name"));
   assert.equal(Object.hasOwn(resolved.attributes, "name_generated"), false);
 });
+
+test("a captured address qualifies the subject when no street tag exists", () => {
+  const resolved = resolve(
+    input({ attributes: {}, raw: {}, address: "12 Park Rd, Springfield, OR", city: "Springfield", country_code: "US" }),
+  );
+  assert.equal(resolved.attributes.generated_name_subject, "Campground at 12 Park Rd");
+  assert.equal(resolved.displayName, "Campground at 12 Park Rd near Springfield, United States");
+});

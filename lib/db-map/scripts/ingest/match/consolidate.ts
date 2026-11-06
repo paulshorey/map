@@ -357,7 +357,12 @@ async function planMerges(
     const satellites = groupRows
       .filter((row) => !isAnchor(meta(row)) && !row.name_generated)
       .sort(strongerFirst);
-    const anchorIndex = buildIndex(anchors, deg);
+    // Nor is a nameless anchor a proximity target: named satellites are not folded into it
+    // unadjudicated. It stays in groupRows for anchor-anchor LLM adjudication.
+    const anchorIndex = buildIndex(
+      anchors.filter((row) => !row.name_generated),
+      deg,
+    );
 
     for (const satellite of satellites) {
       if (opts.shouldStop?.()) break;
