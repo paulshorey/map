@@ -106,6 +106,16 @@
           "kind": "scalar",
           "type": "string",
           "nullable": true
+        },
+        {
+          "name": "review_flags",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
         }
       ]
     },
@@ -565,6 +575,16 @@
           "optional": false,
           "kind": "model",
           "type": "PoiCoordinateEvidenceRecord",
+          "nullable": false
+        },
+        {
+          "name": "review_flags",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
           "nullable": false
         }
       ]

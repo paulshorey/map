@@ -1,4 +1,5 @@
 import type { Pool } from "pg";
+import type { ReviewFlag } from "./review-flags";
 import { canonicalLocationsSql, coordinateEvidenceSql } from "./map-locations";
 
 export interface NewPoi {
@@ -137,6 +138,8 @@ export interface ListPoisInBboxParams {
   /** `general`: only POIs flagged as a country/region/city-level location; `precise`: all
    *  others, including legacy POIs built before the flag existed. Null/omitted: all. */
   location?: PoiLocationFilter | null;
+  /** Only POIs carrying this review flag (see sql/review-flags.ts). Null/omitted: all. */
+  review?: ReviewFlag | null;
 }
 
 export type PoiLocationFilter = "general" | "precise";
@@ -163,7 +166,8 @@ const FEATURE_PROPERTIES = `jsonb_build_object(
   'popularity', p.popularity,
   'starts_at', p.starts_at,
   'ends_at', p.ends_at,
-  'date_precision', p.date_precision
+  'date_precision', p.date_precision,
+  'review_flags', to_jsonb(p.review_flags)
 )`;
 
 // Category filter: match POIs in the named category OR any of its descendants.
@@ -207,6 +211,7 @@ export async function listPoisGeoJson(
         AND ${CATEGORY_FILTER("$5")}
         AND ${DATE_FILTER("$7", "$8")}
         AND ${LOCATION_FILTER("$10")}
+        AND ($11::text IS NULL OR p.review_flags @> ARRAY[$11::text])
         AND ($9::boolean OR (p.lng BETWEEN $1 AND $3 AND p.lat BETWEEN $2 AND $4)
           OR EXISTS (SELECT 1 FROM canonical_poi_locations l WHERE l.build_id = p.active_build_id
             AND l.lng BETWEEN $1 AND $3 AND l.lat BETWEEN $2 AND $4))`;
@@ -248,6 +253,7 @@ export async function listPoisGeoJson(
       to,
       isWorldView,
       params.location ?? null,
+      params.review ?? null,
     ],
   );
   return (
@@ -277,7 +283,7 @@ async function getPoisByIds(db: Pool, ids: string[]) {
   const { rows } = await db.query(
     `SELECT
         p.id, p.name, p.description, p.address, p.website, p.hours, p.phone, p.photo_url,
-        p.lng, p.lat, p.attributes, p.popularity,
+        p.lng, p.lat, p.attributes, p.popularity, p.review_flags,
         ${canonicalLocationsSql()} AS locations,
         ${coordinateEvidenceSql()} AS coordinate_evidence,
         p.starts_at, p.ends_at, p.date_precision,

@@ -2,6 +2,7 @@ import {
   assessLocationRecord,
   currentLocationAssessmentSql,
 } from "../../sql/location-assessments.js";
+import { refreshRunReviewFlags } from "../../sql/review-flags.js";
 import { locationReadySql } from "./location.js";
 import { measureDatabase } from "./database-telemetry.js";
 import { runRecordScheduler } from "./record-scheduler.js";
@@ -1593,6 +1594,12 @@ export async function runOrchestration(
     await ex.finish("failed", reason, error);
     throw error;
   } finally {
+    // Capture provenance can change without a rebuild (a reused observation repointed during
+    // extraction), so every exit refreshes the review flags of the canonicals this run touched.
+    if (!opts.shadow)
+      await refreshRunReviewFlags(db, ctx.runId).catch((error) =>
+        console.error("Review-flag refresh failed (run ingest:review-flags --refresh):", error),
+      );
     // Catch already finalized failures above; successful/paused returns finalize here.
     await ex.finish(finalStatus, reason);
     console.log(

@@ -1,6 +1,8 @@
 import {
   getDb,
+  isReviewFlag,
   listPoisGeoJson,
+  REVIEW_FLAGS,
   type PoiLocationFilter,
 } from '@lib/db-map';
 import { NextRequest, NextResponse } from 'next/server';
@@ -21,6 +23,16 @@ export async function GET(request: NextRequest) {
   if (locationParam && locationParam !== 'all' && !location) {
     return NextResponse.json(
       { error: 'location must be general, precise or all' },
+      { status: 400 },
+    );
+  }
+
+  // One review flag (see @lib/db-map review flags); absent or "all" returns every POI.
+  const reviewParam = searchParams.get('review');
+  const review = isReviewFlag(reviewParam) ? reviewParam : null;
+  if (reviewParam && reviewParam !== 'all' && !review) {
+    return NextResponse.json(
+      { error: `review must be one of ${REVIEW_FLAGS.join(', ')} or all` },
       { status: 400 },
     );
   }
@@ -56,6 +68,7 @@ export async function GET(request: NextRequest) {
     from: from ?? null,
     to: to ?? null,
     location,
+    review,
   });
 
   return NextResponse.json(geojson, {

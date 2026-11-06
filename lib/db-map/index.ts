@@ -21,6 +21,8 @@ export {
   upsertUserPreferences,
 } from "./sql/users";
 export { traceCanonical, traceResearchRecord } from "./sql/lineage";
+export { REVIEW_FLAGS, isReviewFlag, refreshReviewFlags, reviewFlagCounts } from "./sql/review-flags";
+export type { ReviewFlag } from "./sql/review-flags";
 
 export type {
   CanonicalPoisRow,
