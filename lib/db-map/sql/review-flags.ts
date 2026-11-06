@@ -78,6 +78,33 @@ export async function refreshAllReviewFlags(db: Pool): Promise<number> {
   }
 }
 
+/**
+ * Refresh the flags of every canonical linked to a run's records. A reused observation can
+ * switch captures (and so `source_needs_review`) without any rebuild, so each run ends with
+ * this, under the canonical writer lock like a rebuild.
+ */
+export async function refreshRunReviewFlags(db: Pool, runId: string): Promise<number> {
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock($1::bigint)", [CANONICAL_WRITER_LOCK]);
+    const { rows } = await client.query(
+      `SELECT DISTINCT m.canonical_poi_id AS id FROM research_ingest_run_items i
+       JOIN research_canonical_memberships m ON m.research_poi_id = i.research_poi_id AND m.active
+       WHERE i.run_id = $1`,
+      [runId],
+    );
+    const changed = rows.length ? await refreshReviewFlags(client, rows.map((r) => r.id)) : 0;
+    await client.query("COMMIT");
+    return changed;
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 /** Published POIs per flag. */
 export async function reviewFlagCounts(db: Pick<Pool, "query">) {
   const { rows } = await db.query(
