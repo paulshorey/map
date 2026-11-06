@@ -130,3 +130,13 @@ test("an invalid-query 400 is not charged and releases its reservation", async (
   await assert.rejects(geocode("x".repeat(10), "US"), (error: any) => error.status === 400);
   assert.equal(db.state.requests, 3);
 });
+
+test("a 404 miss is not charged and releases its reservation", async () => {
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  const db = ledger(7);
+  useProviderQuotaLedger(db as never);
+  globalThis.fetch = async () => Response.json({ error: "Unable to geocode" }, { status: 404 });
+  assert.equal(await geocode("Nowhere", "US"), null);
+  assert.equal(await reverseGeocode(30, -97), null);
+  assert.equal(db.state.requests, 7);
+});

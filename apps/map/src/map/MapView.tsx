@@ -95,24 +95,51 @@ function softenLabels(map: maplibregl.Map) {
   }
 }
 
+/** Same tolerance as the server's co-location lookup (about 1 cm). */
+const STACK_EPSILON_DEG = 1e-7;
+
 /**
- * Tag each marker with how many loaded markers share its exact point (`stack_count`), so
- * stacked records are visible. The drawer fetches the complete stack from the server.
+ * Tag each marker with how many loaded markers share its point within the co-location
+ * tolerance (`stack_count`), so stacked records are visible. The drawer fetches the complete
+ * stack from the server.
  */
 function withStackCounts(
   data: GeoJSON.FeatureCollection | undefined,
 ): GeoJSON.FeatureCollection | undefined {
   if (!data) return data;
-  const key = (f: GeoJSON.Feature) =>
-    f.geometry.type === "Point" ? f.geometry.coordinates.join(",") : "";
-  const counts = new globalThis.Map<string, number>();
-  for (const f of data.features)
-    counts.set(key(f), (counts.get(key(f)) ?? 0) + 1);
+  // ±180 are the same meridian: fold -180 onto 180 so wrapped duplicates share cells.
+  const point = (f: GeoJSON.Feature): [number, number] | null => {
+    if (f.geometry.type !== "Point") return null;
+    const [lng, lat] = f.geometry.coordinates as [number, number];
+    return [lng <= -180 + STACK_EPSILON_DEG ? lng + 360 : lng, lat];
+  };
+  // Grid cells of the tolerance size: neighbours within it are in the 3x3 surrounding cells.
+  const cell = (v: number) => Math.floor(v / STACK_EPSILON_DEG);
+  const grid = new globalThis.Map<string, Array<[number, number]>>();
+  for (const f of data.features) {
+    const p = point(f);
+    if (!p) continue;
+    const k = `${cell(p[0])},${cell(p[1])}`;
+    grid.set(k, [...(grid.get(k) ?? []), p]);
+  }
+  const count = (p: [number, number] | null) => {
+    if (!p) return 1;
+    let n = 0;
+    for (let dx = -1; dx <= 1; dx++)
+      for (let dy = -1; dy <= 1; dy++)
+        for (const q of grid.get(`${cell(p[0]) + dx},${cell(p[1]) + dy}`) ?? [])
+          if (
+            Math.abs(q[0] - p[0]) <= STACK_EPSILON_DEG &&
+            Math.abs(q[1] - p[1]) <= STACK_EPSILON_DEG
+          )
+            n++;
+    return Math.max(1, n);
+  };
   return {
     ...data,
     features: data.features.map((f) => ({
       ...f,
-      properties: { ...f.properties, stack_count: counts.get(key(f)) ?? 1 },
+      properties: { ...f.properties, stack_count: count(point(f)) },
     })),
   };
 }
