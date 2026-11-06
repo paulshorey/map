@@ -35,7 +35,11 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
   if (fromQueue && !full) return async () => {};
   // Held for the whole run on its own connection, outside the operational pool.
   void db;
-  const fence: Client = await dedicatedClient("ingest-admission");
+  // Losing this connection releases the fence: stop the import gracefully (its SIGTERM handler
+  // pauses the run) rather than continue unfenced.
+  const fence: Client = await dedicatedClient("ingest-admission", () =>
+    process.kill(process.pid, "SIGTERM"),
+  );
   const held: string[] = [];
   const release = async () => {
     for (const sql of held.reverse())

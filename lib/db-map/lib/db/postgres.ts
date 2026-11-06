@@ -34,7 +34,11 @@ export const getDb = () => {
  * A connection outside the shared pool, for session-level advisory locks held for a whole run,
  * so a small pool can never be exhausted by its own lock holders. Close it with `end()`.
  */
-export async function dedicatedClient(applicationName?: string): Promise<Client> {
+export async function dedicatedClient(
+  applicationName?: string,
+  /** Called once if the connection fails or closes before `end()`: its session locks are gone. */
+  onLost?: (error: unknown) => void,
+): Promise<Client> {
   const connectionString = process.env.DB_MAP_URL;
   if (!connectionString) throw new Error("DB_MAP_URL environment variable not set");
   const client = new Client({
@@ -43,8 +47,22 @@ export async function dedicatedClient(applicationName?: string): Promise<Client>
     keepAlive: true,
     application_name: applicationName,
   });
-  client.on("error", (err) => console.error("Postgres lock connection error:", err));
+  let ending = false,
+    lost = false;
+  const lose = (error: unknown) => {
+    if (ending || lost) return;
+    lost = true;
+    console.error("Postgres lock connection lost; its advisory locks are released:", error);
+    onLost?.(error);
+  };
+  client.on("error", lose);
+  client.on("end", () => lose(new Error("connection ended")));
   await client.connect();
+  const end = client.end.bind(client);
+  client.end = (() => {
+    ending = true;
+    return end();
+  }) as typeof client.end;
   return client;
 }
 
