@@ -706,13 +706,14 @@ does not block uncapped imports or require spending approval.
 The dashboard's first panel (`GET /api/monitor`, refreshed every 10 seconds) shows:
 
 - the running (or latest) run: per-stage done/total bars, active, quota-waiting and quarantined
-  records, the finish rate over the last 15 minutes, and per-stage and whole-file ETAs;
+  records, the finish rate (over the last 15 minutes, or the stage's age if younger), and
+  per-stage and whole-file ETAs;
 - today's LocationIQ requests against the daily limit, and when it resets;
-- the latest import queue with each file's status (`ingest:import-queue`);
+- the active (or latest) import queue with each file's status (`ingest:import-queue`);
 - published POIs (precise vs general), review-flag counts, unlocated, failed and degraded
-  source records, and a per-source quality table.
+  source records, and a per-source quality table (cached for two minutes).
 
-It is read-only and runs in one bounded read-only snapshot (`sql/ingestion-monitor.ts`).
+Run progress is one bounded read-only snapshot (`sql/ingestion-monitor.ts`).
 
 ## Assessing category completeness
 
@@ -886,29 +887,6 @@ columns:
 The canonical row stores the representative occurrence: next upcoming when available,
 otherwise the most recent. Status such as upcoming, ongoing, or past is derived at read time.
 
-## Review flags
-
-Canonical POIs carry `review_flags` (text array, GIN-indexed), a filterable list of content to
-troubleshoot later. Flags never block publication. They are derived, not part of a build:
-`rebuildCanonicalPoi` refreshes them for its POI, and `ingest:review-flags --refresh`
-recomputes all of them (run it after reclassifying a capture in the inventory; it refuses
-while ingestion is active, and takes the canonical writer lock so it never races a rebuild).
-
-| Flag | Meaning |
-| --- | --- |
-| `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
-| `source_needs_review` | A member's active observation comes from a capture whose inventory disposition is still `needs_review` |
-
-Rules live in `lib/db-map/sql/review-flags.ts` (`REVIEW_FLAG_RULES`, one SQL predicate per
-flag); add a flag there and a label in `apps/map/src/map/usePoiReviewFilter.ts`. The map API
-filters with `/api/pois?review=<flag>`, the map's review dropdown does the same, and the drawer
-lists a POI's flags.
-
-```bash
-pnpm --filter @lib/db-map ingest:review-flags            # published POIs per flag
-pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's flags
-```
-
 ## Sequential import queue
 
 `ingest:import-queue` runs a list of whole-file imports one at a time through the supervisor
@@ -935,8 +913,9 @@ pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's
   the queue worker holds it exclusively, so a plain import refuses while a queue runs and a
   queue started during a plain import stops as `needs_attention`. A confirmed `stop --now`
   is recorded as an operator stop;
-- an unfinished earlier run of a file is adopted automatically only if it stopped for a
-  budget/quota or an operator stop; anything else stops the queue for inspection. Files the
+- an unfinished earlier run of a file is adopted automatically only if it stopped at the daily
+  geocoding quota or by an operator stop (and resumes with its saved limits); anything else,
+  including a run stopped at its own provider caps, stops the queue for a decision. Files the
   inventory marks `needs_review` or not importable also stop it (set the disposition first);
 - an entry whose file changed since the last inventory scan, is missing from the inventory or
   is classified under another category stops the queue before launching (refresh or reclassify,
@@ -955,6 +934,29 @@ pnpm --silent --filter @lib/db-map ingest:import-queue resume          # continu
 Queue state is in `lib/db-map/.ingest-queues/<id>/` (`state.json`, `queue.log`, ignored by Git);
 each file's supervisor job keeps its usual journal under `.ingest-jobs/`. Only one queue runs
 at a time, and the queue counts as a supervisor (not a worker) for quiescence checks.
+
+## Review flags
+
+Canonical POIs carry `review_flags` (text array, GIN-indexed), a filterable list of content to
+troubleshoot later. Flags never block publication. They are derived, not part of a build:
+`rebuildCanonicalPoi` refreshes them for its POI, and `ingest:review-flags --refresh`
+recomputes all of them (run it after reclassifying a capture in the inventory; it refuses
+while ingestion is active, and takes the canonical writer lock so it never races a rebuild).
+
+| Flag | Meaning |
+| --- | --- |
+| `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
+| `source_needs_review` | A member's active observation comes from a capture whose inventory disposition is still `needs_review` |
+
+Rules live in `lib/db-map/sql/review-flags.ts` (`REVIEW_FLAG_RULES`, one SQL predicate per
+flag); add a flag there and a label in `apps/map/src/map/usePoiReviewFilter.ts`. The map API
+filters with `/api/pois?review=<flag>`, the map's review dropdown does the same, and the drawer
+lists a POI's flags.
+
+```bash
+pnpm --filter @lib/db-map ingest:review-flags            # published POIs per flag
+pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's flags
+```
 
 ## Daily geocoding quota
 

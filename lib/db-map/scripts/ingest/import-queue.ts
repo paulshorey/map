@@ -39,6 +39,7 @@ import {
   IMPORT_QUEUE_LOCK,
   INGEST_LOCK_NAMESPACE,
   importQueueActive,
+  importQueueLockHolder,
 } from "../../lib/ingestion/locks.js";
 
 const PACKAGE = fileURLToPath(new URL("../../", import.meta.url));
@@ -115,20 +116,30 @@ const stopNowRequested = (id: string) =>
   );
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** Session advisory lock on a dedicated connection; held until the worker exits. */
-async function acquireQueueLock(): Promise<PoolClient | null> {
+/**
+ * Session advisory lock on a dedicated connection, held until the worker exits. The connection
+ * is named `import-queue:<id>`, so other commands can tell which queue owns ingestion.
+ */
+async function acquireQueueLock(id: string): Promise<PoolClient | null> {
   const client = await getDb().connect();
-  const { rows } = await client.query("SELECT pg_try_advisory_lock($1, $2) AS ok", [
-    INGEST_LOCK_NAMESPACE,
-    IMPORT_QUEUE_LOCK,
-  ]);
-  if (rows[0]?.ok) return client;
-  client.release();
-  return null;
+  try {
+    await client.query("SELECT set_config('application_name', $1, false)", [`import-queue:${id}`]);
+    const { rows } = await client.query("SELECT pg_try_advisory_lock($1, $2) AS ok", [
+      INGEST_LOCK_NAMESPACE,
+      IMPORT_QUEUE_LOCK,
+    ]);
+    if (rows[0]?.ok) return client;
+    client.release();
+    return null;
+  } catch (error) {
+    client.release(true);
+    throw error;
+  }
 }
 
 /** Whether any host's queue worker holds the lock right now (plain imports hold it shared). */
 const queueLockHeld = () => importQueueActive(getDb());
+const queueLockHolder = () => importQueueLockHolder(getDb());
 
 /** Wait until `until`, waking every 30 s to honour a stop request. Returns false if stopped. */
 async function waitUntil(id: string, until: number): Promise<boolean> {
@@ -185,8 +196,9 @@ async function continuationSafe(runId: string): Promise<{ safe: boolean; detail:
   );
   const r = rows[0];
   if (!r) return { safe: false, detail: "run not found" };
+  // A run stopped at its own provider caps (provider_budget) needs an operator decision.
   const safe =
-    r.status === "waiting_budget" ||
+    (r.status === "waiting_budget" && r.stop_reason === "provider_daily_quota") ||
     (r.status === "paused" &&
       ["operator_stop", "SIGTERM", "SIGINT", "supervisor_signal"].includes(r.stop_reason ?? ""));
   return { safe, detail: `${r.status}${r.stop_reason ? ` (${r.stop_reason})` : ""}` };
@@ -315,17 +327,29 @@ export function classifyResult(r: {
 export async function runQueue(id: string) {
   // A plain import may still be running (it holds the queue lock shared): wait for it, like
   // the quiescence wait, up to an hour, honouring stop requests.
-  let lock = await acquireQueueLock();
+  let lock = await acquireQueueLock(id);
   const deadline = Date.now() + 3600_000;
   while (!lock && Date.now() < deadline && !(await queueLockHeld()) && !(await stopRequested(id))) {
+    // Heartbeat: a recently updated `queued` state is a live, waiting worker (see reconcileStale).
+    const waiting = await loadQueue(id);
+    waiting.message = "Waiting for a running plain import to finish";
+    await saveQueue(waiting).catch(() => undefined);
     await sleep(60_000);
-    lock = await acquireQueueLock();
+    lock = await acquireQueueLock(id);
   }
   const q = await loadQueue(id);
   if (!lock) {
-    // Another worker (maybe for this very queue) owns ingestion: never overwrite its state.
-    if (await queueLockHeld()) {
-      console.error(`Queue ${id}: another queue worker holds the lock; exiting without changes`);
+    const holder = await queueLockHolder();
+    // A duplicate worker of this same queue owns ingestion: never overwrite its state.
+    if (holder === id) {
+      console.error(`Queue ${id}: another worker of this queue holds the lock; exiting without changes`);
+      await closeDb();
+      return;
+    }
+    if (holder) {
+      q.status = "stopped";
+      q.message = `Not started: queue ${holder} was already running`;
+      await saveQueue(q);
       await closeDb();
       return;
     }
@@ -499,7 +523,7 @@ export async function runQueue(id: string) {
       await lock
         .query("SELECT pg_advisory_unlock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_LOCK])
         .catch(() => undefined);
-      lock.release();
+      lock.release(true); // drop the connection named after this queue
       await closeDb();
     }
   }
@@ -508,13 +532,15 @@ export async function runQueue(id: string) {
 /** Active-status queues whose worker is gone (no host holds the lock) become `stopped`. */
 export async function reconcileStale(): Promise<QueueState[]> {
   const queues = await listQueues();
-  // A just-launched worker takes the lock within seconds: give `queued` a 2-minute grace.
+  // A `queued` state updated in the last 2 minutes is a worker starting or waiting for a plain
+  // import (it heartbeats every minute); the lock holder is the one running worker.
   const starting = (q: QueueState) =>
     q.status === "queued" && Date.now() - Date.parse(q.updated_at) < 120_000;
+  const holder = await queueLockHolder();
   const active = queues.filter(
-    (q) => ["queued", "running", "waiting"].includes(q.status) && !starting(q),
+    (q) => ["queued", "running", "waiting"].includes(q.status) && !starting(q) && q.id !== holder,
   );
-  if (!active.length || (await queueLockHeld())) return queues;
+  if (!active.length) return queues;
   for (const q of active) {
     q.status = "stopped";
     q.message = `Interrupted: its worker${q.pid ? ` (pid ${q.pid} on ${q.host})` : ""} is gone. Resume it with ingest:import-queue resume --queue ${q.id}`;
