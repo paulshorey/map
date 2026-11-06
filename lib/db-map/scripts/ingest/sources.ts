@@ -170,9 +170,11 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
     extractor: ridbFacilitiesExtractor,
     files: [
       {
-        pattern: "data/poi/rv_campgrounds_data/ridb/facilities.csv",
+        // facilities.csv (no addresses) is kept as the superseded original capture.
+        pattern:
+          "data/poi/rv_campgrounds_data/ridb/facilities_with_addresses.csv",
         category: "campground",
-        extractorVersion: "2",
+        extractorVersion: "3",
       },
     ],
     normalizationProfile: "campground",

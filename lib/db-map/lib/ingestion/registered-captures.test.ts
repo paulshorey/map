@@ -23,18 +23,30 @@ test("registered Songkick and Festival Atlas wrapper captures yield identifiable
 
 test("registered campground CSVs retain facility fields and OSM type-qualified identities", async () => {
   const ridb = await resolveSourceFile(
-    "data/poi/rv_campgrounds_data/ridb/facilities.csv",
+    "data/poi/rv_campgrounds_data/ridb/facilities_with_addresses.csv",
     "campground",
   );
+  let ridbSeen = 0;
   for await (const record of recordsFor(ridb)) {
-    assert.equal(record.source_record_id, "257029");
-    assert.equal(record.name, "Temple Mountain Campground East");
-    assert.equal(record.lat, 38.65677222);
-    assert.equal(record.lng, -110.661225);
-    assert.ok(record.description);
-    assert.equal(record.source_record_id_kind, "natural");
+    if (ridbSeen++ === 0) {
+      assert.equal(record.source_record_id, "257029");
+      assert.equal(record.name, "Temple Mountain Campground East");
+      assert.equal(record.lat, 38.65677222);
+      assert.equal(record.lng, -110.661225);
+      assert.ok(record.description);
+      assert.equal(record.source_record_id_kind, "natural");
+    }
+    if (record.source_record_id !== "261822") continue;
+    // Locality comes from the export's FacilityAddresses; verbatim rows stay in attributes.
+    assert.equal(record.address, "6563 Hauser Dam Rd");
+    assert.equal(record.city, "Helena");
+    assert.equal(record.region, "MT");
+    assert.equal(record.country_code, "US");
+    assert.equal(record.attributes?.postal_code, "59602");
+    assert.ok(Array.isArray(record.attributes?.facility_addresses));
     break;
   }
+  assert.ok(ridbSeen > 1, "RIDB fixture facility 261822 not found");
   const osm = await resolveSourceFile(
     "data/poi/rv_campgrounds_data/osm/caravan_sites.csv",
     "campground",

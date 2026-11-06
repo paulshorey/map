@@ -10,6 +10,10 @@ export const REVIEW_FLAG_LABELS: Record<string, { label: string; title: string }
     label: "Source needs review",
     title: "From a capture whose category or import decision is not confirmed yet",
   },
+  missing_address: {
+    label: "No address",
+    title: "No source gives a street address; mapped from coordinates or locality only",
+  },
 };
 
 const LS_KEY = "poi.review";
