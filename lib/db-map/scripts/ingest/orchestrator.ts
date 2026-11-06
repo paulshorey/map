@@ -1109,6 +1109,7 @@ export async function runOrchestration(
   );
   let finalStatus = "succeeded",
     reason = "requested_scope_verified";
+  const quotaStop: { value: Record<string, unknown> | null } = { value: null };
   try {
     const scope = (
       await db.query("SELECT counters FROM research_ingest_runs WHERE id=$1", [
@@ -1459,7 +1460,17 @@ export async function runOrchestration(
 
         if (result.status === "waiting_budget") {
           ex.stopped = true;
-          ex.stopReason = "provider_budget";
+          const quota = (result as { quota?: Record<string, unknown> }).quota;
+          if (quota && !quotaStop.value) {
+            quotaStop.value = quota;
+            ex.journal("provider_daily_quota", quota);
+            await db.query(
+              `UPDATE research_ingest_runs SET counters=jsonb_set(COALESCE(counters,'{}'::jsonb),
+                '{providerQuota}',$2::jsonb) WHERE id=$1`,
+              [ctx.runId, JSON.stringify({ ...quota, execution_id: ex.id, at: new Date().toISOString() })],
+            );
+          }
+          ex.stopReason = quotaStop.value ? "provider_daily_quota" : "provider_budget";
         }
         return result;
       },
@@ -1471,7 +1482,9 @@ export async function runOrchestration(
           ? "partial"
           : "paused";
       reason = schedule.budget
-        ? "provider_budget"
+        ? quotaStop.value
+          ? "provider_daily_quota"
+          : "provider_budget"
         : schedule.partial
           ? "record_intervention_required"
           : ex.stopReason ||
@@ -1585,6 +1598,11 @@ export async function runOrchestration(
     console.log(
       `Run ${ctx.runId}: ${reason}. Inspect: pnpm --filter @lib/db-map ingest:status --run ${ctx.runId}`,
     );
+    if (quotaStop.value)
+      console.log(
+        `Daily geocoding quota reached; it resets at ${String(quotaStop.value.resets_at)}. Completed work is kept. ` +
+          `Resume after the reset: pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume ${ctx.runId} --unlimited`,
+      );
     if (finalStatus !== "succeeded") process.exitCode = 2;
   }
 }

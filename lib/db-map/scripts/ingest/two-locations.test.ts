@@ -28,6 +28,7 @@ import {
 } from "./location.js";
 import { deriveForwardPrecision } from "../../lib/ingestion/geocode-precision.js";
 import { readFileSync } from "node:fs";
+import { resetProviderQuotaState } from "./providers/quota.js";
 import {
   PIPELINE_VERSIONS,
   resumePipelineUpgrade,
@@ -44,6 +45,7 @@ const source = {
 const originalFetch = globalThis.fetch;
 const oldKey = process.env.LOCATIONIQ_API_KEY;
 afterEach(() => {
+  resetProviderQuotaState();
   globalThis.fetch = originalFetch;
   if (oldKey === undefined) delete process.env.LOCATIONIQ_API_KEY;
   else process.env.LOCATIONIQ_API_KEY = oldKey;
@@ -317,6 +319,48 @@ test("contradictory source/address points both activate atomically; budget resum
   assert.ok(activated.warnings.includes("coordinate_country_conflict"));
   assert.deepEqual(calls, ["/v1/search", "/v1/reverse"]);
   assert.equal((await runGeocode(f.db, opts)).selected, 0);
+});
+
+test("the daily quota pauses like a budget stop: the paid lookup is kept and the record stays pending", async () => {
+  const f = fixture();
+  process.env.LOCATIONIQ_API_KEY = "fixture";
+  const calls: string[] = [];
+  globalThis.fetch = async (input) => {
+    const u = new URL(String(input));
+    calls.push(u.pathname);
+    if (u.pathname.endsWith("/search"))
+      return Response.json([
+        {
+          lat: "46.9185",
+          lon: "7.4402",
+          type: "attraction",
+          display_name: "Swiss venue",
+          address: { city: "Köniz", country_code: "ch" },
+        },
+      ]);
+    return new Response(JSON.stringify({ error: "Rate Limited Day" }), { status: 429 });
+  };
+  const first = await runGeocode(f.db, opts);
+  assert.equal(first.budgetHit, true);
+  assert.equal(first.quota?.reason, "provider_rate_limited_day");
+  assert.ok(first.quota?.resets_at);
+  assert.equal(f.activated, null, "nothing is settled while the quota is exhausted");
+  assert.equal(f.cache.size, 1, "the forward lookup that succeeded stays cached");
+  // Later lookups in the same process are refused without a request.
+  const again = await runGeocode(f.db, opts);
+  assert.equal(again.budgetHit, true);
+  assert.deepEqual(calls, ["/v1/search", "/v1/reverse"]);
+  // After the reset (a new process), the record finishes from the cache plus one reverse call.
+  resetProviderQuotaState();
+  globalThis.fetch = async (input) => {
+    calls.push(new URL(String(input)).pathname);
+    return Response.json({ lat: "6.9185", lon: "7.4402", address: { country_code: "ng", city: "Aka" } });
+  };
+  const resumed = await runGeocode(f.db, opts);
+  assert.equal(resumed.budgetHit, false);
+  assert.equal(resumed.cacheHits, 1);
+  assert.ok(f.activated);
+  assert.deepEqual(calls, ["/v1/search", "/v1/reverse", "/v1/reverse"]);
 });
 
 test("forward miss does not discard an existing source point; known miss is cacheable", async () => {

@@ -30,6 +30,8 @@
     "ingest:taxonomy:seed": "tsx scripts/ingest/seed-taxonomy.ts",
     "ingest:run": "tsx scripts/ingest/run.ts",
     "ingest:clean": "tsx scripts/ingest/clean.ts",
+    "ingest:quota": "tsx scripts/ingest/quota.ts",
+    "ingest:test-quota": "tsx --test scripts/ingest/providers/quota.test.ts",
     "ingest:staleness": "tsx scripts/ingest/staleness.ts",
     "ingest:purge": "tsx scripts/ingest/purge.ts",
     "ingest:trace": "tsx scripts/ingest/trace.ts",

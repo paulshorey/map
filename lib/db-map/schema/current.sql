@@ -1075,6 +1075,20 @@ CREATE VIEW public.research_pois_current AS
 
 
 --
+-- Name: research_provider_daily_usage; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_provider_daily_usage (
+    provider text NOT NULL,
+    usage_day date NOT NULL,
+    requests integer DEFAULT 0 NOT NULL,
+    rate_limited_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_provider_daily_usage_requests_check CHECK ((requests >= 0))
+);
+
+
+--
 -- Name: research_source_file_versions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1620,6 +1634,14 @@ ALTER TABLE ONLY public.research_pois
 
 ALTER TABLE ONLY public.research_pois
     ADD CONSTRAINT research_pois_source_id_source_record_id_key UNIQUE (source_id, source_record_id);
+
+
+--
+-- Name: research_provider_daily_usage research_provider_daily_usage_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_provider_daily_usage
+    ADD CONSTRAINT research_provider_daily_usage_pkey PRIMARY KEY (provider, usage_day);
 
 
 --

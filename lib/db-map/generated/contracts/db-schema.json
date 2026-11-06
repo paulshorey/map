@@ -2910,6 +2910,33 @@
       "type": "Date"
     }
   ],
+  "research_provider_daily_usage": [
+    {
+      "column": "provider",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "usage_day",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "requests",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "rate_limited_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "updated_at",
+      "nullable": false,
+      "type": "Date"
+    }
+  ],
   "research_source_file_versions": [
     {
       "column": "id",

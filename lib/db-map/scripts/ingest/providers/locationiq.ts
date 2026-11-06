@@ -17,7 +17,36 @@ import {
   providerRequestStarted,
   providerResponseReceived,
 } from "../provider-telemetry.js";
+import {
+  markProviderRateLimitedDay,
+  reserveProviderRequest,
+} from "./quota.js";
 let nextStart = 0;
+
+/** Non-OK status: "Rate Limited Day" stops all lookups until 00:00 UTC; others may retry. */
+async function statusError(
+  res: Response,
+  label: string,
+  release: () => Promise<void>,
+): Promise<Error> {
+  const status = res.status;
+  let body = "";
+  try {
+    body = await res.text();
+  } catch {
+    // The status alone still classifies the failure.
+  }
+  if (status === 429 && /rate limited day/i.test(body))
+    return markProviderRateLimitedDay(PROVIDER);
+  // LocationIQ does not charge unsuccessful requests.
+  if (status === 429 || status >= 500) await release();
+  return new GeocodeError(
+    `${label} status ${status}`,
+    status === 429 || status >= 500,
+    status,
+    retryAfterMs(res.headers.get("retry-after")),
+  );
+}
 
 export interface GeocodeHit {
   lat: number;
@@ -78,6 +107,7 @@ export async function geocode(
       });
     nextStart = Date.now() + 1000;
     started = Date.now();
+    const release = await reserveProviderRequest(PROVIDER);
     let res: Response;
     try {
       const params = new URLSearchParams({
@@ -100,6 +130,7 @@ export async function geocode(
           : AbortSignal.timeout(60000),
       });
     } catch (error) {
+      await release();
       if (ctx?.execution.abortController.signal.aborted)
         throw ctx.execution.abortController.signal.reason;
       throw new GeocodeError(
@@ -111,12 +142,7 @@ export async function geocode(
     status = res.status;
     providerResponseReceived(call, status);
     if (status !== 404 && !res.ok)
-      throw new GeocodeError(
-        `Geocoder status ${status}`,
-        status === 429 || status >= 500,
-        status,
-        retryAfterMs(headers.get("retry-after")),
-      );
+      throw await statusError(res, "Geocoder", release);
     let hit: GeocodeHit | null = null;
     if (status !== 404) {
       const body = (await res.json()) as LocationIqRow[] | { error?: string };
@@ -216,6 +242,7 @@ export async function reverseGeocode(
       statecode: "1",
       zoom: "18",
     });
+    const release = await reserveProviderRequest(PROVIDER);
     let response: Response;
     try {
       providerRequestStarted(call);
@@ -231,6 +258,7 @@ export async function reverseGeocode(
         },
       );
     } catch {
+      await release();
       if (ctx?.execution.abortController.signal.aborted)
         throw ctx.execution.abortController.signal.reason;
       throw new GeocodeError("Reverse geocoder network error", true);
@@ -239,12 +267,7 @@ export async function reverseGeocode(
     headers = response.headers;
     providerResponseReceived(call, status);
     if (status !== 404 && !response.ok)
-      throw new GeocodeError(
-        `Reverse geocoder status ${status}`,
-        status === 429 || status >= 500,
-        status,
-        retryAfterMs(headers.get("retry-after")),
-      );
+      throw await statusError(response, "Reverse geocoder", release);
     const hit =
       status === 404
         ? null
