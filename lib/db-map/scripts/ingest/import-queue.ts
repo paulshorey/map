@@ -34,7 +34,11 @@ import { getInventory } from "../../sql/ingestion-inventory.js";
 import { inspectControl } from "./control.js";
 import { atomicJson, jobPath, UUID } from "./supervisor-state.js";
 import { queueItem } from "../../lib/ingestion/queue.js";
-import { IMPORT_QUEUE_LOCK, INGEST_LOCK_NAMESPACE } from "../../lib/ingestion/locks.js";
+import {
+  IMPORT_QUEUE_ENV,
+  IMPORT_QUEUE_LOCK,
+  INGEST_LOCK_NAMESPACE,
+} from "../../lib/ingestion/locks.js";
 
 const PACKAGE = fileURLToPath(new URL("../../", import.meta.url));
 const REPO = resolve(PACKAGE, "../..");
@@ -200,6 +204,7 @@ async function superviseWatch(q: QueueState, entry: QueueEntry, args: string[], 
   const child = spawn(process.execPath, ["--import", "tsx", SUPERVISE, "watch", "--", ...args], {
     cwd: PACKAGE,
     stdio: ["ignore", "pipe", out.fd],
+    env: { ...process.env, [IMPORT_QUEUE_ENV]: q.id },
   });
   let result: Record<string, unknown> | null = null;
   // `stop --now` may arrive before the job id is known: forward it once the id is.
@@ -332,6 +337,14 @@ export async function runQueue(id: string) {
           quickQuotaPauses = Date.now() - launched < 300_000 ? quickQuotaPauses + 1 : 0;
         }
         if (entry.outcome === "succeeded") entry.coverage = (await fileState(entry)).coverage;
+        // An operator `stop --now` pauses the import: record it as a stop, not a failure.
+        if (entry.outcome !== "succeeded" && (await stopRequested(id))) {
+          entry.status = "stopped";
+          entry.reason = `Stopped by operator request (run ${entry.run_id ?? "unknown"} can be resumed)`;
+          q.status = "stopped";
+          q.message = `${entry.file}: ${entry.reason}`;
+          return;
+        }
         const step = classifyResult({
           outcome: entry.outcome,
           stopReason: evidence.stop_reason,
@@ -439,8 +452,11 @@ function newEntry(e: { file: string; category: string }): QueueEntry {
   };
 }
 
+/** The active queue if there is one, else the most recently created. */
 async function latestId(): Promise<string> {
-  const latest = (await listQueues())[0];
+  const queues = await listQueues();
+  const latest =
+    queues.find((q) => ["queued", "running", "waiting"].includes(q.status)) ?? queues[0];
   if (!latest) throw new Error("No import queue exists");
   return latest.id;
 }
@@ -564,7 +580,10 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
-  main().catch((error) => {
-    console.error(error instanceof Error ? error.message : error);
-    process.exitCode = 1;
-  });
+  main()
+    .catch((error) => {
+      console.error(error instanceof Error ? error.message : error);
+      process.exitCode = 1;
+    })
+    // Every command outcome closes the pool (the worker closes it itself).
+    .finally(() => closeDb());

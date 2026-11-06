@@ -892,6 +892,8 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
   its UUID (cohort and checkpoints kept), never restarted;
 - one queue worker runs at a time on any host (a database advisory lock it holds for life);
   a queue whose worker died is marked `stopped` as interrupted, and `resume` continues it.
+- while a queue runs, a plain `ingest:run` (other than `--dry-run`) refuses to start; add the
+  file to a queue or stop the queue first. `stop --now` is recorded as an operator stop.
 
 ```bash
 cd ~/git/map
