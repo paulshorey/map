@@ -210,11 +210,12 @@ export async function getIngestionMonitor(
          WHERE r.started_at IS NOT NULL
          -- A 'running' run with a stale heartbeat is a suspected interruption, not the current run.
          -- then a run paused at the daily quota (it resumes after the reset) before finished ones.
-         -- A live full-scope run outranks a bounded diagnostic running beside it.
+         -- A live full-scope run outranks a bounded diagnostic running beside it (live rows only).
          ORDER BY (r.status='running' AND r.heartbeat_at > now() - interval '2 minutes') DESC,
-           (r.options->'limit' IS NULL OR r.options->>'limit' IS NULL)
+           (r.status='running' AND r.heartbeat_at > now() - interval '2 minutes'
+             AND (r.options->'limit' IS NULL OR r.options->>'limit' IS NULL)
              AND NULLIF(r.options->>'record', '') IS NULL
-             AND COALESCE((r.options->>'shadow')::boolean, false) = false DESC,
+             AND COALESCE((r.options->>'shadow')::boolean, false) = false) DESC,
            (r.status='waiting_budget' AND r.stop_reason='provider_daily_quota') DESC,
            COALESCE(r.heartbeat_at, r.started_at) DESC LIMIT 1`,
       )
