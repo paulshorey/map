@@ -70,6 +70,8 @@ export interface IngestionMonitor {
     normalization_failed: number;
     degraded: number;
     by_source: SourceQuality[];
+    /** All sources with active records; `by_source` lists the 50 largest. */
+    sources_total: number;
   };
 }
 
@@ -85,6 +87,7 @@ export const EMPTY_QUALITY: IngestionMonitor["quality"] = {
   normalization_failed: 0,
   degraded: 0,
   by_source: [],
+  sources_total: 0,
 };
 
 export function stageProgress(
@@ -178,6 +181,7 @@ export async function getQualityMonitor(db: Pool): Promise<IngestionMonitor["qua
       normalization_failed: total("normalization_failed"),
       degraded: total("degraded"),
       by_source: sources.slice(0, 50),
+      sources_total: sources.length,
     };
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);

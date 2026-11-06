@@ -575,7 +575,11 @@ function renderMonitor(m) {
           : "<p>None flagged.</p>"
       }</div>`;
   const sources = q?.by_source?.length
-    ? `<details class="monitor-sources"><summary>Per-source quality (${q.by_source.length})</summary>
+    ? `<details class="monitor-sources"><summary>Per-source quality (${
+        q.sources_total > q.by_source.length
+          ? `largest ${number(q.by_source.length)} of ${number(q.sources_total)} sources; totals above cover all`
+          : number(q.by_source.length)
+      })</summary>
         <table><thead><tr><th>Source</th><th>Records</th><th>Published POIs</th><th>Unlocated</th><th>Failed</th><th>Degraded</th><th>Non-POI</th></tr></thead><tbody>${q.by_source
           .map(
             (s) =>
