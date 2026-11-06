@@ -815,6 +815,27 @@ export async function currentQueue(): Promise<QueueState | null> {
   return queues.find((q) => ["queued", "running", "waiting"].includes(q.status)) ?? queues[0] ?? null;
 }
 
+/**
+ * For displays: the live queue (a remote placeholder when it runs on another host), otherwise
+ * the active-or-latest local queue.
+ */
+export async function activeOrLocalQueue(): Promise<
+  QueueState | { id: string; remote: true; status: "running"; message: string; entries: []; updated_at: string }
+  | null
+> {
+  const holder = await queueLockHolder();
+  if (holder && !(await listQueues()).some((q) => q.id === holder))
+    return {
+      id: holder,
+      remote: true,
+      status: "running",
+      message: "Active on another host; its state is on that host",
+      entries: [],
+      updated_at: new Date().toISOString(),
+    };
+  return currentQueue();
+}
+
 async function latestId(): Promise<string> {
   const queues = await listQueues();
   // The live queue may run on another host, whose state files only that host has.

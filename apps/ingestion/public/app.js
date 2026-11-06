@@ -549,8 +549,10 @@ function renderMonitor(m) {
         <p class="muted-note">Queue <code>${esc(queue.id)}</code> · updated ${date(queue.updated_at)}</p></div>`
     : `<div class="monitor-card"><h3>Import queue</h3><p>No queue. Start one with <code>ingest:import-queue start --plan …</code></p></div>`;
   const q = m.quality;
-  const flags = Object.entries(q.review_flags);
-  const qualityHtml = `<div class="monitor-card"><h3>Published data</h3>
+  const flags = q ? Object.entries(q.review_flags) : [];
+  const qualityHtml = !q
+    ? `<div class="monitor-card"><h3>Published data</h3><p>Unavailable right now (the quality query failed); retrying.</p></div>`
+    : `<div class="monitor-card"><h3>Published data</h3>
       <p><strong>${number(q.published_pois)}</strong> POIs · ${number(q.precise_pois)} precise · ${number(q.general_pois)} general</p>
       ${bar(q.precise_pois, q.published_pois, "precise share")}
       <p class="muted-note">${number(q.research_records)} source records · ${number(q.unlocated_records)} unlocated · ${number(q.normalization_failed)} normalization failed · ${number(q.degraded)} degraded</p>
@@ -559,7 +561,7 @@ function renderMonitor(m) {
           ? `<ul>${flags.map(([f, n]) => `<li>${esc(FLAG_LABEL[f] ?? label(f))}: ${number(n)}</li>`).join("")}</ul>`
           : "<p>None flagged.</p>"
       }</div>`;
-  const sources = q.by_source.length
+  const sources = q?.by_source?.length
     ? `<details class="monitor-sources"><summary>Per-source quality (${q.by_source.length})</summary>
         <table><thead><tr><th>Source</th><th>Records</th><th>Published POIs</th><th>Unlocated</th><th>Failed</th><th>Degraded</th><th>Non-POI</th></tr></thead><tbody>${q.by_source
           .map(

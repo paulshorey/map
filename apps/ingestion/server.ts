@@ -22,7 +22,7 @@ import {
   getIngestionMonitor,
   getQualityMonitor,
 } from "@lib/db-map/sql/ingestion-monitor";
-import { currentQueue, reconcileStale } from "@lib/db-map/ingest/import-queue";
+import { activeOrLocalQueue, reconcileStale } from "@lib/db-map/ingest/import-queue";
 
 const QUALITY_TTL_MS = 120_000;
 const QUALITY_RETRY_MS = 30_000;
@@ -189,13 +189,15 @@ export function createDashboard(port: number) {
         const quality = await cachedQuality(db);
         const [monitor, queue] = await Promise.all([
           getIngestionMonitor(db, quality ?? EMPTY_QUALITY),
-          // Reconcile first so a queue whose worker died is not shown as running.
+          // Reconcile first so a queue whose worker died is not shown as running; a live queue
+          // on another host (presence holder without local state) is shown as remote.
           reconcileStale()
             .catch(() => undefined)
-            .then(() => currentQueue())
+            .then(() => activeOrLocalQueue())
             .catch(() => null),
         ]);
-        json(200, { ...monitor, queue });
+        // No cached value yet and the first load failed: unavailable, never fabricated zeros.
+        json(200, { ...monitor, quality: quality ?? null, queue });
         return;
       }
       if (req.method === "GET" && url.pathname === "/api/inventory") {
