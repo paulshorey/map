@@ -9,6 +9,8 @@
  *   same run UUID after the quota resets (00:00 UTC). Twice in a row with no progress stops.
  * - Any other outcome stops the queue as `needs_attention`; nothing is retried blindly.
  * - Before each launch the pipeline must be quiescent and out of maintenance (waits up to 1 h).
+ * - A worker started while a plain full import runs waits for that import to finish, with no
+ *   deadline (it was admitted first); `stop` ends the wait.
  * - One queue worker at a time on any host: it holds a database advisory lock for its lifetime.
  *   A queue whose worker died (lock free) is reported interrupted; `resume` continues it.
  *
@@ -270,7 +272,10 @@ async function quotaResetsAt(runId: string): Promise<string | null> {
   return rows[0]?.resets_at ?? null;
 }
 
-/** Quiescent and out of maintenance, waiting up to an hour (another operator may be working). */
+/**
+ * Quiescent and out of maintenance, waiting up to an hour (another operator may be working).
+ * This is separate from the startup wait behind a plain full import, which has no deadline.
+ */
 async function admissionClear(id: string): Promise<string | null> {
   const deadline = Date.now() + 3600_000;
   for (;;) {
@@ -937,6 +942,11 @@ async function main() {
       return q;
     });
     await closeDb();
+    if (!["running", "waiting for a plain import to finish"].includes(handshake)) {
+      console.error(`Import queue ${q.id} did not start: ${handshake}`);
+      process.exitCode = 1;
+      return;
+    }
     console.log(
       `Started import queue ${q.id} with ${q.entries.length} file(s): ${handshake}.\n` +
         `Status: pnpm --silent --filter @lib/db-map ingest:import-queue status\n` +
@@ -964,6 +974,11 @@ async function main() {
       return q;
     });
     await closeDb();
+    if (!["running", "waiting for a plain import to finish"].includes(handshake)) {
+      console.error(`Import queue ${q.id} did not resume: ${handshake}`);
+      process.exitCode = 1;
+      return;
+    }
     console.log(
       `Resumed import queue ${q.id} (${handshake}); finished files are skipped, unfinished runs resume.`,
     );
