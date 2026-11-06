@@ -1601,7 +1601,8 @@ export async function runOrchestration(
     if (quotaStop.value)
       console.log(
         `Daily geocoding quota reached; it resets at ${String(quotaStop.value.resets_at)}. Completed work is kept. ` +
-          `Resume after the reset: pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume ${ctx.runId} --unlimited`,
+          // No --unlimited: it would clear operator limits saved on a capped run.
+          `Resume after the reset: pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume ${ctx.runId}`,
       );
     if (finalStatus !== "succeeded") process.exitCode = 2;
   }

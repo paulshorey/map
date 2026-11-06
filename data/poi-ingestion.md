@@ -879,8 +879,8 @@ LocationIQ's free plan allows 5,000 requests a day (2 a second, 60 a minute) and
 00:00 UTC; unsuccessful requests are not charged. Every real forward or reverse request is
 reserved first in `research_provider_daily_usage`, shared by all managed and standalone
 processes and kept by `ingest:purge`. Set `LOCATIONIQ_DAILY_LIMIT` for another plan (`0`
-disables the local limit). Network errors, per-second 429s and 5xx responses release their
-reservation.
+disables the local limit). Every unsuccessful request (network error, 400, 404 "Unable to
+geocode", per-second 429, 5xx) releases its reservation; only a successful result counts.
 
 When the local count reaches the limit, or LocationIQ answers `429 Rate Limited Day`, no
 further request is sent. The geocode stage treats it like a budget stop: nothing is cached
@@ -892,8 +892,8 @@ the run prints the resume command. Per-second and per-minute 429s keep the bound
 ```bash
 pnpm --filter @lib/db-map ingest:quota                      # today's count, limit and reset
 pnpm --filter @lib/db-map ingest:quota --clear-rate-limit   # after upgrading the plan today
-# After 00:00 UTC, resume the same run (completed work is reused):
-pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume <run-id> --unlimited
+# After 00:00 UTC, resume the same run (completed work and saved operator limits are kept):
+pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume <run-id>
 ```
 
 A large source such as The Dyrt (about 25,000 uncached reverse lookups) therefore takes

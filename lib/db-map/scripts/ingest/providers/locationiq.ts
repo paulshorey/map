@@ -143,6 +143,8 @@ export async function geocode(
     providerResponseReceived(call, status);
     if (status !== 404 && !res.ok)
       throw await statusError(res, "Geocoder", release);
+    // "Unable to geocode" is an unsuccessful (uncharged) request, though its miss is cached.
+    if (status === 404) await release();
     let hit: GeocodeHit | null = null;
     if (status !== 404) {
       const body = (await res.json()) as LocationIqRow[] | { error?: string };
@@ -268,6 +270,7 @@ export async function reverseGeocode(
     providerResponseReceived(call, status);
     if (status !== 404 && !response.ok)
       throw await statusError(response, "Reverse geocoder", release);
+    if (status === 404) await release();
     const hit =
       status === 404
         ? null
