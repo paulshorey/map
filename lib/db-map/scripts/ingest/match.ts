@@ -953,12 +953,14 @@ async function decideRow(
   opts: CliOptions,
 ): Promise<Decision> {
   const row = withoutGeneratedName(matchRow);
-  // A blank generated name scores 0 similarity, which would make every nameless row
-  // "satellite-like" and auto-merge it into any nearby anchor. Nameless rows instead go
-  // through anchor LLM adjudication (or stay separate without an LLM).
+  // A blank generated name scores 0 similarity, which would make every pair involving a
+  // nameless row or a nameless canonical "satellite-like" and auto-merge it by proximity.
+  // Such pairs instead go through anchor LLM adjudication (or stay separate without an LLM).
   const nameGenerated = matchRow.attributes?.name_generated === true;
-  const satelliteLike = (similarity: number) =>
-    !nameGenerated && isSatelliteLikeResearch(row, similarity);
+  const satelliteLike = (candidate: CandidateRow, similarity: number) =>
+    !nameGenerated &&
+    !candidate.best_name_generated &&
+    isSatelliteLikeResearch(row, similarity);
   const overrides = await loadOverrideDecision(client, row.id);
   if (overrides.forceNew) {
     return {
@@ -1028,7 +1030,7 @@ async function decideRow(
     );
     if (
       !dateSignal.conflict &&
-      satelliteLike(candidateSimilarity)
+      satelliteLike(proximityAnchor, candidateSimilarity)
     ) {
       return {
         decision: "merge",
@@ -1140,7 +1142,7 @@ async function decideRow(
     (candidate) =>
       candidate.via.includes("proximity") &&
       isAnchor(candidateAnchorMeta(candidate)) &&
-      !satelliteLike(candidate.score!.signals.name) &&
+      !satelliteLike(candidate, candidate.score!.signals.name) &&
       !candidate.dateCompatibility!.conflict,
   );
   if (anchorProximity) {
@@ -1227,7 +1229,7 @@ async function decideRow(
 
   if (
     !isAnchor(candidateAnchorMeta(best)) &&
-    satelliteLike(score.signals.name)
+    satelliteLike(best, score.signals.name)
   ) {
     return {
       decision: "new",

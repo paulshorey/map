@@ -927,7 +927,7 @@ Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
   matcher compares nameless rows and canonicals by identifiers, contacts and location only
   (name and embedding signals are blanked on either side; the LLM adjudicator sees
   "(no name in source)"). A nameless row is never auto-merged as a satellite of a nearby
-  anchor: it goes to anchor LLM adjudication, or stays separate with `--no-llm`. Global
+  anchor, nor a named row into a nameless anchor: it goes to anchor LLM adjudication, or stays separate with `--no-llm`. Global
   consolidation likewise never merges a nameless canonical by proximity alone, as satellite or
   as anchor target, and its anchor-anchor adjudication sees "(no name in source)". Nameless
   rows are still embedded (the managed embed stage requires it) although matching ignores
