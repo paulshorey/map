@@ -46,7 +46,8 @@ export function canonicalLocationsSql(alias = "p"): string {
         'id', l.id::text, 'lat', l.lat, 'lng', l.lng, 'precision', l.precision,
         'specificity', l.specificity, 'kind', l.kinds[1], 'kinds', to_jsonb(l.kinds),
         'origin', l.origins[1], 'origins', to_jsonb(l.origins), 'roles', to_jsonb(l.roles),
-        'label', l.label, 'query', NULL, 'is_primary', l.is_primary, 'sources', to_jsonb(l.sources))
+        'label', l.label, 'query', l.queries[1], 'queries', to_jsonb(l.queries),
+        'is_primary', l.is_primary, 'sources', to_jsonb(l.sources))
       ORDER BY l.ordinal)
      FROM canonical_poi_locations l WHERE l.build_id = ${alias}.active_build_id),
     jsonb_build_array(jsonb_build_object(
@@ -55,6 +56,6 @@ export function canonicalLocationsSql(alias = "p"): string {
       'specificity', CASE WHEN ${alias}.attributes->>'location_specificity' = 'general' THEN 'general' ELSE 'precise' END,
       'kind', 'legacy', 'kinds', '["legacy"]'::jsonb,
       'origin', CASE WHEN ${alias}.field_provenance->>'coordinate_source' = 'geocode' THEN 'geocode' ELSE 'legacy_coordinates' END,
-      'origins', '[]'::jsonb, 'roles', '[]'::jsonb, 'label', NULL, 'query', NULL,
+      'origins', '[]'::jsonb, 'roles', '[]'::jsonb, 'label', NULL, 'query', NULL, 'queries', '[]'::jsonb,
       'is_primary', true, 'sources', '[]'::jsonb))))`;
 }

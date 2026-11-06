@@ -1078,9 +1078,11 @@ whose new lookup missed stays plottable and is judged by its stored precision.
 publication. A supplied point that repeats a published country centroid (for example
 Google's Australia centroid) is stored as `country` precision, so it counts as coarse.
 
-The `location-v8` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
+The `location-v9` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
 to its normalization/primary point, alongside separate listed text, forward query/result
-and reverse lookup. Canonical builder `canonical-build-v7` writes
+and reverse lookup, and records every known location in `research_poi_locations`.
+Canonical builder `canonical-build-v8` writes `canonical_poi_locations` (with the members'
+lookup `queries`; a member linked before geocoding contributes its supplied point) and
 `attributes.coordinate_evidence` with source/research/normalization/geocode IDs for
 each value. Legacy lat/lng is the selected source point when available, otherwise the
 inferred point or retained legacy point. Raw/model attributes cannot publish these

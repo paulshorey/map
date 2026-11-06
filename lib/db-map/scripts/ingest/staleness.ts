@@ -49,7 +49,8 @@ export async function stalenessBySource(
         (rp.attributes->'location_enrichment'->>'version' IS NOT NULL
           AND rp.attributes->'location_enrichment'->>'version' <> $6) AS location,
         (g.id IS NOT NULL AND g.provider_version <> $7) AS geocoder,
-        (e.id IS NOT NULL AND (e.model <> $10 OR e.model_version <> $11)) AS embedding,
+        (e.id IS NOT NULL AND (e.model <> $10 OR e.model_version <> $11
+          OR array_length(e.embedding, 1) IS DISTINCT FROM $12::int)) AS embedding,
         (m.id IS NOT NULL AND m.matcher_version <> $8) AS matcher,
         (b.id IS NOT NULL AND b.builder_version <> $9) AS canonical_build
       FROM research_pois rp
@@ -84,6 +85,7 @@ export async function stalenessBySource(
       PIPELINE_VERSIONS.canonicalBuilder,
       ingestConfig.embeddings.model,
       PIPELINE_VERSIONS.embedding,
+      ingestConfig.embeddings.dim,
     ],
   );
   return rows as StalenessRow[];

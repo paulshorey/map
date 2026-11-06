@@ -356,6 +356,16 @@
           "nullable": true
         },
         {
+          "name": "queries",
+          "optional": false,
+          "kind": "array",
+          "items": {
+            "kind": "scalar",
+            "type": "string"
+          },
+          "nullable": false
+        },
+        {
           "name": "is_primary",
           "optional": false,
           "kind": "scalar",

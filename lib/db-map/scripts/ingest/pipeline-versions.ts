@@ -15,7 +15,7 @@ export const PIPELINE_VERSIONS = {
   geocode: "locationiq-location-v4",
   embedding: "jina-match-v1",
   matcher: "matcher-v4",
-  canonicalBuilder: "canonical-build-v7",
+  canonicalBuilder: "canonical-build-v8",
 } as const;
 
 /**
