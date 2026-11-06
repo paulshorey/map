@@ -204,17 +204,28 @@ export async function getIngestionMonitor(
          LEFT JOIN research_source_files f ON f.id=v.source_file_id
          WHERE r.started_at IS NOT NULL
          -- A 'running' run with a stale heartbeat is a suspected interruption, not the current run.
+         -- then a run paused at the daily quota (it resumes after the reset) before finished ones.
          ORDER BY (r.status='running' AND r.heartbeat_at > now() - interval '2 minutes') DESC,
+           (r.status='waiting_budget' AND r.stop_reason='provider_daily_quota') DESC,
            COALESCE(r.heartbeat_at, r.started_at) DESC LIMIT 1`,
       )
     ).rows[0];
 
     if (run) {
       const { rows } = await client.query(
-        `SELECT stage, state, count(*)::int AS records,
-           count(*) FILTER (WHERE state = ANY($2::text[]) AND finished_at > now() - make_interval(mins => $3))::int AS recent,
-           extract(epoch FROM now() - min(started_at))::float / 60 AS elapsed_minutes
-         FROM research_ingest_tasks WHERE run_id=$1 GROUP BY stage, state`,
+        // Records quarantined (or excluded) at any stage never run their later stages: count
+        // their unfinished tasks as quarantined, as the scheduler does (unfinishedTaskCounts).
+        `WITH blocked AS (
+           SELECT source_record_id FROM research_ingest_tasks WHERE run_id=$1 AND state='quarantined'
+           UNION SELECT source_record_id FROM research_ingest_issues WHERE run_id=$1 AND status='excluded')
+         SELECT t.stage,
+           CASE WHEN b.source_record_id IS NOT NULL AND NOT (t.state = ANY($2::text[]))
+             THEN 'quarantined' ELSE t.state END AS state,
+           count(*)::int AS records,
+           count(*) FILTER (WHERE t.state = ANY($2::text[]) AND t.finished_at > now() - make_interval(mins => $3))::int AS recent,
+           extract(epoch FROM now() - min(t.started_at))::float / 60 AS elapsed_minutes
+         FROM research_ingest_tasks t LEFT JOIN blocked b USING (source_record_id)
+         WHERE t.run_id=$1 GROUP BY 1, 2`,
         [run.id, DONE, WINDOW_MINUTES],
       );
       const stages = (RECORD_STAGES as readonly string[])
