@@ -54,8 +54,13 @@ export function groupCanonicalLocations(
   }
   const primaryKey = primary ? key(primary.lat, primary.lng) : null;
   const rows = [...groups.entries()].map(([k, list]) => {
+    // Deterministic representative: finest precision, then coordinates, then row id.
     const finest = [...list].sort(
-      (a, b) => (RANK[a.precision] ?? 9) - (RANK[b.precision] ?? 9),
+      (a, b) =>
+        (RANK[a.precision] ?? 9) - (RANK[b.precision] ?? 9) ||
+        a.lat - b.lat ||
+        a.lng - b.lng ||
+        a.id.localeCompare(b.id),
     )[0]!;
     // Precise only where some member places a venue or address at point precision.
     const precise = list.some(
@@ -163,7 +168,8 @@ export async function writeCanonicalLocations(
      JOIN research_sources s ON s.id = rp.source_id
      WHERE l.status = 'accepted'
        AND (l.research_poi_id, l.geocode_id) IN (
-         SELECT * FROM unnest($1::uuid[], $2::uuid[]))`,
+         SELECT * FROM unnest($1::uuid[], $2::uuid[]))
+     ORDER BY l.id`,
     [pairs.map((m) => m.id), pairs.map((m) => m.active_geocode_id)],
   );
   // A member linked before geocoding (standalone ingest:match) still maps its stored point.
