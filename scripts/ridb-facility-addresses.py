@@ -122,6 +122,7 @@ def select_address(rows):
     fields = {"address": "", "city": "", "region": "", "postal_code": "", "country_code": "",
               "address_type": ""}
     reasons = []
+    blank_states = set()
     for r in usable:
         street = street_of(r)
         if street and not physical_street(street):
@@ -138,7 +139,17 @@ def select_address(rows):
             postal = clean(r.get("PostalCode"))
             if re.fullmatch(r"\d{5}(-\d{4})?", postal):
                 fields["postal_code"] = postal
-        fields["region"] = fields["region"] or state_code(r.get("AddressStateCode"))
+        state = state_code(r.get("AddressStateCode"))
+        if street or clean(r.get("City")):
+            # A row with an accepted street or a city anchors the state.
+            fields["region"] = fields["region"] or state
+        elif state:
+            blank_states.add(state)
+    if not fields["region"] and len(blank_states) == 1:
+        fields["region"] = blank_states.pop()
+    elif not fields["region"] and blank_states:
+        # Several state-only rows disagree (e.g. a forest administered across states).
+        reasons.append("ambiguous_state")
     # Only US state/territory codes survive state_code(); AddressCountryCode is noisy ("1").
     # Territories carry their own ISO code, which equals their USPS code.
     countries = {clean(r.get("AddressCountryCode")).upper() for r in usable} - {""}
