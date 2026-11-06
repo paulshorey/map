@@ -1,4 +1,5 @@
 import { writeCanonicalLocations } from "./canonical-locations.js";
+import { refreshReviewFlags } from "../../sql/review-flags.js";
 import {
   ensureLocationAssessment,
   publicationAwaitingLocationSql,
@@ -810,5 +811,7 @@ export async function rebuildCanonicalPoi(
     `UPDATE canonical_pois SET active_build_id = $2 WHERE id = $1`,
     [canonicalId, builds[0]!.id],
   );
+  // Derived troubleshooting flags; not part of the build identity.
+  await refreshReviewFlags(client, [canonicalId]);
   return { published: !!primaryCategoryId && points.length > 0 };
 }

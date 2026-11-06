@@ -873,6 +873,28 @@ columns:
 The canonical row stores the representative occurrence: next upcoming when available,
 otherwise the most recent. Status such as upcoming, ongoing, or past is derived at read time.
 
+## Review flags
+
+Canonical POIs carry `review_flags` (text array, GIN-indexed), a filterable list of content to
+troubleshoot later. Flags never block publication. They are derived, not part of a build:
+`rebuildCanonicalPoi` refreshes them for its POI, and `ingest:review-flags --refresh`
+recomputes all of them (run it after reclassifying a capture in the inventory).
+
+| Flag | Meaning |
+| --- | --- |
+| `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
+| `source_needs_review` | A member came from a capture whose inventory disposition is still `needs_review` |
+
+Rules live in `lib/db-map/sql/review-flags.ts` (`REVIEW_FLAG_RULES`, one SQL predicate per
+flag); add a flag there and a label in `apps/map/src/map/usePoiReviewFilter.ts`. The map API
+filters with `/api/pois?review=<flag>`, the map's review dropdown does the same, and the drawer
+lists a POI's flags.
+
+```bash
+pnpm --filter @lib/db-map ingest:review-flags            # published POIs per flag
+pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's flags
+```
+
 ## Outdated data: re-ingest, never upgrade
 
 Records produced by older pipeline logic (normalizer/prompt/schema/profile, location

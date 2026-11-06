@@ -423,6 +423,11 @@
       "column": "origin",
       "nullable": false,
       "type": "string"
+    },
+    {
+      "column": "review_flags",
+      "nullable": false,
+      "type": "Array<string>"
     }
   ],
   "geo_centroids": [
@@ -2907,6 +2912,33 @@
     {
       "column": "last_seen_at",
       "nullable": true,
+      "type": "Date"
+    }
+  ],
+  "research_provider_daily_usage": [
+    {
+      "column": "provider",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "usage_day",
+      "nullable": false,
+      "type": "Date"
+    },
+    {
+      "column": "requests",
+      "nullable": false,
+      "type": "number"
+    },
+    {
+      "column": "rate_limited_at",
+      "nullable": true,
+      "type": "Date"
+    },
+    {
+      "column": "updated_at",
+      "nullable": false,
       "type": "Date"
     }
   ],

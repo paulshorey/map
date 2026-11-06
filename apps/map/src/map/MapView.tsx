@@ -21,7 +21,8 @@ import { PoiLayer } from "./PoiLayer";
 import { usePoiCategory } from "./usePoiCategory";
 import { usePoiList, type Bbox } from "./usePoiList";
 import { usePoiLocationFilter } from "./usePoiLocationFilter";
-import { LocationFilter, ResultCount } from "./PoiFilterBar";
+import { usePoiReviewFilter } from "./usePoiReviewFilter";
+import { LocationFilter, ResultCount, ReviewFilter } from "./PoiFilterBar";
 import { PoiDrawer } from "./PoiDrawer";
 import { usePoiSelection } from "./usePoiSelection";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
@@ -125,6 +126,7 @@ export function MapView() {
     selectCategory,
   } = usePoiCategory();
   const { location, selectLocation } = usePoiLocationFilter();
+  const { review, selectReview } = usePoiReviewFilter();
   const { user, loading, updatePreferences } = useAuth();
   const key = usePremiumKey(provider.id);
   const style = provider.getStyle({ apiKey: key ?? undefined });
@@ -146,7 +148,7 @@ export function MapView() {
 
   const { selection, isLoadingPoi, selectPoi, clearSelection } =
     usePoiSelection(mapRef);
-  const pois = usePoiList(bbox, zoom, category, location);
+  const pois = usePoiList(bbox, zoom, category, location, review);
   const markers = useMemo(
     () => withStackCounts(pois.data as GeoJSON.FeatureCollection | undefined),
     [pois.data],
@@ -308,6 +310,7 @@ export function MapView() {
             onSelect={selectCategory}
           />
           <LocationFilter value={location} onChange={selectLocation} />
+          <ReviewFilter value={review} onChange={selectReview} />
         </div>
         <ResultCount
           total={pois.data?.total}

@@ -191,6 +191,7 @@ END) STORED,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     active_build_id uuid,
     origin text DEFAULT 'research'::text NOT NULL,
+    review_flags text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT canonical_pois_date_precision_check CHECK ((date_precision = ANY (ARRAY['datetime'::text, 'day'::text, 'month'::text, 'year'::text]))),
     CONSTRAINT canonical_pois_origin_check CHECK ((origin = ANY (ARRAY['research'::text, 'manual'::text]))),
     CONSTRAINT canonical_pois_status_check CHECK ((status = ANY (ARRAY['published'::text, 'draft'::text, 'hidden'::text])))
@@ -1075,6 +1076,20 @@ CREATE VIEW public.research_pois_current AS
 
 
 --
+-- Name: research_provider_daily_usage; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.research_provider_daily_usage (
+    provider text NOT NULL,
+    usage_day date NOT NULL,
+    requests integer DEFAULT 0 NOT NULL,
+    rate_limited_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT research_provider_daily_usage_requests_check CHECK ((requests >= 0))
+);
+
+
+--
 -- Name: research_source_file_versions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1623,6 +1638,14 @@ ALTER TABLE ONLY public.research_pois
 
 
 --
+-- Name: research_provider_daily_usage research_provider_daily_usage_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.research_provider_daily_usage
+    ADD CONSTRAINT research_provider_daily_usage_pkey PRIMARY KEY (provider, usage_day);
+
+
+--
 -- Name: research_source_file_versions research_source_file_versions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1775,6 +1798,13 @@ CREATE INDEX canonical_pois_name_trgm ON public.canonical_pois USING gin (lower(
 --
 
 CREATE INDEX canonical_pois_primary_cat_idx ON public.canonical_pois USING btree (primary_category_id);
+
+
+--
+-- Name: canonical_pois_review_flags_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX canonical_pois_review_flags_idx ON public.canonical_pois USING gin (review_flags);
 
 
 --

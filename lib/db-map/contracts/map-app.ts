@@ -14,6 +14,7 @@ export interface PoiFeatureProperties {
   starts_at: string | null;
   ends_at: string | null;
   date_precision: string | null;
+  review_flags: Array<string>;
 }
 
 /** GET /api/pois. `total` counts every matching POI; `returned` POIs (up to `limit`) are
@@ -92,6 +93,7 @@ export interface PoiDetailRecord {
   geometry: unknown;
   locations: Array<PoiMapLocationRecord>;
   coordinate_evidence: PoiCoordinateEvidenceRecord;
+  review_flags: Array<string>;
 }
 
 /** GET /api/pois/[id]/colocated. `pois[0]` is the clicked POI; the rest share its marker's
