@@ -40,8 +40,9 @@ import {
   IMPORT_QUEUE_LOCK,
   INGEST_LOCK_NAMESPACE,
   importQueueActive,
-  importQueueLockHolder,
   IMPORT_QUEUE_START_LOCK,
+  IMPORT_QUEUE_PRESENCE_LOCK,
+  importQueuePresenceHolder,
 } from "../../lib/ingestion/locks.js";
 
 const PACKAGE = fileURLToPath(new URL("../../", import.meta.url));
@@ -155,8 +156,10 @@ async function acquireQueueLock(id: string): Promise<Client | null> {
 }
 
 /** Whether any host's queue worker holds the lock right now (plain imports hold it shared). */
-const queueLockHeld = () => importQueueActive(getDb());
-const queueLockHolder = () => importQueueLockHolder(getDb());
+const queueLockHeld = async () =>
+  (await importQueuePresenceHolder(getDb())) !== null || (await importQueueActive(getDb()));
+/** The live queue worker (waiting or running, any host), by its presence lock. */
+const queueLockHolder = () => importQueuePresenceHolder(getDb());
 
 /** Wait until `until`, waking every 30 s to honour a stop request. Returns false if stopped. */
 async function waitUntil(id: string, until: number): Promise<boolean> {
@@ -297,7 +300,7 @@ async function superviseWatch(q: QueueState, entry: QueueEntry, args: string[], 
       }
       // Only the job this launch created (earlier attempts' jobs are terminal).
       const job = entry.jobs.length > jobsBefore ? entry.jobs.at(-1) : undefined;
-      if (forwarded || !job || !(await stopNowRequested(q.id))) return;
+      if (forwarded || !job || !(lockLost || (await stopNowRequested(q.id)))) return;
       forwarded = true;
       await writeFile(jobPath(job, "stop.request"), new Date().toISOString(), { mode: 0o600 });
     })().catch(() => undefined);
@@ -384,11 +387,42 @@ export function classifyResult(r: {
 }
 
 export async function runQueue(id: string) {
+  // Presence: one live queue worker at a time anywhere, visible while it waits or runs.
+  const presence = await dedicatedClient(`import-queue:${id}`, () => {
+    lockLost = true;
+  });
+  const present = (
+    await presence.query("SELECT pg_try_advisory_lock($1, $2) AS ok", [
+      INGEST_LOCK_NAMESPACE,
+      IMPORT_QUEUE_PRESENCE_LOCK,
+    ])
+  ).rows[0]?.ok;
+  if (!present) {
+    await presence.end().catch(() => undefined);
+    const holder = await queueLockHolder();
+    if (holder !== id) {
+      const q = await loadQueue(id).catch(() => null);
+      if (q) {
+        q.status = "stopped";
+        q.message = `Not started: queue ${holder ?? "another"} is already active`;
+        await saveQueue(q).catch(() => undefined);
+      }
+    }
+    await closeDb();
+    return;
+  }
+  const endPresence = async () => {
+    await presence
+      .query("SELECT pg_advisory_unlock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_PRESENCE_LOCK])
+      .catch(() => undefined);
+    await presence.end().catch(() => undefined);
+  };
   // A plain import may still be running (it holds the queue lock shared): wait for it, like
   // the quiescence wait, up to an hour, honouring stop requests.
   let lock = await acquireQueueLock(id);
   const deadline = Date.now() + 3600_000;
-  while (!lock && Date.now() < deadline && !(await queueLockHeld()) && !(await stopRequested(id))) {
+  // (Presence guarantees no other queue worker; only a plain import can hold the lock now.)
+  while (!lock && Date.now() < deadline && !lockLost && !(await stopRequested(id))) {
     // Heartbeat: a recently updated `queued` state is a live, waiting worker (see reconcileStale).
     const waiting = await loadQueue(id);
     waiting.message = "Waiting for a running plain import to finish";
@@ -407,30 +441,18 @@ export async function runQueue(id: string) {
         .catch(() => undefined);
       await lock.end().catch(() => undefined);
     }
+    await endPresence();
     await closeDb();
     throw error;
   }
   if (!lock) {
-    const holder = await queueLockHolder();
-    // A duplicate worker of this same queue owns ingestion: never overwrite its state.
-    if (holder === id) {
-      console.error(`Queue ${id}: another worker of this queue holds the lock; exiting without changes`);
-      await closeDb();
-      return;
-    }
-    if (holder) {
-      q.status = "stopped";
-      q.message = `Not started: queue ${holder} was already running`;
-      await saveQueue(q);
-      await closeDb();
-      return;
-    }
     q.status = (await stopRequested(id)) ? "stopped" : "needs_attention";
     q.message =
       q.status === "stopped"
         ? "Stopped by operator request while waiting to start"
         : "A plain ingest:run kept the queue lock for over an hour; resume the queue when it finishes";
     await saveQueue(q);
+    await endPresence();
     await closeDb();
     return;
   }
@@ -445,10 +467,10 @@ export async function runQueue(id: string) {
       if (["succeeded", "skipped_complete"].includes(entry.status)) continue;
       q.current = i;
       for (;;) {
-        if (await stopRequested(id)) {
+        if (lockLost || (await stopRequested(id))) {
           entry.status = "stopped";
           q.status = "stopped";
-          q.message = "Stopped by operator request";
+          q.message = lockLost ? "Stopped: the queue's lock connection was lost" : "Stopped by operator request";
           return;
         }
         const state = await fileState(entry);
@@ -520,7 +542,7 @@ export async function runQueue(id: string) {
             ? [...state.verifyArgs, "--unlimited"]
             : [entry.file, "--category", entry.category, "--unlimited"];
         // A stop requested while the checks above ran is honoured before anything launches.
-        if (await stopRequested(id)) {
+        if (lockLost || (await stopRequested(id))) {
           entry.status = "stopped";
           q.status = "stopped";
           q.message = "Stopped by operator request before the next launch";
@@ -542,7 +564,16 @@ export async function runQueue(id: string) {
           entry.quick_quota_pauses =
             Date.now() - launched < 300_000 ? (entry.quick_quota_pauses ?? 0) + 1 : 0;
         }
-        if (entry.outcome === "succeeded") entry.coverage = (await fileState(entry)).coverage;
+        if (entry.outcome === "succeeded") {
+          const after = await fileState(entry);
+          entry.coverage = after.coverage;
+          // A reclassification during the run wins over its coverage.
+          if (after.action === "review" || after.action === "blocked") {
+            stop(`The inventory marked this file ${after.action === "review" ? "needs_review" : "not importable"} during its import; review it, then resume`);
+            entry.finished_at = new Date().toISOString();
+            return;
+          }
+        }
         // A confirmed `stop --now` pauses the import (outcome `paused`): record it as a stop.
         // A plain `stop` (after the current file) never masks a real failure.
         if (
@@ -613,7 +644,8 @@ export async function runQueue(id: string) {
       await lock
         .query("SELECT pg_advisory_unlock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_LOCK])
         .catch(() => undefined);
-      await lock.end().catch(() => undefined); // the connection named after this queue
+      await lock.end().catch(() => undefined);
+      await endPresence();
       await closeDb();
     }
   }
@@ -663,10 +695,15 @@ async function withStartLock<T>(fn: () => Promise<T>): Promise<T> {
 async function awaitHandshake(id: string): Promise<string> {
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
-    if ((await queueLockHolder()) === id) return "running";
+    // The presence lock makes the worker visible to every host, waiting or running.
+    if ((await queueLockHolder()) === id) {
+      const q = await loadQueue(id).catch(() => null);
+      return q?.message?.startsWith("Waiting for a running plain import")
+        ? "waiting for a plain import to finish"
+        : "running";
+    }
     const q = await loadQueue(id).catch(() => null);
     if (q && !["queued", "running", "waiting"].includes(q.status)) return `${q.status}: ${q.message ?? ""}`;
-    if (q?.message?.startsWith("Waiting for a running plain import")) return "waiting for a plain import to finish";
     await sleep(1000);
   }
   return "starting (no lock yet after a minute; check status)";
@@ -680,8 +717,24 @@ function spawnWorker(id: string) {
       detached: true,
       stdio: ["ignore", log.fd, log.fd],
     });
-    child.unref();
-    await log.close();
+    try {
+      await new Promise<void>((resolve, reject) => {
+        child.once("spawn", resolve);
+        child.once("error", reject);
+      });
+    } catch (error) {
+      // No worker exists: record the failed launch instead of leaving a phantom queued state.
+      const q = await loadQueue(id).catch(() => null);
+      if (q) {
+        q.status = "needs_attention";
+        q.message = `Queue worker could not be launched: ${error instanceof Error ? error.message : String(error)}`;
+        await saveQueue(q).catch(() => undefined);
+      }
+      throw error;
+    } finally {
+      child.unref();
+      await log.close();
+    }
   })();
 }
 
@@ -749,6 +802,24 @@ function summary(q: QueueState) {
 
 async function main() {
   const [command = "help", ...rest] = process.argv.slice(2);
+  const allowed: Record<string, string[]> = {
+    start: ["--plan"],
+    status: ["--queue", "--json"],
+    stop: ["--queue", "--now"],
+    resume: ["--queue"],
+    worker: ["--queue"],
+    list: [],
+  };
+  if (allowed[command]) {
+    const dash = rest.indexOf("--");
+    const own = dash >= 0 ? rest.slice(0, dash) : rest;
+    for (let i = 0; i < own.length; i++) {
+      const arg = own[i]!;
+      if (!arg.startsWith("--")) continue;
+      if (!allowed[command]!.includes(arg)) throw new Error(`Unknown option for ${command}: ${arg}`);
+      if (["--plan", "--queue"].includes(arg)) i++;
+    }
+  }
   const flag = (name: string) => {
     const i = rest.indexOf(name);
     if (i < 0) return undefined;

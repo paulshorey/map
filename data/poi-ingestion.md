@@ -904,14 +904,16 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
 - a file counts as complete only when its inventory category matches the entry and the file on
   disk still has the scanned SHA-256; an unfinished full-file run of that file is resumed with
   its UUID (cohort and checkpoints kept), never restarted;
-- one queue worker runs at a time on any host (a database advisory lock it holds for life);
+- one queue worker is live at a time on any host: it holds a presence lock for life, waiting
+  or running, and an exclusive queue lock while it owns ingestion;
   a queue whose worker died is marked `stopped` as interrupted, and `resume` continues it.
 - every full-scope import (`ingest:run`/`ingest:extract` without `--limit`, `--record`,
   `--shadow` or `--dry-run`), plain or queued, holds a database lock for its whole run, so only
   one full-file import runs at a time on any host, even if a queue worker dies; bounded
   diagnostics are not blocked. A plain import also holds the queue lock in shared mode while
-  the queue worker holds it exclusively, so a plain import refuses while a queue runs and a
-  queue started during a plain import stops as `needs_attention`. If an import's lock connection drops,
+  the queue worker holds it exclusively, so a plain import refuses while a queue runs, and a
+  queue started during a plain import waits for it (reported as "waiting for a plain import
+  to finish", up to an hour, then `needs_attention`). If an import's lock connection drops,
   the import exits at once (resume it later) rather than run unfenced. A confirmed `stop --now`
   is recorded as an operator stop;
 - an unfinished earlier run of a file is adopted automatically only if it stopped at the daily

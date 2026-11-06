@@ -42,3 +42,25 @@ export async function importQueueActive(db: {
 export const FULL_IMPORT_LOCK = 5;
 /** Serializes `ingest:import-queue start`/`resume` until the new worker holds the queue lock. */
 export const IMPORT_QUEUE_START_LOCK = 6;
+/**
+ * Held for its whole life by every live import-queue worker (waiting or running), on a
+ * connection named `import-queue:<id>`: the cross-host record of which queue is active.
+ */
+export const IMPORT_QUEUE_PRESENCE_LOCK = 7;
+
+/** The queue id of the live queue worker (any host), from the presence lock holder. */
+export async function importQueuePresenceHolder(db: {
+  query: (sql: string, params?: unknown[]) => Promise<{ rows: Array<{ name: string | null }> }>;
+}): Promise<string | null> {
+  const { rows } = await db.query(
+    `SELECT a.application_name AS name FROM pg_locks l JOIN pg_stat_activity a ON a.pid = l.pid
+     WHERE l.locktype='advisory' AND l.granted AND l.mode='ExclusiveLock'
+       AND l.classid=$1::int::oid AND l.objid=$2::int::oid AND l.objsubid=2
+       AND l.database=(SELECT oid FROM pg_database WHERE datname=current_database())
+     LIMIT 1`,
+    [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_PRESENCE_LOCK],
+  );
+  const name = rows[0]?.name ?? null;
+  if (!name) return null;
+  return name.startsWith("import-queue:") ? name.slice("import-queue:".length) : name;
+}
