@@ -30,9 +30,11 @@ import {
   locationReadySql,
   resolveLocation,
   textValue,
+  reverseForPrecision,
   type ReverseLocation,
 } from "./location.js";
 import { countryToCode } from "./normalize/country.js";
+import { suppliedCountryCentroid } from "./supplied-centroids.js";
 import { stableHash } from "./hash.js";
 import { haversineMeters } from "./match/geo.js";
 import {
@@ -164,6 +166,15 @@ export function buildQuery(
   if (/^q\d+(,|$)/i.test(norm)) return null;
   return { display, norm };
 }
+
+/** Listed fields a reverse lookup can supply at each point precision (see reverseForPrecision). */
+const REVERSE_FIELDS: Record<string, Array<"country_code" | "region" | "city" | "address">> = {
+  point: ["country_code", "region", "city", "address"],
+  city: ["country_code", "region", "city"],
+  unknown: ["country_code", "region", "city"],
+  region: ["country_code", "region"],
+  country: ["country_code"],
+};
 
 /** A street address supplied by the listing itself, never a location hint label. */
 function capturedStreetAddress(captured: Record<string, any>): string | null {
@@ -443,17 +454,28 @@ export async function runGeocode(
         countryToCode(captured.country_code) ??
         countryToCode(attrs.country_name) ??
         null,
+      // Filler such as "Various" stays in the capture but never becomes the projected locality.
       address:
-        textValue(captured.address) ??
-        textValue(attrs.venue_address) ??
-        textValue(attrs.street_address),
-      city: textValue(captured.city),
-      region: textValue(captured.region),
+        localityValue(captured.address) ??
+        localityValue(attrs.venue_address) ??
+        localityValue(attrs.street_address),
+      city: localityValue(captured.city),
+      region: localityValue(captured.region),
     };
     let lat: number | null = row.lat,
       lng: number | null = row.lng;
     let coordinateSource = row.coordinate_source,
       coordinatePrecision = row.coordinate_precision;
+    // A supplied point that repeats a published country centroid locates only the country.
+    // The listed country may live only in location hints (thatfestivalsite), as for lookups.
+    const listedCountry =
+      source.country_code ??
+      countryToCode(textValue(attrs.source_location_hints?.country)) ??
+      null;
+    const suppliedCentroid = ["source", "url"].includes(row.coordinate_source)
+      ? suppliedCountryCentroid(row, listedCountry)
+      : null;
+    if (suppliedCentroid) coordinatePrecision = "country";
     const temporal = new Set<string>(
       (
         await db.query(
@@ -462,10 +484,7 @@ export async function runGeocode(
       ).rows.map((r) => r.slug),
     );
     const q = listedQuery(row, captured, temporal);
-    const forwardCountry =
-      source.country_code ??
-      countryToCode(textValue(attrs.source_location_hints?.country)) ??
-      null;
+    const forwardCountry = listedCountry;
     // Separate policy namespace; do not reuse historical name/reverse-derived queries.
     const lookup = async (query: { display: string; norm: string }) => {
       const key = forwardCacheKey(query.norm, forwardCountry);
@@ -525,6 +544,7 @@ export async function runGeocode(
       forward = first.hit ?? null;
       const cityQuery = listedCityQuery(row, captured, temporal);
       const sourcePoint =
+        !suppliedCentroid &&
         validPoint({ lat: row.lat, lng: row.lng }) &&
         ["source", "url"].includes(row.coordinate_source)
           ? { lat: row.lat as number, lng: row.lng as number }
@@ -590,7 +610,9 @@ export async function runGeocode(
               lng: row.lng,
               kind: "source",
               origin: "source_coordinates",
-              precision: row.coordinate_precision ?? "point",
+              precision: suppliedCentroid
+                ? "country"
+                : (row.coordinate_precision ?? "point"),
               label: null,
               query: null,
             }
@@ -609,8 +631,15 @@ export async function runGeocode(
         : null,
     };
     const queryNorm = `${LOCATION_CACHE_VERSION}:reverse:${lat}:${lng}`;
+    // Only fields a reverse lookup may still supply at this precision justify a call; a
+    // centroid match already names its country.
+    const reverseNeeded = REVERSE_FIELDS[coordinatePrecision ?? "unknown"]!.some(
+      (key) =>
+        !source[key] &&
+        !(key === "country_code" && suppliedCentroid && countryToCode(suppliedCentroid)),
+    );
     let hit: ReverseLocation | null = null;
-    if (Object.values(source).some((value) => !value)) {
+    if (reverseNeeded) {
       const cache = (
         await db.query(
           "SELECT payload FROM research_geocode_cache WHERE query_norm=$1",
@@ -638,7 +667,7 @@ export async function runGeocode(
     }
     const resolved = resolveLocation(
       source,
-      hit && coordinatePrecision !== "point" ? { ...hit, address: null } : hit,
+      reverseForPrecision(hit, coordinatePrecision),
     );
     if (
       forwardCountry &&
@@ -646,8 +675,18 @@ export async function runGeocode(
       forwardCountry !== forward.country_code
     )
       resolved.warnings.push("forward_country_conflict");
-    if (!hit && Object.values(source).some((value) => !value))
+    if (!hit && reverseNeeded)
       resolved.warnings.push("reverse_location_incomplete");
+    // The matched centroid identifies the country when the listing names none.
+    // Vendored codes include non-ISO entries (GZ, AN); only a current ISO code is projected.
+    const centroidCountry = suppliedCentroid ? countryToCode(suppliedCentroid) : undefined;
+    if (centroidCountry && !resolved.fields.country_code) {
+      resolved.fields.country_code = centroidCountry;
+      (resolved.provenance as Record<string, unknown>).country_code =
+        "supplied_centroid";
+    }
+    if (suppliedCentroid)
+      resolved.warnings.push("source_point_country_centroid");
     if (Object.values(resolved.fields).some((value) => !value))
       resolved.warnings.push("location_fields_incomplete");
     const metadata = {
@@ -668,11 +707,20 @@ export async function runGeocode(
         ...(cityConfirmation ? { city_confirmation: cityConfirmation } : {}),
       },
       coordinate_evidence: coordinateEvidence,
+      ...(suppliedCentroid
+        ? {
+            supplied_centroid: {
+              country_code: suppliedCentroid,
+              reference: "google-dspl-countries",
+              match: "rounded_to_supplied_precision",
+            },
+          }
+        : {}),
       ...resolved,
       reverse: hit,
       lookup_state: hit
         ? "resolved"
-        : Object.values(source).some((value) => !value)
+        : reverseNeeded
           ? "miss"
           : "not_needed",
       assessed_at: new Date().toISOString(),
@@ -743,7 +791,38 @@ export async function runGeocode(
             new Error("Location input changed during activation"),
             { code: "lineage_invalid" },
           );
-        if (row.canonical_poi_id)
+        // Matching drops the distance signal for a coarse point and scores locality fields, so a
+        // point that crosses point/coarse precision, or changed city/region/country, is matched
+        // again. Overrides apply first there.
+        const coarse = (p: unknown) => p !== "point";
+        // Locality fields (and the address the LLM judge sees) feed matching and the cleared
+        // embedding text. Removing or replacing one can undo the evidence a merge passed on;
+        // filling a gap only adds it.
+        const lost = (before: unknown, after: unknown) =>
+          before != null && before !== after;
+        const localityChanged =
+          lost(row.address, resolved.fields.address) ||
+          lost(row.city, resolved.fields.city) ||
+          lost(row.region, resolved.fields.region) ||
+          lost(row.country_code, resolved.fields.country_code);
+        const rematch =
+          !!row.canonical_poi_id &&
+          (coarse(row.coordinate_precision) !== coarse(coordinatePrecision) ||
+            localityChanged);
+        if (rematch) {
+          await client.query(
+            `UPDATE research_canonical_memberships SET active=false, retired_at=now(),
+            retirement_reason='coordinate_precision_changed' WHERE research_poi_id=$1 AND active`,
+            [row.id],
+          );
+          await client.query(
+            "UPDATE research_pois SET canonical_poi_id=NULL, matched_normalization_id=NULL WHERE id=$1",
+            [row.id],
+          );
+        }
+        // A rematch keeps the old canonical's accepted snapshot until a replacement membership
+        // exists (matching rebuilds the prior canonical then), as normalization activation does.
+        if (row.canonical_poi_id && !rematch)
           await rebuildCanonicalPoi(client, row.canonical_poi_id, {
             noLlm: true,
           });

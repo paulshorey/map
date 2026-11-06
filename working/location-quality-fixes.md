@@ -60,10 +60,10 @@ and 270 km from the Nagoya city result, and the other two records have no city l
 
 ## Still open
 
-- **Adelaide's source point** is Australia's country centroid (Google's
+- ~~**Adelaide's source point**~~ (resolved 2026-11-04, below) is Australia's country centroid (Google's
   `-25.2744, 133.7751`) labelled `point`. Detecting supplied centroids needs a
   reference dataset: `geo_centroids` is empty and `applyCentroidRules` is unused.
-- **Country-precision publication** is a product decision. AFiRIperFOMA still
+- ~~**Country-precision publication**~~ decided 2026-11-04: everything publishes; coarse points are flagged `general`. AFiRIperFOMA still
   publishes a marker at Nigeria's centroid.
 - **Existing canonicals** built before this change keep their inferred selection until
   rebuilt. A read-only audit for published inferred points with a listed-city conflict
@@ -150,3 +150,26 @@ reprocessing, provider call or rebuild was made for this revision.
 
 Follow-up (separate PR): map/API filter to include, exclude or show only records
 flagged for location review or missing a geocode or listed address, for debugging.
+
+## Coarse points and supplied centroids — 2026-11-04
+
+A rerun of the same three records on `55a75d4` (run `a66717fe…`, 35 s,
+`requested_scope_verified`, no normalization requests) confirmed the Oct 29 fixes on
+current main: Aichi keeps its Nagoya point and three members; AFiRIperFOMA is `country`
+and `general`. It also exposed two defects, fixed on `claude/coarse-point-reverse-fields`:
+
+- **Invented locality from a centroid reverse lookup.** AFiRIperFOMA's Nigeria centroid
+  reverse-geocoded to `Kurmin Musa, Kaduna`, which filled `city`/`region`. Reverse fields
+  finer than the point's precision are now dropped (`reverseForPrecision`).
+- **Supplied country centroids.** Adelaide's `-25.2744, 133.7751` is Google's Australia
+  centroid. Supplied points that repeat a vendored Google DSPL centroid at their own
+  rounding precision (and listed country) are `country` precision. Only Adelaide matches among the 304-record file and the 2,857 supplied
+  source points in the dev database (of ~46k records);
+  a Rome venue 3.4 km from the Vatican centroid does not.
+- Placeholder captured `city`/`region`/`address` (`Various`) no longer project.
+
+`LOCATION_VERSION` is `location-v5` so earlier artifacts re-enrich (reverse results are
+cached; no provider calls). Final run `c6be5780…`: Adelaide and AFiRIperFOMA are
+`country`/`general` with no city; Aichi stays a Nagoya point/`precise`. The rollback
+`location`, `two-locations` and `coordinates` integrations pass under owned maintenance,
+now exited. Country/region/city POIs publish and are flagged `general` (owner decision).

@@ -929,14 +929,33 @@ search. Hits and misses are cached by query policy/country. Forward and reverse 
 provider budgets and recovery. If the budget expires between calls, activation waits
 and resume reuses cached results; a miss preserves a usable source point.
 
-Listing filler such as `Various`, `Various venues`, `TBA`, `Online` or `Multiple
-locations` is not locality and never enters a forward query; the captured text itself
-is preserved. Quantifiers (`Multiple`, `Several`, `Many`) are filler only with a noun
+Listing filler such as `Various`, `Various venues`, `Various (England)`, `TBA`, `Online` or
+`Multiple locations` is not locality and never enters a forward query or the projected
+`city`/`region`/`address`; the captured text itself is preserved. Quantifiers (`Multiple`, `Several`, `Many`) are filler only with a noun
 such as `venues`, so a town named Many is kept. When a source point exists and the only remaining listed locality is
 the country, no forward lookup runs: a country centroid beside a supplied point adds
 a marker, not evidence. Only points with `coordinate_source=source` or `url` qualify
 for this suppression. A record with legacy geocoded or unclassified coordinates
 still looks up its country and can acquire country-level inferred evidence.
+
+A supplied point that repeats a published country centroid (Google DSPL
+`countries.csv`, vendored in `scripts/ingest/supplied-centroids.ts`) has `country`
+precision. Each axis must equal the centroid rounded or truncated to that axis's own
+decimals (at least two), and a listed country (captured, or `source_location_hints.country`)
+other than the centroid's rules the match out, so a full-precision venue near a
+microstate centroid stays a point. A match gets the `source_point_country_centroid` warning and `supplied_centroid` evidence; it
+is never an anchor for the 50 km checks below. When enrichment flips a linked record's point
+between `point` and a coarser precision, or removes or replaces its address, city, region
+or country (filling a missing field does not), its membership is retired
+(`coordinate_precision_changed`) and the record is matched again, because matching ignores
+distance for coarse points; overrides apply first, and the old canonical is not rebuilt: its
+snapshot is held until the rematch. A centroid's country fills a missing listed country only
+when it is a current ISO code (not the vendored `GZ`/`AN`). A reverse lookup is trusted only to the
+point's precision: a `country` point keeps only the country, a `region` point drops the
+city, and any coarse or unknown-precision point drops the street address and postcode. A country centroid
+otherwise reverse-geocodes to whatever village lies under it. A reverse call is made only when
+a field that precision can still supply is missing, and a centroid match fills a missing
+country itself (provenance `supplied_centroid`), so Adelaide needs no provider call.
 
 A venue/name/address lookup is suspect unless one of its city-level fields (city, town,
 village, hamlet, municipality, suburb or city district) equals the listed city's whole
@@ -975,10 +994,10 @@ the row and at least one slot is present. Otherwise the current coordinate colum
 decide: cleared coordinates show as `missing_location`, and a retained legacy point
 whose new lookup missed stays plottable and is judged by its stored precision.
 `ingest:report` counts these per source/category. They never gate matching or
-publication. A supplied centroid labelled `point` (for example Google's Australia
-centroid) is not detected without a centroid reference dataset.
+publication. A supplied point that repeats a published country centroid (for example
+Google's Australia centroid) is stored as `country` precision, so it counts as coarse.
 
-The `location-v3` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
+The `location-v5` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
 to its normalization/primary point, alongside separate listed text, forward query/result
 and reverse lookup. Canonical builder `canonical-build-v7` writes
 `attributes.coordinate_evidence` with source/research/normalization/geocode IDs for
@@ -986,7 +1005,14 @@ each value. Legacy lat/lng is the selected source point when available, otherwis
 inferred point or retained legacy point. Raw/model attributes cannot publish these
 reserved fields. The query policy remains `listed-location-v1`; unchanged provider
 queries reuse the `location-v2` cache namespace, so a representation upgrade does
-not repeat already-paid geocoding. There is no automatic historical sweep. The
+not repeat already-paid geocoding. There is no automatic historical sweep, but the
+location version is part of readiness: `locationReadySql()` treats every artifact
+whose `location_enrichment.version` is not the current `location-v5` (v1–v4) as stale,
+so the next geocode stage over any cohort re-enriches all of its records. Re-enrichment
+replays the `location-v2` forward/reverse caches and normally makes no provider calls;
+only records with no cached query or reverse point call the provider. Size a run by
+its cohort, not by records whose source data changed. v5 added coarse-point reverse
+trimming and supplied-centroid precision (above). The
 additive country-precision migration widens the two storage constraints; it does
 not reclassify stored points or rebuild existing artifacts.
 
@@ -1004,13 +1030,13 @@ row contains no request URL or client credential. Full raw responses stay out
 of canonical coordinate slots; compact evidence survives canonical/API selection.
 v1 evidence remains readable.
 
-Existing paid query keys and location/matcher/builder versions stay unchanged.
-A cached hit that saved its provider row is reclassified from that row with the
+Existing paid query keys and matcher/builder versions stay unchanged by the
+precision metadata; the location version changes as described above. A cached hit that saved its provider row is reclassified from that row with the
 current classifier, without a refetch. Replaying an older parsed cache hit without
 a row keeps its coordinates and stored precision,
 marks derivation `legacy_cache` / `precision_derivation_not_recorded`, and does
-not rewrite or refetch that cache. Old active artifacts remain current; they are
-not swept merely to add metadata. `ingest:location-assess --records <UUID,...>`
+not rewrite or refetch that cache. Adding precision metadata alone never sweeps
+artifacts; only a location-version change (as in v5) makes old artifacts stale. `ingest:location-assess --records <UUID,...>`
 adds a read-only `precision_diagnostics` supplement, marking old artifacts
 `legacy_artifact` and stating whether the original provider row is available.
 This supplement does not alter immutable assessment policy, hashes, or status.

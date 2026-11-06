@@ -2,8 +2,14 @@ import assert from "node:assert/strict";
 import { test, afterEach } from "node:test";
 import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
-import { resolveLocation, type ReverseLocation } from "./location.js";
+import {
+  localityValue,
+  resolveLocation,
+  reverseForPrecision,
+  type ReverseLocation,
+} from "./location.js";
 import { canonicalLocation } from "./canonical-location.js";
+import { suppliedCountryCentroid } from "./supplied-centroids.js";
 import {
   parseReverseLocation,
   reverseGeocode,
@@ -210,4 +216,71 @@ test("camel-case API event dates are deterministic source facts", async () => {
   });
   assert.equal(facts.startDate, "2026-06-12");
   assert.equal(facts.endDate, "2026-06-20");
+});
+
+test("a coarse point's reverse lookup never invents finer locality", () => {
+  // AFiRIperFOMA: Nigeria's centroid reverse-geocodes to a Kaduna village.
+  const country = resolveLocation(
+    { ...empty, country_code: "NG" },
+    reverseForPrecision(
+      { ...hit, country_code: "NG", city: "Kurmin Musa", region: "Kaduna", region_code: null },
+      "country",
+    ),
+  );
+  assert.deepEqual(country.fields, { ...empty, country_code: "NG" });
+  const region = reverseForPrecision(hit, "region")!;
+  assert.equal(region.city, null);
+  assert.equal(region.region, "Texas");
+  assert.equal(region.address, null);
+  const city = reverseForPrecision(hit, "city")!;
+  assert.equal(city.city, "Austin");
+  assert.equal(city.address, null);
+  assert.equal(city.postcode, null);
+  assert.equal(reverseForPrecision(hit, "point"), hit);
+  // Unknown precision is coarse: no street address or postcode, locality kept.
+  const unknown = reverseForPrecision(hit, null)!;
+  assert.equal(unknown.address, null);
+  assert.equal(unknown.postcode, null);
+  assert.equal(unknown.city, "Austin");
+  assert.equal(reverseForPrecision(null, "country"), null);
+});
+
+test("a supplied point repeating a published country centroid is country precision", () => {
+  // Biennial Foundation's Adelaide record supplies Australia's centroid, rounded.
+  assert.equal(suppliedCountryCentroid({ lat: -25.2744, lng: 133.7751 }), "AU");
+  assert.equal(suppliedCountryCentroid({ lat: -25.2744, lng: 133.7751 }, "AU"), "AU");
+  assert.equal(suppliedCountryCentroid({ lat: 9.081999, lng: 8.675277 }), "NG");
+  assert.equal(suppliedCountryCentroid({ lat: -25.27, lng: 133.78 }), "AU");
+  // A listed country other than the centroid's rules it out.
+  assert.equal(suppliedCountryCentroid({ lat: -25.2744, lng: 133.7751 }, "NZ"), null);
+  // Real venues near microstate centroids, written to full precision, stay points:
+  // St. Peter's Basilica (Vatican centroid 41.902916, 12.453389) and a Singapore venue
+  // about 300 m from Singapore's centroid (1.352083, 103.819836).
+  assert.equal(suppliedCountryCentroid({ lat: 41.902168, lng: 12.453937 }, "VA"), null);
+  assert.equal(suppliedCountryCentroid({ lat: 1.3545, lng: 103.8212 }, "SG"), null);
+  // A Rome venue 3.4 km from the Vatican centroid, and Aichi's Nagoya venue.
+  assert.equal(suppliedCountryCentroid({ lat: 41.9334, lng: 12.4534 }), null);
+  assert.equal(suppliedCountryCentroid({ lat: 35.1815, lng: 136.9066 }), null);
+  // Two decimals: only the rounded (1.35, 103.82) or truncated (1.35, 103.81) cells match
+  // Singapore's 1.352083, 103.819836; the neighbouring cell 1.36, 103.82 does not.
+  assert.equal(suppliedCountryCentroid({ lat: 1.35, lng: 103.82 }), "SG");
+  assert.equal(suppliedCountryCentroid({ lat: 1.35, lng: 103.81 }), "SG");
+  assert.equal(suppliedCountryCentroid({ lat: 1.36, lng: 103.82 }), null);
+  // Negative halfway ties: Mayotte's -12.8275 formats to -12.828 (and Math.round gives -12.827).
+  assert.equal(suppliedCountryCentroid({ lat: -12.828, lng: 45.166 }), "YT");
+  assert.equal(suppliedCountryCentroid({ lat: -12.827, lng: 45.166 }), "YT");
+  assert.equal(suppliedCountryCentroid({ lat: -12.829, lng: 45.166 }), null);
+  assert.equal(suppliedCountryCentroid({ lat: -25.2745, lng: 133.7751 }), null);
+  // One decimal cannot tell a copied centroid from a coarse point.
+  assert.equal(suppliedCountryCentroid({ lat: -25.3, lng: 133.8 }), null);
+  assert.equal(suppliedCountryCentroid({ lat: null, lng: null }), null);
+});
+
+test("qualified Various placeholders and non-ISO centroid codes never project", () => {
+  for (const filler of ["Various villages", "Various (England)", "Various (nationwide)", "TBA (online)", "Multiple towns"])
+    assert.equal(localityValue(filler), null, filler);
+  for (const place of ["Many", "Variousville", "Online Park Road"]) assert.equal(localityValue(place), place);
+  // Gaza's vendored centroid code GZ is not ISO; it identifies precision, never a country code.
+  assert.equal(suppliedCountryCentroid({ lat: 31.354676, lng: 34.308825 }), "GZ");
+  assert.equal(countryToCode("GZ"), undefined);
 });
