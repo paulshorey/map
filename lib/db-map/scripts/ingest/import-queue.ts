@@ -21,7 +21,7 @@
  */
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { access, mkdir, open, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, open, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { hostname } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -34,6 +34,7 @@ import { getInventory } from "../../sql/ingestion-inventory.js";
 import { inspectControl } from "./control.js";
 import { atomicJson, jobPath, UUID } from "./supervisor-state.js";
 import { queueItem } from "../../lib/ingestion/queue.js";
+import { PIPELINE_VERSIONS, compatibleCheckpointVersions } from "./pipeline-versions.js";
 import { assertValidCategory } from "./taxonomy.js";
 import {
   IMPORT_QUEUE_ENV,
@@ -43,6 +44,7 @@ import {
   IMPORT_QUEUE_START_LOCK,
   IMPORT_QUEUE_PRESENCE_LOCK,
   importQueuePresenceHolder,
+  importQueueLockHolder,
 } from "../../lib/ingestion/locks.js";
 
 const PACKAGE = fileURLToPath(new URL("../../", import.meta.url));
@@ -226,13 +228,21 @@ async function runMatchesFile(
 ): Promise<boolean> {
   if (!sha) return false;
   const { rows } = await getDb().query(
-    `SELECT v.file_sha256, v.extractor_version FROM research_ingest_runs r
+    `SELECT v.file_sha256, v.extractor_version, r.pipeline_versions FROM research_ingest_runs r
      JOIN research_source_file_versions v ON v.id = r.source_file_version_id WHERE r.id=$1`,
     [runId],
   );
+  const saved = (rows[0]?.pipeline_versions ?? {}) as Record<string, unknown>;
+  // Only exact current (or reviewed-compatible) pipeline versions can resume.
+  const compatible = [PIPELINE_VERSIONS as Record<string, unknown>, ...compatibleCheckpointVersions()].some(
+    (versions) =>
+      Object.keys(versions).length === Object.keys(saved).length &&
+      Object.entries(versions).every(([k, v]) => saved[k] === v),
+  );
   return (
     rows[0]?.file_sha256 === sha &&
-    (!extractorVersion || rows[0]?.extractor_version === extractorVersion)
+    (!extractorVersion || rows[0]?.extractor_version === extractorVersion) &&
+    compatible
   );
 }
 
@@ -749,11 +759,13 @@ async function awaitHandshake(id: string): Promise<string> {
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
     // The presence lock makes the worker visible to every host, waiting or running.
+    // Presence alone is discovery; success means the worker owns the queue lock (or is
+    // confirmed waiting behind a plain import).
+    if ((await importQueueLockHolder(getDb())) === id) return "running";
     if ((await queueLockHolder()) === id) {
       const q = await loadQueue(id).catch(() => null);
-      return q?.message?.startsWith("Waiting for a running plain import")
-        ? "waiting for a plain import to finish"
-        : "running";
+      if (q?.message?.startsWith("Waiting for a running plain import"))
+        return "waiting for a plain import to finish";
     }
     const q = await loadQueue(id).catch(() => null);
     if (q && !["queued", "running", "waiting"].includes(q.status)) return `${q.status}: ${q.message ?? ""}`;
@@ -916,10 +928,17 @@ async function main() {
     let handshake = "";
     const plan = flag("--plan");
     const dash = rest.indexOf("--");
+    if (plan && dash >= 0 && rest.slice(dash + 1).length)
+      throw new Error("Pass either --plan <file> or inline -- <file>=<category> entries, not both");
     const entries = plan
       ? (JSON.parse(await readFile(resolve(REPO, plan), "utf8")).entries as Array<{ file: string; category: string }>)
       : parseEntries(dash >= 0 ? rest.slice(dash + 1) : []);
     if (!entries.length) throw new Error("No entries: pass --plan <file> or -- <file>=<category> ...");
+    // Every capture must exist now, not be discovered missing days into the queue.
+    for (const e of entries) {
+      const info = await stat(resolve(REPO, e.file)).catch(() => null);
+      if (!info?.isFile()) throw new Error(`Not a capture file: ${e.file}`);
+    }
     const q: QueueState = await withStartLock(async () => {
       const running = (await reconcileStale()).find((q) => ["queued", "running", "waiting"].includes(q.status));
       if (running) throw new Error(`Queue ${running.id} is already ${running.status}; stop it first`);
