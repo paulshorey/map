@@ -32,6 +32,8 @@
     "ingest:clean": "tsx scripts/ingest/clean.ts",
     "ingest:quota": "tsx scripts/ingest/quota.ts",
     "ingest:test-quota": "tsx --test scripts/ingest/providers/quota.test.ts",
+    "ingest:import-queue": "tsx scripts/ingest/import-queue.ts",
+    "ingest:test-import-queue": "tsx --test scripts/ingest/import-queue.test.ts",
     "ingest:staleness": "tsx scripts/ingest/staleness.ts",
     "ingest:purge": "tsx scripts/ingest/purge.ts",
     "ingest:trace": "tsx scripts/ingest/trace.ts",

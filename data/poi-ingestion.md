@@ -873,6 +873,34 @@ columns:
 The canonical row stores the representative occurrence: next upcoming when available,
 otherwise the most recent. Status such as upcoming, ongoing, or past is derived at read time.
 
+## Sequential import queue
+
+`ingest:import-queue` runs a list of whole-file imports one at a time through the supervisor
+(`ingest:supervise watch`), with ordinary Node waiting and no model calls:
+
+- a file whose inventory coverage is already `complete` is skipped;
+- the next file starts only after the previous one finished `succeeded` **and** its inventory
+  coverage is `complete`;
+- a run stopped by the daily geocoding quota (`provider_daily_quota`) is resumed with the same
+  run UUID two minutes after the reset; two immediate re-exhaustions stop the queue;
+- any other outcome stops the queue as `needs_attention` with the run UUID; nothing is retried
+  blindly, so diagnose it (see the troubleshooting sections) and start a new queue;
+- before each launch the pipeline must be quiescent and out of maintenance (it waits up to an
+  hour, then stops).
+
+```bash
+cd ~/git/map
+pnpm --silent --filter @lib/db-map ingest:import-queue start --plan data/import-plans/reset-20261105.json
+pnpm --silent --filter @lib/db-map ingest:import-queue status          # latest queue
+pnpm --silent --filter @lib/db-map ingest:import-queue stop            # before the next launch
+pnpm --silent --filter @lib/db-map ingest:import-queue stop --now      # also stop the current import gracefully
+# or ad hoc: ingest:import-queue start -- data/poi/x.json=art_fair data/poi/y.json=hostel
+```
+
+Queue state is in `lib/db-map/.ingest-queues/<id>/` (`state.json`, `queue.log`, ignored by Git);
+each file's supervisor job keeps its usual journal under `.ingest-jobs/`. Only one queue runs
+at a time, and the queue counts as a supervisor (not a worker) for quiescence checks.
+
 ## Daily geocoding quota
 
 LocationIQ's free plan allows 5,000 requests a day (2 a second, 60 a minute) and resets at

@@ -147,7 +147,7 @@ export function scriptProcesses(output: string) {
     if (
       !script ||
       /(?:\.test|golden)/.test(script) ||
-      /ingest\/(?:control|supervise|pause|status|report|trace|verify|inventory|queue|overview|doctor|issues|quality|test-[\w-]+)$/.test(
+      /ingest\/(?:control|supervise|import-queue|pause|status|report|trace|verify|inventory|queue|overview|doctor|issues|quality|test-[\w-]+)$/.test(
         script,
       )
     )
