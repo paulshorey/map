@@ -16,6 +16,7 @@ import {
   IMPORT_QUEUE_ENV,
   IMPORT_QUEUE_LOCK,
   INGEST_LOCK_NAMESPACE,
+  importQueuePresenceHolder,
 } from "../../lib/ingestion/locks.js";
 
 export interface AdmissionScope {
@@ -64,6 +65,11 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
   try {
     // Bounded diagnostics (--limit/--record/--shadow) run beside a queue; full imports do not.
     if (!fromQueue && full) {
+      // A queue waiting to start (presence held, queue lock not yet) also has priority.
+      if (await importQueuePresenceHolder(fence))
+        throw new Error(
+          "An import queue is active or waiting to start (ingest:import-queue status); stop it or add this file to a queue",
+        );
       const { rows } = await fence.query("SELECT pg_try_advisory_lock_shared($1, $2) AS ok", [
         INGEST_LOCK_NAMESPACE,
         IMPORT_QUEUE_LOCK,
