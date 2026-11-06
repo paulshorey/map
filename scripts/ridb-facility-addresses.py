@@ -57,7 +57,7 @@ US_COUNTRY = {"USA", "US", "UNITED STATES"}
 
 # An administrative or mail-only line, not where the facility is.
 NOT_PHYSICAL = re.compile(
-    r"\b(P\.?\s*O\.?\s*BOX|BOX\s+\d+|OFFICES?|DISTRICTS?|HEADQUARTERS|"
+    r"\b(P\.?\s*O\.?\s*(?:BOX|DRAWER)(?:\s*\d+)?|BOX\s*\d+|DRAWER\s*\d+|OFFICES?|DISTRICTS?|HEADQUARTERS|"
     r"C/O|MAILING|CORPS\s+OF\s+ENGINEERS|NATIONAL\s+FORESTS?|"
     r"(?:FIELD|RANGER|GUARD)\s+STATIONS?|WORK\s+CENTERS?|ADMINISTRATIVE|ADMIN\s+SITES?)\b",
     re.I,

@@ -31,14 +31,14 @@ on 2026-11-06.
 - 5,974 are in the export; 5 are no longer in it (kept with `export_status = missing_from_export`).
 - 5,706 have at least one export address row (Default 4,357 alone; Mailing 604 alone;
   Physical 87 alone; the rest have a mix of types); 273 have none.
-- After selection (below): **1,901 get a street address**, 2,412 a city, 2,441 a street
-  address or city, 1,882 a ZIP code, and 3,376 a state (`region`) plus `country_code`.
-  4,078 have no street address and will carry `missing_address`.
+- After selection (below): **1,899 get a street address**, 2,410 a city, 2,439 a street
+  address or city, 1,880 a ZIP code, and 3,374 a state (`region`) plus `country_code`.
+  4,080 have no street address and will carry `missing_address`.
 - Only the 4,590 rows typed `Campground` can publish. The RIDB normalization rule
   (`hardIsPoi` in `normalize/deterministic.ts`, older than this work) excludes the 1,382
   `Facility` rows (mostly ranger districts, areas, trailheads, marinas and parks) and 7 other
   types as `source_hard_exclusion`. Their observations are saved but not published. Of the
-  4,590 campgrounds, 1,801 get a street address, 1,919 a street address or city, and 2,789 will
+  4,590 campgrounds, 1,799 get a street address, 1,917 a street address or city, and 2,791 will
   carry `missing_address`. 189 excluded `Facility` rows have camp/cabin-like names; promoting any
   of them would need a separate reviewed rule.
 - 434 have `(0,0)` sentinel coordinates (1 is fixed in the export). 43 of those get a street
@@ -60,7 +60,7 @@ The rules are deterministic:
    so they are kept verbatim but never used.
 2. Accept a street line only if it starts with a house number, names a numbered road, or
    names a road by its suffix (`Porcupine Bay Rd.`; a bare trail name is not enough). It must
-   also contain no PO box or box number, office, district, ranger/guard station, work center,
+   also contain no PO box/drawer or box number (attached or spaced), office, district, ranger/guard station, work center,
    headquarters, c/o or mailing wording, singular or plural.
 3. A row whose street line is rejected contributes nothing: its city, ZIP and even its state
    can be the managing office's (e.g. a Nebraska campground's office in South Dakota). City,
