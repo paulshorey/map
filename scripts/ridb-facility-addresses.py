@@ -57,17 +57,25 @@ US_COUNTRY = {"USA", "US", "UNITED STATES"}
 
 # An administrative or mail-only line, not where the facility is.
 NOT_PHYSICAL = re.compile(
-    r"\b(P\.?\s*O\.?\s*BOX|BOX\s+\d|OFFICE|RANGER\s+DISTRICT|DISTRICT|HEADQUARTERS|"
-    r"C/O|MAILING|CORPS\s+OF\s+ENGINEERS|NATIONAL\s+FOREST|FIELD\s+STATION|"
-    r"RANGER\s+STATION|GUARD\s+STATION|WORK\s+CENTER|ADMINISTRATIVE|ADMIN\s+SITE)\b",
+    r"\b(P\.?\s*O\.?\s*BOX|BOX\s+\d+|OFFICES?|DISTRICTS?|HEADQUARTERS|"
+    r"C/O|MAILING|CORPS\s+OF\s+ENGINEERS|NATIONAL\s+FORESTS?|"
+    r"(?:FIELD|RANGER|GUARD)\s+STATIONS?|WORK\s+CENTERS?|ADMINISTRATIVE|ADMIN\s+SITES?)\b",
     re.I,
 )
+_SUFFIX = (r"ROAD|RD|STREET|ST|AVENUE|AVE|DRIVE|DR|LANE|LN|HIGHWAY|HWY|ROUTE|RTE|"
+           r"PARKWAY|PKWY|BOULEVARD|BLVD|WAY|TRAIL|TRL|PIKE|CIRCLE|CIR|COURT|CT|PLACE|PL|"
+           r"LOOP|SPUR")
 ROAD = re.compile(
+    # A numbered road ("Forest Road 27", "Hwy 89", "FR 424").
     r"\b(ROAD|RD|STREET|ST|AVENUE|AVE|DRIVE|DR|LANE|LN|HIGHWAY|HWY|ROUTE|RTE|"
     r"PARKWAY|PKWY|BOULEVARD|BLVD|WAY|TRAIL|TRL|PIKE|CIRCLE|CIR|COURT|CT|PLACE|"
-    r"LOOP|SPUR|FR|FS|CR|SR|US|I)\b\.?\s*-?\s*\d|\b\d+\s+\S+.*\b(ROAD|RD|STREET|ST|"
-    r"AVENUE|AVE|DRIVE|DR|LANE|LN|HIGHWAY|HWY|ROUTE|RTE|PARKWAY|PKWY|BOULEVARD|BLVD|"
-    r"WAY|TRAIL|TRL|PIKE|CIRCLE|CIR|COURT|CT|PLACE|PL|LOOP|SPUR)\b",
+    r"LOOP|SPUR|FR|FS|CR|SR|US|I)\b\.?\s*-?\s*\d"
+    # A house number followed by a named road.
+    rf"|\b\d+\s+\S+.*\b({_SUFFIX})\b"
+    # A named road without a number ("Porcupine Bay Rd."), ending its comma-separated part.
+    # A bare trail name is often a hiking trail rather than an access road, so not here.
+    r"|\b[A-Za-z][\w'.-]*(?:\s+[\w'.-]+)*\s+(ROAD|RD|STREET|ST|AVENUE|AVE|DRIVE|DR|LANE|LN|"
+    r"HIGHWAY|HWY|PARKWAY|PKWY|BOULEVARD|BLVD|PIKE|LOOP|SPUR)\.?\s*(?:,|$)",
     re.I,
 )
 KEEP_UPPER = {"NE", "NW", "SE", "SW", "N", "S", "E", "W", "US", "FS", "FR", "SR", "CR",

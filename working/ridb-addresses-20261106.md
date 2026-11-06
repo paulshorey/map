@@ -31,18 +31,18 @@ on 2026-11-06.
 - 5,974 are in the export; 5 are no longer in it (kept with `export_status = missing_from_export`).
 - 5,706 have at least one export address row (Default 4,357 alone; Mailing 604 alone;
   Physical 87 alone; the rest have a mix of types); 273 have none.
-- After selection (below): **1,839 get a street address**, 2,355 a city, 2,379 a street
-  address or city, 1,836 a ZIP code, and 3,319 a state (`region`) plus `country_code`.
-  4,140 have no street address and will carry `missing_address`.
+- After selection (below): **1,901 get a street address**, 2,412 a city, 2,441 a street
+  address or city, 1,882 a ZIP code, and 3,376 a state (`region`) plus `country_code`.
+  4,078 have no street address and will carry `missing_address`.
 - Only the 4,590 rows typed `Campground` can publish. The RIDB normalization rule
   (`hardIsPoi` in `normalize/deterministic.ts`, older than this work) excludes the 1,382
   `Facility` rows (mostly ranger districts, areas, trailheads, marinas and parks) and 7 other
   types as `source_hard_exclusion`. Their observations are saved but not published. Of the
-  4,590 campgrounds, 1,741 get a street address, 1,859 a street address or city, and 2,849 will
+  4,590 campgrounds, 1,801 get a street address, 1,919 a street address or city, and 2,789 will
   carry `missing_address`. 189 excluded `Facility` rows have camp/cabin-like names; promoting any
   of them would need a separate reviewed rule.
-- 434 have `(0,0)` sentinel coordinates (1 is fixed in the export). 41 of those get a street
-  address and 54 a city, so forward geocoding can now place them. 216 have a state. The 218
+- 434 have `(0,0)` sentinel coordinates (1 is fixed in the export). 43 of those get a street
+  address and 56 a city, so forward geocoding can now place them. 218 have a state. The 216
   with no usable locality get `country_code = US` (`address_selection` includes
   `country_assumed_us`, because RIDB lists only US federal sites) so they are still mapped,
   at the country fallback and flagged.
@@ -58,9 +58,10 @@ The rules are deterministic:
 
 1. Use only Physical rows, then Default rows. Mailing rows are where the agency gets its mail,
    so they are kept verbatim but never used.
-2. Accept a street line only if it starts with a house number or names a numbered/named road,
-   and contains no PO box, office, district, ranger/guard station, work center,
-   headquarters, c/o or mailing wording.
+2. Accept a street line only if it starts with a house number, names a numbered road, or
+   names a road by its suffix (`Porcupine Bay Rd.`; a bare trail name is not enough). It must
+   also contain no PO box or box number, office, district, ranger/guard station, work center,
+   headquarters, c/o or mailing wording, singular or plural.
 3. A row whose street line is rejected contributes nothing: its city, ZIP and even its state
    can be the managing office's (e.g. a Nebraska campground's office in South Dakota). City,
    ZIP and state come only from rows whose street is accepted or empty.
@@ -167,7 +168,7 @@ Static checks: `pnpm --filter @lib/db-map check-types`, `tsc --noEmit` for `apps
 ## Follow-up
 
 The location pipeline falls back from a rejected venue lookup to a city, then to a country;
-there is no state/region level. 379 `(0,0)` facilities have no street or city (162 of them have a state), so they
+there is no state/region level. 377 `(0,0)` facilities have no street or city (162 of them have a state), so they
 land on the US centroid (still flagged `general_location` and `missing_address`). A
 region-level fallback would place them in the right state. It is a pipeline-wide change, so
 it is left for a separate task.
