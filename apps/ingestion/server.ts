@@ -17,6 +17,8 @@ import {
 import { refreshInventory } from "@lib/db-map/ingestion/inventory-scan";
 import { inspectRun, parseStatusArgs } from "@lib/db-map/ingest/status";
 import { controlState } from "@lib/db-map/sql/ingestion-control";
+import { getIngestionMonitor } from "@lib/db-map/sql/ingestion-monitor";
+import { listQueues } from "@lib/db-map/ingest/import-queue";
 
 export function dashboardContentSecurityPolicy(
   extraOrigins = process.env.INGESTION_FRAME_ORIGINS ?? "",
@@ -147,6 +149,14 @@ export function createDashboard(port: number) {
           result.components.database.status === "unknown" ? 503 : 200,
           result,
         );
+        return;
+      }
+      if (req.method === "GET" && url.pathname === "/api/monitor") {
+        const [monitor, queues] = await Promise.all([
+          getIngestionMonitor(db),
+          listQueues().catch(() => []),
+        ]);
+        json(200, { ...monitor, queue: queues[0] ?? null });
         return;
       }
       if (req.method === "GET" && url.pathname === "/api/inventory") {
