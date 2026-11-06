@@ -291,7 +291,8 @@ async function admissionClear(id: string): Promise<string | null> {
         : null;
     if (!blocked) return null;
     if (Date.now() > deadline) return blocked;
-    if (!(await waitUntil(id, Date.now() + 60_000))) return "stop requested";
+    if (!(await waitUntil(id, Date.now() + 60_000)))
+      return lockLost ? `halted: ${haltReason}` : "stop requested";
   }
 }
 
@@ -563,6 +564,14 @@ export async function runQueue(id: string) {
               `The inventory classifies this file as ${entry.coverage.slice(9)}: reclassify it or fix the plan, then resume`,
             );
         }
+        // A saved run (e.g. kept after an interrupted worker) resumes only if it stopped safely.
+        if (entry.run_id) {
+          const check = await continuationSafe(entry.run_id);
+          if (!check.safe)
+            return stop(
+              `Run ${entry.run_id} stopped as ${check.detail}; inspect it with ingest:status --run ${entry.run_id} before resuming`,
+            );
+        }
         if (
           !entry.run_id &&
           state.continuation &&
@@ -599,6 +608,7 @@ export async function runQueue(id: string) {
         const blocked = await admissionClear(id);
         if (blocked) {
           entry.status = blocked === "stop requested" ? "stopped" : "needs_attention";
+          // A lock loss or signal keeps its reason (it is not an ordinary operator stop).
           entry.reason = `Not launched: ${blocked}`;
           q.status = entry.status === "stopped" ? "stopped" : "needs_attention";
           q.message = entry.reason;
@@ -856,8 +866,9 @@ function newEntry(e: { file: string; category: string }): QueueEntry {
 /** The active queue if there is one, else the most recently created. */
 async function latestId(): Promise<string> {
   const queues = await listQueues();
-  // The live queue may run on another host, whose state files only that host has.
-  const holder = await queueLockHolder();
+  // The live queue may run on another host, whose state files only that host has. A worker
+  // shutting down after losing presence still holds the exclusive queue lock.
+  const holder = (await queueLockHolder()) ?? (await importQueueLockHolder(getDb()));
   if (holder) {
     if (queues.some((q) => q.id === holder)) return holder;
     throw new Error(
@@ -991,7 +1002,14 @@ async function main() {
       if (other) throw new Error(`Queue ${other.id} is already ${other.status}; stop it first`);
       if (await queueLockHeld()) throw new Error("An import queue worker is running; stop it first");
       await rm(queuePath(q.id, "stop.request"), { force: true });
-      for (const e of q.entries) if (["stopped", "needs_attention"].includes(e.status)) e.status = "pending";
+      for (const e of q.entries)
+        if (["stopped", "needs_attention"].includes(e.status)) {
+          e.status = "pending";
+          e.reason = null;
+          e.outcome = null;
+          e.finished_at = null;
+          e.resets_at = null;
+        }
       q.status = "queued";
       q.message = null;
       await saveQueue(q);
