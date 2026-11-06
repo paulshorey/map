@@ -899,8 +899,9 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
   the queue worker holds it exclusively, so a plain import refuses while a queue runs and a
   queue started during a plain import stops as `needs_attention`. A confirmed `stop --now`
   is recorded as an operator stop;
-- an unfinished earlier run of a file is adopted automatically only if it stopped for a
-  budget/quota or an operator stop; anything else stops the queue for inspection. Files the
+- an unfinished earlier run of a file is adopted automatically only if it stopped at the daily
+  geocoding quota or by an operator stop (and resumes with its saved limits); anything else,
+  including a run stopped at its own provider caps, stops the queue for a decision. Files the
   inventory marks `needs_review` or not importable also stop it (set the disposition first);
 - an entry whose file changed since the last inventory scan, is missing from the inventory or
   is classified under another category stops the queue before launching (refresh or reclassify,

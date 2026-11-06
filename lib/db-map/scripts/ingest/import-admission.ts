@@ -3,8 +3,9 @@
  *
  * - every full-scope import (no --limit/--record/--shadow) holds FULL_IMPORT_LOCK exclusively,
  *   so only one full-file import runs at a time on any host, whoever launched it;
- * - an import not launched by the import queue also holds the queue lock in shared mode, so it
- *   is refused while a queue worker owns ingestion (the worker holds it exclusively).
+ * - a full-scope import not launched by the import queue also holds the queue lock in shared
+ *   mode, so it is refused while a queue worker owns ingestion (the worker holds it
+ *   exclusively). Bounded diagnostics are never blocked.
  *
  * The locks belong to the import process itself, so they hold even if a queue worker dies.
  */
@@ -39,7 +40,8 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
     fence.release();
   };
   try {
-    if (!fromQueue) {
+    // Bounded diagnostics (--limit/--record/--shadow) run beside a queue; full imports do not.
+    if (!fromQueue && full) {
       const { rows } = await fence.query("SELECT pg_try_advisory_lock_shared($1, $2) AS ok", [
         INGEST_LOCK_NAMESPACE,
         IMPORT_QUEUE_LOCK,

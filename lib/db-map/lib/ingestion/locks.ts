@@ -11,6 +11,22 @@ export const IMPORT_QUEUE_ENV = "INGEST_IMPORT_QUEUE_ID";
  * Whether an import-queue worker (any host) holds the queue lock exclusively in this database.
  * Plain full imports hold the same key in shared mode, so the two can never be admitted together.
  */
+/** The queue id whose worker holds the queue lock (its connection's application_name). */
+export async function importQueueLockHolder(db: {
+  query: (sql: string, params?: unknown[]) => Promise<{ rows: Array<{ name: string | null }> }>;
+}): Promise<string | null> {
+  const { rows } = await db.query(
+    `SELECT a.application_name AS name FROM pg_locks l JOIN pg_stat_activity a ON a.pid = l.pid
+     WHERE l.locktype='advisory' AND l.granted AND l.mode='ExclusiveLock'
+       AND l.classid=$1::int::oid AND l.objid=$2::int::oid AND l.objsubid=2
+       AND l.database=(SELECT oid FROM pg_database WHERE datname=current_database())
+     LIMIT 1`,
+    [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_LOCK],
+  );
+  const name = rows[0]?.name ?? null;
+  return name?.startsWith("import-queue:") ? name.slice("import-queue:".length) : name;
+}
+
 export async function importQueueActive(db: {
   query: (sql: string, params?: unknown[]) => Promise<{ rows: Array<{ held: boolean }> }>;
 }): Promise<boolean> {
