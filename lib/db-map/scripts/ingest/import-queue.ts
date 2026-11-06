@@ -41,6 +41,7 @@ import {
   INGEST_LOCK_NAMESPACE,
   importQueueActive,
   importQueueLockHolder,
+  IMPORT_QUEUE_START_LOCK,
 } from "../../lib/ingestion/locks.js";
 
 const PACKAGE = fileURLToPath(new URL("../../", import.meta.url));
@@ -92,9 +93,14 @@ const queuePath = (id: string, file = "state.json") => {
 export async function loadQueue(id: string): Promise<QueueState> {
   return JSON.parse(await readFile(queuePath(id), "utf8"));
 }
+let saveChain: Promise<unknown> = Promise.resolve();
+/** Saves are serialized per process (they share a temp file) and snapshot the state now. */
 async function saveQueue(q: QueueState) {
   q.updated_at = new Date().toISOString();
-  await atomicJson(queuePath(q.id), q);
+  const snapshot = structuredClone(q);
+  const next = saveChain.then(() => atomicJson(queuePath(snapshot.id), snapshot));
+  saveChain = next.catch(() => undefined);
+  await next;
 }
 export async function listQueues(): Promise<QueueState[]> {
   const ids = await readdir(QUEUES).catch(() => [] as string[]);
@@ -181,6 +187,7 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
       action: null as string | null,
       verifyArgs: null as string[] | null,
       sha: null as string | null,
+      needsDiagnosis: false,
     };
   const item = queueItem(row);
   const sameCategory = row.category_slug === entry.category;
@@ -197,6 +204,10 @@ async function fileState(entry: Pick<QueueEntry, "file" | "category">) {
     action: item.action as string,
     verifyArgs: item.action === "verify" ? (item.run_args as string[] | null) : null,
     sha,
+    needsDiagnosis:
+      !!(row as { invalid?: unknown }).invalid ||
+      !!(row as { normalization_failed?: unknown }).normalization_failed ||
+      ["running", "suspected_interrupted"].includes(String((row as { execution?: unknown }).execution)),
   };
 }
 
@@ -447,17 +458,6 @@ export async function runQueue(id: string) {
             return stop(
               `The inventory classifies this file as ${entry.coverage.slice(9)}: reclassify it or fix the plan, then resume`,
             );
-          if (state.action === "review" || state.action === "blocked")
-            return stop(
-              `The inventory marks this file ${state.action === "review" ? "needs_review" : "not importable"}: set its disposition to import (dashboard file drawer), then resume`,
-            );
-          // "inspect" without a safe continuation (failed/invalid output, normalization failures)
-          // needs diagnosis before any new unlimited import.
-          if (state.action === "inspect" && !state.continuation && !entry.run_id)
-            return stop(
-              "The inventory requires inspection of this file's earlier output before another import " +
-                "(see the dashboard file drawer or ingest:status); fix it, then resume",
-            );
         }
         if (!entry.run_id && state.continuation) {
           const check = await continuationSafe(state.continuation);
@@ -468,6 +468,18 @@ export async function runQueue(id: string) {
             );
           entry.run_id = state.continuation;
         }
+        // The operator's classification wins over coverage: never count or run it otherwise.
+        if (state.action === "review" || state.action === "blocked")
+          return stop(
+            `The inventory marks this file ${state.action === "review" ? "needs_review" : "not importable"}: set its disposition to import (dashboard file drawer), then resume`,
+          );
+        // Invalid output, normalization failures or another live execution need diagnosis first,
+        // even when a resumable run exists.
+        if (state.needsDiagnosis)
+          return stop(
+            "The inventory requires inspection of this file's earlier output or execution before more " +
+              "imports (see the dashboard file drawer or ingest:status); fix it, then resume",
+          );
         if (entry.coverage === "complete") {
           if (entry.status === "pending") entry.status = "skipped_complete";
           else entry.status = "succeeded";
@@ -565,8 +577,15 @@ export async function runQueue(id: string) {
     q.status = "finished";
     q.message = "Every file finished with verified complete coverage";
   } catch (error) {
+    const message = `Queue worker error: ${error instanceof Error ? error.message : String(error)}`;
+    const current = q.current !== null ? q.entries[q.current] : null;
+    if (current && ["running", "waiting_quota"].includes(current.status)) {
+      current.status = "needs_attention";
+      current.reason = message;
+      current.finished_at = new Date().toISOString();
+    }
     q.status = "needs_attention";
-    q.message = `Queue worker error: ${error instanceof Error ? error.message : String(error)}`;
+    q.message = message;
   } finally {
     try {
       q.pid = null;
@@ -602,6 +621,33 @@ async function reconcileStale(): Promise<QueueState[]> {
     await saveQueue(q);
   }
   return queues;
+}
+
+/** Serialize start/resume across processes and hosts until the new worker's handshake. */
+async function withStartLock<T>(fn: () => Promise<T>): Promise<T> {
+  const c = await dedicatedClient("import-queue-start");
+  try {
+    await c.query("SELECT pg_advisory_lock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_START_LOCK]);
+    return await fn();
+  } finally {
+    await c
+      .query("SELECT pg_advisory_unlock($1, $2)", [INGEST_LOCK_NAMESPACE, IMPORT_QUEUE_START_LOCK])
+      .catch(() => undefined);
+    await c.end().catch(() => undefined);
+  }
+}
+
+/** Wait (up to a minute) until the worker holds the queue lock or has recorded why it did not. */
+async function awaitHandshake(id: string): Promise<string> {
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    if ((await queueLockHolder()) === id) return "running";
+    const q = await loadQueue(id).catch(() => null);
+    if (q && !["queued", "running", "waiting"].includes(q.status)) return `${q.status}: ${q.message ?? ""}`;
+    if (q?.message?.startsWith("Waiting for a running plain import")) return "waiting for a plain import to finish";
+    await sleep(1000);
+  }
+  return "starting (no lock yet after a minute; check status)";
 }
 
 function spawnWorker(id: string) {
@@ -687,52 +733,64 @@ async function main() {
   };
   if (command === "worker") return runQueue(flag("--queue")!);
   if (command === "start") {
+    let handshake = "";
     const plan = flag("--plan");
     const dash = rest.indexOf("--");
     const entries = plan
       ? (JSON.parse(await readFile(resolve(REPO, plan), "utf8")).entries as Array<{ file: string; category: string }>)
       : parseEntries(dash >= 0 ? rest.slice(dash + 1) : []);
     if (!entries.length) throw new Error("No entries: pass --plan <file> or -- <file>=<category> ...");
-    const running = (await reconcileStale()).find((q) => ["queued", "running", "waiting"].includes(q.status));
-    if (running) throw new Error(`Queue ${running.id} is already ${running.status}; stop it first`);
-    if (await queueLockHeld())
-      throw new Error("An import queue worker is running on another host; stop it first");
-    const q: QueueState = {
-      id: randomUUID(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      host: hostname(),
-      pid: null,
-      status: "queued",
-      message: null,
-      current: null,
-      entries: entries.map(newEntry),
-    };
-    await mkdir(join(QUEUES, q.id), { recursive: true, mode: 0o700 });
-    await saveQueue(q);
-    await spawnWorker(q.id);
+    const q: QueueState = await withStartLock(async () => {
+      const running = (await reconcileStale()).find((q) => ["queued", "running", "waiting"].includes(q.status));
+      if (running) throw new Error(`Queue ${running.id} is already ${running.status}; stop it first`);
+      if (await queueLockHeld())
+        throw new Error("An import queue worker is running on another host; stop it first");
+      const q: QueueState = {
+        id: randomUUID(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        host: hostname(),
+        pid: null,
+        status: "queued",
+        message: null,
+        current: null,
+        entries: entries.map(newEntry),
+      };
+      await mkdir(join(QUEUES, q.id), { recursive: true, mode: 0o700 });
+      await saveQueue(q);
+      await spawnWorker(q.id);
+      handshake = await awaitHandshake(q.id);
+      return q;
+    });
     await closeDb();
     console.log(
-      `Started import queue ${q.id} with ${q.entries.length} file(s).\n` +
+      `Started import queue ${q.id} with ${q.entries.length} file(s): ${handshake}.\n` +
         `Status: pnpm --silent --filter @lib/db-map ingest:import-queue status\n` +
         `Stop after the current file: pnpm --silent --filter @lib/db-map ingest:import-queue stop`,
     );
     return;
   }
   if (command === "resume") {
-    await reconcileStale();
-    const q = await loadQueue(flag("--queue") ?? (await latestId()));
-    if (["queued", "running", "waiting"].includes(q.status))
-      throw new Error(`Queue ${q.id} is already ${q.status}`);
-    if (await queueLockHeld()) throw new Error("An import queue worker is running; stop it first");
-    await rm(queuePath(q.id, "stop.request"), { force: true });
-    for (const e of q.entries) if (["stopped", "needs_attention"].includes(e.status)) e.status = "pending";
-    q.status = "queued";
-    q.message = null;
-    await saveQueue(q);
-    await spawnWorker(q.id);
+    let handshake = "";
+    const q = await withStartLock(async () => {
+      await reconcileStale();
+      const q = await loadQueue(flag("--queue") ?? (await latestId()));
+      if (["queued", "running", "waiting"].includes(q.status))
+        throw new Error(`Queue ${q.id} is already ${q.status}`);
+      if (await queueLockHeld()) throw new Error("An import queue worker is running; stop it first");
+      await rm(queuePath(q.id, "stop.request"), { force: true });
+      for (const e of q.entries) if (["stopped", "needs_attention"].includes(e.status)) e.status = "pending";
+      q.status = "queued";
+      q.message = null;
+      await saveQueue(q);
+      await spawnWorker(q.id);
+      handshake = await awaitHandshake(q.id);
+      return q;
+    });
     await closeDb();
-    console.log(`Resumed import queue ${q.id}; finished files are skipped, unfinished runs resume.`);
+    console.log(
+      `Resumed import queue ${q.id} (${handshake}); finished files are skipped, unfinished runs resume.`,
+    );
     return;
   }
   if (command === "list") {
