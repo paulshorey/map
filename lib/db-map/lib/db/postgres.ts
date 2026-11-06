@@ -76,7 +76,14 @@ export function getSidePool(name: string, max = 1): Pool {
   if (!side) {
     const connectionString = process.env.DB_MAP_URL;
     if (!connectionString) throw new Error("DB_MAP_URL environment variable not set");
-    side = new Pool({ connectionString, max, idleTimeoutMillis: 30_000, keepAlive: true });
+    side = new Pool({
+      connectionString,
+      max,
+      idleTimeoutMillis: 30_000,
+      // pg's default is no connection timeout: a stalled connect would block every caller.
+      connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS || 10_000),
+      keepAlive: true,
+    });
     side.on("error", (err) => console.error(`Postgres ${name} pool idle client error:`, err));
     sidePools.set(name, side);
   }
