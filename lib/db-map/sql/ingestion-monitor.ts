@@ -101,7 +101,76 @@ export function stageProgress(
   };
 }
 
-export async function getIngestionMonitor(db: Pool): Promise<IngestionMonitor> {
+const QUALITY_SOURCES_SQL = `
+  WITH r AS (
+    SELECT rp.id, rp.source_id, rp.is_poi, rp.normalization_state, rp.lat, rp.attributes, m.canonical_poi_id
+    FROM research_pois rp
+    LEFT JOIN research_canonical_memberships m ON m.research_poi_id = rp.id AND m.active
+    WHERE rp.retired_at IS NULL)
+  SELECT s.slug AS source, count(r.id)::int AS records,
+    count(r.id) FILTER (WHERE r.is_poi = false)::int AS non_poi,
+    count(r.id) FILTER (WHERE r.normalization_state IN ('failed','active_stale'))::int AS normalization_failed,
+    count(r.id) FILTER (WHERE r.normalization_state = 'degraded')::int AS degraded,
+    count(r.id) FILTER (WHERE r.attributes ? 'location_unresolved' AND r.lat IS NULL)::int AS unlocated,
+    count(DISTINCT cp.id) FILTER (WHERE cp.status='published')::int AS published_pois
+  FROM research_sources s
+  JOIN r ON r.source_id = s.id
+  LEFT JOIN canonical_pois cp ON cp.id = r.canonical_poi_id
+  GROUP BY s.slug ORDER BY records DESC`;
+
+/**
+ * Published-data quality: whole-table aggregates, so callers should cache it (the dashboard
+ * refreshes it at most every two minutes). Totals cover every source; the table lists the
+ * 50 largest.
+ */
+export async function getQualityMonitor(db: Pool): Promise<IngestionMonitor["quality"]> {
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
+    await client.query("SET LOCAL statement_timeout='20s'");
+    const q = (
+      await client.query(
+        `SELECT
+          count(*) FILTER (WHERE status='published')::int AS published,
+          count(*) FILTER (WHERE status<>'published')::int AS hidden,
+          count(*) FILTER (WHERE status='published' AND attributes->>'location_specificity'='general')::int AS general
+         FROM canonical_pois`,
+      )
+    ).rows[0];
+    const flags = (
+      await client.query(
+        `SELECT flag, count(*)::int AS pois FROM canonical_pois, unnest(review_flags) flag
+         WHERE status='published' GROUP BY flag ORDER BY flag`,
+      )
+    ).rows;
+    const sources = (await client.query(QUALITY_SOURCES_SQL)).rows as SourceQuality[];
+    await client.query("COMMIT");
+    const total = (k: keyof SourceQuality) => sources.reduce((n, s) => n + Number(s[k] ?? 0), 0);
+    return {
+      published_pois: q.published,
+      hidden_pois: q.hidden,
+      precise_pois: q.published - q.general,
+      general_pois: q.general,
+      review_flags: Object.fromEntries(flags.map((f) => [f.flag, f.pois])),
+      research_records: total("records"),
+      unlocated_records: total("unlocated"),
+      normalization_failed: total("normalization_failed"),
+      degraded: total("degraded"),
+      by_source: sources.slice(0, 50),
+    };
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/** Run progress and quota (cheap; per-run task counts). Quality comes from getQualityMonitor. */
+export async function getIngestionMonitor(
+  db: Pool,
+  quality?: IngestionMonitor["quality"],
+): Promise<IngestionMonitor> {
   const client = await db.connect();
   try {
     await client.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
@@ -158,36 +227,6 @@ export async function getIngestionMonitor(db: Pool): Promise<IngestionMonitor> {
         provider_quota: run.provider_quota,
       };
     }
-    const q = (
-      await client.query(
-        `SELECT
-          count(*) FILTER (WHERE status='published')::int AS published,
-          count(*) FILTER (WHERE status<>'published')::int AS hidden,
-          count(*) FILTER (WHERE status='published' AND attributes->>'location_specificity'='general')::int AS general
-         FROM canonical_pois`,
-      )
-    ).rows[0];
-    const flags = (
-      await client.query(
-        `SELECT flag, count(*)::int AS pois FROM canonical_pois, unnest(review_flags) flag
-         WHERE status='published' GROUP BY flag ORDER BY flag`,
-      )
-    ).rows;
-    const bySource = (
-      await client.query(
-        `SELECT s.slug AS source, count(rp.id)::int AS records,
-           count(rp.id) FILTER (WHERE rp.is_poi = false)::int AS non_poi,
-           count(rp.id) FILTER (WHERE n.status='failed')::int AS normalization_failed,
-           count(rp.id) FILTER (WHERE n.status='degraded')::int AS degraded,
-           count(rp.id) FILTER (WHERE rp.attributes ? 'location_unresolved' AND rp.lat IS NULL)::int AS unlocated,
-           count(DISTINCT cp.id) FILTER (WHERE cp.status='published')::int AS published_pois
-         FROM research_sources s
-         JOIN research_pois rp ON rp.source_id=s.id AND rp.retired_at IS NULL
-         LEFT JOIN research_poi_normalizations n ON n.id=rp.active_normalization_id
-         LEFT JOIN canonical_pois cp ON cp.id=rp.canonical_poi_id
-         GROUP BY s.slug ORDER BY records DESC LIMIT 50`,
-      )
-    ).rows as SourceQuality[];
     await client.query("COMMIT");
     let quota: ProviderUsageToday | null = null;
     try {
@@ -195,24 +234,12 @@ export async function getIngestionMonitor(db: Pool): Promise<IngestionMonitor> {
     } catch {
       quota = null;
     }
-    const total = (k: keyof SourceQuality) => bySource.reduce((n, s) => n + Number(s[k] ?? 0), 0);
     return {
       observed_at: new Date().toISOString(),
       window_minutes: WINDOW_MINUTES,
       run: progress,
       quota,
-      quality: {
-        published_pois: q.published,
-        hidden_pois: q.hidden,
-        precise_pois: q.published - q.general,
-        general_pois: q.general,
-        review_flags: Object.fromEntries(flags.map((f) => [f.flag, f.pois])),
-        research_records: total("records"),
-        unlocated_records: total("unlocated"),
-        normalization_failed: total("normalization_failed"),
-        degraded: total("degraded"),
-        by_source: bySource,
-      },
+      quality: quality ?? (await getQualityMonitor(db)),
     };
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);

@@ -521,7 +521,7 @@ function renderMonitor(m) {
         <p>${number(run.records)} records in scope${
           run.status === "running" ? ` · whole file ETA ${minutes(run.eta_minutes)} (last ${m.window_minutes} min rate)` : ""
         }${run.verified_at ? ` · verified ${date(run.verified_at)}` : ""}${
-          run.provider_quota?.resets_at
+          run.status === "waiting_budget" && run.stop_reason === "provider_daily_quota" && run.provider_quota?.resets_at
             ? ` · paused for the geocoding quota until ${date(run.provider_quota.resets_at)}`
             : ""
         }</p>
@@ -568,7 +568,7 @@ function renderMonitor(m) {
           )
           .join("")}</tbody></table></details>`
     : "";
-  $("monitor").innerHTML = `<h2>Live monitor <small class="muted-note">${date(m.observed_at)}</small></h2>
+  $("monitor").innerHTML = `<h2>Live monitor <small class="muted-note">${date(m.observed_at)} · data quality refreshes every 2 min</small></h2>
     <div class="monitor-grid">${runHtml}${quotaHtml}${queueHtml}${qualityHtml}</div>${sources}`;
 }
 
