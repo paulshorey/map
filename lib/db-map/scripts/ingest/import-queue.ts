@@ -477,10 +477,13 @@ function newEntry(e: { file: string; category: string }): QueueEntry {
 }
 
 /** The active queue if there is one, else the most recently created. */
-async function latestId(): Promise<string> {
+export async function currentQueue(): Promise<QueueState | null> {
   const queues = await listQueues();
-  const latest =
-    queues.find((q) => ["queued", "running", "waiting"].includes(q.status)) ?? queues[0];
+  return queues.find((q) => ["queued", "running", "waiting"].includes(q.status)) ?? queues[0] ?? null;
+}
+
+async function latestId(): Promise<string> {
+  const latest = await currentQueue();
   if (!latest) throw new Error("No import queue exists");
   return latest.id;
 }

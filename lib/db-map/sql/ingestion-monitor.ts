@@ -220,8 +220,9 @@ export async function getIngestionMonitor(
         verified_at: run.verified_at?.toISOString?.() ?? run.verified_at,
         records: run.records,
         stages,
+        // No stage tasks yet means extraction is still running: the ETA is unknown.
         eta_minutes:
-          run.status !== "running" || etas.includes(null)
+          run.status !== "running" || !etas.length || etas.includes(null)
             ? null
             : Math.max(0, ...(etas as number[])),
         provider_quota: run.provider_quota,

@@ -18,7 +18,7 @@ import { refreshInventory } from "@lib/db-map/ingestion/inventory-scan";
 import { inspectRun, parseStatusArgs } from "@lib/db-map/ingest/status";
 import { controlState } from "@lib/db-map/sql/ingestion-control";
 import { getIngestionMonitor, getQualityMonitor } from "@lib/db-map/sql/ingestion-monitor";
-import { listQueues } from "@lib/db-map/ingest/import-queue";
+import { currentQueue } from "@lib/db-map/ingest/import-queue";
 
 const QUALITY_TTL_MS = 120_000;
 let qualityCache: {
@@ -161,11 +161,11 @@ export function createDashboard(port: number) {
         // Whole-table quality aggregates are cached; run progress and quota stay live.
         if (!qualityCache || Date.now() - qualityCache.at > QUALITY_TTL_MS)
           qualityCache = { at: Date.now(), value: await getQualityMonitor(db) };
-        const [monitor, queues] = await Promise.all([
+        const [monitor, queue] = await Promise.all([
           getIngestionMonitor(db, qualityCache.value),
-          listQueues().catch(() => []),
+          currentQueue().catch(() => null),
         ]);
-        json(200, { ...monitor, queue: queues[0] ?? null });
+        json(200, { ...monitor, queue });
         return;
       }
       if (req.method === "GET" && url.pathname === "/api/inventory") {
