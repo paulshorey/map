@@ -926,7 +926,9 @@ Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
   "(no name in source)"). A nameless row is never auto-merged as a satellite of a nearby
   anchor: it goes to anchor LLM adjudication, or stays separate with `--no-llm`. Global
   consolidation likewise never merges a nameless canonical by proximity alone, as satellite or
-  as anchor target. A canonical
+  as anchor target, and its anchor-anchor adjudication sees "(no name in source)". Nameless
+  rows are still embedded (the managed embed stage requires it) although matching ignores
+  those vectors. A canonical
   counts as nameless only when no live member has a real name (a real-named member is its
   matching representative).
 - **Canonical name.** A member with a real name always wins. Otherwise the canonical takes the

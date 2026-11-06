@@ -159,6 +159,11 @@ async function loadCanonicals(client: PoolClient): Promise<CanonicalRow[]> {
   return rows.filter((row) => row.category_slugs.length > 0);
 }
 
+/** A generated name ("Caravan site near Lyon") is not identity evidence for the adjudicator. */
+function adjudicationName(row: CanonicalRow): string {
+  return row.name_generated ? "(no name in source)" : row.name;
+}
+
 function addPlan(plans: Map<string, MergePlan>, plan: MergePlan): void {
   if (plan.targetId === plan.duplicateId || plans.has(plan.duplicateId)) return;
   plans.set(plan.duplicateId, plan);
@@ -258,7 +263,7 @@ async function planAnchorAnchorMerges(
       const decide = async () => {
         const llm = await adjudicateMatch({
           current: {
-            name: a.name,
+            name: adjudicationName(a),
             description: a.description,
             address: a.address,
             website: a.website,
@@ -268,7 +273,7 @@ async function planAnchorAnchorMerges(
             categories: a.category_slugs,
           },
           candidate: {
-            name: b.name,
+            name: adjudicationName(b),
             description: b.description,
             address: b.address,
             website: b.website,
