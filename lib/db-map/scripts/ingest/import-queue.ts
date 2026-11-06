@@ -1005,6 +1005,12 @@ async function main() {
         throw new Error(`${e.file} is not in the inventory: run ingest:inventory --refresh first`);
       if (state.coverage.startsWith("category_"))
         throw new Error(`${e.file} is classified as ${state.coverage.slice(9)} in the inventory, not ${e.category}`);
+      // Known blockers fail now, not after earlier files have spent provider quota.
+      if (state.action === "review" || state.action === "blocked")
+        throw new Error(
+          `${e.file} is ${state.action === "review" ? "marked needs_review" : "not importable"} in the inventory: ` +
+            "set its disposition to import (dashboard file drawer) first",
+        );
     }
     const q: QueueState = await withStartLock(async () => {
       const running = (await reconcileStale()).find((q) => ["queued", "running", "waiting"].includes(q.status));
