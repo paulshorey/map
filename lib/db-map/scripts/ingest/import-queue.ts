@@ -320,8 +320,9 @@ async function superviseWatch(q: QueueState, entry: QueueEntry, args: string[], 
       // Only the job this launch created (earlier attempts' jobs are terminal).
       const job = entry.jobs.length > jobsBefore ? entry.jobs.at(-1) : undefined;
       if (forwarded || !job || !(lockLost || (await stopNowRequested(q.id)))) return;
-      forwarded = true;
+      // Marked forwarded only once written: a failed write is retried on the next tick.
       await writeFile(jobPath(job, "stop.request"), new Date().toISOString(), { mode: 0o600 });
+      forwarded = true;
     })().catch(() => undefined);
   }, 5000);
   const exited = new Promise<number | null>((resolve) => {
@@ -903,6 +904,9 @@ async function main() {
   };
   if (allowed[command]) {
     const dash = rest.indexOf("--");
+    // Only `start` takes an inline `-- <file>=<category>` tail.
+    if (dash >= 0 && command !== "start")
+      throw new Error(`${command} takes no "--" arguments (use --queue <id>)`);
     const own = dash >= 0 ? rest.slice(0, dash) : rest;
     for (let i = 0; i < own.length; i++) {
       const arg = own[i]!;
@@ -930,10 +934,16 @@ async function main() {
       ? (JSON.parse(await readFile(resolve(REPO, plan), "utf8")).entries as Array<{ file: string; category: string }>)
       : parseEntries(dash >= 0 ? rest.slice(dash + 1) : []);
     if (!entries.length) throw new Error("No entries: pass --plan <file> or -- <file>=<category> ...");
-    // Every capture must exist now, not be discovered missing days into the queue.
+    // Every capture must exist and match its inventory category now, not be discovered wrong
+    // days into the queue (each launch still re-checks for later changes).
     for (const e of entries) {
       const info = await stat(resolve(REPO, e.file)).catch(() => null);
       if (!info?.isFile()) throw new Error(`Not a capture file: ${e.file}`);
+      const state = await fileState(e);
+      if (state.coverage === null)
+        throw new Error(`${e.file} is not in the inventory: run ingest:inventory --refresh first`);
+      if (state.coverage.startsWith("category_"))
+        throw new Error(`${e.file} is classified as ${state.coverage.slice(9)} in the inventory, not ${e.category}`);
     }
     const q: QueueState = await withStartLock(async () => {
       const running = (await reconcileStale()).find((q) => ["queued", "running", "waiting"].includes(q.status));
