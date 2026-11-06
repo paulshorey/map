@@ -6,6 +6,7 @@ import { PURGED_TABLES } from "./purge.js";
 // Tables deliberately kept by a purge; every other table in the schema must be purged.
 const KEPT = new Set([
   "research_geocode_cache",
+  "research_provider_daily_usage",
   "canonical_categories",
   "users",
   "user_preferences",

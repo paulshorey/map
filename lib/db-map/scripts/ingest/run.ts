@@ -15,6 +15,7 @@ import {
   type OrchestratorOptions,
 } from "./orchestrator.js";
 import { holdSystemAwake } from "./sleep-inhibitor.js";
+import { providerUsageToday, useProviderQuotaLedger } from "./providers/quota.js";
 
 const STAGES = new Set<IngestStage>([
   "extract",
@@ -164,6 +165,14 @@ async function main() {
     process.env.PG_POOL_MAX ||= "16";
     const db = getDb();
     try {
+      useProviderQuotaLedger(db);
+      if (!opts.dryRun) {
+        const usage = await providerUsageToday(db);
+        console.log(
+          `LocationIQ today: ${usage.requests}${usage.limit ? `/${usage.limit}` : ""} requests` +
+            `${usage.exhausted ? ` — daily quota reached; geocoding will pause the run until ${usage.resets_at}` : ""}`,
+        );
+      }
       await runOrchestration(db, opts);
     } finally {
       await db.end();

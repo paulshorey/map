@@ -41,6 +41,10 @@ import { suppliedCountryCentroid } from "./supplied-centroids.js";
 import { recordLocations } from "./record-locations.js";
 import { stableHash } from "./hash.js";
 import { assertNoOutdatedSources } from "./staleness.js";
+import {
+  ProviderQuotaExhausted,
+  useProviderQuotaLedger,
+} from "./providers/quota.js";
 import { haversineMeters } from "./match/geo.js";
 import {
   validPoint,
@@ -71,6 +75,8 @@ interface GeocodeStats {
   unresolved: number;
   noQuery: number;
   budgetHit: boolean;
+  /** Set when the daily provider quota stopped lookups (resume after `resets_at`). */
+  quota?: ReturnType<ProviderQuotaExhausted["toJSON"]>;
 }
 
 interface GeoRow {
@@ -647,6 +653,12 @@ export async function runGeocode(
       try {
         hit = await geocode(query.display, forwardCountry);
       } catch (error) {
+        // The daily quota is a budget stop: nothing is cached or settled, and the record
+        // stays pending for the resume after the reset.
+        if (error instanceof ProviderQuotaExhausted) {
+          stats.quota = error.toJSON();
+          return { key, hit: null, stop: "budget" as const };
+        }
         // "Invalid Request" is about this query, not the provider: treat it as an uncached
         // miss so the fallback chain continues and one record cannot stop a whole file.
         if (
@@ -893,7 +905,14 @@ export async function runGeocode(
           break;
         }
         if (opts.throttleMs > 0) await sleep(opts.throttleMs);
-        hit = await reverseGeocode(lat!, lng!);
+        try {
+          hit = await reverseGeocode(lat!, lng!);
+        } catch (error) {
+          if (!(error instanceof ProviderQuotaExhausted)) throw error;
+          stats.quota = error.toJSON();
+          stats.budgetHit = true;
+          break;
+        }
         stats.apiCalls++;
         await db.query(
           `INSERT INTO research_geocode_cache(query_norm,lat,lng,precision,provider,payload) VALUES($1,$2,$3,'point','locationiq',$4::jsonb)
@@ -1090,6 +1109,7 @@ async function main() {
   let stats: Awaited<ReturnType<typeof runGeocode>>;
   try {
     if (!opts.dryRun) await assertNoOutdatedSources(db, opts.source ?? null);
+    useProviderQuotaLedger(db);
     stats = await runGeocode(db, opts);
   } finally {
     await db.end();
@@ -1100,7 +1120,13 @@ async function main() {
     `Geocode${mode}${opts.source ? ` ${opts.source}` : ""}: selected=${stats.selected} ` +
       `cache_hits=${stats.cacheHits} known_misses=${stats.knownMisses} ` +
       `api_calls=${stats.apiCalls} resolved=${stats.resolved} unresolved=${stats.unresolved} ` +
-      `no_query=${stats.noQuery}${stats.budgetHit ? " [budget reached — re-run to continue]" : ""}`,
+      `no_query=${stats.noQuery}${
+        stats.quota
+          ? ` [LocationIQ daily quota reached — re-run after ${stats.quota.resets_at}]`
+          : stats.budgetHit
+            ? " [budget reached — re-run to continue]"
+            : ""
+      }`,
   );
 }
 

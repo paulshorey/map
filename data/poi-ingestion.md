@@ -896,6 +896,32 @@ pnpm --filter @lib/db-map ingest:review-flags            # published POIs per fl
 pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's flags
 ```
 
+## Daily geocoding quota
+
+LocationIQ's free plan allows 5,000 requests a day (2 a second, 60 a minute) and resets at
+00:00 UTC; unsuccessful requests are not charged. Every real forward or reverse request is
+reserved first in `research_provider_daily_usage`, shared by all managed and standalone
+processes and kept by `ingest:purge`. Set `LOCATIONIQ_DAILY_LIMIT` for another plan (`0`
+disables the local limit). Network errors, per-second 429s and 5xx responses release their
+reservation.
+
+When the local count reaches the limit, or LocationIQ answers `429 Rate Limited Day`, no
+further request is sent. The geocode stage treats it like a budget stop: nothing is cached
+or settled for the interrupted record, earlier paid lookups stay cached, and the run ends as
+`waiting_budget` with stop reason `provider_daily_quota` (exit code 2; supervisor outcome
+`waiting_budget`). The run's `counters.providerQuota` and journal record the reset time, and
+the run prints the resume command. Per-second and per-minute 429s keep the bounded retry.
+
+```bash
+pnpm --filter @lib/db-map ingest:quota                      # today's count, limit and reset
+pnpm --filter @lib/db-map ingest:quota --clear-rate-limit   # after upgrading the plan today
+# After 00:00 UTC, resume the same run (completed work is reused):
+pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume <run-id> --unlimited
+```
+
+A large source such as The Dyrt (about 25,000 uncached reverse lookups) therefore takes
+several days on the free plan: start it, let it pause at the quota, and resume it each day.
+
 ## Outdated data: re-ingest, never upgrade
 
 Records produced by older pipeline logic (normalizer/prompt/schema/profile, location
