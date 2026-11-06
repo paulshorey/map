@@ -892,8 +892,13 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
   its UUID (cohort and checkpoints kept), never restarted;
 - one queue worker runs at a time on any host (a database advisory lock it holds for life);
   a queue whose worker died is marked `stopped` as interrupted, and `resume` continues it.
-- while a queue runs, a plain `ingest:run` (other than `--dry-run`) refuses to start; add the
-  file to a queue or stop the queue first. `stop --now` is recorded as an operator stop.
+- a plain `ingest:run` (other than `--dry-run`) holds the queue lock in shared mode for its
+  whole run and the queue worker holds it exclusively, so a queue and a plain import are never
+  admitted together: a plain run refuses while a queue runs, and a queue started during a plain
+  run stops as `needs_attention`. `stop --now` is recorded as an operator stop;
+- an entry whose file changed since the last inventory scan, is missing from the inventory or
+  is classified under another category stops the queue before launching (refresh or reclassify,
+  then `resume`).
 
 ```bash
 cd ~/git/map
