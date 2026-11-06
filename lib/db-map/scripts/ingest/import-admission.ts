@@ -32,7 +32,8 @@ export async function admitImport(db: Pool, scope: AdmissionScope): Promise<() =
   if (scope.dryRun) return async () => {};
   const fromQueue = !!process.env[IMPORT_QUEUE_ENV];
   const full = isFullScope(scope);
-  if (fromQueue && !full) return async () => {};
+  // Bounded diagnostics (--limit/--record/--shadow) take no locks and need no fence connection.
+  if (!full) return async () => {};
   // Held for the whole run on its own connection, outside the operational pool.
   void db;
   const locks = (): Array<[string, number, string]> => [
