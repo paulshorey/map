@@ -16,6 +16,7 @@ import {
 } from "./orchestrator.js";
 import { holdSystemAwake } from "./sleep-inhibitor.js";
 import { providerUsageToday, useProviderQuotaLedger } from "./providers/quota.js";
+import { IMPORT_QUEUE_ENV, importQueueActive } from "../../lib/ingestion/locks.js";
 
 const STAGES = new Set<IngestStage>([
   "extract",
@@ -166,6 +167,11 @@ async function main() {
     const db = getDb();
     try {
       useProviderQuotaLedger(db);
+      // One full import at a time: while an import queue owns ingestion, only its own launches run.
+      if (!opts.dryRun && !process.env[IMPORT_QUEUE_ENV] && (await importQueueActive(db)))
+        throw new Error(
+          "An import queue is running (ingest:import-queue status); stop it or add this file to a queue",
+        );
       if (!opts.dryRun) {
         const usage = await providerUsageToday(db);
         console.log(
