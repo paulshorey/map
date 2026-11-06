@@ -879,13 +879,13 @@ Canonical POIs carry `review_flags` (text array, GIN-indexed), a filterable list
 troubleshoot later. Flags never block publication. They are derived, not part of a build:
 `rebuildCanonicalPoi` refreshes them for its POI, and `ingest:review-flags --refresh`
 recomputes all of them (run it after reclassifying a capture in the inventory; it refuses
-while ingestion is active, when rebuilds keep their own POIs current).
+while ingestion is active, and takes the canonical writer lock so it never races a rebuild).
 
 | Flag | Meaning |
 | --- | --- |
 | `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
 | `generated_name` | No member has a real name; the shown name is generated (see [Nameless places](#nameless-places)) |
-| `source_needs_review` | A member came from a capture whose inventory disposition is still `needs_review` |
+| `source_needs_review` | A member's active observation comes from a capture whose inventory disposition is still `needs_review` |
 
 Rules live in `lib/db-map/sql/review-flags.ts` (`REVIEW_FLAG_RULES`, one SQL predicate per
 flag); add a flag there and a label in `apps/map/src/map/usePoiReviewFilter.ts`. The map API

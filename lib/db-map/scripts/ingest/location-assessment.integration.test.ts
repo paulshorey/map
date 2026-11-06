@@ -24,6 +24,7 @@ import {
   LOCATION_VERSION,
 } from "./location.js";
 import { withAttemptContext, type Execution } from "./execution.js";
+import { recordLocations, writeRecordLocations } from "./record-locations.js";
 
 const connection = process.env.MAP_LOCATION_ASSESSMENT_TEST_URL;
 test(
@@ -181,6 +182,18 @@ test(
             point.lng,
             validation,
           ],
+        );
+        // The geocode stage records every location the artifact knows; mirror it.
+        await writeRecordLocations(
+          client,
+          { research_poi_id: id, geocode_id: geocode, normalization_id: normalization },
+          recordLocations({
+            source: validation.coordinate_evidence.source_coordinates,
+            inferred: validation.coordinate_evidence.inferred_coordinates,
+            basis: "address",
+            fallbackFrom: null,
+            rejected: null,
+          }),
         );
         await client.query(
           "UPDATE research_pois SET active_observation_id=$2,active_normalization_id=$3,active_geocode_id=$4 WHERE id=$1",
@@ -495,6 +508,17 @@ test(
         `INSERT INTO research_poi_geocodes(id,normalization_id,input_hash,provider,provider_version,lat,lng,precision,status,validation)
       VALUES($1::uuid,$2,$1::text,'fixture',$3,30,-97,'point','resolved',$4)`,
         [changedGeo, f.normalization, LOCATION_GEOCODER_VERSION, conflict],
+      );
+      await writeRecordLocations(
+        client,
+        { research_poi_id: f.id, geocode_id: changedGeo, normalization_id: f.normalization },
+        recordLocations({
+          source: conflict.coordinate_evidence.source_coordinates,
+          inferred: conflict.coordinate_evidence.inferred_coordinates,
+          basis: "address",
+          fallbackFrom: null,
+          rejected: null,
+        }),
       );
       await client.query(
         "UPDATE research_pois SET active_geocode_id=$2,attributes=jsonb_build_object('location_enrichment',$3::jsonb) WHERE id=$1",
