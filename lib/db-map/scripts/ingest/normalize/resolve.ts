@@ -5,6 +5,7 @@ import type { LlmNormalizationOutput } from "./contracts.js";
 import { isListingDomain, type NormalizationProfile } from "./profiles.js";
 import { websiteIdentity } from "../match/denylist.js";
 import { resolveAttributes } from "./attributes.js";
+import { GENERATED_NAME_KEYS, isPlaceholderName } from "./generated-name.js";
 
 export interface ResolvedNormalization {
   status: "accepted" | "rejected" | "degraded";
@@ -105,28 +106,44 @@ export function resolveNormalization(input: {
     for (const field of ["city", "region", "country_code"]) delete evidence[field];
   }
 
+  // No real name, but a place: code supplies a descriptive name and flags it (owner policy
+  // 2026-11-06). A missing name alone never rejects a place.
+  const generatedName = deterministic.normalizedName
+    ? null
+    : (deterministic.generatedName ?? null);
   const isPoi =
     deterministic.hardIsPoi === false
       ? false
       : proposed
         ? proposed.is_poi
-        : Boolean(deterministic.normalizedName);
+        : Boolean(deterministic.normalizedName ?? generatedName);
   const invalidReason = isPoi
     ? null
     : proposed?.invalid_reason?.trim() || (deterministic.hardIsPoi === false ? "source_hard_exclusion" : "not_a_poi");
 
   let displayName = isPoi
-    ? supportedText(proposed?.display_name ?? null, "display_name", evidence, warnings) ??
-      captured.name?.trim() ??
-      null
+    ? generatedName
+      ? null
+      : supportedText(proposed?.display_name ?? null, "display_name", evidence, warnings) ??
+        deterministic.normalizedName ??
+        null
     : null;
+  if (generatedName && proposed?.display_name?.trim())
+    // The model may only restate tags (operator, kind); the code-generated name is authoritative.
+    warnings.push("model_name_ignored_for_nameless_place");
   if (displayName && /^q\d+$/i.test(displayName)) {
     warnings.push("id_only_name");
     displayName = null;
   }
+  if (displayName && isPlaceholderName(displayName)) {
+    warnings.push("placeholder_name");
+    displayName = null;
+  }
+  const nameGenerated = isPoi && Boolean(generatedName);
+  if (nameGenerated) displayName = generatedName;
 
   const seriesName =
-    isPoi && proposed
+    isPoi && proposed && !nameGenerated
       ? proposed.series_name?.trim() &&
         proposed.series_name.trim() === proposed.display_name?.trim() &&
         evidence.display_name?.length
@@ -180,6 +197,14 @@ export function resolveNormalization(input: {
   if (proposed?.country_code && !proposedCountry) warnings.push("invalid_llm_country_code");
 
   const attributes = resolveAttributes(captured, proposed?.attributes ?? [], evidence, warnings);
+  // Reserved: only this policy sets the generated-name facts, never a source attribute.
+  for (const key of GENERATED_NAME_KEYS) delete attributes[key];
+  if (nameGenerated) {
+    attributes.name_generated = true;
+    attributes.generated_name = generatedName!;
+    attributes.generated_name_subject =
+      deterministic.generatedNameSubject ?? generatedName!;
+  }
   if (!Object.hasOwn(attributes, "edition_year") && proposed?.edition_year !== null && proposed?.edition_year !== undefined) {
     attributes.edition_year = proposed.edition_year;
   }

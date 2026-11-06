@@ -153,6 +153,8 @@ interface CandidateRow {
   best_research_id: string | null;
   best_name: string | null;
   best_name_normalized: string | null;
+  /** The representative's name was generated (no real name): not name/embedding evidence. */
+  best_name_generated: boolean;
   best_content_embedding: number[] | null;
   best_website: string | null;
   /** Every member's website: an exact identity match with any member counts. */
@@ -571,6 +573,39 @@ async function findStrongIdCanonicalIds(
   return rows.map((r) => r.canonical_poi_id).filter((id) => !excluded.has(id));
 }
 
+/**
+ * A generated name ("Caravan site near X") describes a kind of place, not which place it is:
+ * two nameless sites share it. Matching must not treat it as name or embedding evidence, so
+ * nameless rows and canonicals compare by identifiers, contacts and location only (and an
+ * anchor's LLM adjudication). The generated name stays on the record for display.
+ */
+const UNNAMED_FOR_LLM = "(no name in source)";
+
+export function withoutGeneratedName(row: ResearchMatchRow): ResearchMatchRow {
+  if (row.attributes?.name_generated !== true) return row;
+  return { ...row, name: null, name_normalized: null, content_embedding: null };
+}
+
+export function withoutGeneratedCandidateName<
+  T extends {
+    best_name_generated: boolean;
+    best_name: string | null;
+    best_name_normalized: string | null;
+    best_content_embedding: number[] | null;
+    canonical_name: string;
+  },
+>(candidate: T): T {
+  if (!candidate.best_name_generated) return candidate;
+  return {
+    ...candidate,
+    best_name: null,
+    best_name_normalized: null,
+    best_content_embedding: null,
+    // canonical_name is the generated name too; an empty string never compares equal.
+    canonical_name: "",
+  };
+}
+
 async function fetchCandidates(
   client: PoolClient,
   row: ResearchMatchRow,
@@ -607,6 +642,7 @@ async function fetchCandidates(
        br.id AS best_research_id,
        br.name AS best_name,
        br.name_normalized AS best_name_normalized,
+       COALESCE(br.attributes->>'name_generated' = 'true', false) AS best_name_generated,
        br.content_embedding AS best_content_embedding,
        br.website AS best_website,
        br.phone AS best_phone,
@@ -695,6 +731,7 @@ async function fetchCandidates(
 
   return rows
     .filter((candidate) => !excluded.has(candidate.canonical_id))
+    .map(withoutGeneratedCandidateName)
     .map((candidate): CandidateRow => {
       const distance_m = haversineMeters(
         { lat: row.lat, lng: row.lng },
@@ -841,7 +878,8 @@ async function llmDecisionForCandidate(
   try {
     const llm = await adjudicateMatch({
       current: {
-        name: row.name,
+        name:
+          row.attributes?.name_generated === true ? UNNAMED_FOR_LLM : row.name,
         address: row.address,
         city: row.city,
         region: row.region,
@@ -857,8 +895,12 @@ async function llmDecisionForCandidate(
         date_precision: row.date_precision,
       },
       candidate: {
-        name: candidate.best_name ?? candidate.canonical_name,
-        canonical_name: candidate.canonical_name,
+        name: candidate.best_name_generated
+          ? UNNAMED_FOR_LLM
+          : (candidate.best_name ?? candidate.canonical_name),
+        canonical_name: candidate.best_name_generated
+          ? UNNAMED_FOR_LLM
+          : candidate.canonical_name,
         address: candidate.best_address ?? candidate.canonical_address,
         city: candidate.best_city,
         region: candidate.best_region,
@@ -905,9 +947,10 @@ async function llmDecisionForCandidate(
 
 async function decideRow(
   client: PoolClient,
-  row: ResearchMatchRow,
+  matchRow: ResearchMatchRow,
   opts: CliOptions,
 ): Promise<Decision> {
+  const row = withoutGeneratedName(matchRow);
   const overrides = await loadOverrideDecision(client, row.id);
   if (overrides.forceNew) {
     return {

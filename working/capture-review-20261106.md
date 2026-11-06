@@ -46,7 +46,7 @@ record smoke each (Wikipedia names → `supporting` or `alternate`); RIDB campsi
 | `botanical_gardens_data/bgci_gardens_full.json` (3,649) | botanical_garden | Readiness concern fixed since (geocoder fallbacks); already in the re-import plan. **Reclassify to `import`** before importing, or its POIs get `source_needs_review` |
 | `botanical_gardens_data/osm_botanical_gardens.csv` (3,421) | botanical_garden | Only 827 valid coordinates: recapture Overpass way/relation centers |
 | `botanical_gardens_data/wikidata_botanical_gardens.json` (3,665 QIDs) | botanical_garden | Duplicate SPARQL rows need per-entity aggregation; 510 missing names |
-| `rv_campgrounds_data/osm/caravan_sites.csv` (56,157) | campground | 9,665 unnamed: **decided 2026-11-06** — generate a name, flag `generated_name` (separate task) |
+| `rv_campgrounds_data/osm/caravan_sites.csv` (56,157) | campground | 9,665 unnamed: **decided 2026-11-06** — generate a name, flag `generated_name`; implemented in PR "Generated names for nameless places" ([Nameless places](../data/poi-ingestion.md#nameless-places)) |
 | `rv_campgrounds_data/ridb/facilities.csv` (5,979) | campground | No address/locality columns: **decided 2026-11-06** — recapture addresses if the API has them, else flag `missing_address` (separate task) |
 | `rv_campgrounds_data/uscampgrounds/all_campgrounds_combined.csv` (13,011) | campground | 2014 historical data; field semantics (nearest_town, region) need review |
 

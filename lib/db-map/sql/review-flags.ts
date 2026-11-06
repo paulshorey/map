@@ -5,6 +5,9 @@
  *
  * - `general_location`: only a country/region/city-level location is known
  *   (`attributes.location_specificity = 'general'`).
+ * - `generated_name`: no member has a real name, so the canonical shows a name generated from
+ *   its kind, operator/street and locality (`attributes.name_generated`; set by the canonical
+ *   builder from the normalizations' generated-name facts, see normalize/generated-name.ts).
  * - `source_needs_review`: a member's active observation came from a capture whose inventory
  *   disposition is still `needs_review` (its category or import decision is unconfirmed).
  *
@@ -14,6 +17,7 @@ import type { Pool, PoolClient } from "pg";
 
 export const REVIEW_FLAG_RULES = {
   general_location: `p.attributes->>'location_specificity' = 'general'`,
+  generated_name: `p.attributes->>'name_generated' = 'true'`,
   // The capture of each member's active observation (not older captures of the same record).
   source_needs_review: `EXISTS (
     SELECT 1 FROM research_canonical_memberships m

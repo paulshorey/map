@@ -20,6 +20,11 @@ import { getSourceDefinition } from "./sources.js";
 import { isWithinProximityBox, proximityDegFor } from "./match/anchors.js";
 import { nameSimilarity, normalizeComparable } from "./match/text.js";
 import { stableHash } from "./hash.js";
+import {
+  composeGeneratedName,
+  GENERATED_NAME_KEYS,
+  localityLabel,
+} from "./normalize/generated-name.js";
 
 interface MergeRow {
   id: string;
@@ -107,6 +112,38 @@ function chooseText(
   return {
     value: candidates[0]?.value ?? null,
     row: candidates[0]?.row ?? null,
+  };
+}
+
+function hasGeneratedName(row: MergeRow): boolean {
+  return asRecord(row.attributes).name_generated === true;
+}
+
+/**
+ * A nameless canonical's display name: the most trusted generated member's subject ("Caravan
+ * site (Operator)") with the canonical's resolved locality, which reverse geocoding may have
+ * filled after normalization. Only used when no member has a real name.
+ */
+function generatedCanonicalName(
+  rows: MergeRow[],
+  location: ReturnType<typeof canonicalLocation>,
+  coords: { lat: number; lng: number } | null,
+): FieldChoice<string> {
+  const row = rows.find(hasGeneratedName) ?? null;
+  if (!row) return { value: null, row: null };
+  const attrs = asRecord(row.attributes);
+  const subject =
+    nonEmpty(attrs.generated_name_subject as string | null) ??
+    nonEmpty(attrs.generated_name as string | null);
+  if (!subject) return { value: null, row: null };
+  const locality = localityLabel({
+    city: location.city.value,
+    region: location.region.value,
+    countryCode: location.country_code.value,
+  });
+  return {
+    value: composeGeneratedName(subject, locality, coords?.lat ?? null, coords?.lng ?? null),
+    row,
   };
 }
 
@@ -591,7 +628,10 @@ export async function rebuildCanonicalPoi(
     row.active_location_assessment_id = assessment.id;
   }
 
-  const name = chooseText(rows, (row) => row.name, { preferShorter: true });
+  // A member with a real name always wins over a generated one.
+  let name = chooseText(rows, (row) => (hasGeneratedName(row) ? null : row.name), {
+    preferShorter: true,
+  });
   const description = await chooseDescription(rows, opts.noLlm, name.value);
   const website = chooseText(rows, (row) => row.website);
   const phone = chooseText(rows, (row) => row.phone);
@@ -614,7 +654,18 @@ export async function rebuildCanonicalPoi(
   const dates = chooseRepresentativeOccurrence(occurrences);
   const primaryCategoryId = await syncCategories(client, canonicalId, rows);
   const popularity = new Set(rows.map((row) => row.source_id)).size;
+  let nameGenerated = false;
+  if (!name.value) {
+    const generated = generatedCanonicalName(rows, location, coords.value);
+    if (generated.value) {
+      name = generated;
+      nameGenerated = true;
+    }
+  }
   const attributes = mergeAttributes(rows);
+  // Reserved: members' generated-name facts never carry over; the canonical states its own.
+  for (const key of GENERATED_NAME_KEYS) delete attributes[key];
+  if (nameGenerated) attributes.name_generated = true;
   attributes.coordinate_evidence = evidence;
   // Reserved: a member's raw attributes can never set this flag.
   const specificity = locationSpecificity(evidence, rows);
@@ -638,7 +689,9 @@ export async function rebuildCanonicalPoi(
   if (features.length > 0) attributes.contained_features = features;
 
   const fieldProvenance = {
-    name: provenance(name.row),
+    name: nameGenerated
+      ? { ...provenance(name.row), generated: true }
+      : provenance(name.row),
     description: description.provenance,
     website: provenance(website.row),
     phone: provenance(phone.row),

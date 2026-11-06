@@ -65,7 +65,7 @@ keep theirs until rebuilt).
 ## Review filter
 
 `review=<flag>` (the "Review" dropdown, `usePoiReviewFilter`) shows only POIs carrying that
-`canonical_pois.review_flags` entry: `general_location`, `source_needs_review`, and flags added
+`canonical_pois.review_flags` entry: `general_location`, `generated_name`, `source_needs_review`, and flags added
 later in `lib/db-map/sql/review-flags.ts` (add a label in `REVIEW_FLAG_LABELS`). Flags are
 derived: each rebuild refreshes its POI, migration `202611060710` backfilled existing POIs, and
 `ingest:review-flags --refresh` recomputes all. The drawer lists a POI's flags.
