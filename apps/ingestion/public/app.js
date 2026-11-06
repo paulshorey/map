@@ -553,7 +553,9 @@ function renderMonitor(m) {
   const qualityHtml = !q
     ? `<div class="monitor-card"><h3>Published data</h3><p>Unavailable right now (the quality query failed); retrying.</p></div>`
     : `<div class="monitor-card"><h3>Published data</h3>
-      <p><strong>${number(q.published_pois)}</strong> POIs · ${number(q.precise_pois)} precise · ${number(q.general_pois)} general</p>
+      <p><strong>${number(q.published_pois)}</strong> POIs · ${number(q.precise_pois)} precise · ${number(q.general_pois)} general${
+        q.unknown_specificity_pois ? ` · ${number(q.unknown_specificity_pois)} unknown` : ""
+      }</p>
       ${bar(q.precise_pois, q.published_pois, "precise share")}
       <p class="muted-note">${number(q.research_records)} source records · ${number(q.unlocated_records)} unlocated · ${number(q.normalization_failed)} normalization failed · ${number(q.degraded)} degraded</p>
       <h4>Review flags</h4>${

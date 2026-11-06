@@ -63,6 +63,7 @@ export interface IngestionMonitor {
     hidden_pois: number;
     precise_pois: number;
     general_pois: number;
+    unknown_specificity_pois: number;
     review_flags: Record<string, number>;
     research_records: number;
     unlocated_records: number;
@@ -77,6 +78,7 @@ export const EMPTY_QUALITY: IngestionMonitor["quality"] = {
   hidden_pois: 0,
   precise_pois: 0,
   general_pois: 0,
+  unknown_specificity_pois: 0,
   review_flags: {},
   research_records: 0,
   unlocated_records: 0,
@@ -149,7 +151,8 @@ export async function getQualityMonitor(db: Pool): Promise<IngestionMonitor["qua
         `SELECT
           count(*) FILTER (WHERE status='published')::int AS published,
           count(*) FILTER (WHERE status<>'published')::int AS hidden,
-          count(*) FILTER (WHERE status='published' AND attributes->>'location_specificity'='general')::int AS general
+          count(*) FILTER (WHERE status='published' AND attributes->>'location_specificity'='general')::int AS general,
+          count(*) FILTER (WHERE status='published' AND attributes->>'location_specificity'='precise')::int AS precise
          FROM canonical_pois`,
       )
     ).rows[0];
@@ -165,8 +168,10 @@ export async function getQualityMonitor(db: Pool): Promise<IngestionMonitor["qua
     return {
       published_pois: q.published,
       hidden_pois: q.hidden,
-      precise_pois: q.published - q.general,
+      precise_pois: q.precise,
       general_pois: q.general,
+      // Builds without slotted location evidence carry no specificity flag.
+      unknown_specificity_pois: q.published - q.precise - q.general,
       review_flags: Object.fromEntries(flags.map((f) => [f.flag, f.pois])),
       research_records: total("records"),
       unlocated_records: total("unlocated"),
@@ -205,7 +210,11 @@ export async function getIngestionMonitor(
          WHERE r.started_at IS NOT NULL
          -- A 'running' run with a stale heartbeat is a suspected interruption, not the current run.
          -- then a run paused at the daily quota (it resumes after the reset) before finished ones.
+         -- A live full-scope run outranks a bounded diagnostic running beside it.
          ORDER BY (r.status='running' AND r.heartbeat_at > now() - interval '2 minutes') DESC,
+           (r.options->'limit' IS NULL OR r.options->>'limit' IS NULL)
+             AND NULLIF(r.options->>'record', '') IS NULL
+             AND COALESCE((r.options->>'shadow')::boolean, false) = false DESC,
            (r.status='waiting_budget' AND r.stop_reason='provider_daily_quota') DESC,
            COALESCE(r.heartbeat_at, r.started_at) DESC LIMIT 1`,
       )
