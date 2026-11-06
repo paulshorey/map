@@ -18,7 +18,16 @@ async function main() {
     if (args.includes("--refresh")) {
       // A global rewrite must not race canonical rebuilds, which refresh their own POI's flags.
       const control = await inspectControl(db);
-      if (!control.quiescent)
+      // This command's own process (and its tsx launcher) is an ingest script too.
+      const own = new Set([process.pid, process.ppid]);
+      const others = control.local_script_processes.filter((p) => !own.has(p.pid));
+      const active =
+        control.workers.some((w) => w.status === "running") ||
+        control.source_locks.length > 0 ||
+        control.admitted_workers.length > 0 ||
+        others.length > 0 ||
+        !!control.process_scan_error;
+      if (active)
         throw new Error(
           "Ingestion is active (workers, source locks or scripts); refresh after it is quiescent " +
             "(see ingest:control list --json). Rebuilds keep their own POIs' flags current meanwhile.",
