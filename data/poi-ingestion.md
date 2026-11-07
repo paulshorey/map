@@ -949,6 +949,7 @@ while ingestion is active, and takes the canonical writer lock so it never races
 | Flag | Meaning |
 | --- | --- |
 | `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
+| `generated_name` | No member has a real name; the shown name is generated (see [Nameless places](#nameless-places)) |
 | `source_needs_review` | A member's active observation comes from a capture whose inventory disposition is still `needs_review` |
 
 Rules live in `lib/db-map/sql/review-flags.ts` (`REVIEW_FLAG_RULES`, one SQL predicate per
@@ -960,6 +961,48 @@ lists a POI's flags.
 pnpm --filter @lib/db-map ingest:review-flags            # published POIs per flag
 pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's flags
 ```
+
+## Nameless places
+
+Owner policy (2026-11-06): a place whose source gives no real name is still mapped and
+published, never rejected for the missing name and never given an invented proper name.
+Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
+
+- **Real names first.** A blank or placeholder name (`unnamed`, `N/A`, …; warning
+  `placeholder_source_name`) is not a name. A real name in another OSM tag (`name:en`,
+  `official_name`, `name:<lang>`, `alt_name`, `loc_name`, `short_name`; read from
+  `attributes.osm_tags`, `raw.all_tags`, or a flat export's raw columns such as `name_en`) is
+  used as the name. The match fingerprint includes the generated-name state (only when
+  generated, so named records' fingerprints are unchanged).
+- **Generated name.** For place profiles (not events), deterministic normalization composes a
+  descriptive name from the kind of place (`tourism=caravan_site` → "Caravan site", else the
+  ingest category), operator/brand and `ref`, street (else the captured address's first part),
+  and locality, else coordinates (a record
+  with no location yet still gets a name and proceeds to geocoding):
+  "Campsite (Westward Bound Campgrounds) near Springfield, United States",
+  "Caravan site in Alberta, Canada" (region/country only), "Caravan site at 47.8282, -59.1928". It is added to the deterministic facts (and warning
+  `source_name_missing_generated_name`) only for nameless records, so named records' cache keys
+  are unchanged. The model's display name is ignored for such records.
+- **Durable fact.** The normalization stores `attributes.name_generated = true`,
+  `generated_name` and `generated_name_subject` (the name without its locality); a source
+  attribute can never set these keys. `research_pois.name` keeps only a real source name (NULL
+  here); `name_normalized` holds the normalized generated name so the record can embed and match.
+  Raw OSM identity and tags stay in the observation.
+- **Matching.** A generated name describes a kind of place, not which place it is, so the
+  matcher compares nameless rows and canonicals by identifiers, contacts and location only
+  (name and embedding signals are blanked on either side; the LLM adjudicator sees
+  "(no name in source)"). A nameless row is never auto-merged as a satellite of a nearby
+  anchor, nor a named row into a nameless anchor: it goes to anchor LLM adjudication, or stays separate with `--no-llm`. Global
+  consolidation likewise never merges a nameless canonical by proximity alone, as satellite or
+  as anchor target, and its anchor-anchor adjudication sees "(no name in source)". Nameless
+  rows are still embedded (the managed embed stage requires it) although matching ignores
+  those vectors. A canonical
+  counts as nameless only when no live member has a real name (a real-named member is its
+  matching representative).
+- **Canonical name.** A member with a real name always wins. Otherwise the canonical takes the
+  most trusted generated member's subject plus the canonical's resolved locality (reverse
+  geocoding may fill it after normalization), sets `attributes.name_generated = true` and
+  `field_provenance.name.generated`, and so carries the `generated_name` review flag.
 
 ## Daily geocoding quota
 

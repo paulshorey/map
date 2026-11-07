@@ -6,6 +6,10 @@ export const REVIEW_FLAG_LABELS: Record<string, { label: string; title: string }
     label: "General location",
     title: "Only a country, region or city is known",
   },
+  generated_name: {
+    label: "Generated name",
+    title: "The source gives no name; the name describes the place and its location",
+  },
   source_needs_review: {
     label: "Source needs review",
     title: "From a capture whose category or import decision is not confirmed yet",

@@ -4,6 +4,12 @@ import { fixCoordinates } from "./geo.js";
 import { normalizePhone, websiteDomain } from "./text.js";
 import { coordsFromRecordUrls } from "./urlcoords.js";
 import { parseOneDate } from "./dates.js";
+import {
+  generatePlaceName,
+  isPlaceholderName,
+  realNameFromTags,
+  sourceTags,
+} from "./generated-name.js";
 
 export interface ValueCandidate<T> {
   id: string;
@@ -14,6 +20,13 @@ export interface ValueCandidate<T> {
 
 export interface DeterministicFacts {
   normalizedName: string | null;
+  /**
+   * Present only when the source has no real name and the profile describes places: a
+   * descriptive name composed by code (see generated-name.ts). Absent keys keep the request
+   * packet, and so the normalization cache, unchanged for named records.
+   */
+  generatedName?: string;
+  generatedNameSubject?: string;
   countryCode: string | null;
   phone: string | null;
   websiteDomain: string | null;
@@ -48,6 +61,8 @@ export interface DeterministicInput {
   attributes: Record<string, unknown>;
   raw: unknown;
   sourceIsPoiHint: boolean | null;
+  /** Ingest category of a place profile; enables generated names for nameless places. */
+  generatedNameCategory?: string | null;
 }
 
 function stringValue(value: unknown): string | null {
@@ -299,8 +314,35 @@ export function buildDeterministicFacts(
         countryToCode(stringValue(input.attributes.country_name)) ??
         countryToCode(input.region))) ?? null;
 
+  // A placeholder ("unnamed", blank) is not a name; a name given only in another tag is.
+  const capturedName = input.name?.trim() || null;
+  const normalizedName = !isPlaceholderName(capturedName)
+    ? capturedName
+    : realNameFromTags(sourceTags(input.attributes, input.raw));
+  if (capturedName && !normalizedName) warnings.push("placeholder_source_name");
+  let generated: ReturnType<typeof generatePlaceName> | null = null;
+  // Every nameless place gets a subject even without a location yet: an address/operator-only
+  // record can still be geocoded, and the canonical attaches its resolved locality later.
+  if (!normalizedName && input.generatedNameCategory) {
+    generated = generatePlaceName({
+      ingestCategory: input.generatedNameCategory,
+      attributes: input.attributes,
+      raw: input.raw,
+      address: input.address,
+      city: input.city,
+      region: input.region,
+      countryCode,
+      lat,
+      lng,
+    });
+    warnings.push("source_name_missing_generated_name");
+  }
+
   return {
-    normalizedName: input.name?.trim() || null,
+    normalizedName,
+    ...(generated
+      ? { generatedName: generated.name, generatedNameSubject: generated.subject }
+      : {}),
     countryCode,
     phone: phoneCandidates[0]?.value ?? null,
     websiteDomain: websiteDomain(input.website),

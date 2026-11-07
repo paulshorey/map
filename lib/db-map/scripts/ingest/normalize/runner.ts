@@ -33,6 +33,7 @@ import { getNormalizationProfile } from "./profiles.js";
 import { NORMALIZATION_SYSTEM_PROMPT } from "./prompt.js";
 import { activationCoordinates, type CoordinateProjection } from "./activation-coordinates.js";
 import { resolveNormalization, type ResolvedNormalization } from "./resolve.js";
+import { GENERATED_NAME_KEYS } from "./generated-name.js";
 import {
   normalizationInputHash,
   NORMALIZATION_MAX_OUTPUT_TOKENS,
@@ -743,7 +744,9 @@ async function activateNormalization(
          normalization_input_hash = $3,
          normalization_state = $4,
          normalized_at = now(),
-         name = COALESCE($5, name),
+         -- research_pois.name holds only a real source name; a generated one lives on the
+         -- normalization and in attributes.generated_name (see normalize/generated-name.ts).
+         name = CASE WHEN ($26::jsonb->>'name_generated') = 'true' THEN NULL ELSE COALESCE($5, name) END,
          name_normalized = $6,
          description = COALESCE($7, description),
          website = $8,
@@ -768,7 +771,7 @@ async function activateNormalization(
          active_embedding_id = CASE WHEN active_normalization_id IS DISTINCT FROM $2::uuid THEN NULL ELSE active_embedding_id END,
          canonical_poi_id = CASE WHEN $25 THEN NULL ELSE canonical_poi_id END,
          matched_normalization_id = CASE WHEN $25 THEN NULL ELSE $2::uuid END,
-         attributes = COALESCE(attributes, '{}'::jsonb) || $26::jsonb
+         attributes = (COALESCE(attributes, '{}'::jsonb) - $28::text[]) || $26::jsonb
        WHERE id = $1`,
         [
           row.id,
@@ -810,6 +813,8 @@ async function activateNormalization(
             },
           }),
           coordinates.keepGeocode,
+          // Generated-name facts belong to the active normalization only.
+          [...GENERATED_NAME_KEYS],
         ],
       );
       await client.query(
@@ -874,7 +879,11 @@ function prepareNormalization(
   const profile = getNormalizationProfile(
     source?.normalizationProfile ?? fallbackProfile,
   );
-  const captured = deterministicInput(row);
+  const captured = {
+    ...deterministicInput(row),
+    // Nameless places get a generated, flagged name; events and other kinds do not.
+    generatedNameCategory: profile.kind === "place" ? row.ingest_category : null,
+  };
   const deterministic = buildDeterministicFacts(captured);
   const packet = requestPacket(row, profile.id, deterministic);
   const inputHash = normalizationInputHash(
