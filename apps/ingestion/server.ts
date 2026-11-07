@@ -6,7 +6,7 @@ import {
 } from "node:http";
 import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
-import { getDb } from "@lib/db-map/db/postgres";
+import { getDb, getSidePool } from "@lib/db-map/db/postgres";
 import {
   getInventory,
   getInventoryDetail,
@@ -17,6 +17,75 @@ import {
 import { refreshInventory } from "@lib/db-map/ingestion/inventory-scan";
 import { inspectRun, parseStatusArgs } from "@lib/db-map/ingest/status";
 import { controlState } from "@lib/db-map/sql/ingestion-control";
+import {
+  EMPTY_QUALITY,
+  getIngestionMonitor,
+  getQualityMonitor,
+} from "@lib/db-map/sql/ingestion-monitor";
+import { activeOrLocalQueue, reconcileStale } from "@lib/db-map/ingest/import-queue";
+
+/**
+ * A bounded view of a queue for the dashboard: up to 30 entries around the current one, plus
+ * counts by status for the whole plan (plans can be long).
+ */
+export function queueWindow<
+  Q extends { entries: Array<{ status: string }>; current?: number | null },
+>(queue: Q | null) {
+  if (!queue) return null;
+  const total = queue.entries.length;
+  const center = queue.current ?? queue.entries.findIndex((e) => e.status !== "succeeded" && e.status !== "skipped_complete");
+  const start = Math.max(0, Math.min(Math.max(0, center) - 5, total - 30));
+  const counts: Record<string, number> = {};
+  for (const e of queue.entries) counts[e.status] = (counts[e.status] ?? 0) + 1;
+  return {
+    ...queue,
+    entries: queue.entries.slice(start, start + 30),
+    entries_offset: start,
+    entries_total: total,
+    entry_counts: counts,
+  };
+}
+
+const QUALITY_TTL_MS = 120_000;
+const QUALITY_RETRY_MS = 30_000;
+type Quality = Awaited<ReturnType<typeof getQualityMonitor>>;
+// `at` schedules the next refresh; `observedAt` is when `value` was actually computed.
+let qualityCache: {
+  at: number;
+  value: Quality | null;
+  observedAt: string | null;
+  error: string | null;
+} = { at: 0, value: null, observedAt: null, error: null };
+let qualityRefresh: Promise<void> | null = null;
+
+/**
+ * Whole-table quality aggregates, refreshed at most every two minutes by one shared request.
+ * A failed refresh keeps serving the previous value and retries after 30 seconds.
+ */
+async function cachedQuality(db: Parameters<typeof getQualityMonitor>[0]): Promise<Quality | null> {
+  if (Date.now() - qualityCache.at > QUALITY_TTL_MS) {
+    // Its own one-connection pool: whole-table scans never hold up live progress queries.
+    void db;
+    qualityRefresh ??= getQualityMonitor(getSidePool("ingestion-quality"))
+      .then((value) => {
+        qualityCache = { at: Date.now(), value, observedAt: new Date().toISOString(), error: null };
+      })
+      .catch((error) => {
+        console.error("Quality monitor refresh failed:", error);
+        qualityCache = {
+          ...qualityCache,
+          at: Date.now() - QUALITY_TTL_MS + QUALITY_RETRY_MS,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      })
+      .finally(() => {
+        qualityRefresh = null;
+      });
+    // The first load waits; later refreshes serve the previous value meanwhile.
+    if (!qualityCache.value) await qualityRefresh;
+  }
+  return qualityCache.value;
+}
 
 export function dashboardContentSecurityPolicy(
   extraOrigins = process.env.INGESTION_FRAME_ORIGINS ?? "",
@@ -147,6 +216,29 @@ export function createDashboard(port: number) {
           result.components.database.status === "unknown" ? 503 : 200,
           result,
         );
+        return;
+      }
+      if (req.method === "GET" && url.pathname === "/api/monitor") {
+        // Whole-table quality aggregates are cached; run progress and quota stay live.
+        const quality = await cachedQuality(db);
+        const [monitor, queue] = await Promise.all([
+          getIngestionMonitor(db, quality ?? EMPTY_QUALITY),
+          // Reconcile first so a queue whose worker died is not shown as running; a live queue
+          // on another host (presence holder without local state) is shown as remote.
+          reconcileStale()
+            .catch(() => undefined)
+            .then(() => activeOrLocalQueue())
+            .catch(() => null),
+        ]);
+        // No cached value yet and the first load failed: unavailable, never fabricated zeros.
+        json(200, {
+          ...monitor,
+          quality: quality ?? null,
+          // When the shown quality was computed, and whether the latest refresh failed.
+          quality_observed_at: qualityCache.observedAt,
+          quality_stale: !!qualityCache.error,
+          queue: queueWindow(queue),
+        });
         return;
       }
       if (req.method === "GET" && url.pathname === "/api/inventory") {

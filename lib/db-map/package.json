@@ -13,7 +13,8 @@
     "./sql/users": "./sql/users.ts",
     "./sql/*": "./sql/*.ts",
     "./ingestion/*": "./lib/ingestion/*.ts",
-    "./ingest/status": "./scripts/ingest/status.ts"
+    "./ingest/status": "./scripts/ingest/status.ts",
+    "./ingest/import-queue": "./scripts/ingest/import-queue.ts"
   },
   "scripts": {
     "app:contract:check": "node scripts/generate-app-contract.mjs --check",

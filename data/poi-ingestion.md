@@ -701,6 +701,20 @@ execution reconciliation and repair handoff. `ingest:status --json` exposes exac
 usage for diagnostics, including failed requests and costs that are still unknown. This telemetry
 does not block uncapped imports or require spending approval.
 
+### Live monitor
+
+The dashboard's first panel (`GET /api/monitor`, refreshed every 10 seconds) shows:
+
+- the running (or latest) run: per-stage done/total bars, active, quota-waiting and quarantined
+  records, the finish rate (over the last 15 minutes, or the stage's age if younger), and
+  per-stage and whole-file ETAs;
+- today's LocationIQ requests against the daily limit, and when it resets;
+- the active (or latest) import queue with each file's status (`ingest:import-queue`);
+- published POIs (precise vs general), review-flag counts, unlocated, failed and degraded
+  source records, and a per-source quality table (cached for two minutes).
+
+Run progress is one bounded read-only snapshot (`sql/ingestion-monitor.ts`).
+
 ## Assessing category completeness
 
 ```bash

@@ -846,3 +846,80 @@ dialog::backdrop {
 .operations code {
   overflow-wrap: anywhere;
 }
+
+/* Live monitor */
+.monitor {
+  margin: 0 0 24px;
+}
+.monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.monitor-card {
+  border: 1px solid var(--line, #e5e7eb);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--panel, #fff);
+}
+.monitor-card.wide {
+  grid-column: 1 / -1;
+}
+.monitor-card h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+.monitor-card h4 {
+  margin: 10px 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.monitor-card p {
+  margin: 4px 0;
+}
+.monitor-card ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.monitor progress {
+  width: 100%;
+  height: 8px;
+}
+.monitor-stages {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.monitor-stages th {
+  text-align: left;
+  width: 110px;
+  font-weight: 600;
+}
+.monitor-stages td {
+  padding: 3px 8px 3px 0;
+  white-space: nowrap;
+}
+.monitor-stages td:nth-child(2) {
+  width: 40%;
+}
+.queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+}
+.queue-list li.needs_attention {
+  color: #b91c1c;
+}
+.queue-list li.running,
+.queue-list li.waiting_quota {
+  font-weight: 600;
+}
+.monitor-sources {
+  margin-top: 10px;
+}
+.monitor-sources table {
+  width: 100%;
+  font-size: 13px;
+}

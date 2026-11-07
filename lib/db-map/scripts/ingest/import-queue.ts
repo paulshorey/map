@@ -541,6 +541,7 @@ export async function runQueue(id: string) {
     await saveQueue(q);
     for (let i = 0; i < q.entries.length; i++) {
       const entry = q.entries[i]!;
+      let afterReset = false;
       if (["succeeded", "skipped_complete"].includes(entry.status)) continue;
       q.current = i;
       // An interrupted quota wait (entry reset to pending) still waits for its reset.
@@ -550,6 +551,7 @@ export async function runQueue(id: string) {
         q.message = `${entry.file}: waiting for the geocoding quota reset (${entry.resets_at})`;
         await saveQueue(q);
         if (await waitUntil(id, Date.parse(entry.resets_at))) {
+          afterReset = true;
           q.status = "running";
           q.message = null;
         }
@@ -606,6 +608,19 @@ export async function runQueue(id: string) {
                 `ingest:status --run ${state.continuation} before resuming it`,
             );
           entry.run_id = state.continuation;
+          // An adopted quota pause waits for its saved reset before resuming.
+          const resets = await quotaResetsAt(state.continuation);
+          if (resets && Date.parse(resets) > Date.now()) {
+            entry.resets_at = new Date(Date.parse(resets) + 120_000).toISOString();
+            entry.status = "waiting_quota";
+            q.status = "waiting";
+            q.message = `${entry.file}: waiting for the geocoding quota reset (${entry.resets_at})`;
+            await saveQueue(q);
+            if (!(await waitUntil(id, Date.parse(entry.resets_at)))) continue;
+            afterReset = true;
+            q.status = "running";
+            q.message = null;
+          }
         }
         // The operator's classification wins over coverage: never count or run it otherwise.
         if (state.action === "review" || state.action === "blocked")
@@ -669,6 +684,8 @@ export async function runQueue(id: string) {
         entry.reason = null;
         await saveQueue(q);
         const launched = Date.now();
+        const resumedAfterReset = afterReset;
+        afterReset = false;
         const { code, result } = await superviseWatch(q, entry, args, log);
         const evidence = (result?.evidence ?? {}) as { stop_reason?: string; status?: string };
         entry.run_id = (result?.run_id as string | undefined) ?? entry.run_id;
@@ -677,8 +694,11 @@ export async function runQueue(id: string) {
           entry.quota_pauses++;
           // A pause within 5 minutes of launch made no real progress; twice means the quota is
           // being used elsewhere or the reset did not happen as expected.
-          entry.quick_quota_pauses =
-            Date.now() - launched < 300_000 ? (entry.quick_quota_pauses ?? 0) + 1 : 0;
+          // Only a launch right after a quota reset can be a failed reset; discovering the
+          // quota on a fresh launch is not counted.
+          if (resumedAfterReset)
+            entry.quick_quota_pauses =
+              Date.now() - launched < 300_000 ? (entry.quick_quota_pauses ?? 0) + 1 : 0;
         }
         if (entry.outcome === "succeeded") {
           const after = await fileState(entry);
@@ -727,6 +747,7 @@ export async function runQueue(id: string) {
           q.message = `${entry.file}: waiting for the geocoding quota reset (${entry.resets_at})`;
           await saveQueue(q);
           if (!(await waitUntil(id, until))) continue; // the loop top records the stop
+          afterReset = true;
           q.status = "running";
           q.message = null;
           continue;
@@ -769,7 +790,7 @@ export async function runQueue(id: string) {
 }
 
 /** Active-status queues whose worker is gone (no host holds the lock) become `stopped`. */
-async function reconcileStale(): Promise<QueueState[]> {
+export async function reconcileStale(): Promise<QueueState[]> {
   const queues = await listQueues();
   // A `queued` state updated in the last 2 minutes is a worker starting or waiting for a plain
   // import (it heartbeats every minute); the lock holder is the one running worker.
@@ -889,6 +910,33 @@ function newEntry(e: { file: string; category: string }): QueueEntry {
 }
 
 /** The active queue if there is one, else the most recently created. */
+export async function currentQueue(): Promise<QueueState | null> {
+  const queues = await listQueues();
+  return queues.find((q) => ["queued", "running", "waiting"].includes(q.status)) ?? queues[0] ?? null;
+}
+
+/**
+ * For displays: the live queue (a remote placeholder when it runs on another host), otherwise
+ * the active-or-latest local queue.
+ */
+export async function activeOrLocalQueue(): Promise<
+  QueueState | { id: string; remote: true; status: "running"; message: string; entries: []; updated_at: string }
+  | null
+> {
+  // Presence, or the exclusive lock of a worker shutting down after losing presence.
+  const holder = (await queueLockHolder()) ?? (await importQueueLockHolder(getDb()));
+  if (holder && !(await listQueues()).some((q) => q.id === holder))
+    return {
+      id: holder,
+      remote: true,
+      status: "running",
+      message: "Active on another host; its state is on that host",
+      entries: [],
+      updated_at: new Date().toISOString(),
+    };
+  return currentQueue();
+}
+
 async function latestId(): Promise<string> {
   const queues = await listQueues();
   // The live queue may run on another host, whose state files only that host has. A worker
@@ -900,8 +948,7 @@ async function latestId(): Promise<string> {
       `The active import queue ${holder} runs on another host; run this command there (or pass --queue for a local queue)`,
     );
   }
-  const latest =
-    queues.find((q) => ["queued", "running", "waiting"].includes(q.status)) ?? queues[0];
+  const latest = await currentQueue();
   if (!latest) throw new Error("No import queue exists");
   return latest.id;
 }
@@ -980,6 +1027,26 @@ async function main() {
         throw new Error(`${e.file} is not in the inventory: run ingest:inventory --refresh first`);
       if (state.coverage.startsWith("category_"))
         throw new Error(`${e.file} is classified as ${state.coverage.slice(9)} in the inventory, not ${e.category}`);
+      if (state.coverage === "changed_since_scan")
+        throw new Error(`${e.file} changed since the last inventory scan: run ingest:inventory --refresh first`);
+      if (state.continuation && (await runMatchesFile(state.continuation, state.sha, state.extractorVersion))) {
+        const check = await continuationSafe(state.continuation);
+        if (!check.safe)
+          throw new Error(
+            `${e.file} has an unfinished run ${state.continuation} (${check.detail}): inspect it with ingest:status --run ${state.continuation} first`,
+          );
+      }
+      if (state.needsDiagnosis)
+        throw new Error(
+          `${e.file} has invalid output, normalization failures or a running/interrupted execution: ` +
+            "inspect it (dashboard file drawer or ingest:status) first",
+        );
+      // Known blockers fail now, not after earlier files have spent provider quota.
+      if (state.action === "review" || state.action === "blocked")
+        throw new Error(
+          `${e.file} is ${state.action === "review" ? "marked needs_review" : "not importable"} in the inventory: ` +
+            "set its disposition to import (dashboard file drawer) first",
+        );
     }
     const q: QueueState = await withStartLock(async () => {
       const running = (await reconcileStale()).find((q) => ["queued", "running", "waiting"].includes(q.status));
