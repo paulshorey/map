@@ -14,10 +14,14 @@ Generated: 2026-06-18
 ## Files
 
 ### RIDB (US Federal Campgrounds)
-- `ridb/facilities.json` — 5,979 campground facilities with full metadata (35MB JSON)
-- `ridb/facilities.csv` — Same, flat CSV format
-- `ridb/campsites.jsonl` — 134,891 individual campsites with attributes (335MB JSONL, one record per line)
-- `ridb/campsites_rv_hookup.csv` — 121,876 campsites filtered to RV/electric/hookup types (CSV)
+- `ridb/facilities_with_addresses.csv` — **import target.** The 5,979 facilities below, refreshed
+  from the official RIDB full export (2026-11-04) with address/city/region and verbatim
+  `facility_addresses`. Built by `scripts/ridb-facility-addresses.py`; see
+  [working/ridb-addresses-20261106.md](../../../working/ridb-addresses-20261106.md).
+- `ridb/facilities.csv` — original 2026-06-18 capture (no addresses, truncated descriptions); superseded alternate.
+- `ridb/campsites_rv_hookup.csv` — 121,876 campsites filtered to RV/electric/hookup types (CSV).
+  Supporting child data: never import campsites as campgrounds.
+- `facilities.json` and `campsites.jsonl` were not committed.
 
 **RIDB Campsite Types with counts:**
 - STANDARD NONELECTRIC: 61,719
@@ -32,7 +36,7 @@ Generated: 2026-06-18
 - Sewer Hookup: 11,646 sites
 - Full Hookup: 1,777 sites
 
-**API Key used:** `a7416471-1b5d-4a64-ad3d-a233e7cb5c44` (from camply library, public)
+**Addresses:** the keyless full export `https://ridb.recreation.gov/downloads/RIDBFullExport_V1_CSV.zip` has every table, including `FacilityAddresses`. The original capture used a public third-party API key; none is needed for the export.
 
 ### The Dyrt (Private + Public Campgrounds)
 - `thedyrt/campgrounds.jsonl` — 74,307 campgrounds, full detail (563MB JSONL)

@@ -168,11 +168,16 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
   {
     meta: { slug: "ridb", name: "RIDB", trust: 90 },
     extractor: ridbFacilitiesExtractor,
+    // Verbatim address rows include the mailing/office rows the capture rejected; the model
+    // must not restore them over the selected top-level address.
+    normalizationOmitFields: ["facility_addresses"],
     files: [
       {
-        pattern: "data/poi/rv_campgrounds_data/ridb/facilities.csv",
+        // facilities.csv (no addresses) is kept as the superseded original capture.
+        pattern:
+          "data/poi/rv_campgrounds_data/ridb/facilities_with_addresses.csv",
         category: "campground",
-        extractorVersion: "2",
+        extractorVersion: "3",
       },
     ],
     normalizationProfile: "campground",

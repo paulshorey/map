@@ -223,7 +223,7 @@ exclusive maintenance key `(91832,1)` and admission mutex `(91832,2)`. New worke
 record a persistent installation UUID plus process start time. Legacy hostname reconciliation
 remains conservative. A stored PID alone never authorizes signaling.
 
-`data/poi-research/expected-captures.json` accounts for the audited 247 captures, required imports,
+`data/poi-research/expected-captures.json` accounts for the audited 248 captures, required imports,
 supporting captures and explicit review/exclusion reasons. It holds expectations, not progress.
 Structural completion, degraded output, sampled quality acceptance and category completeness
 are separate. No quality acceptance is inferred from an exit code or a few valid coordinates.
@@ -950,6 +950,7 @@ while ingestion is active, and takes the canonical writer lock so it never races
 | --- | --- |
 | `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
 | `source_needs_review` | A member's active observation comes from a capture whose inventory disposition is still `needs_review` |
+| `missing_address` | No active member has a source street address (reverse-geocoded addresses do not count); the POI is still mapped |
 
 Rules live in `lib/db-map/sql/review-flags.ts` (`REVIEW_FLAG_RULES`, one SQL predicate per
 flag); add a flag there and a label in `apps/map/src/map/usePoiReviewFilter.ts`. The map API
