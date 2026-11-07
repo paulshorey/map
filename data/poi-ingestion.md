@@ -873,6 +873,57 @@ columns:
 The canonical row stores the representative occurrence: next upcoming when available,
 otherwise the most recent. Status such as upcoming, ongoing, or past is derived at read time.
 
+## Sequential import queue
+
+`ingest:import-queue` runs a list of whole-file imports one at a time through the supervisor
+(`ingest:supervise watch`), with ordinary Node waiting and no model calls:
+
+- a file whose inventory coverage is already `complete` is skipped;
+- the next file starts only after the previous one finished `succeeded` **and** its inventory
+  coverage is `complete`;
+- a run stopped by the daily geocoding quota (`provider_daily_quota`) is resumed with the same
+  run UUID two minutes after the reset; two immediate re-exhaustions stop the queue;
+- any other outcome stops the queue as `needs_attention` with the run UUID; nothing is retried
+  blindly, so diagnose it (see the troubleshooting sections) and start a new queue;
+- before each launch the pipeline must be quiescent and out of maintenance (it waits up to an
+  hour, then stops).
+- a file counts as complete only when its inventory category matches the entry and the file on
+  disk still has the scanned SHA-256; an unfinished full-file run of that file is resumed with
+  its UUID (cohort and checkpoints kept), never restarted;
+- one queue worker is live at a time on any host: it holds a presence lock for life, waiting
+  or running, and an exclusive queue lock while it owns ingestion;
+  a queue whose worker died is marked `stopped` as interrupted, and `resume` continues it.
+- every full-scope import (`ingest:run`/`ingest:extract` without `--limit`, `--record`,
+  `--shadow` or `--dry-run`), plain or queued, holds a database lock for its whole run, so only
+  one full-file import runs at a time on any host, even if a queue worker dies; bounded
+  diagnostics are not blocked. A plain import also holds the queue lock in shared mode while
+  the queue worker holds it exclusively, so a plain import refuses while a queue runs, and a
+  queue started during a plain import waits until it finishes (reported as "waiting for a
+  plain import to finish"); a plain full import is refused while a queue is active or waiting. If an import's lock connection drops,
+  the import exits at once (resume it later) rather than run unfenced. A confirmed `stop --now`
+  is recorded as an operator stop;
+- an unfinished earlier run of a file is adopted automatically only if it stopped at the daily
+  geocoding quota or by an operator stop (and resumes with its saved limits); anything else,
+  including a run stopped at its own provider caps, stops the queue for a decision. Files the
+  inventory marks `needs_review` or not importable also stop it (set the disposition first);
+- an entry whose file changed since the last inventory scan, is missing from the inventory or
+  is classified under another category stops the queue before launching (refresh or reclassify,
+  then `resume`).
+
+```bash
+cd ~/git/map
+pnpm --silent --filter @lib/db-map ingest:import-queue start --plan data/import-plans/reset-20261105.json
+pnpm --silent --filter @lib/db-map ingest:import-queue status          # latest queue
+pnpm --silent --filter @lib/db-map ingest:import-queue stop            # before the next launch
+pnpm --silent --filter @lib/db-map ingest:import-queue stop --now      # also stop the current import gracefully
+pnpm --silent --filter @lib/db-map ingest:import-queue resume          # continue a stopped/interrupted queue
+# or ad hoc: ingest:import-queue start -- data/poi/x.json=art_fair data/poi/y.json=hostel
+```
+
+Queue state is in `lib/db-map/.ingest-queues/<id>/` (`state.json`, `queue.log`, ignored by Git);
+each file's supervisor job keeps its usual journal under `.ingest-jobs/`. Only one queue runs
+at a time, and the queue counts as a supervisor (not a worker) for quiescence checks.
+
 ## Review flags
 
 Canonical POIs carry `review_flags` (text array, GIN-indexed), a filterable list of content to
