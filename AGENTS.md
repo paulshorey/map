@@ -3,6 +3,12 @@
 Search and filter the world's points of interest on a map. Ingestion captures raw
 sources, normalizes and enriches records, and reconciles them with source provenance.
 
+## Workspace
+
+Prefer the primary local checkout when free; use a worktree when another task is
+using it. After merging a PR, return the primary checkout to `main` and run
+`git pull --ff-only` when free, leaving it clean.
+
 ## Development
 
 Apps live in `apps/`, shared libraries in `lib/`, raw captures in `data/poi`, and
