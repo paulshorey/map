@@ -428,11 +428,6 @@ test(
         VALUES($1,40,-100,'point','locationiq',$2::jsonb)`,
         [key, JSON.stringify({ hit })],
       );
-      await client.query(
-        `INSERT INTO research_geocode_cache(query_norm,lat,lng,precision,provider,payload)
-        VALUES($1,30.3,-97,'point','locationiq','{"hit":null}'::jsonb)`,
-        [`location-v2:reverse:30.3:-97`],
-      );
       const geocoded = await runGeocode(db, {
         recordId: cached.id,
         limit: 1,
@@ -441,7 +436,8 @@ test(
         dryRun: false,
       });
       assert.equal(geocoded.apiCalls, 0);
-      assert.equal(geocoded.cacheHits, 2);
+      // Only the forward lookup is cached; the reverse lookup is offline.
+      assert.equal(geocoded.cacheHits, 1);
       const stored = (
         await client.query(
           `SELECT g.validation FROM research_pois rp
