@@ -8,7 +8,7 @@ import { randomUUID } from "node:crypto";
 import pg, { type Pool } from "pg";
 import { runMatch } from "./match.js";
 import { parseRebuildArgs, rebuildCanonicals, rebuildPlan } from "./rebuild-canonicals.js";
-import { assertSourceCurrent, stalenessBySource } from "./staleness.js";
+import { assertNoOutdatedSources, assertSourceCurrent, stalenessBySource } from "./staleness.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
 import { allNormalizationProfileVersions } from "./normalize/profiles.js";
 import { deriveForwardPrecision } from "../../lib/ingestion/geocode-precision.js";
@@ -249,6 +249,16 @@ test(
       await client.query(
         "UPDATE research_poi_normalizations SET normalizer_version='hybrid-old' WHERE id=$1",
         [second.normalization],
+      );
+      // A source that needs re-ingesting does not hide its outdated memberships from others.
+      await assert.rejects(assertSourceCurrent(db, "some_other_source"), (error: any) => {
+        assert.equal(error.code, "outdated_canonicals");
+        assert.match(error.message, /Re-ingest rebuild_fixture first/);
+        return true;
+      });
+      await assert.rejects(
+        assertNoOutdatedSources(db, "some_other_source"),
+        (error: any) => error.code === "outdated_canonicals",
       );
       await assert.rejects(
         rebuildCanonicals(db, { maintenanceToken: token, noLlm: true }),

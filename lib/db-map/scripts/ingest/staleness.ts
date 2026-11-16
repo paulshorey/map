@@ -129,25 +129,47 @@ function remedy(row: StalenessRow): { code: string; message: string } | null {
   return null;
 }
 
+/**
+ * Matching reads every source's canonicals, so an outdated matching layer in any source is
+ * a problem for all of them. A source that also needs re-ingesting is named as such: its
+ * re-ingest removes those memberships.
+ */
+function sharedCanonicalProblem(rows: StalenessRow[]): { code: string; message: string } | null {
+  const stale = rows.filter((row) => row.matcher > 0 || row.canonical_build > 0);
+  if (!stale.length) return null;
+  const reingest = stale.filter((row) => row.reingest > 0).map((row) => row.source);
+  return {
+    code: "outdated_canonicals",
+    message:
+      `Memberships or canonical builds from older logic exist in ${stale.map((r) => r.source).join(", ")}; ` +
+      "matching reads every source's canonicals, so no source may be matched until they are gone. " +
+      (reingest.length ? `Re-ingest ${reingest.join(", ")} first (ingest:clean, then import). ` : "") +
+      `Then rebuild the canonicals with \`${REBUILD_COMMAND}\` if \`ingest:staleness\` still reports any.`,
+  };
+}
+
 /** New runs refuse a source holding outdated records; the error names the remedy. */
 export async function assertSourceCurrent(db: Pool, source: string): Promise<void> {
   const rows = await stalenessBySource(db);
   const own = rows.find((row) => row.source === source);
-  // Outdated records concern only their own source. Matching reads every source's
-  // canonicals, so an outdated matching layer anywhere blocks every new run.
-  const problem =
-    (own && remedy(own)) ??
-    rows.map((row) => (row.reingest ? null : remedy(row))).find((p) => p !== null);
+  const problem = (own && remedy(own)) ?? sharedCanonicalProblem(rows);
   if (problem) throw Object.assign(new Error(problem.message), { code: problem.code });
 }
 
 /**
  * Guard for the standalone stage commands (`ingest:normalize`, `ingest:geocode`,
  * `ingest:match`): they write over every selected record, so they refuse to run while any
- * selected source (all sources when none is named) holds outdated records.
+ * selected source (all sources when none is named) holds outdated records, or while any
+ * source at all holds an outdated matching layer.
  */
 export async function assertNoOutdatedSources(db: Pool, source: string | null): Promise<void> {
-  const problems = (await stalenessBySource(db, source)).map(remedy).filter((p) => p !== null);
+  const rows = await stalenessBySource(db);
+  const problems = rows
+    .filter((row) => source === null || row.source === source)
+    .map(remedy)
+    .filter((p) => p !== null);
+  const shared = sharedCanonicalProblem(rows);
+  if (shared && !problems.some((p) => p.code === "outdated_canonicals")) problems.push(shared);
   if (!problems.length) return;
   throw Object.assign(new Error(problems.map((p) => p.message).join("\n")), {
     code: problems.some((p) => p.code === "outdated_data") ? "outdated_data" : "outdated_canonicals",
