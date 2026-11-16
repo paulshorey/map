@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { randomUUID } from "node:crypto";
 import pg, { type Pool } from "pg";
 import { runMatch } from "./match.js";
-import { rebuildCanonicals, rebuildPlan } from "./rebuild-canonicals.js";
+import { parseRebuildArgs, rebuildCanonicals, rebuildPlan } from "./rebuild-canonicals.js";
 import { assertSourceCurrent, stalenessBySource } from "./staleness.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
 import { allNormalizationProfileVersions } from "./normalize/profiles.js";
@@ -355,3 +355,15 @@ test(
     }
   },
 );
+
+test("a mistyped flag is refused, never read as a full rebuild", () => {
+  assert.deepEqual(parseRebuildArgs(["--maintenance-token", "t", "--continue", "--consolidate"]), {
+    dryRun: false,
+    resume: true,
+    consolidate: true,
+    noLlm: false,
+    token: "t",
+  });
+  for (const bad of [["--contiune"], ["--maintenance-token"], ["--maintenance-token", "--continue"], ["extra"]])
+    assert.throws(() => parseRebuildArgs(bad), /Unknown argument|needs a value/);
+});

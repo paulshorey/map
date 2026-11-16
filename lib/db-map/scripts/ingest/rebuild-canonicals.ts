@@ -66,23 +66,67 @@ export async function rebuildPlan(db: Pool): Promise<RebuildPlan> {
   };
 }
 
-/** Fails unless the caller owns the maintenance gate and no worker is admitted. */
-async function assertOwnedMaintenance(db: Pool, token: string) {
+/**
+ * Take the exclusive admission lock (managed workers hold it shared) and check that the
+ * caller owns the maintenance gate. The returned release must be called when the rebuild
+ * ends: holding the lock on its own session keeps new workers out for the whole run, even
+ * if someone exits maintenance meanwhile.
+ */
+async function holdOwnedMaintenance(db: Pool, token: string) {
   const client = await db.connect();
+  const refuse = () =>
+    new Error("Owned, quiescent maintenance is required to rebuild canonicals");
   try {
-    await client.query("BEGIN");
+    const drain = (
+      await client.query("SELECT pg_try_advisory_lock(91832,1) AS acquired")
+    ).rows[0];
+    if (!drain.acquired) throw refuse();
     const gate = (
       await client.query("SELECT * FROM research_ingest_control WHERE singleton")
     ).rows[0];
-    const drain = (
-      await client.query("SELECT pg_try_advisory_xact_lock(91832,1) AS acquired")
-    ).rows[0];
-    if (!gate?.maintenance || !drain.acquired || gate.maintenance_token !== token)
-      throw new Error("Owned, quiescent maintenance is required to rebuild canonicals");
-  } finally {
-    await client.query("ROLLBACK").catch(() => undefined);
+    if (!gate?.maintenance || gate.maintenance_token !== token) {
+      await client.query("SELECT pg_advisory_unlock(91832,1)");
+      throw refuse();
+    }
+  } catch (error) {
     client.release();
+    throw error;
   }
+  return async () => {
+    try {
+      await client.query("SELECT pg_advisory_unlock(91832,1)");
+    } finally {
+      client.release();
+    }
+  };
+}
+
+/** Flags the command accepts; anything else is refused rather than ignored. */
+const FLAGS = new Set(["--dry-run", "--continue", "--consolidate", "--no-llm"]);
+
+/** A mistyped `--continue` must never fall through to a full, destructive rebuild. */
+export function parseRebuildArgs(argv: string[]) {
+  const opts = {
+    dryRun: false,
+    resume: false,
+    consolidate: false,
+    noLlm: false,
+    token: undefined as string | undefined,
+  };
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]!;
+    if (arg === "--maintenance-token") {
+      const value = argv[++i];
+      if (!value || value.startsWith("--"))
+        throw new Error("--maintenance-token needs a value");
+      opts.token = value;
+    } else if (!FLAGS.has(arg)) throw new Error(`Unknown argument: ${arg}`);
+    else if (arg === "--dry-run") opts.dryRun = true;
+    else if (arg === "--continue") opts.resume = true;
+    else if (arg === "--consolidate") opts.consolidate = true;
+    else opts.noLlm = true;
+  }
+  return opts;
 }
 
 export async function rebuildCanonicals(
@@ -97,7 +141,18 @@ export async function rebuildCanonicals(
   },
 ) {
   await assertRecordsCurrent(db);
-  await assertOwnedMaintenance(db, opts.maintenanceToken);
+  const release = await holdOwnedMaintenance(db, opts.maintenanceToken);
+  try {
+    return await rebuildUnderLock(db, opts);
+  } finally {
+    await release();
+  }
+}
+
+async function rebuildUnderLock(
+  db: Pool,
+  opts: { noLlm: boolean; resume?: boolean; consolidate?: boolean },
+) {
   const plan = await rebuildPlan(db);
   // Continuing keeps what is already linked, so all of it must be from the current logic.
   if (opts.resume && plan.outdated)
@@ -146,12 +201,10 @@ export async function rebuildCanonicals(
 }
 
 async function main() {
-  const args = process.argv.slice(2);
-  const value = (flag: string) =>
-    args.includes(flag) ? args[args.indexOf(flag) + 1] : undefined;
+  const args = parseRebuildArgs(process.argv.slice(2));
   const db = getDb();
   try {
-    if (args.includes("--dry-run")) {
+    if (args.dryRun) {
       await assertRecordsCurrent(db);
       const plan = await rebuildPlan(db);
       console.log(
@@ -164,19 +217,19 @@ async function main() {
       );
       return;
     }
-    const token = value("--maintenance-token");
+    const token = args.token;
     if (!token)
       throw new Error(
         "Refusing: pass --maintenance-token <owned-token> (try --dry-run first)",
       );
     const { plan, stats } = await rebuildCanonicals(db, {
       maintenanceToken: token,
-      noLlm: args.includes("--no-llm"),
-      resume: args.includes("--continue"),
-      consolidate: args.includes("--consolidate"),
+      noLlm: args.noLlm,
+      resume: args.resume,
+      consolidate: args.consolidate,
     });
     console.log(
-      `Rebuilt canonicals: ${args.includes("--continue") ? "continued" : `removed ${plan.canonicals}`}, matched ${stats.processed} records ` +
+      `Rebuilt canonicals: ${args.resume ? "continued" : `removed ${plan.canonicals}`}, matched ${stats.processed} records ` +
         `(created ${stats.created}, merged ${stats.merged}, model verdicts ${stats.llm}, consolidated ${stats.consolidated}). ` +
         "Verify each file again (the inventory lists it as ready_to_verify).",
     );
