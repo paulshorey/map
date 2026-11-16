@@ -22,7 +22,8 @@ import { pathToFileURL } from "node:url";
 import type { Pool, PoolClient } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { ingestConfig } from "./config.js";
-import { rebuildCanonicalPoi } from "./merge.js";
+import { prefetchDescription, rebuildCanonicalPoi } from "./merge.js";
+import { memoizedLlm, withLlmMemo, withLlmOutsideLock } from "./llm-memo.js";
 import {
   distinctiveName,
   isAnchor,
@@ -839,7 +840,7 @@ async function llmDecisionForCandidate(
   signals: Record<string, unknown>,
 ): Promise<Decision> {
   try {
-    const llm = await adjudicateMatch({
+    const request = {
       current: {
         name: row.name,
         address: row.address,
@@ -876,7 +877,11 @@ async function llmDecisionForCandidate(
       distance_m: Math.round(candidate.distance_m),
       score: score.score,
       signals,
-    });
+    };
+    // The verdict depends only on this request, so it may be fetched before the lock is taken.
+    const llm = await memoizedLlm("match", request, () =>
+      adjudicateMatch(request),
+    );
 
     return {
       decision: llm.samePlace ? "merge" : "new",
@@ -1629,10 +1634,41 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
     process.exit(1);
   });
 
+/**
+ * Read-only first pass for one record: decide its match and ask for the description its
+ * canonical would get, so both model answers are in the memo before the lock is taken.
+ * It writes nothing and may run beside other records' passes.
+ */
+async function prefetchMatchAnswers(pool: Pool, opts: CliOptions) {
+  const client = await pool.connect();
+  try {
+    const sourceId = opts.source
+      ? await resolveSourceId(client, opts.source)
+      : null;
+    const row = await fetchNextRow(client, sourceId, new Set(), opts.recordId);
+    if (!row) return;
+    const decision = await decideRow(client, row, opts);
+    await prefetchDescription(
+      client,
+      decision.decision === "merge" ? decision.candidatePoiId : null,
+      row.id,
+    );
+  } finally {
+    client.release();
+  }
+}
+
 export async function runMatch(
   pool: Pool,
   opts: CliOptions,
   shutdown: ShutdownSignal,
 ): Promise<MatchStats> {
-  return canonicalLane.run(() => runMatchInternal(pool, opts, shutdown));
+  const locked = () =>
+    canonicalLane.run(() => runMatchInternal(pool, opts, shutdown));
+  // A managed single-record match keeps its model calls outside the canonical lock.
+  if (!currentAttempt() || !opts.recordId || opts.noLlm || opts.dryRun)
+    return locked();
+  const memo = new Map<string, unknown>();
+  await withLlmMemo(memo, false, () => prefetchMatchAnswers(pool, opts));
+  return withLlmOutsideLock(locked, memo);
 }
