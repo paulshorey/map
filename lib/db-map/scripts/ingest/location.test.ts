@@ -140,7 +140,38 @@ test("outside every boundary, nearby places name the area only when they agree",
   assert.equal(offlineReverse(0.5, -30, gazetteer), null);
   // A disputed unit carries no country.
   assert.equal(offlineReverse(10.5, 10.5, gazetteer), null);
+  // A gap between two countries' boundaries: the places disagree, so nothing is named,
+  // not even the nearest town.
+  assert.equal(offlineReverse(47.59, 7.39, gazetteer), null);
   assert.throws(() => offlineReverse(91, 0, gazetteer), /Invalid reverse/);
+});
+test("a listed region in another script is not a conflict; a different Latin name still is", () => {
+  const aichi: ReverseLocation = {
+    ...hit,
+    country_code: "JP",
+    city: "Nagoya",
+    region: "Aichi",
+    region_code: null,
+    address: null,
+    postcode: null,
+    distance_m: 4000,
+    basis: "containing_area",
+    provider: "geonames",
+  };
+  const local = resolveLocation({ ...empty, region: "愛知県" }, aichi);
+  assert.deepEqual(local.warnings, []);
+  assert.equal(local.fields.city, "Nagoya");
+  assert.equal(local.fields.country_code, "JP");
+  assert.equal(local.fields.region, "愛知県", "the listed region is kept verbatim");
+  const other = resolveLocation({ ...empty, region: "Gifu" }, aichi);
+  assert.deepEqual(other.warnings, ["coordinate_region_conflict"]);
+  assert.equal(other.fields.city, null);
+  // A provider point result keeps the strict comparison.
+  const provider = resolveLocation(
+    { ...empty, region: "愛知県" },
+    { ...aichi, basis: undefined, distance_m: 5 },
+  );
+  assert.deepEqual(provider.warnings, ["coordinate_region_conflict"]);
 });
 test("the vendored data answers real points", () => {
   const cases: Array<[number, number, string, string | null, string | null]> = [
@@ -152,6 +183,7 @@ test("the vendored data answers real points", () => {
     [-33.8688, 151.2093, "AU", "New South Wales", "Sydney"],
     [35.1815, 136.9066, "JP", "Aichi", "Nagoya"],
     [48.985, -123.07, "US", "Washington", "Point Roberts"], // an exclave below Canada
+    [-12.78, 45.23, "YT", null, "Mamoudzou"], // Mayotte: its own code, not FR
   ];
   for (const [lat, lng, country, region, city] of cases) {
     const r = offlineReverse(lat, lng)!;

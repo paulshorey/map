@@ -34,7 +34,7 @@
         },
         "coordinate_source": "source",
         "coordinate_precision": "point",
-        "geocoder_version": "locationiq-location-v4",
+        "geocoder_version": "locationiq-location-v5",
         "validation": {
           "version": "location-v10",
           "normalization_id": "8b8b0dee-c7e5-4918-9d92-1a1e00c3851a",

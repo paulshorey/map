@@ -984,9 +984,12 @@ pnpm --filter @lib/db-map ingest:quota --clear-rate-limit   # after upgrading th
 pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume <run-id>
 ```
 
-Only forward lookups (records without a usable point) spend this quota. A file with more
-than 5,000 uncached forward lookups takes several days on the free plan: start it, let it
-pause at the quota, and resume it each day.
+Only forward lookups spend this quota. A record needs one when it has listed address or
+locality text to look up, **whether or not it also has a source point** (the lookup supplies
+the inferred slot); a record with a point and only a listed country needs none. Count the
+records with listed locality text, not the records without coordinates, to estimate a file.
+A file with more than 5,000 uncached forward lookups takes several days on the free plan:
+start it, let it pause at the quota, and resume it each day.
 
 ## Outdated data: re-ingest, never upgrade
 
@@ -1192,7 +1195,7 @@ whose new lookup missed stays plottable and is judged by its stored precision.
 publication. A supplied point that repeats a published country centroid (for example
 Google's Australia centroid) is stored as `country` precision, so it counts as coarse.
 
-The `location-v9` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
+The `location-v10` / `locationiq-location-v5` artifact binds `validation.coordinate_evidence`
 to its normalization/primary point, alongside separate listed text, forward query/result
 and reverse lookup, and records every known location in `research_poi_locations`.
 Canonical builder `canonical-build-v8` writes `canonical_poi_locations` (with the members'
@@ -1209,7 +1212,8 @@ staleness guard requires purging and re-ingesting the source; the `location-v2` 
 makes that re-ingestion mostly free of provider calls. v5 added coarse-point reverse
 trimming and supplied-centroid precision; v6 plausibility checks and precision v3; v7 the
 no-point fallback chain and precision v4; v8 caps locality-only results at `city` (above); v10
-replaces the LocationIQ reverse call with the offline gazetteer (below). The
+(with geocoder `locationiq-location-v5`) replaces the LocationIQ reverse call with the offline
+gazetteer (below). The
 additive country-precision migration widens the two storage constraints; it does
 not reclassify stored points or rebuild existing artifacts.
 
@@ -1267,7 +1271,11 @@ daily quota now cover forward lookups only.
   otherwise the nearest place within 15 km, always in the point's country. In open country
   this is the nearest town, as it was with the provider.
 - A point outside every boundary (a pier, a small island) takes country and region from the
-  places within 25 km, only when they all agree.
+  places within 25 km, only when they all agree on the country; otherwise nothing is filled.
+- A dependent territory has its own ISO code (`YT`, `RE`, `PR`), not its sovereign's.
+- A listed region written in another script (`愛知県`) is not compared with the English region
+  name, so it raises no `coordinate_region_conflict`. A Latin-script local name (`Bayern`
+  against `Bavaria`) still does, and the lookup's fields are then not used.
 - **Street address and postcode** are never inferred. They come from the listing or stay empty.
 
 Source addresses/locality win; country values use the pinned ISO country dataset. The lookup

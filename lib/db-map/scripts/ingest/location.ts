@@ -3,7 +3,7 @@ import { countryToCode } from "./normalize/country.js";
 import { haversineMeters } from "./match/geo.js";
 import { validPoint } from "../../lib/ingestion/location-points.js";
 export const LOCATION_VERSION = "location-v10";
-export const LOCATION_GEOCODER_VERSION = "locationiq-location-v4";
+export const LOCATION_GEOCODER_VERSION = "locationiq-location-v5";
 export const LOCATION_CACHE_VERSION = "location-v2";
 export const LOCATION_QUERY_VERSION = "listed-location-v1";
 export interface LocationFields {
@@ -368,7 +368,11 @@ export function resolveLocation(
       .trim()
       .toUpperCase();
   const region = textValue(source.region) ? fold(source.region!) : null;
+  // Offline region names are English. A listed region in another script (愛知県 against
+  // Aichi) cannot be compared by spelling, so it is not a contradiction.
+  const comparable = !reverse?.basis || !region || !/[^\u0000-\u024F]/.test(region);
   if (
+    comparable &&
     region &&
     reverse?.region &&
     region !== fold(reverse.region) &&

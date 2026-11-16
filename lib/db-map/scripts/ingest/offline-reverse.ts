@@ -8,6 +8,7 @@
  *    (cities500.txt). Either way it lies in the point's country.
  *  - A point outside every boundary (a pier, a small island, a simplified coastline) takes
  *    its country and region from nearby places, only when every place around it agrees.
+ *    Without an agreed country it gets no result at all, so no town from across a border.
  *  - A street address or postcode is never supplied.
  */
 import fs from "node:fs";
@@ -249,15 +250,16 @@ export function offlineReverse(
         : null;
     basis = "nearby_places";
   }
+  // Without an agreed country nothing is named: a town could be on either side of a border.
+  if (!country) return null;
   // The town must lie in the same country; across a border it is another country's town.
   const towns = near.filter(
-    (n) => n.m <= CITY_KM * 1000 && (!country || n.place.country === country),
+    (n) => n.m <= CITY_KM * 1000 && n.place.country === country,
   );
   const town =
     towns
       .filter((n) => n.m <= n.place.extentM)
       .sort((a, b) => b.place.extentM - a.place.extentM)[0] ?? towns[0];
-  if (!country && !town) return null;
   return {
     country_code: country,
     region,

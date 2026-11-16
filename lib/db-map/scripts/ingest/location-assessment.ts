@@ -183,10 +183,13 @@ export function assessLocation(input: AssessmentInput): LocationAssessment {
       reverseCountry === country &&
       !!fold(listed.city) &&
       fold(listed.city) === fold(reverse.city) &&
-      typeof reverse.distance_m === "number" &&
-      Number.isFinite(reverse.distance_m) &&
-      reverse.distance_m >= 0 &&
-      reverse.distance_m <= 1000;
+      // An offline area lookup names the town whose area covers the point (it enforces its
+      // own radii); a provider point result must sit within 1 km of the query point.
+      (typeof reverse.basis === "string" ||
+        (typeof reverse.distance_m === "number" &&
+          Number.isFinite(reverse.distance_m) &&
+          reverse.distance_m >= 0 &&
+          reverse.distance_m <= 1000));
     if (point.precision !== "point")
       result.reasons.push("coarse_coordinate_candidates");
     if (!reverseAgrees)

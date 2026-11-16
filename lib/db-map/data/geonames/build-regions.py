@@ -6,9 +6,11 @@ Input: Natural Earth 1:10m "admin 1 states and provinces" GeoJSON (public domain
 plus cities500.txt and admin1CodesASCII.txt in this folder (GeoNames, CC BY 4.0).
 
 Natural Earth units are states in some countries and counties or municipalities in others.
-Each unit is therefore labelled with the GeoNames first-level region that most of the
-GeoNames places inside it belong to, so "region" means the same level everywhere
-(Paris -> Ile-de-France, Wyoming -> Wyoming). Units with no place inside keep the country only.
+Each unit is therefore labelled with the GeoNames country and first-level region that most
+of the GeoNames places inside it belong to, so "region" means the same level everywhere
+(Paris -> Ile-de-France, Wyoming -> Wyoming). The country is taken from those places too,
+because Natural Earth gives a dependent territory its sovereign's code (Mayotte is FR there,
+YT in GeoNames and ISO 3166-1). Units with no place inside keep Natural Earth's country only.
 
 Usage: python3 build-regions.py /path/to/ne_10m_admin_1_states_provinces.geojson
 """
@@ -82,10 +84,8 @@ def main():
             continue
         x, y = float(f[5]) * SCALE, float(f[4]) * SCALE
         for index, rings in grid.get((math.floor(x / SCALE), math.floor(y / SCALE)), ()):
-            if units[index]["c"] != f[8]:
-                continue
             if inside(rings[0], x, y) and not any(inside(h, x, y) for h in rings[1:]):
-                units[index]["votes"][f[10]] += 1
+                units[index]["votes"][(f[8], f[10])] += 1
                 break
 
     names = {}
@@ -96,7 +96,15 @@ def main():
     out = []
     labelled = 0
     for unit in units:
-        admin1 = unit["votes"].most_common(1)[0][0] if unit["votes"] else None
+        admin1 = None
+        if unit["votes"]:
+            by_country = Counter()
+            for (country, _), count in unit["votes"].items():
+                by_country[country] += count
+            unit["c"] = by_country.most_common(1)[0][0]
+            admin1 = Counter(
+                {a1: n for (country, a1), n in unit["votes"].items() if country == unit["c"]}
+            ).most_common(1)[0][0]
         region = names.get(f"{unit['c']}.{admin1}") if admin1 else None
         labelled += bool(region)
         out.append(
