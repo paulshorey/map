@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { classifyResult, parseEntries } from "./import-queue.js";
+import { execFileSync } from "node:child_process";
+import { assertPrimaryCheckout, classifyResult, parseEntries } from "./import-queue.js";
 
 const base = { coverage: "partial", runId: "run", quickQuotaPauses: 0 };
 
@@ -28,4 +29,12 @@ test("every other outcome stops the queue without a retry", () => {
 test("entries parse as <file>=<category>", () => {
   assert.deepEqual(parseEntries(["data/poi/a=b.json=art_fair"]), [{ file: "data/poi/a=b.json", category: "art_fair" }]);
   assert.throws(() => parseEntries(["data/poi/a.json"]));
+});
+
+test("whole-file imports are refused from a linked worktree", () => {
+  const git = (arg: string) =>
+    execFileSync("git", ["rev-parse", "--path-format=absolute", arg], { encoding: "utf8" }).trim();
+  // In a linked worktree the git directory differs from the repository's common directory.
+  if (git("--git-dir") === git("--git-common-dir")) assertPrimaryCheckout("start");
+  else assert.throws(() => assertPrimaryCheckout("start"), /must run from the primary checkout/);
 });

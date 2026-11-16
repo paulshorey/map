@@ -104,10 +104,8 @@ try {
   assert.equal(first.evidence.scope_records, 1);
   assert.equal(first.evidence.stop_reason, "stop_after_normalize");
   assert.equal(first.health_checks, 0);
-  // Local-only is intentional test isolation: never invoke a paid reporter or parent callback.
   const launch = await cli([
     "start",
-    "--local-only",
     "--max-hours",
     "1",
     "--",
@@ -122,7 +120,6 @@ try {
   ]);
   assert.equal(launch.code, 0);
   jobs.push(launch.data.job_id);
-  assert.equal(launch.data.notification, "local_only");
   const second = await result(launch.data.job_id);
   assert.equal(second.run_id, first.run_id);
   assert.notEqual(second.execution_id, first.execution_id);
@@ -156,9 +153,6 @@ try {
   assert.equal(terminal.run_id, first.run_id);
   assert.equal(terminal.evidence.scope_records, 1);
   assert.equal(terminal.probe_error, undefined);
-  assert.equal((await loadJob(receipt.job_id)).runner_model, "external");
-  assert.equal((await loadJob(receipt.job_id)).parent_thread, undefined);
-  await assert.rejects(readFile(jobPath(receipt.job_id, "summary.claim")));
   console.log(
     "PASS: one-record smoke, IPC identity, detached/native bounded-cohort resumes, durable terminal evidence; no providers/models/callbacks",
   );

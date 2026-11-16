@@ -20,9 +20,9 @@ The [ingestion runbook](poi-ingestion.md) owns shared pipeline behavior, bounded
 category completeness, and troubleshooting. Read it before changing or running ingestion;
 update it when behavior changes instead of duplicating recipes here or in source notes.
 
-The [agent operations guide](ingestion-agents.md) owns cheap-runner delegation, model-free
-monitoring, notification prerequisites, and local supervisor recovery. Root AGENTS.md owns the
-model policy; link to it instead of duplicating execution instructions in source folders.
+The [agent operations guide](ingestion-agents.md) owns running imports: the import queue,
+time-limited smokes, model-free supervision and local supervisor recovery. Link to it instead
+of duplicating execution instructions in source folders.
 
 ## POI sources (`data/poi/`)
 

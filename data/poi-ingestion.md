@@ -1,7 +1,7 @@
 # POI ingestion: operation and recovery
 
-For agent-operated long runs, use [economical agent operations](ingestion-agents.md): explicit
-cheap-runner delegation, hourly model-free supervision, terminal reporting, and bounded smoke tests.
+To run imports as an agent, use [agent operations](ingestion-agents.md): the import queue for
+whole files, time-limited smokes for checks, and model-free supervision throughout.
 The process-control and maintenance rules in this runbook still apply.
 
 This is the shared reference for humans and agents. [README](../README.md#poi-ingestion)
@@ -213,7 +213,7 @@ The payload's TypeScript contract and JSON Schema live in `lib/db-map/contracts/
 API filters are `run`, `file`, `limit`, `offset`, `detail=1`; `inventory=1` includes the original
 inventory projection so the dashboard can refresh both panels with one database snapshot.
 Detail/doctor also returns five pending/paused/quarantined/budget-held task samples per stage/state.
-Focused status/control/trace and coordinator snapshot interfaces remain the drill-down tools.
+Focused status, control and trace interfaces remain the drill-down tools.
 Hourly Node checks persist committed progress separately from latest attempted work and task counts
 in each job journal; they do not invoke a model for healthy progress.
 
@@ -496,19 +496,18 @@ records. Managed resume still preserves
 already completed checkpoints and their original provenance; it does not rewrite
 the entire prior run using a new provider. Current resolver/prompt versions are
 hybrid-v6 / poi-normalize-v4; both are in the cache key, so older resolver cache results
-cannot be reused for pending work. Exact hybrid-v3 / poi-normalize-v2 and interim
-hybrid-v4 / poi-normalize-v3 and hybrid-v5 / poi-normalize-v4 checkpoints can resume when every other pipeline
-version matches. The execution options audit both version sets while the original
-run and artifacts retain their original versions. Other version drift still
-requires a new run. Use an explicit new reprocessing run
+cannot be reused for pending work. Only a run whose stored pipeline versions all equal the
+current ones can resume (`compatibleCheckpointVersions()` is empty); any version drift
+requires a new run, and records from older logic are handled as
+[outdated data](#outdated-data-re-ingest-never-upgrade). Use an explicit new reprocessing run
 only when a reviewed quality issue requires that extra work. Deterministic-only
 cache keys retain their existing shape. Normalization request rows record the full
 non-secret request body, including effective thinking and output limits.
 
 Final successful scope verification records its effective pipeline versions and execution ID
 in `research_ingest_runs.counters.verification`. Inventory uses this verification version for
-whole-file proof while preserving the original run/artifact versions. Compatible old full
-runs remain visible as resumable work; incompatible versions never advertise a resume command.
+whole-file proof while preserving the original run/artifact versions. A run from other
+pipeline versions never advertises a resume command.
 
 Run `pnpm --filter @lib/db-map ingest:test-llm` and
 `pnpm --filter @lib/db-map ingest:test-provider-recovery` for mocked provider checks.
@@ -518,8 +517,7 @@ for an isolated provider-free resume check against the development database.
 Management account/model reads can verify key validity and model availability without
 inference billing; they do not prove sufficient credits, successful inference, JSON
 quality or end-to-end ingestion. Before unattended imports, validate a new 1–5 record
-managed smoke through the necessary stages, then update the native scheduled coordinator handoff with the observed
-result. Full imports require no spending allowance, unknown-cost approval, ETA or overall deadline.
+managed smoke through the necessary stages. Full imports require no spending allowance, unknown-cost approval, ETA or overall deadline.
 Follow [agent operations](ingestion-agents.md) for execution.
 
 ### Transient provider recovery
@@ -563,7 +561,7 @@ joined to the exact execution ID. Unrestricted executions suggest `--resume UUID
 which clears historical provider caps while preserving checkpoints. Unknown costs are telemetry,
 not an admission or approval requirement. If an operator explicitly selects finite caps, the
 suggested resume subtracts recorded usage from those optional caps. A bare resume of an old
-capped run retains its original limits; the native scheduled coordinator must use `--unlimited` for continuous execution.
+capped run retains its original limits; pass `--unlimited` for continuous execution.
 
 ```bash
 pnpm --filter @lib/db-map ingest:pause --run <uuid>
@@ -630,9 +628,11 @@ legacy attempt records.
   checkpoints in the activation transaction, including on compatible older-geocoder resumes.
   Unchanged artifacts may be reused on reevaluation. City, region or country changes clear both
   the embedding vector and active embedding ID; address-only enrichment preserves them.
-- **Embed:** normalized POIs need a stored embedding in the managed pipeline. Current managed
-  execution uses one-record requests for precise checkpointing. Standalone embedding supports
-  batches, but does not provide the managed execution ledger.
+- **Embed:** normalized POIs need a stored embedding in the managed pipeline. Managed
+  execution collects up to 32 records per request, waiting at most two seconds, and still
+  checkpoints each record. Records arrive from the geocode stage about one a second, so
+  batches are usually small (the mean was 1 in the last measured run). Standalone embedding
+  also batches, but does not provide the managed execution ledger.
 - **Match/build:** source coordinates, normalized name/category and embedding stage completion
   feed matching. Decisions, memberships and canonical rebuilds commit together. Managed LLM
   adjudication/fusion errors propagate as failures instead of silently falling back to success.
@@ -696,8 +696,8 @@ Conflicting edits fail; reread and reconcile rather than overwriting. Scans pres
 operator fields and batch metadata writes to avoid a database round trip per capture.
 Do not maintain a second mutable status file in `data/poi`; database evidence is authoritative.
 
-The [native scheduled coordinator procedure](ingestion-agents.md#native-codex-scheduled-coordinator) owns durable
-execution reconciliation and repair handoff. `ingest:status --json` exposes exact per-execution normalization
+The [import queue](#sequential-import-queue) owns launching whole files in order;
+[agent operations](ingestion-agents.md) covers running and recovering it. `ingest:status --json` exposes exact per-execution normalization
 usage for diagnostics, including failed requests and costs that are still unknown. This telemetry
 does not block uncapped imports or require spending approval.
 
@@ -981,7 +981,7 @@ the run prints the resume command. Per-second and per-minute 429s keep the bound
 pnpm --filter @lib/db-map ingest:quota                      # today's count, limit and reset
 pnpm --filter @lib/db-map ingest:quota --clear-rate-limit   # after upgrading the plan today
 # After 00:00 UTC, resume the same run (completed work and saved operator limits are kept):
-pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume <run-id>
+pnpm --silent --filter @lib/db-map ingest:supervise start -- --resume <run-id>
 ```
 
 A large source such as The Dyrt (about 25,000 uncached reverse lookups) therefore takes
@@ -1279,8 +1279,9 @@ country filter, and the snapshot remain available through `ingest:trace`. Accept
 means the diagnostic found agreement. It is not a publication requirement and it
 does not verify a venue or an edition.
 
-`matcher-v3` scores the research row's stored point. `canonical-build-v7` publishes
-every plottable candidate. A source point with no inferred point, reverse result,
+The matcher scores the research row's stored point (since `matcher-v3`; current
+`matcher-v4`). The canonical builder publishes every plottable candidate (since
+`canonical-build-v7`; current `canonical-build-v8`). A source point with no inferred point, reverse result,
 or country text still publishes. Far-apart and cross-country candidates publish
 both markers. Equal coordinates keep both evidence records and one marker. A
 record with no plottable point stays unpublished and its assessment is
@@ -1288,7 +1289,7 @@ record with no plottable point stays unpublished and its assessment is
 not hide the canonical or quarantine the record.
 
 Build inputs still store the current assessment ID, including `needs_review`.
-Checkpoint reuse requires that current snapshot binding and the v7 builder. It
+Checkpoint reuse requires that current snapshot binding and the current builder. It
 does not require `status=accepted`. An inactive membership on a live research row
 keeps the previous serving snapshot during a normalization refresh. Explicit
 retirement, exclusion, and cleanup still withdraw output. Paid provider query
@@ -1416,7 +1417,7 @@ variable unset, the SQL test is explicitly skipped; no shared database is used.
 
 ### Canonical origin repair and resume
 
-`canonical-build-v7` preserves fixed source/inferred coordinate provenance and legacy origins, and publishes conflicting candidates. Deploying it does not
+Since `canonical-build-v7` the builder preserves fixed source/inferred coordinate provenance and legacy origins, and publishes conflicting candidates (current: `canonical-build-v8`). Deploying a new builder does not
 rewrite historical data. Older builders are not resumable (outdated data is re-ingested). On a new run or exact-version resume,
 completed downstream tasks and batch/attempt caches reject older builders. The
 match stage rebuilds the existing canonical from its active members when its build
