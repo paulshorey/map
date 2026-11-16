@@ -624,8 +624,8 @@ legacy attempt records.
   Failed refresh keeps prior valid output and marks it stale. Accepted changes clear derived
   embeddings/geocode pointers, invalidate old geocoded coordinates, and refresh or retire
   memberships/builds according to match changes. Prompt output must retain the input UUID.
-- **Geocode:** missing points use forward lookup; missing administrative fields can use reverse lookup. Queries and misses are
-  cached. Missing locality or a remembered miss is `blocked`; rerunning cannot fix bad input.
+- **Geocode:** missing points use a forward provider lookup; a point's missing country, region and city come
+  from the offline gazetteer, with no provider call. Forward queries and misses are cached. Missing locality or a remembered miss is `blocked`; rerunning cannot fix bad input.
   Successful/reused managed geocode completion requeues completed embed/match/canonical/verify
   checkpoints in the activation transaction, including on compatible older-geocoder resumes.
   Unchanged artifacts may be reused on reevaluation. City, region or country changes clear both
@@ -964,7 +964,7 @@ pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's
 ## Daily geocoding quota
 
 LocationIQ's free plan allows 5,000 requests a day (2 a second, 60 a minute) and resets at
-00:00 UTC; unsuccessful requests are not charged. Every real forward or reverse request is
+00:00 UTC; unsuccessful requests are not charged. Every real forward request is
 reserved first in `research_provider_daily_usage`, shared by all managed and standalone
 processes and kept by `ingest:purge`. Set `LOCATIONIQ_DAILY_LIMIT` for another plan (`0`
 disables the local limit). Every unsuccessful request (network error, 400, 404 "Unable to
@@ -984,8 +984,9 @@ pnpm --filter @lib/db-map ingest:quota --clear-rate-limit   # after upgrading th
 pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume <run-id>
 ```
 
-A large source such as The Dyrt (about 25,000 uncached reverse lookups) therefore takes
-several days on the free plan: start it, let it pause at the quota, and resume it each day.
+Only forward lookups (records without a usable point) spend this quota. A file with more
+than 5,000 uncached forward lookups takes several days on the free plan: start it, let it
+pause at the quota, and resume it each day.
 
 ## Outdated data: re-ingest, never upgrade
 
@@ -1106,8 +1107,7 @@ precision; pre-slot legacy points and source/URL points are kept.
 Forward queries use immutable captured text and source location hints, never fields
 filled by reverse lookup or model coordinate proposals. Supplied address/locality
 wins over composite venue names for lookup; recognized listed countries constrain
-search. Hits and misses are cached by query policy/country. Forward and reverse share
-provider budgets and recovery. If the budget expires between calls, activation waits
+search. Hits and misses are cached by query policy/country. If the budget expires between calls, activation waits
 and resume reuses cached results; a miss preserves a usable source point.
 
 Listing filler such as `Various`, `Various venues`, `Various (England)`, `TBA`, `Online` or
@@ -1129,7 +1129,7 @@ is never an anchor for the 50 km checks below. A centroid's country fills a miss
 when it is a current ISO code (not the vendored `GZ`/`AN`). A reverse lookup is trusted only to the
 point's precision: a `country` point keeps only the country, a `region` point drops the
 city, and any coarse or unknown-precision point drops the street address and postcode. A country centroid
-otherwise reverse-geocodes to whatever village lies under it. A reverse call is made only when
+otherwise reverse-geocodes to whatever village lies under it. A reverse lookup runs only when
 a field that precision can still supply is missing, and a centroid match fills a missing
 country itself (provenance `supplied_centroid`), so Adelaide needs no provider call.
 
@@ -1208,7 +1208,8 @@ geocode reuse). Records from an older location version are not re-enriched in pl
 staleness guard requires purging and re-ingesting the source; the `location-v2` query cache
 makes that re-ingestion mostly free of provider calls. v5 added coarse-point reverse
 trimming and supplied-centroid precision; v6 plausibility checks and precision v3; v7 the
-no-point fallback chain and precision v4; v8 caps locality-only results at `city` (above). The
+no-point fallback chain and precision v4; v8 caps locality-only results at `city` (above); v10
+replaces the LocationIQ reverse call with the offline gazetteer (below). The
 additive country-precision migration widens the two storage constraints; it does
 not reclassify stored points or rebuild existing artifacts.
 
@@ -1253,15 +1254,29 @@ count markers. Approximate locality points do not establish venue/entrance preci
 A future source/inferred/both display policy can select these fields without rerunning
 ingestion or losing the other observation.
 
-The managed geocode stage also fills missing administrative/address fields for valid points.
-Source addresses/locality win; country values use the pinned ISO country dataset. Reverse
-LocationIQ fields are approximate, cached by exact point and policy version, and never move
-valid source coordinates. Country/region conflicts, distant results and missing fields remain
-visible in `research_pois.attributes.location_enrichment` and the bound geocode artifact.
-A definitive optional reverse miss does not fail the geocode stage for a coordinate-bearing
-POI. The assessment records that missing evidence and still lets the source point publish.
-API failures retain normal bounded recovery and systemic stop behavior. Source-precision centroids do not
-receive inferred street addresses. Forward and reverse calls share `--geocode-limit`.
+The managed geocode stage also fills a valid point's missing country, region and city offline
+(`scripts/ingest/offline-reverse.ts`), from data vendored in `lib/db-map/data/geonames`. It
+makes no provider call, spends no quota and writes no cache entry; `--geocode-limit` and the
+daily quota now cover forward lookups only.
+
+- **Country and region** come from the boundary that contains the point (Natural Earth 1:10m
+  units, each labelled with its GeoNames first-level region, so Paris is `Île-de-France` and
+  Old Faithful is `Wyoming`). Boundaries are accurate to a few hundred metres; a point that
+  close to a border can land on the wrong side.
+- **City** is the largest GeoNames place whose built-up area plausibly covers the point,
+  otherwise the nearest place within 15 km, always in the point's country. In open country
+  this is the nearest town, as it was with the provider.
+- A point outside every boundary (a pier, a small island) takes country and region from the
+  places within 25 km, only when they all agree.
+- **Street address and postcode** are never inferred. They come from the listing or stay empty.
+
+Source addresses/locality win; country values use the pinned ISO country dataset. The lookup
+never moves a source point. Country/region conflicts and missing fields remain visible in
+`research_pois.attributes.location_enrichment` and the bound geocode artifact, whose
+`reverse.provider` is `geonames` (`locationiq` on artifacts from `location-v9` and earlier).
+A miss (open sea) does not fail the geocode stage: the assessment records the missing
+evidence and the source point still publishes. The 2,884 LocationIQ reverse results in the
+query cache are no longer read.
 
 Canonical builds publish selected `attributes.country_code`, `city`, and `region` with
 member/derivation provenance. A versioned location artifact binds normalization and point;

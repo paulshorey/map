@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { geocode, reverseGeocode } from "./locationiq.js";
+import { geocode } from "./locationiq.js";
 import {
   ProviderQuotaExhausted,
   dailyLimit,
@@ -99,7 +99,7 @@ test("'Rate Limited Day' stops all later lookups without retrying; per-second li
     return true;
   });
   assert.equal(db.state.requests, 10, "an uncharged per-second 429 is released");
-  await assert.rejects(reverseGeocode(30, -97), (error: unknown) => {
+  await assert.rejects(geocode("Houston, Texas", "US"), (error: unknown) => {
     assert.ok(error instanceof ProviderQuotaExhausted);
     assert.equal(error.reason, "provider_rate_limited_day");
     return true;
@@ -137,6 +137,5 @@ test("a 404 miss is not charged and releases its reservation", async () => {
   useProviderQuotaLedger(db as never);
   globalThis.fetch = async () => Response.json({ error: "Unable to geocode" }, { status: 404 });
   assert.equal(await geocode("Nowhere", "US"), null);
-  assert.equal(await reverseGeocode(30, -97), null);
   assert.equal(db.state.requests, 7);
 });
