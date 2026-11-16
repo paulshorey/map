@@ -1,3 +1,4 @@
+import { childEnv } from "./child-env.js";
 import { spawn } from "node:child_process";
 import { open } from "node:fs/promises";
 
@@ -22,6 +23,7 @@ export async function superviseProcess(opts: ProcessOptions) {
     cwd: opts.cwd,
     detached: true,
     stdio: ["ignore", log.fd, log.fd, "ipc"],
+    env: childEnv(),
   });
   let reason: string | undefined,
     forced = false,
