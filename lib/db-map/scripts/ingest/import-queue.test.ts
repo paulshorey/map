@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { execFileSync } from "node:child_process";
-import { assertPrimaryCheckout, classifyResult, parseEntries } from "./import-queue.js";
+import {
+  assertPrimaryCheckout,
+  classifyResult,
+  isConnectivityError,
+  parseEntries,
+} from "./import-queue.js";
 
 const base = { coverage: "partial", runId: "run", quickQuotaPauses: 0 };
 
@@ -37,4 +42,27 @@ test("whole-file imports are refused from a linked worktree", () => {
   // In a linked worktree the git directory differs from the repository's common directory.
   if (git("--git-dir") === git("--git-common-dir")) assertPrimaryCheckout("start");
   else assert.throws(() => assertPrimaryCheckout("start"), /must run from the primary checkout/);
+});
+
+test("a lost connection is recognised; other failures are not", () => {
+  // The two failures recorded on 2026-11-16, as stored on their executions.
+  for (const error of [
+    { code: "database_pool_checkout_timeout", message: "timeout exceeded when trying to connect" },
+    { code: "ENOTFOUND", message: "getaddrinfo ENOTFOUND db.example.net" },
+    { code: "ETIMEDOUT" },
+    { message: "connect ENETUNREACH 10.0.0.1:5432" },
+    { message: "Connection terminated unexpectedly" },
+    "read ECONNRESET",
+  ])
+    assert.equal(isConnectivityError(error), true, JSON.stringify(error));
+  for (const error of [
+    null,
+    undefined,
+    { code: "systemic_unlocated", message: "25 records in a row could not be located" },
+    { code: "outdated_data", message: "records were produced by older pipeline logic" },
+    { message: "Lineage verification: 2 violation(s)" },
+    { code: "23505", message: "duplicate key value violates unique constraint" },
+    { status: 401, message: "Unauthorized" },
+  ])
+    assert.equal(isConnectivityError(error), false, JSON.stringify(error));
 });
