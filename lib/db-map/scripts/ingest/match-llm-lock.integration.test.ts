@@ -32,7 +32,8 @@ test(
     // Stage code owns its transactions; savepoints keep the whole fixture reversible.
     let open = 0,
       rollbacks = 0,
-      checkedOut = 0;
+      checkedOut = 0,
+      lockedReads = 0;
     const tx = {
       query(sql: string, ...args: any[]) {
         if (sql === "BEGIN") open++;
@@ -54,7 +55,11 @@ test(
       },
     };
     const db = {
-      query: client.query.bind(client),
+      // Pool-level queries are the read-only pass: it must not ask for row locks.
+      query(sql: string, ...args: any[]) {
+        if (/FOR UPDATE/.test(sql)) lockedReads++;
+        return client.query(sql, ...(args as [any]));
+      },
       connect: async () => {
         checkedOut++;
         return tx;
@@ -236,6 +241,7 @@ test(
       assert.equal(stats.llm, 1);
       assert.deepEqual(asked, ["match", "description_fusion"], "each question is asked once");
       assert.equal(rollbacks, 0, "both answers were ready before the lock was taken");
+      assert.equal(lockedReads, 0, "the read-only pass takes no row locks");
       assert.equal(
         (await client.query("SELECT canonical_poi_id FROM research_pois WHERE id=$1", [second]))
           .rows[0].canonical_poi_id,
