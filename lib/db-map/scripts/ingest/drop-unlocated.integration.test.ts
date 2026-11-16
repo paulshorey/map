@@ -80,6 +80,14 @@ test(
         "INSERT INTO research_ingest_run_items(run_id,source_record_id,source_ordinal,research_poi_id,observation_id) VALUES($1,$2::text,0,$2::uuid,$3)",
         [run, id, observation],
       );
+      // It was linked to a canonical by an earlier run, with the cached link set.
+      const canonical = (
+        await client.query(
+          `INSERT INTO canonical_pois(name,lng,lat,status,attributes,field_provenance,popularity)
+          VALUES('East Africa Art Biennale',0,0,'draft','{}','{}',1) RETURNING id`,
+        )
+      ).rows[0].id;
+      await client.query("UPDATE research_pois SET canonical_poi_id=$2 WHERE id=$1", [id, canonical]);
       const token = randomUUID();
       for (const [rank, stage] of RECORD_STAGES.entries())
         await client.query(
@@ -135,9 +143,19 @@ test(
         RECORD_STAGES.map((stage) => [stage, stage === "normalize" ? "succeeded" : "skipped"]),
       );
       assert.ok(tasks.slice(1).every((t) => t.reason === UNLOCATED_DROPPED));
-      assert.ok(
-        (await client.query("SELECT retired_at FROM research_pois WHERE id=$1", [id])).rows[0]
-          .retired_at,
+      const dropped = (
+        await client.query("SELECT retired_at,canonical_poi_id FROM research_pois WHERE id=$1", [id])
+      ).rows[0];
+      assert.ok(dropped.retired_at);
+      assert.equal(dropped.canonical_poi_id, null, "the cached canonical link is cleared");
+      assert.equal(
+        (
+          await client.query(
+            "SELECT count(*)::int n FROM research_canonical_memberships WHERE research_poi_id=$1 AND active",
+            [id],
+          )
+        ).rows[0].n,
+        0,
       );
       // The raw observation is kept.
       assert.equal(

@@ -1607,9 +1607,11 @@ export async function runOrchestration(
     );
   } catch (error) {
     finalStatus = "failed";
+    const code = (error as { code?: string })?.code;
+    // Deliberate stops keep their own name so status and the queue can tell them apart.
     reason =
-      (error as { code?: string })?.code === "provider_recovery_exhausted"
-        ? "provider_recovery_exhausted"
+      code === "provider_recovery_exhausted" || code === "systemic_unlocated"
+        ? code
         : "stage_error";
     await ex.finish("failed", reason, error);
     throw error;

@@ -226,9 +226,12 @@ async function dropRecord(
   const explanation =
     "Owner policy: a record that cannot be located from its own data is dropped";
   const dropped = { ...output, status: "skipped", explanation };
+  // The cached canonical link goes with the membership; keep the old ID only to rebuild it.
   const record = (
     await client.query(
-      `UPDATE research_pois SET retired_at=now() WHERE id=$1 RETURNING canonical_poi_id`,
+      `UPDATE research_pois rp SET retired_at=now(),canonical_poi_id=NULL
+      FROM (SELECT id,canonical_poi_id FROM research_pois WHERE id=$1 FOR UPDATE) old
+      WHERE rp.id=old.id RETURNING old.canonical_poi_id`,
       [claim.research_poi_id],
     )
   ).rows[0];
