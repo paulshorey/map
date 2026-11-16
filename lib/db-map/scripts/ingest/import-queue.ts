@@ -27,6 +27,7 @@ import { access, mkdir, open, readFile, readdir, rm, stat, writeFile } from "nod
 import { hostname } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { childEnv } from "./child-env.js";
 import { primaryRoot } from "../../sql/ingestion-overview.js";
 import { createInterface } from "node:readline";
 import { createHash } from "node:crypto";
@@ -315,7 +316,7 @@ async function superviseWatch(q: QueueState, entry: QueueEntry, args: string[], 
   const child = spawn(process.execPath, ["--import", "tsx", SUPERVISE, "watch", "--", ...args], {
     cwd: PACKAGE,
     stdio: ["ignore", "pipe", out.fd],
-    env: { ...process.env, [IMPORT_QUEUE_ENV]: q.id },
+    env: childEnv({ [IMPORT_QUEUE_ENV]: q.id }),
   });
   let result: Record<string, unknown> | null = null;
   // `stop --now` may arrive before the job id is known: forward it once the id is.
@@ -860,6 +861,7 @@ function spawnWorker(id: string) {
       cwd: PACKAGE,
       detached: true,
       stdio: ["ignore", log.fd, log.fd],
+      env: childEnv(),
     });
     try {
       await new Promise<void>((resolve, reject) => {
