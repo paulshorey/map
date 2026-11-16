@@ -433,6 +433,8 @@ async function fetchNextRow(
   sourceId: string | null,
   excludedIds: Set<string> = new Set(),
   recordId?: string,
+  /** The writing pass locks its row; a read-only pass must neither take nor skip locks. */
+  lock = true,
 ): Promise<ResearchMatchRow | null> {
   const params: unknown[] = [];
   let sourceClause = "";
@@ -471,7 +473,7 @@ async function fetchNextRow(
        ${excludedClause}
      ORDER BY rp.first_seen_at, rp.id
      LIMIT 1
-     FOR UPDATE SKIP LOCKED`,
+     ${lock ? "FOR UPDATE SKIP LOCKED" : ""}`,
     params,
   );
   return rows[0] ?? null;
@@ -1668,7 +1670,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
 async function prefetchMatchAnswers(pool: Pool, opts: CliOptions) {
   const reader = { query: pool.query.bind(pool) } as unknown as PoolClient;
   const sourceId = opts.source ? await resolveSourceId(reader, opts.source) : null;
-  const row = await fetchNextRow(reader, sourceId, new Set(), opts.recordId);
+  // Unlocked: with FOR UPDATE SKIP LOCKED this read would also wait on, or skip past, the
+  // source row that another record's locked pass holds.
+  const row = await fetchNextRow(reader, sourceId, new Set(), opts.recordId, false);
   if (!row) return;
   const decision = await decideRow(reader, row, opts);
   await prefetchDescription(
