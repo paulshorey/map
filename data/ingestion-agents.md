@@ -13,7 +13,7 @@ section before changing anything that a running worker uses.
 
 | You want to | Use |
 | --- | --- |
-| See what is running and what to do next | `ingest:overview --json`, `ingest:import-queue status` |
+| See what is running and what to do next | `ingest:overview --json`, `ingest:import-queue status --json` |
 | Import whole files | `ingest:import-queue start` |
 | Try a change on 1–5 records, time-limited | `ingest:supervise smoke` |
 | Debug one record through chosen stages, in the foreground | `ingest:run … --record <id> --stop-after <stage>` |
@@ -104,8 +104,10 @@ process and lock checks and reconciliation before a resume.
   battery power or a dropped connection can still end it. A detached process survives a
   closed terminal, not a reboot.
 - Nothing restarts an import after a reboot or a killed supervisor. Job files survive:
-  inspect them with `ingest:control list`, reconcile an absent execution, then
-  `ingest:import-queue resume`.
+  inspect them with `ingest:control list` and reconcile an absent execution. Then, for a
+  file that was running in a queue, `ingest:import-queue resume`. For a run started with
+  `ingest:supervise start` outside any queue there is no queue to resume: continue it with
+  `ingest:supervise start -- --resume <run-uuid> --unlimited`.
 - Provider recovery (HTTP 429/5xx) is handled inside the worker; see
   [transient provider recovery](poi-ingestion.md#transient-provider-recovery). After
   `provider_recovery_exhausted`, check availability and configuration before another launch.

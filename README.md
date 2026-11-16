@@ -196,9 +196,15 @@ pnpm --filter @lib/db-map ingest:taxonomy:seed
 # Record category state before the import.
 pnpm --filter @lib/db-map ingest:report --category <category>
 
-# NEW full run: extraction, normalization, geocoding, embedding, matching and reporting.
-# To continue an interrupted run instead, use ingest:run --resume <uuid>.
-pnpm --filter @lib/db-map ingest:run <file> --category <category>
+# Whole-file import: extraction, normalization, geocoding, embedding, matching and reporting.
+# The queue runs one file at a time, waits out the daily geocoding quota, resumes an
+# interrupted run of the same file, and stops for a decision on anything else.
+pnpm --silent --filter @lib/db-map ingest:inventory --refresh
+pnpm --silent --filter @lib/db-map ingest:import-queue start -- <file>=<category>
+pnpm --silent --filter @lib/db-map ingest:import-queue status
+
+# Bounded diagnostic in the foreground (not a whole-file import):
+pnpm --filter @lib/db-map ingest:run <file> --category <category> --limit 3 --stop-after normalize
 
 # Check category state after the import; repeat for its other source files.
 pnpm --filter @lib/db-map ingest:report --category <category>

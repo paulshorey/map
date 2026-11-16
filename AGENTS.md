@@ -68,12 +68,14 @@ For any ingestion inspection or operation, use the primary checkout and take one
 
 ```sh
 pnpm --silent --filter @lib/db-map ingest:overview --json     # workers, locks, maintenance, next action
-pnpm --silent --filter @lib/db-map ingest:import-queue status # the queue and each file's outcome
+pnpm --silent --filter @lib/db-map ingest:import-queue status --json # the queue; each file's outcome, run and job IDs
 # (status prints "No import queue exists" and exits non-zero until a first queue is started)
 ```
 
-Pin the actual run, execution and job IDs and timestamps from that output, then inspect
-bounded `ingest:status --run <uuid>` and the relevant log excerpt. A finished process or an
+Pin the actual run, execution and job IDs and timestamps from that output. The overview
+lists only jobs still running; a finished file's job IDs are in the queue's `status --json`
+(each entry's `jobs`), and `ingest:supervise status --job <uuid>` gives its result and log
+paths. Then inspect bounded `ingest:status --run <uuid>` and the relevant log excerpt. A finished process or an
 old receipt does not prove current health.
 
 Reconcile live workers before starting anything. Preserve healthy imports; diagnose failed,
