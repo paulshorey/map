@@ -3,8 +3,9 @@
 ## Current status — 2026-11-16
 
 The holds recorded below are over. The location fixes they waited for shipped as
-`location-v5` to `location-v9`, and all data was purged and re-imported from scratch on
-2026-11-05 ([reset note](data-reset-20261105.md)).
+`location-v5` to `location-v9`. All imported data was purged on 2026-11-05
+([reset note](data-reset-20261105.md)); the re-import only began on 2026-11-16 and most of
+it is still to do, as listed here.
 
 - Whole files now run through `ingest:import-queue`
   ([agent operations](../data/ingestion-agents.md)). A queue of the seven small reset-plan

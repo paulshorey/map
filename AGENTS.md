@@ -69,6 +69,7 @@ For any ingestion inspection or operation, use the primary checkout and take one
 ```sh
 pnpm --silent --filter @lib/db-map ingest:overview --json     # workers, locks, maintenance, next action
 pnpm --silent --filter @lib/db-map ingest:import-queue status # the queue and each file's outcome
+# (status prints "No import queue exists" and exits non-zero until a first queue is started)
 ```
 
 Pin the actual run, execution and job IDs and timestamps from that output, then inspect

@@ -17,11 +17,11 @@ section before changing anything that a running worker uses.
 | Import whole files | `ingest:import-queue start` |
 | Try a change on 1–5 records, time-limited | `ingest:supervise smoke` |
 | Debug one record through chosen stages, in the foreground | `ingest:run … --record <id> --stop-after <stage>` |
-| Start one detached run outside the queue (a resume the queue will not adopt) | `ingest:supervise start` |
+| Start one detached run outside the queue | `ingest:supervise start` |
 | Stop work | `ingest:import-queue stop [--now]`, or `ingest:control stop --run <uuid>` |
 
 Run everything from the repository root of the primary checkout. A coding worktree must not
-launch whole-file imports.
+launch whole-file imports; `ingest:import-queue start` and `resume` refuse to run from one.
 
 ## Whole files: the import queue
 
@@ -74,7 +74,9 @@ pnpm --silent --filter @lib/db-map ingest:supervise stop --job <job-uuid>
 ```
 
 `start` detaches, prints a job receipt and returns; `watch` is the same in the foreground
-and is what the queue uses. Neither notifies anyone. (`--local-only` is still accepted and
+and is what the queue uses. A later queue that lists the same file adopts such a run when it
+ended at the daily geocoding quota or an operator stop, and resumes it with its checkpoints;
+any other unfinished run stops the queue for a decision. Neither notifies anyone. (`--local-only` is still accepted and
 ignored: it used to choose between a parent callback and none, and there is no callback now.)
 
 Each job has a private, ignored directory `lib/db-map/.ingest-jobs/<uuid>/`:

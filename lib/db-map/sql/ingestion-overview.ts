@@ -105,7 +105,8 @@ export function performanceOpportunities(
     });
   return suggestions;
 }
-function primaryRoot() {
+/** The primary checkout of this repository, also when called from a linked worktree. */
+export function primaryRoot() {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
   const common = execFileSync(
     "git",
