@@ -1309,15 +1309,15 @@ export async function runOrchestration(
               };
             }
             if (stage === "match") {
-              // Records produced by older pipeline logic are never upgraded in place: purge and
-              // re-ingest them (see ingest:staleness). New runs refuse such sources up front.
+              // A membership from an older matcher is never rematched record by record: the whole
+              // matching layer is rebuilt at once. New runs refuse such sources up front.
               if (state.canonical_poi_id && state.membership_stale_matcher)
                 throw Object.assign(
                   new Error(
                     `Record ${item.source_record_id} was matched by an older matcher than ${PIPELINE_VERSIONS.matcher}; ` +
-                      "purge its source and re-import it (pnpm --filter @lib/db-map ingest:staleness)",
+                      "rebuild the canonicals (pnpm --filter @lib/db-map ingest:rebuild-canonicals, see ingest:staleness)",
                   ),
-                  { code: "outdated_data" },
+                  { code: "outdated_canonicals" },
                 );
               const assessment = await assessLocationRecord(
                 db,

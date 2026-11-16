@@ -43,7 +43,7 @@ import { extractStrongIds } from "./match/ids.js";
 import { adjudicateMatch } from "./match/llm.js";
 import { scoreCandidate, type CandidateScore } from "./match/score.js";
 import { websiteIdentity } from "./match/denylist.js";
-import { assertNoOutdatedSources } from "./staleness.js";
+import { assertNoOutdatedSources, assertRecordsCurrent } from "./staleness.js";
 import { LlmError } from "./providers/llm.js";
 
 const ADVISORY_LOCK_ID = 0x5018a;
@@ -70,6 +70,8 @@ export interface CliOptions {
   dryRun: boolean;
   noLlm: boolean;
   recluster: boolean;
+  /** A failed model call stops the run instead of deciding "different place". */
+  strictLlm?: boolean;
   gcOrphans: boolean;
   consolidate: boolean;
   consolidateOnly: boolean;
@@ -77,7 +79,7 @@ export interface CliOptions {
   tLow: number;
 }
 
-interface MatchStats {
+export interface MatchStats {
   processed: number;
   merged: number;
   created: number;
@@ -837,6 +839,7 @@ async function llmDecisionForCandidate(
   candidate: CandidateRow,
   score: CandidateScore,
   signals: Record<string, unknown>,
+  strict = false,
 ): Promise<Decision> {
   try {
     const llm = await adjudicateMatch({
@@ -887,7 +890,7 @@ async function llmDecisionForCandidate(
       llmReason: llm.reason,
     };
   } catch (err) {
-    if (currentAttempt()) throw err;
+    if (currentAttempt() || strict) throw err;
     // Conservative fallback (M0.4): an LLM/API failure must never auto-merge.
     const message =
       err instanceof LlmError ? err.message : (err as Error).message;
@@ -1124,6 +1127,7 @@ async function decideRow(
       anchorProximity,
       anchorScore,
       anchorSignals,
+      opts.strictLlm,
     );
   }
 
@@ -1207,14 +1211,20 @@ async function decideRow(
     };
   }
 
-  return llmDecisionForCandidate(row, best, score, {
-    ...baseSignals,
-    match_context: best.via.includes("name")
-      ? "same/similar name within wide location block; decide if coordinates diverge for one real-world place"
-      : best.via.includes("proximity") && isAnchor(candidateAnchorMeta(best))
-        ? "nearby same-category anchor/complex candidate"
-        : "spatial candidate",
-  });
+  return llmDecisionForCandidate(
+    row,
+    best,
+    score,
+    {
+      ...baseSignals,
+      match_context: best.via.includes("name")
+        ? "same/similar name within wide location block; decide if coordinates diverge for one real-world place"
+        : best.via.includes("proximity") && isAnchor(candidateAnchorMeta(best))
+          ? "nearby same-category anchor/complex candidate"
+          : "spatial candidate",
+    },
+    opts.strictLlm,
+  );
 }
 
 async function createCanonical(
@@ -1588,10 +1598,10 @@ async function main() {
   let stats: MatchStats | undefined;
 
   try {
-    // Outdated records are re-ingested, never upgraded in place (reclustering resets all).
-    if (!opts.recluster) {
-      await assertNoOutdatedSources(db, opts.source ?? null);
-    }
+    // Reclustering replaces every membership and canonical, so only the records themselves
+    // must be current. Any other match refuses outdated data of either kind.
+    if (opts.recluster) await assertRecordsCurrent(db);
+    else await assertNoOutdatedSources(db, opts.source ?? null);
     stats = await runMatch(db, opts, shutdown);
 
     if (stats.stopped) {
