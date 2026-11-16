@@ -99,6 +99,15 @@ export async function rebuildCanonicals(
   await assertRecordsCurrent(db);
   await assertOwnedMaintenance(db, opts.maintenanceToken);
   const plan = await rebuildPlan(db);
+  // Continuing keeps what is already linked, so all of it must be from the current logic.
+  if (opts.resume && plan.outdated)
+    throw Object.assign(
+      new Error(
+        `${plan.outdated} linked records are from an older matcher or builder: --continue would keep them. ` +
+          "Run a full rebuild (without --continue) instead.",
+      ),
+      { code: "outdated_canonicals" },
+    );
   await db.query(
     `INSERT INTO research_ingest_control_events(action, actor, details)
      VALUES ('rebuild_canonicals', current_user, $1::jsonb)`,

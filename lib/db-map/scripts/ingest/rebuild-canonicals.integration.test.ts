@@ -269,6 +269,18 @@ test(
         rebuildCanonicals(db, { maintenanceToken: token, noLlm: false, resume: true }),
         /fixture provider outage|Network|fetch/i,
       );
+      // Had the matcher changed again meanwhile, continuing would keep an outdated link.
+      await client.query(
+        "UPDATE research_canonical_memberships SET matcher_version='matcher-old' WHERE active",
+      );
+      await assert.rejects(
+        rebuildCanonicals(db, { maintenanceToken: token, noLlm: true, resume: true }),
+        (error: any) => error.code === "outdated_canonicals" && /full rebuild/.test(error.message),
+      );
+      await client.query(
+        "UPDATE research_canonical_memberships SET matcher_version=$1 WHERE active",
+        [PIPELINE_VERSIONS.matcher],
+      );
       const continued = await rebuildCanonicals(db, {
         maintenanceToken: token,
         noLlm: true,
