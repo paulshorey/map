@@ -38,6 +38,8 @@
     "ingest:test-import-queue": "tsx --test scripts/ingest/import-queue.test.ts",
     "ingest:staleness": "tsx scripts/ingest/staleness.ts",
     "ingest:purge": "tsx scripts/ingest/purge.ts",
+    "ingest:rebuild-canonicals": "tsx scripts/ingest/rebuild-canonicals.ts",
+    "ingest:test-rebuild-canonicals:integration": "tsx --test scripts/ingest/rebuild-canonicals.integration.test.ts",
     "ingest:trace": "tsx scripts/ingest/trace.ts",
     "ingest:verify": "tsx scripts/ingest/verify.ts",
     "ingest:extract": "tsx scripts/ingest/extract.ts",

@@ -44,7 +44,7 @@ import { extractStrongIds } from "./match/ids.js";
 import { adjudicateMatch } from "./match/llm.js";
 import { scoreCandidate, type CandidateScore } from "./match/score.js";
 import { websiteIdentity } from "./match/denylist.js";
-import { assertNoOutdatedSources } from "./staleness.js";
+import { assertNoOutdatedSources, assertRecordsCurrent } from "./staleness.js";
 import { LlmError } from "./providers/llm.js";
 
 const ADVISORY_LOCK_ID = 0x5018a;
@@ -71,6 +71,10 @@ export interface CliOptions {
   dryRun: boolean;
   noLlm: boolean;
   recluster: boolean;
+  /** A failed model call stops the run instead of deciding "different place" or publishing a fallback description. */
+  strictLlm?: boolean;
+  /** With recluster: keep earlier match decisions as history instead of deleting them. */
+  keepDecisions?: boolean;
   gcOrphans: boolean;
   consolidate: boolean;
   consolidateOnly: boolean;
@@ -78,7 +82,7 @@ export interface CliOptions {
   tLow: number;
 }
 
-interface MatchStats {
+export interface MatchStats {
   processed: number;
   merged: number;
   created: number;
@@ -840,6 +844,7 @@ async function llmDecisionForCandidate(
   candidate: CandidateRow,
   score: CandidateScore,
   signals: Record<string, unknown>,
+  strict = false,
 ): Promise<Decision> {
   try {
     const request = {
@@ -894,7 +899,7 @@ async function llmDecisionForCandidate(
       llmReason: llm.reason,
     };
   } catch (err) {
-    if (currentAttempt()) throw err;
+    if (currentAttempt() || strict) throw err;
     // Conservative fallback (M0.4): an LLM/API failure must never auto-merge.
     const message =
       err instanceof LlmError ? err.message : (err as Error).message;
@@ -1131,6 +1136,7 @@ async function decideRow(
       anchorProximity,
       anchorScore,
       anchorSignals,
+      opts.strictLlm,
     );
   }
 
@@ -1214,14 +1220,20 @@ async function decideRow(
     };
   }
 
-  return llmDecisionForCandidate(row, best, score, {
-    ...baseSignals,
-    match_context: best.via.includes("name")
-      ? "same/similar name within wide location block; decide if coordinates diverge for one real-world place"
-      : best.via.includes("proximity") && isAnchor(candidateAnchorMeta(best))
-        ? "nearby same-category anchor/complex candidate"
-        : "spatial candidate",
-  });
+  return llmDecisionForCandidate(
+    row,
+    best,
+    score,
+    {
+      ...baseSignals,
+      match_context: best.via.includes("name")
+        ? "same/similar name within wide location block; decide if coordinates diverge for one real-world place"
+        : best.via.includes("proximity") && isAnchor(candidateAnchorMeta(best))
+          ? "nearby same-category anchor/complex candidate"
+          : "spatial candidate",
+    },
+    opts.strictLlm,
+  );
 }
 
 async function createCanonical(
@@ -1262,18 +1274,26 @@ async function writeDecision(
 
 async function resetClusters(
   client: PoolClient,
+  keepDecisions = false,
 ): Promise<{ researchRows: number; canonicals: number }> {
+  // Manually curated POIs have no research records to rebuild them from: they are kept.
   const canonicalCount = await client.query<{ count: string }>(
-    `SELECT count(*)::text AS count FROM canonical_pois`,
+    `SELECT count(*)::text AS count FROM canonical_pois WHERE origin <> 'manual'`,
   );
   const linkedCount = await client.query<{ count: string }>(
     `SELECT count(*)::text AS count FROM research_pois WHERE canonical_poi_id IS NOT NULL`,
   );
-  await client.query(`DELETE FROM research_match_decisions`);
+  if (!keepDecisions) await client.query(`DELETE FROM research_match_decisions`);
   await client.query(
     `UPDATE research_pois SET canonical_poi_id = NULL WHERE canonical_poi_id IS NOT NULL`,
   );
-  await client.query(`DELETE FROM canonical_pois`);
+  // Memberships of deleted canonicals go with them; one in a kept manual POI is retired.
+  await client.query(
+    `UPDATE research_canonical_memberships
+     SET active = false, retired_at = now(), retirement_reason = 'rematched'
+     WHERE active`,
+  );
+  await client.query(`DELETE FROM canonical_pois WHERE origin <> 'manual'`);
   return {
     researchRows: Number(linkedCount.rows[0]?.count ?? 0),
     canonicals: Number(canonicalCount.rows[0]?.count ?? 0),
@@ -1349,6 +1369,7 @@ async function applyDecision(
   );
   const publication = await rebuildCanonicalPoi(client, canonicalId, {
     noLlm: opts.noLlm,
+    strictLlm: opts.strictLlm,
   });
   if (!publication.published)
     throw Object.assign(
@@ -1428,7 +1449,7 @@ async function runMatchInternal(
     if (opts.recluster) {
       await client.query("BEGIN");
       try {
-        const reset = await resetClusters(client);
+        const reset = await resetClusters(client, opts.keepDecisions);
         await client.query("COMMIT");
         console.log(
           `Recluster reset: unlinked ${reset.researchRows} research rows and removed ${reset.canonicals} canonicals`,
@@ -1550,6 +1571,7 @@ async function runMatchInternal(
       stats.consolidated = await runConsolidation(client, {
         dryRun: opts.dryRun,
         noLlm: opts.noLlm,
+        strictLlm: opts.strictLlm,
         shouldStop: () => shutdown.requested,
       });
     }
@@ -1595,10 +1617,10 @@ async function main() {
   let stats: MatchStats | undefined;
 
   try {
-    // Outdated records are re-ingested, never upgraded in place (reclustering resets all).
-    if (!opts.recluster) {
-      await assertNoOutdatedSources(db, opts.source ?? null);
-    }
+    // Reclustering replaces every membership and canonical, so only the records themselves
+    // must be current. Any other match refuses outdated data of either kind.
+    if (opts.recluster) await assertRecordsCurrent(db);
+    else await assertNoOutdatedSources(db, opts.source ?? null);
     stats = await runMatch(db, opts, shutdown);
 
     if (stats.stopped) {

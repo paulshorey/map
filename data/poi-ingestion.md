@@ -840,8 +840,8 @@ The matcher uses a cascade:
    the same full URLs (`matcher-v4`). Paths keep their case and are not decoded; hash
    routes (`#/event/a`, `#!/…`) are kept, in-page anchors dropped.
    Ports other than the default are part of the identity. A membership is valid only for
-   the current matcher version; records from older logic are re-ingested, never rematched
-   in place (see [Outdated data](#outdated-data-re-ingest-never-upgrade)).
+   the current matcher version; after a matcher change the whole matching layer is rebuilt
+   at once, never one record at a time (see [Outdated data](#outdated-data-re-ingest-never-upgrade)).
 5. LLM adjudication for ambiguous gray-zone pairs when LLM is enabled.
 
 Each non-dry-run decision writes `research_match_decisions`.
@@ -1010,21 +1010,75 @@ several days on the free plan: start it, let it pause at the quota, and resume i
 
 ## Outdated data: re-ingest, never upgrade
 
-Records produced by older pipeline logic (normalizer/prompt/schema/profile, location
-enrichment, geocoder, embedding, matcher or canonical builder versions) are **never upgraded in place**.
-The raw captures are kept, LLM normalization is cheap and paid geocode lookups are cached, so
-the fix is always to remove the source's data and import it again.
+`ingest:staleness` reports, per source, the records produced by older pipeline logic. What
+to do depends on what is outdated.
+
+| What is older than the current code | Meaning | Remedy |
+| --- | --- | --- |
+| Normalizer, prompt, schema or profile; location enrichment; geocoder; embedding | The record itself is outdated | Re-ingest: `ingest:clean <file>` for each of the source's files (or `ingest:purge`), then import again |
+| Only the matcher or the canonical builder | The record is current; only its grouping or published build is old | Rebuild the canonicals once, for the whole database: `ingest:rebuild-canonicals` |
+
+Records are **never upgraded in place**. The raw captures are kept and paid geocode lookups
+are cached, so an outdated record is removed and imported again.
+
+Memberships and research-derived canonical POIs are different: they are derived wholly from
+stored records. After a matcher or canonical-builder change, `ingest:rebuild-canonicals` drops
+that layer and matches every record again. No capture is re-read and no record is normalized,
+geocoded or embedded again; the only provider calls are the matcher's own (same-place
+verdicts and description merges).
+
+- **Kept:** manually curated POIs (`origin = 'manual'`), manual match overrides, and earlier
+  match decisions, which stay as history.
+- **Not kept:** canonical IDs and the redirects between them, as after a purge.
+- **While it runs,** the map shows only the POIs already rebuilt. It is not a build-aside
+  swap; plan it like a purge and re-import, which it replaces and is far shorter than.
 
 ```bash
-pnpm --filter @lib/db-map ingest:staleness            # per-source outdated counts (read-only)
+pnpm --filter @lib/db-map ingest:staleness            # per-source counts and the remedy (read-only)
+
+# Records outdated: re-ingest the source.
 pnpm --filter @lib/db-map ingest:clean <file> --dry-run   # one file: review, then without --dry-run
 pnpm --filter @lib/db-map ingest:purge --dry-run          # everything
 pnpm --filter @lib/db-map ingest:purge --maintenance-token <owned-token> --confirm purge-all-imports
+
+# Only matcher or canonical builder outdated: rebuild, under owned maintenance.
+pnpm --filter @lib/db-map ingest:control maintenance enter --reason 'Rebuild canonicals' --wait-seconds 30
+pnpm --filter @lib/db-map ingest:rebuild-canonicals --dry-run
+pnpm --filter @lib/db-map ingest:rebuild-canonicals --maintenance-token <owned-token>   # add --consolidate if the dry run says so
+pnpm --filter @lib/db-map ingest:rebuild-canonicals --maintenance-token <owned-token> --continue   # only after a stopped rebuild
+pnpm --filter @lib/db-map ingest:control maintenance exit --token <owned-token>
 ```
 
-New runs refuse a source holding outdated records (`assertSourceCurrent`, error code
-`outdated_data`); the standalone `ingest:normalize` (except `--shadow`), `ingest:geocode`
-(except `--dry-run`) and `ingest:match` (except `--recluster`) refuse too. Every
+The rebuild refuses while any record is itself outdated (re-ingest those sources first). It
+stops on a failed model call: it never records "different place" or publishes a fallback
+description in its place. If it stops, run it again with `--continue` under the same
+maintenance: the records left unlinked are matched, with the same strictness, and nothing
+is reset again. Do not continue with plain `ingest:match`, which tolerates model failures.
+The dry run reports whether the database holds verdicts from an earlier global
+consolidation; if it does, pass `--consolidate` so that sweep is redone after matching. Afterwards each file's verification is older than its new builds, so the
+inventory lists it as `ready_to_verify`; run its `--from report` command.
+
+When both kinds are present, the order matters: `ingest:clean` the outdated sources' files,
+then rebuild the canonicals, and only then import the cleaned sources again. An import is
+refused while any source still holds an outdated matching layer, because matching reads
+every source's canonicals.
+
+Known limits of a rebuild, accepted for now:
+
+- A chain of `force_same` overrides (A–B, B–C) can leave one edge unmet, depending on the
+  order records are matched; the matcher resolves one linked neighbour. The same happens
+  on any re-import.
+- A manual POI that had research members keeps publishing its previous build until those
+  members rejoin it.
+- A description merge whose output fails validation (a URL not in the sources) falls back
+  to the unmerged description, as it does in managed imports; only a failed call stops the
+  rebuild.
+
+New runs refuse a source in either state (`assertSourceCurrent`): error code `outdated_data`
+names the re-ingest, `outdated_canonicals` names the rebuild. The standalone
+`ingest:normalize` (except `--shadow`), `ingest:geocode` and `ingest:embed` (except
+`--dry-run`) and `ingest:match` refuse too; `ingest:match --recluster`, which the rebuild uses, refuses only
+when records themselves are outdated. Every
 normalization artifact records its profile version (`profile_version`), including
 deterministic `--no-llm` ones; an artifact with no known profile version counts as outdated.
 Embeddings record `PIPELINE_VERSIONS.embedding` in `model_version`. Only exact
@@ -1032,7 +1086,8 @@ current-version checkpoints resume (`compatibleCheckpointVersions()` is empty by
 `ingest:purge` truncates every import, run and canonical table and keeps the geocode query
 cache, category taxonomy, users, ingestion controls, capture inventory and centroid
 references; `purge.test.ts` keeps its table list aligned with `schema/current.sql`. When a
-change bumps a version, purge (or clean) the affected sources before re-running them.
+change bumps a record-level version, purge (or clean) the affected sources before re-running
+them; when it bumps only the matcher or canonical builder, rebuild the canonicals.
 
 ## Targeted cleanup
 
