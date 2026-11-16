@@ -25,6 +25,7 @@ const ATTRIBUTION =
 const CITY_KM = 15;
 /** Without a containing boundary, nearby places may name the area only within this range. */
 const COAST_KM = 25;
+const BORDER_KM = 2;
 const KM_PER_DEGREE = 111.32;
 /** People per square kilometre assumed when estimating how far a place's built-up area reaches. */
 const URBAN_DENSITY = 10000;
@@ -43,6 +44,8 @@ interface Area {
   country: string | null;
   region: string | null;
   regionCode: string | null;
+  /** GeoNames admin-1 code of `region`, when the boundary has one. */
+  admin1: string | null;
   rings: number[][];
 }
 export interface Gazetteer {
@@ -61,6 +64,7 @@ export interface RegionsFile {
     c: string | null;
     r: string | null;
     rc: string | null;
+    a?: string | null;
     p: number[][][];
   }>;
 }
@@ -113,6 +117,7 @@ export function buildGazetteer(
         country: unit.c,
         region: unit.r,
         regionCode: unit.rc,
+        admin1: unit.a ?? null,
         rings,
       };
       const outline = rings[0]!;
@@ -227,6 +232,13 @@ export function offlineReverse(
     region: string | null,
     regionCode: string | null,
     basis: ReverseLocation["basis"];
+  // Boundaries are accurate to a few hundred metres. A place of another country within
+  // BORDER_KM of the point means the boundary may be wrong here: name nothing.
+  if (
+    area &&
+    near.some((n) => n.m <= BORDER_KM * 1000 && n.place.country !== area.country)
+  )
+    return null;
   if (area) {
     country = countryToCode(area.country) ?? null;
     region = country ? area.region : null;
@@ -264,8 +276,14 @@ export function offlineReverse(
   // Without an agreed country nothing is named: a town could be on either side of a border.
   if (!country) return null;
   // The town must lie in the same country; across a border it is another country's town.
+  // Where the boundary names a region, the town must lie in it too: Hoboken is not New
+  // York City, however far that city's extent reaches across the state line.
   const towns = near.filter(
-    (n) => n.m <= CITY_KM * 1000 && n.place.country === country,
+    (n) =>
+      n.m <= CITY_KM * 1000 &&
+      n.place.country === (area?.country ?? n.place.country) &&
+      countryToCode(n.place.country) === country &&
+      (!area?.admin1 || n.place.admin1 === area.admin1),
   );
   const town =
     towns

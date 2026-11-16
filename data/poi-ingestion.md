@@ -1282,6 +1282,11 @@ daily quota now cover forward lookups only.
 - Natural Earth predates some region splits (Indonesia's Papua provinces, Kazakhstan's
   Abai). A boundary whose places belong to several regions takes the region the places
   around the point agree on.
+- The town must lie in the boundary's region as well as its country (Hoboken, not New York
+  City). A place of another country within 2 km of the point means the boundary may be
+  wrong there, and nothing is filled.
+- Known gaps: a city carved out of a province as its own region (Gwangju, Shymkent) takes
+  the province's name, and Kosovo gets no result because `XK` is not an ISO 3166-1 code.
 - The lookup also runs when nothing is missing: it is the independent check that a complete
   listing's point lies in the listed country and city.
 - **Street address and postcode** are never inferred. They come from the listing or stay empty.

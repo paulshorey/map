@@ -145,6 +145,10 @@ test("outside every boundary, nearby places name the area only when they agree",
   assert.equal(offlineReverse(47.59, 7.39, gazetteer), null);
   assert.throws(() => offlineReverse(91, 0, gazetteer), /Invalid reverse/);
 });
+test("a boundary contradicted by a place at the point names nothing", () => {
+  // Goma (CD) sits where the simplified boundary says Rwanda: neither is trusted.
+  assert.equal(offlineReverse(-1.67409, 29.22845), null);
+});
 test("offline region names are compared only where an ISO region code exists", () => {
   const aichi: ReverseLocation = {
     ...hit,
@@ -190,6 +194,7 @@ test("the vendored data answers real points", () => {
     [35.1815, 136.9066, "JP", "Aichi", "Nagoya"],
     [48.985, -123.07, "US", "Washington", "Point Roberts"], // an exclave below Canada
     [-12.78, 45.23, "YT", null, "Mamoudzou"], // Mayotte: its own code, not FR
+    [40.744, -74.032, "US", "New Jersey", "Hoboken"], // not New York City across the river
   ];
   for (const [lat, lng, country, region, city] of cases) {
     const r = offlineReverse(lat, lng)!;

@@ -120,6 +120,8 @@ def main():
             {
                 "c": unit["c"],
                 "r": region,
+                # GeoNames admin-1 code, so a town can be required to lie in the same region.
+                "a": admin1 if region else None,
                 # GeoNames uses ISO 3166-2 letter codes for some countries (US.WY) only.
                 "rc": f"{unit['c']}-{admin1}" if region and admin1.isalpha() else None,
                 "p": [[[v for point in ring for v in point] for ring in rings] for rings in unit["p"]],

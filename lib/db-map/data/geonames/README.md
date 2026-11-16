@@ -16,6 +16,11 @@ Earth file, download the GeoJSON named at the top of `build-regions.py` and run:
 python3 lib/db-map/data/geonames/build-regions.py /path/to/ne_10m_admin_1_states_provinces.geojson
 ```
 
+Replacing any of these files changes what the lookup returns for existing records, but
+stored location artifacts are keyed by `LOCATION_VERSION`, not by this data. Bump
+`LOCATION_VERSION` in `scripts/ingest/location.ts` in the same change, or records already
+geocoded keep their old values.
+
 Natural Earth units are states in some countries and counties in others, so the script labels
 each one with the GeoNames region that most places inside it belong to. Coordinates are stored
 in thousandths of a degree (about 110 m).
