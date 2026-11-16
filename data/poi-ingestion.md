@@ -1058,10 +1058,26 @@ The dry run reports whether the database holds verdicts from an earlier global
 consolidation; if it does, pass `--consolidate` so that sweep is redone after matching. Afterwards each file's verification is older than its new builds, so the
 inventory lists it as `ready_to_verify`; run its `--from report` command.
 
+When both kinds are present, the order matters: `ingest:clean` the outdated sources' files,
+then rebuild the canonicals, and only then import the cleaned sources again. An import is
+refused while any source still holds an outdated matching layer, because matching reads
+every source's canonicals.
+
+Known limits of a rebuild, accepted for now:
+
+- A chain of `force_same` overrides (A–B, B–C) can leave one edge unmet, depending on the
+  order records are matched; the matcher resolves one linked neighbour. The same happens
+  on any re-import.
+- A manual POI that had research members keeps publishing its previous build until those
+  members rejoin it.
+- A description merge whose output fails validation (a URL not in the sources) falls back
+  to the unmerged description, as it does in managed imports; only a failed call stops the
+  rebuild.
+
 New runs refuse a source in either state (`assertSourceCurrent`): error code `outdated_data`
 names the re-ingest, `outdated_canonicals` names the rebuild. The standalone
-`ingest:normalize` (except `--shadow`), `ingest:geocode` (except `--dry-run`) and
-`ingest:match` refuse too; `ingest:match --recluster`, which the rebuild uses, refuses only
+`ingest:normalize` (except `--shadow`), `ingest:geocode` and `ingest:embed` (except
+`--dry-run`) and `ingest:match` refuse too; `ingest:match --recluster`, which the rebuild uses, refuses only
 when records themselves are outdated. Every
 normalization artifact records its profile version (`profile_version`), including
 deterministic `--no-llm` ones; an artifact with no known profile version counts as outdated.

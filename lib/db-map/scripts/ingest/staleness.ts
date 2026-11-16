@@ -143,8 +143,11 @@ function sharedCanonicalProblem(rows: StalenessRow[]): { code: string; message: 
     message:
       `Memberships or canonical builds from older logic exist in ${stale.map((r) => r.source).join(", ")}; ` +
       "matching reads every source's canonicals, so no source may be matched until they are gone. " +
-      (reingest.length ? `Re-ingest ${reingest.join(", ")} first (ingest:clean, then import). ` : "") +
-      `Then rebuild the canonicals with \`${REBUILD_COMMAND}\` if \`ingest:staleness\` still reports any.`,
+      (reingest.length
+        ? `First remove the outdated records of ${reingest.join(", ")} with \`ingest:clean <file>\`. `
+        : "") +
+      `Then rebuild the canonicals with \`${REBUILD_COMMAND}\` if \`ingest:staleness\` still reports any` +
+      (reingest.length ? `, and only then import ${reingest.join(", ")} again.` : "."),
   };
 }
 

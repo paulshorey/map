@@ -253,7 +253,8 @@ test(
       // A source that needs re-ingesting does not hide its outdated memberships from others.
       await assert.rejects(assertSourceCurrent(db, "some_other_source"), (error: any) => {
         assert.equal(error.code, "outdated_canonicals");
-        assert.match(error.message, /Re-ingest rebuild_fixture first/);
+        assert.match(error.message, /First remove the outdated records of rebuild_fixture/);
+        assert.match(error.message, /only then import rebuild_fixture again/);
         return true;
       });
       await assert.rejects(
