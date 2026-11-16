@@ -889,10 +889,14 @@ export async function runGeocode(
           countryToCode(suppliedCentroid)
         ),
     );
-    // Offline gazetteer lookup: no provider call, quota or cache entry.
-    const hit: ReverseLocation | null = reverseNeeded
-      ? offlineReverse(lat!, lng!)
-      : null;
+    // Offline gazetteer lookup: no provider call, quota or cache entry. It is free, so it
+    // runs even when nothing is missing: it is the independent check that a complete
+    // listing's point lies in the listed country and city. A country-precision point with
+    // its country known says nothing more, so it is skipped.
+    const hit: ReverseLocation | null =
+      reverseNeeded || coordinatePrecision !== "country"
+        ? offlineReverse(lat!, lng!)
+        : null;
     const resolved = resolveLocation(
       source,
       reverseForPrecision(hit, coordinatePrecision),

@@ -232,6 +232,17 @@ export function offlineReverse(
     region = country ? area.region : null;
     regionCode = region ? area.regionCode : null;
     basis = "containing_area";
+    // A boundary with no region of its own (one since split into several regions) takes
+    // the region its own country's nearby places agree on.
+    const local = near.filter((n) => n.place.country === area.country);
+    if (country && !region && local.length) {
+      const admin1 = local[0]!.place.admin1;
+      if (local.every((n) => n.place.admin1 === admin1)) {
+        region = data.regionNames.get(`${area.country}.${admin1}`) ?? null;
+        regionCode =
+          region && /^[A-Z]{2,3}$/.test(admin1) ? `${country}-${admin1}` : null;
+      }
+    }
   } else {
     // Outside every boundary: nearby places name the area only when all of them agree.
     if (!near.length) return null;

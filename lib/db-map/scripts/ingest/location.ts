@@ -368,9 +368,10 @@ export function resolveLocation(
       .trim()
       .toUpperCase();
   const region = textValue(source.region) ? fold(source.region!) : null;
-  // Offline region names are English. A listed region in another script (愛知県 against
-  // Aichi) cannot be compared by spelling, so it is not a contradiction.
-  const comparable = !reverse?.basis || !region || !/[^\u0000-\u024F]/.test(region);
+  // Offline region names are English, so a different spelling (愛知県 or Bayern against
+  // Aichi or Bavaria) is not evidence of a different region. They are compared only where
+  // the lookup also has an ISO region code (US-TX), which listings do use.
+  const comparable = !reverse?.basis || !!reverse.region_code;
   if (
     comparable &&
     region &&

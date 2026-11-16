@@ -145,7 +145,7 @@ test("outside every boundary, nearby places name the area only when they agree",
   assert.equal(offlineReverse(47.59, 7.39, gazetteer), null);
   assert.throws(() => offlineReverse(91, 0, gazetteer), /Invalid reverse/);
 });
-test("a listed region in another script is not a conflict; a different Latin name still is", () => {
+test("offline region names are compared only where an ISO region code exists", () => {
   const aichi: ReverseLocation = {
     ...hit,
     country_code: "JP",
@@ -163,7 +163,13 @@ test("a listed region in another script is not a conflict; a different Latin nam
   assert.equal(local.fields.city, "Nagoya");
   assert.equal(local.fields.country_code, "JP");
   assert.equal(local.fields.region, "愛知県", "the listed region is kept verbatim");
-  const other = resolveLocation({ ...empty, region: "Gifu" }, aichi);
+  // English and local spellings differ (Bayern, Bavaria), so without a code a different
+  // name is not treated as a different region.
+  assert.deepEqual(resolveLocation({ ...empty, region: "Aichi-ken" }, aichi).warnings, []);
+  // Where the lookup has an ISO code, a listed region that matches neither is a conflict.
+  const texas = { ...aichi, country_code: "US", city: "Austin", region: "Texas", region_code: "US-TX" };
+  assert.deepEqual(resolveLocation({ ...empty, region: "TX" }, texas).warnings, []);
+  const other = resolveLocation({ ...empty, region: "Oklahoma" }, texas);
   assert.deepEqual(other.warnings, ["coordinate_region_conflict"]);
   assert.equal(other.fields.city, null);
   // A provider point result keeps the strict comparison.

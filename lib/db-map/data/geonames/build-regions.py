@@ -12,6 +12,10 @@ of the GeoNames places inside it belong to, so "region" means the same level eve
 because Natural Earth gives a dependent territory its sovereign's code (Mayotte is FR there,
 YT in GeoNames and ISO 3166-1). Units with no place inside keep Natural Earth's country only.
 
+Natural Earth 5.1.2 predates some region splits (Indonesia's Papua provinces, Kazakhstan's
+Abai). Where under 80% of a unit's places share one region, the unit gets no region and the
+lookup decides from the places around the point instead.
+
 Usage: python3 build-regions.py /path/to/ne_10m_admin_1_states_provinces.geojson
 """
 import gzip
@@ -95,6 +99,7 @@ def main():
 
     out = []
     labelled = 0
+    split = 0
     for unit in units:
         admin1 = None
         if unit["votes"]:
@@ -102,9 +107,13 @@ def main():
             for (country, _), count in unit["votes"].items():
                 by_country[country] += count
             unit["c"] = by_country.most_common(1)[0][0]
-            admin1 = Counter(
+            regions = Counter(
                 {a1: n for (country, a1), n in unit["votes"].items() if country == unit["c"]}
-            ).most_common(1)[0][0]
+            )
+            top, count = regions.most_common(1)[0]
+            # A unit since split into several regions cannot be labelled as one of them.
+            admin1 = top if count >= 0.8 * sum(regions.values()) else None
+            split += admin1 is None
         region = names.get(f"{unit['c']}.{admin1}") if admin1 else None
         labelled += bool(region)
         out.append(
@@ -125,7 +134,7 @@ def main():
     target = os.path.join(HERE, "regions.json.gz")
     with gzip.GzipFile(target, "wb", mtime=0) as handle:
         handle.write(json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
-    print(f"{len(out)} units, {labelled} with a region, {os.path.getsize(target)} bytes")
+    print(f"{len(out)} units, {labelled} with a region, {split} split, {os.path.getsize(target)} bytes")
 
 
 if __name__ == "__main__":

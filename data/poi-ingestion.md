@@ -984,12 +984,15 @@ pnpm --filter @lib/db-map ingest:quota --clear-rate-limit   # after upgrading th
 pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume <run-id>
 ```
 
-Only forward lookups spend this quota. A record needs one when it has listed address or
-locality text to look up, **whether or not it also has a source point** (the lookup supplies
-the inferred slot); a record with a point and only a listed country needs none. Count the
-records with listed locality text, not the records without coordinates, to estimate a file.
-A file with more than 5,000 uncached forward lookups takes several days on the free plan:
-start it, let it pause at the quota, and resume it each day.
+Only forward lookups spend this quota. A record makes one when it has listed text to look
+up (its name, venue, address or locality), **whether or not it also has a source point**:
+the lookup supplies the inferred slot. One record can spend up to three uncached requests:
+the first lookup, a listed-city lookup when the result lands in another city, and the city
+and country fallbacks after a miss. The number of records with listed text is therefore a
+lower bound for a file, not an estimate. The cache makes repeats free, so the reliable
+number is the `apiCalls` a bounded sample reports. A file needing more than 5,000 uncached
+lookups takes several days on the free plan: start it, let it pause at the quota, and
+resume it each day.
 
 ## Outdated data: re-ingest, never upgrade
 
@@ -1273,9 +1276,14 @@ daily quota now cover forward lookups only.
 - A point outside every boundary (a pier, a small island) takes country and region from the
   places within 25 km, only when they all agree on the country; otherwise nothing is filled.
 - A dependent territory has its own ISO code (`YT`, `RE`, `PR`), not its sovereign's.
-- A listed region written in another script (`愛知県`) is not compared with the English region
-  name, so it raises no `coordinate_region_conflict`. A Latin-script local name (`Bayern`
-  against `Bavaria`) still does, and the lookup's fields are then not used.
+- Region names are English, so a listed region is compared with the lookup's only where an
+  ISO region code exists (`TX` against `US-TX`). Elsewhere a different spelling (`愛知県`,
+  `Bayern`) raises no `coordinate_region_conflict`; country conflicts are detected everywhere.
+- Natural Earth predates some region splits (Indonesia's Papua provinces, Kazakhstan's
+  Abai). A boundary whose places belong to several regions takes the region the places
+  around the point agree on.
+- The lookup also runs when nothing is missing: it is the independent check that a complete
+  listing's point lies in the listed country and city.
 - **Street address and postcode** are never inferred. They come from the listing or stay empty.
 
 Source addresses/locality win; country values use the pinned ISO country dataset. The lookup
