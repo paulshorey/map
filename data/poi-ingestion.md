@@ -27,7 +27,8 @@ file → extract → fixed record cohort → normalize → geocode → embed →
 Canonical builds happen transactionally inside matching/merging and normalization refresh;
 `canonical` checks their existence. It is not a separate rebuild algorithm. Extraction finishes
 and freezes the cohort before the record scheduler starts. Independent records then progress
-through their own dependencies; ready downstream work has priority. Shared Fireworks admission
+through their own dependencies; ready downstream work has priority. Matching runs up to three records' read-only passes and model
+calls at once; canonical writes stay one at a time. Shared Fireworks admission
 defaults to four requests in flight (`--llm-concurrency 1..16`), across normalization, matching
 and fusion. The selected normalization model, prompt and thinking mode are unchanged: every
 eligible POI still uses the LLM. Explicit `--no-llm` remains a diagnostic option.
@@ -792,9 +793,9 @@ import or certify a source/category.
 | Old run refuses resume                  | Its pinned input/output or pipeline version changed; start a new run with an explicit repair selection and review cached artifacts.                            |
 | Slow run                                | Compare attempt duration, provider latency/tokens/cost, query plans and cache hits on the same sample. Distinguish warm-cache speedups from code improvements. |
 
-Current tradeoffs: canonical matching/fusion remains serialized and can become the next bottleneck.
-Matching can hold its transaction across a provider call; decoupling proposal generation from
-fenced canonical activation is a future improvement that needs candidate-version checks.
+Current tradeoffs: canonical writes remain serialized (one record at a time behind the
+canonical lane), so the database work of matching bounds throughput. Model calls are no longer
+part of that serial section; see [model calls outside the canonical lock](#model-calls-outside-the-canonical-lock).
 Provider quota headers and reasoning/cost fields may be absent; unknown values stay explicit.
 Optional budgets are stage thresholds, not a universal quota service. Standalone legacy scripts
 do not gain managed lifecycle registration. Recommendations are advisory and never auto-relaunch,
@@ -849,6 +850,26 @@ When a row links to a canonical, `rebuildCanonicalPoi` recomputes the published 
 from all linked research rows. This prevents description text from being appended repeatedly across reruns. When LLMs are
 enabled, ambiguous matching and canonical description fusion can make provider calls;
 matching itself does not geocode records or create embeddings.
+
+### Model calls outside the canonical lock
+
+Matching asks a model two questions: whether a record and a candidate are the same place,
+and how to merge several descriptions. Both answers depend only on the text sent. A managed
+match therefore runs in two steps (`llm-memo.ts`):
+
+1. **Read-only pass, no lock.** It decides the match and asks for the description the
+   canonical would get. Up to three records do this at once. Answers are kept in a
+   per-record memo keyed by a hash of the exact request.
+2. **Locked pass.** It takes the canonical lock, decides again against current data and
+   writes. Each model question is answered from the memo.
+
+If the data changed between the passes (another record created or changed a candidate), the
+request differs and the memo has no answer. The locked pass then rolls back, releasing the
+lock, the call is made, and the pass runs again. After three such rollbacks for one record
+the remaining calls are made inside the lock, as before, so a record always finishes. An
+answer is never reused for a different request, so decisions are the same as when the calls
+were made inside the transaction. The canonical-stage rebuild of a stale build uses the same
+mechanism. Standalone `ingest:match`, `--no-llm` runs and consolidation are unchanged.
 
 ## Aggressive Conflation
 
