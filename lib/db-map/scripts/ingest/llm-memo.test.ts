@@ -29,6 +29,19 @@ test("an answer is reused only for the identical request and purpose", async () 
   assert.equal(calls, 3);
 });
 
+test("dates are part of the request: a changed date is a different question", async () => {
+  const memo = new Map<string, unknown>();
+  let calls = 0;
+  const ask = (starts_at: Date | null) =>
+    withLlmMemo(memo, false, () =>
+      memoizedLlm("match", { candidate: { name: "Fair", starts_at } }, async () => ++calls),
+    );
+  assert.equal(await ask(new Date("2027-05-01T00:00:00Z")), 1);
+  assert.equal(await ask(new Date("2027-05-01T00:00:00Z")), 1);
+  assert.equal(await ask(new Date("2028-05-01T00:00:00Z")), 2);
+  assert.equal(await ask(null), 3);
+});
+
 test("deferred mode never calls inside the locked work; the call runs after it unwinds", async () => {
   let locked = false,
     passes = 0;

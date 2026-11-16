@@ -1638,24 +1638,22 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
  * Read-only first pass for one record: decide its match and ask for the description its
  * canonical would get, so both model answers are in the memo before the lock is taken.
  * It writes nothing and may run beside other records' passes.
+ *
+ * Each query borrows a pool connection only for its own duration. No connection is held
+ * while a model request is in flight, so concurrent passes cannot exhaust the pool that
+ * the provider ledger also writes through.
  */
 async function prefetchMatchAnswers(pool: Pool, opts: CliOptions) {
-  const client = await pool.connect();
-  try {
-    const sourceId = opts.source
-      ? await resolveSourceId(client, opts.source)
-      : null;
-    const row = await fetchNextRow(client, sourceId, new Set(), opts.recordId);
-    if (!row) return;
-    const decision = await decideRow(client, row, opts);
-    await prefetchDescription(
-      client,
-      decision.decision === "merge" ? decision.candidatePoiId : null,
-      row.id,
-    );
-  } finally {
-    client.release();
-  }
+  const reader = { query: pool.query.bind(pool) } as unknown as PoolClient;
+  const sourceId = opts.source ? await resolveSourceId(reader, opts.source) : null;
+  const row = await fetchNextRow(reader, sourceId, new Set(), opts.recordId);
+  if (!row) return;
+  const decision = await decideRow(reader, row, opts);
+  await prefetchDescription(
+    reader,
+    decision.decision === "merge" ? decision.candidatePoiId : null,
+    row.id,
+  );
 }
 
 export async function runMatch(

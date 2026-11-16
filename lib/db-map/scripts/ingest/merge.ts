@@ -552,7 +552,9 @@ const MEMBER_SELECT = `SELECT
      FROM research_canonical_memberships m
      JOIN research_pois rp ON rp.id = m.research_poi_id
      ${MEMBER_JOINS}`;
-const MEMBER_ORDER = "ORDER BY rs.trust DESC, rp.last_seen_at DESC";
+// The id breaks ties (a bulk import shares one last_seen_at), so every query shape lists
+// members, and therefore descriptions, in the same order.
+const MEMBER_ORDER = "ORDER BY rs.trust DESC, rp.last_seen_at DESC, rp.id";
 
 /**
  * Ask for the description a build would write if `joiningId` joined `canonicalId` (or
@@ -561,7 +563,7 @@ const MEMBER_ORDER = "ORDER BY rs.trust DESC, rp.last_seen_at DESC";
  * locked build finds the answer waiting. A wrong guess costs nothing; the build asks again.
  */
 export async function prefetchDescription(
-  client: PoolClient,
+  client: Pick<PoolClient, "query">,
   canonicalId: string | null,
   joiningId: string,
 ): Promise<void> {

@@ -10,8 +10,8 @@
  *  2. Otherwise, in deferred mode, it throws `LlmDeferred`. The caller rolls back, which
  *     releases the lock, makes the call, stores the answer and runs the work again.
  *
- * The memo key is a hash of the exact request, so an answer is only ever reused for the
- * request it was given for. If the data changed between passes, the request differs, the
+ * The memo key is a hash of the request as serialized for the provider, so an answer is only
+ * ever reused for the request it was given for. If the data changed between passes, the request differs, the
  * memo misses and the call is simply made again.
  */
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -48,7 +48,9 @@ export async function memoizedLlm<T>(
 ): Promise<T> {
   const active = store.getStore();
   if (!active) return call();
-  const key = stableHash({ purpose, request });
+  // Hash the request as it is serialized for the provider: JSON turns a Date into its ISO
+  // text, where hashing the object itself would see every Date as the same empty object.
+  const key = stableHash(JSON.parse(JSON.stringify({ purpose, request })));
   if (active.memo.has(key)) return active.memo.get(key) as T;
   if (active.deferred) throw new LlmDeferred(key, call);
   const answer = await call();

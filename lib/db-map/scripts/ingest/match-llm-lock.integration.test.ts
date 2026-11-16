@@ -31,7 +31,8 @@ test(
     process.env.FIREWORKS_API_KEY = "fixture";
     // Stage code owns its transactions; savepoints keep the whole fixture reversible.
     let open = 0,
-      rollbacks = 0;
+      rollbacks = 0,
+      checkedOut = 0;
     const tx = {
       query(sql: string, ...args: any[]) {
         if (sql === "BEGIN") open++;
@@ -48,11 +49,16 @@ test(
           ...(args as [any]),
         );
       },
-      release() {},
+      release() {
+        checkedOut--;
+      },
     };
     const db = {
       query: client.query.bind(client),
-      connect: async () => tx,
+      connect: async () => {
+        checkedOut++;
+        return tx;
+      },
     } as unknown as Pool;
     const options = (id: string, noLlm: boolean) => ({
       recordId: id,
@@ -187,6 +193,7 @@ test(
       const asked: string[] = [];
       globalThis.fetch = async (_input, init) => {
         assert.equal(open, 0, "a model request must not start inside a transaction");
+        assert.equal(checkedOut, 0, "no pool connection may be held during a model request");
         const body = JSON.parse(String(init!.body));
         const system = String(body.messages[0].content);
         const fusion = system.startsWith("Combine multiple source descriptions");
@@ -194,6 +201,7 @@ test(
         // Yield, so a transaction opened during the request would be observed.
         await new Promise((resolve) => setTimeout(resolve, 20));
         assert.equal(open, 0, "no transaction may open while the request is in flight");
+        assert.equal(checkedOut, 0);
         return Response.json({
           choices: [
             {
