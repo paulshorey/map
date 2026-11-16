@@ -25,8 +25,9 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { access, mkdir, open, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { hostname } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { primaryRoot } from "../../sql/ingestion-overview.js";
 import { createInterface } from "node:readline";
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
@@ -975,6 +976,19 @@ function summary(q: QueueState) {
   ].join("\n");
 }
 
+/**
+ * Whole-file imports run the checked-out pipeline code against the shared database and keep
+ * their state beside it, so they belong to the primary checkout, never a linked worktree.
+ */
+export function assertPrimaryCheckout(command: string) {
+  const here = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+  const primary = primaryRoot();
+  if (here !== primary)
+    throw new Error(
+      `ingest:import-queue ${command} must run from the primary checkout (${primary}), not this worktree (${here})`,
+    );
+}
+
 async function main() {
   const [command = "help", ...rest] = process.argv.slice(2);
   const allowed: Record<string, string[]> = {
@@ -1007,6 +1021,7 @@ async function main() {
     return value;
   };
   if (command === "worker") return runQueue(flag("--queue")!);
+  if (command === "start" || command === "resume") assertPrimaryCheckout(command);
   if (command === "start") {
     let handshake = "";
     const plan = flag("--plan");
