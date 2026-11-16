@@ -207,6 +207,12 @@ test(
         return true;
       });
 
+      // Matching is database-wide: another source's run is refused too, with the same remedy.
+      await assert.rejects(
+        assertSourceCurrent(db, "some_other_source"),
+        (error: any) => error.code === "outdated_canonicals",
+      );
+
       // 2. A record that is itself outdated still means re-ingest, and blocks a rebuild.
       await client.query(
         "UPDATE research_poi_normalizations SET normalizer_version='hybrid-old' WHERE id=$1",
@@ -219,10 +225,6 @@ test(
         assert.match(error.message, /ingest:clean/);
         return true;
       });
-      await assert.rejects(
-        rebuildCanonicals(db, { maintenanceToken: token, noLlm: true }),
-        (error: any) => error.code === "outdated_data",
-      );
       await client.query(
         "UPDATE research_poi_normalizations SET normalizer_version=$2 WHERE id=$1",
         [second.normalization, PIPELINE_VERSIONS.normalizer],
@@ -240,6 +242,21 @@ test(
       await assert.rejects(
         rebuildCanonicals(db, { maintenanceToken: randomUUID(), noLlm: true }),
         /Owned, quiescent maintenance/,
+      );
+      assert.deepEqual([await canonicalOf(anchor.id), await canonicalOf(second.id)], before);
+      // With maintenance owned, an outdated record still blocks the rebuild (checked under
+      // the lock) and nothing is reset.
+      await client.query(
+        "UPDATE research_poi_normalizations SET normalizer_version='hybrid-old' WHERE id=$1",
+        [second.normalization],
+      );
+      await assert.rejects(
+        rebuildCanonicals(db, { maintenanceToken: token, noLlm: true }),
+        (error: any) => error.code === "outdated_data",
+      );
+      await client.query(
+        "UPDATE research_poi_normalizations SET normalizer_version=$2 WHERE id=$1",
+        [second.normalization, PIPELINE_VERSIONS.normalizer],
       );
       assert.deepEqual([await canonicalOf(anchor.id), await canonicalOf(second.id)], before);
 

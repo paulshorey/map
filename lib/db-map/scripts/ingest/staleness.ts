@@ -131,8 +131,13 @@ function remedy(row: StalenessRow): { code: string; message: string } | null {
 
 /** New runs refuse a source holding outdated records; the error names the remedy. */
 export async function assertSourceCurrent(db: Pool, source: string): Promise<void> {
-  const [row] = await stalenessBySource(db, source);
-  const problem = row && remedy(row);
+  const rows = await stalenessBySource(db);
+  const own = rows.find((row) => row.source === source);
+  // Outdated records concern only their own source. Matching reads every source's
+  // canonicals, so an outdated matching layer anywhere blocks every new run.
+  const problem =
+    (own && remedy(own)) ??
+    rows.map((row) => (row.reingest ? null : remedy(row))).find((p) => p !== null);
   if (problem) throw Object.assign(new Error(problem.message), { code: problem.code });
 }
 

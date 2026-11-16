@@ -77,10 +77,15 @@ export async function rebuildPlan(db: Pool): Promise<RebuildPlan> {
  * ends: holding the lock on its own session keeps new workers out for the whole run, even
  * if someone exits maintenance meanwhile.
  */
-async function holdOwnedMaintenance(db: Pool, token: string) {
+async function holdOwnedMaintenance(
+  db: Pool,
+  token: string,
+  /** Called if the lock's connection drops: the lock is gone and workers may be admitted. */
+  onLost: (error: unknown) => void,
+) {
   // Its own connection, outside the pool: a small pool cannot starve the rebuild of the
   // connections matching needs while this one sits holding the lock.
-  const lock = await dedicatedClient("ingest-rebuild-canonicals");
+  const lock = await dedicatedClient("ingest-rebuild-canonicals", onLost);
   const refuse = () =>
     new Error("Owned, quiescent maintenance is required to rebuild canonicals");
   try {
@@ -139,18 +144,35 @@ export async function rebuildCanonicals(
     consolidate?: boolean;
   },
 ) {
-  await assertRecordsCurrent(db);
-  const release = await holdOwnedMaintenance(db, opts.maintenanceToken);
+  // Losing the lock's connection ends the fence: stop after the current record and fail.
+  const shutdown = { requested: false, count: 0 };
+  let lockLost: unknown;
+  const release = await holdOwnedMaintenance(db, opts.maintenanceToken, (error) => {
+    lockLost = error ?? new Error("connection closed");
+    shutdown.requested = true;
+  });
   try {
-    return await rebuildUnderLock(db, opts);
+    // Under the lock, so no worker can commit an outdated record after this check.
+    await assertRecordsCurrent(db);
+    const result = await rebuildUnderLock(db, opts, shutdown);
+    if (lockLost)
+      throw Object.assign(
+        new Error(
+          "The admission lock's connection was lost during the rebuild; it stopped early. " +
+            "Check that no worker ran meanwhile, then continue with --continue",
+        ),
+        { code: "rebuild_lock_lost", cause: lockLost },
+      );
+    return result;
   } finally {
-    await release();
+    await release().catch(() => undefined);
   }
 }
 
 async function rebuildUnderLock(
   db: Pool,
   opts: { noLlm: boolean; resume?: boolean; consolidate?: boolean },
+  shutdown: { requested: boolean; count: number },
 ) {
   const plan = await rebuildPlan(db);
   // Continuing keeps what is already linked, so all of it must be from the current logic.
@@ -194,7 +216,7 @@ async function rebuildUnderLock(
       tHigh: ingestConfig.match.tHigh,
       tLow: ingestConfig.match.tLow,
     },
-    { requested: false, count: 0 },
+    shutdown,
   );
   return { plan, stats };
 }
