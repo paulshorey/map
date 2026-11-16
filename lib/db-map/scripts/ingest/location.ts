@@ -17,6 +17,8 @@ export interface ReverseLocation extends LocationFields {
   postcode: string | null;
   /** Metres from the query point to the returned result (offline: to the named town, else 0). */
   distance_m: number;
+  /** Other names of `city` (offline lookups only), for comparing with a listed city. */
+  city_aliases?: string[];
   /** Offline lookups describe the area around the point, not a nearby address. */
   basis?: "containing_area" | "nearby_places";
   provider: string;

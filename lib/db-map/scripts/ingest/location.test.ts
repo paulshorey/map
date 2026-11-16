@@ -145,6 +145,15 @@ test("outside every boundary, nearby places name the area only when they agree",
   assert.equal(offlineReverse(47.59, 7.39, gazetteer), null);
   assert.throws(() => offlineReverse(91, 0, gazetteer), /Invalid reverse/);
 });
+test("the town's other names are returned and one-letter region codes kept", () => {
+  const munich = offlineReverse(48.1372, 11.5756)!;
+  assert.equal(munich.city, "Munich");
+  assert.ok(munich.city_aliases!.includes("München"));
+  // Off the coast of Dublin Bay: no boundary, places agree on Leinster (IE.L).
+  const leinster = offlineReverse(53.345, -6.19)!;
+  assert.equal(leinster.country_code, "IE");
+  if (leinster.region) assert.match(leinster.region_code ?? "", /^IE-[A-Z]$/);
+});
 test("a boundary contradicted by a place at the point names nothing", () => {
   // Goma (CD) sits where the simplified boundary says Rwanda: neither is trusted.
   assert.equal(offlineReverse(-1.67409, 29.22845), null);
@@ -195,6 +204,7 @@ test("the vendored data answers real points", () => {
     [48.985, -123.07, "US", "Washington", "Point Roberts"], // an exclave below Canada
     [-12.78, 45.23, "YT", null, "Mamoudzou"], // Mayotte: its own code, not FR
     [40.744, -74.032, "US", "New Jersey", "Hoboken"], // not New York City across the river
+    [43.7384, 7.4246, "MC", "Municipality of Monaco", "Monaco"], // a French town 550 m away is not a contradiction
   ];
   for (const [lat, lng, country, region, city] of cases) {
     const r = offlineReverse(lat, lng)!;

@@ -182,7 +182,9 @@ export function assessLocation(input: AssessmentInput): LocationAssessment {
       country &&
       reverseCountry === country &&
       !!fold(listed.city) &&
-      fold(listed.city) === fold(reverse.city) &&
+      (fold(listed.city) === fold(reverse.city) ||
+        (Array.isArray(reverse.city_aliases) &&
+          reverse.city_aliases.some((alias) => fold(alias) === fold(listed.city)))) &&
       // An offline area lookup names the town whose area covers the point (it enforces its
       // own radii); a provider point result must sit within 1 km of the query point.
       (typeof reverse.basis === "string" ||

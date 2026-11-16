@@ -251,6 +251,11 @@ test("an offline area lookup confirms the listed city without the 1 km provider-
   const accepted = assessLocation(input);
   assert.equal(accepted.status, "accepted");
   assert.ok(accepted.reasons.includes("point_reverse_locality_agree"));
+  // A listing may use another of the town's names.
+  (input.validation as any).listed.city = "Austin TX";
+  v.reverse = { ...area, basis: "containing_area", city_aliases: ["Austin TX"] };
+  assert.equal(assessLocation(input).status, "accepted");
+  (input.validation as any).listed.city = "Austin";
   // It still has to agree with the listing.
   v.reverse = { ...area, city: "Round Rock", basis: "containing_area" };
   assert.equal(assessLocation(input).status, "needs_review");

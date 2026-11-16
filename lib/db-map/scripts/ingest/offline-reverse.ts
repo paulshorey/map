@@ -25,7 +25,8 @@ const ATTRIBUTION =
 const CITY_KM = 15;
 /** Without a containing boundary, nearby places may name the area only within this range. */
 const COAST_KM = 25;
-const BORDER_KM = 2;
+/** A place of another country this close to the point contradicts the boundary there. */
+const BORDER_KM = 0.3;
 const KM_PER_DEGREE = 111.32;
 /** People per square kilometre assumed when estimating how far a place's built-up area reaches. */
 const URBAN_DENSITY = 10000;
@@ -38,6 +39,8 @@ interface Place {
   admin1: string;
   /** Estimated radius of the built-up area, in metres, from the population. */
   extentM: number;
+  /** GeoNames ASCII and alternate names, comma-separated as in the source file. */
+  aliases: string;
 }
 /** One boundary polygon: rings of flat [lng, lat, ...] integers; the first ring is the outline. */
 interface Area {
@@ -99,6 +102,7 @@ export function buildGazetteer(
       admin1: f[10] ?? "",
       extentM:
         Math.sqrt((Number(f[14]) || 0) / (URBAN_DENSITY * Math.PI)) * 1000,
+      aliases: [f[2], f[3]].filter(Boolean).join(","),
     };
     const cell = places.get(key);
     if (cell) cell.push(place);
@@ -232,8 +236,9 @@ export function offlineReverse(
     region: string | null,
     regionCode: string | null,
     basis: ReverseLocation["basis"];
-  // Boundaries are accurate to a few hundred metres. A place of another country within
-  // BORDER_KM of the point means the boundary may be wrong here: name nothing.
+  // Boundaries are accurate to a few hundred metres. A place of another country at the
+  // point itself (within BORDER_KM) means the boundary is wrong here: name nothing. A
+  // foreign town merely nearby is normal at a border (Beausoleil beside Monaco).
   if (
     area &&
     near.some((n) => n.m <= BORDER_KM * 1000 && n.place.country !== area.country)
@@ -252,7 +257,7 @@ export function offlineReverse(
       if (local.every((n) => n.place.admin1 === admin1)) {
         region = data.regionNames.get(`${area.country}.${admin1}`) ?? null;
         regionCode =
-          region && /^[A-Z]{2,3}$/.test(admin1) ? `${country}-${admin1}` : null;
+          region && /^[A-Z]{1,3}$/.test(admin1) ? `${country}-${admin1}` : null;
       }
     }
   } else {
@@ -268,7 +273,7 @@ export function offlineReverse(
         ? (data.regionNames.get(`${first.country}.${first.admin1}`) ?? null)
         : null;
     regionCode =
-      region && /^[A-Z]{2,3}$/.test(first.admin1)
+      region && /^[A-Z]{1,3}$/.test(first.admin1)
         ? `${country}-${first.admin1}`
         : null;
     basis = "nearby_places";
@@ -294,6 +299,10 @@ export function offlineReverse(
     region,
     region_code: regionCode,
     city: town?.place.name ?? null,
+    // München for Munich, Köln for Cologne: a listing may use any of the town's names.
+    city_aliases: town
+      ? [...new Set(town.place.aliases.split(",").filter(Boolean))]
+      : undefined,
     address: null,
     postcode: null,
     distance_m: town?.m ?? 0,
