@@ -68,6 +68,8 @@ interface OccurrenceChoice {
 
 export interface RebuildOptions {
   noLlm: boolean;
+  /** A failed description merge throws instead of publishing the verbatim fallback. */
+  strictLlm?: boolean;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -296,6 +298,7 @@ async function chooseDescription(
   rows: MergeRow[],
   noLlm: boolean,
   anchorName: string | null,
+  strict = false,
 ): Promise<{
   value: string | null;
   provenance: Record<string, unknown> | null;
@@ -361,7 +364,7 @@ async function chooseDescription(
       };
     }
   } catch (err) {
-    if (currentAttempt()) throw err;
+    if (currentAttempt() || strict) throw err;
     console.warn(
       `Description fusion failed; using verbatim fallback: ${(err as Error).message}`,
     );
@@ -632,7 +635,12 @@ export async function rebuildCanonicalPoi(
   }
 
   const name = chooseText(rows, (row) => row.name, { preferShorter: true });
-  const description = await chooseDescription(rows, opts.noLlm, name.value);
+  const description = await chooseDescription(
+    rows,
+    opts.noLlm,
+    name.value,
+    opts.strictLlm,
+  );
   const website = chooseText(rows, (row) => row.website);
   const phone = chooseText(rows, (row) => row.phone);
 

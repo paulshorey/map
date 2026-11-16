@@ -16,6 +16,8 @@ import { adjudicateMatch } from "./llm.js";
 interface ConsolidateOptions {
   dryRun: boolean;
   noLlm: boolean;
+  /** A failed description merge throws instead of publishing the verbatim fallback. */
+  strictLlm?: boolean;
   shouldStop?: () => boolean;
 }
 
@@ -448,6 +450,7 @@ async function applyPlans(
         }
         const publication = await rebuildCanonicalPoi(client, targetId, {
           noLlm: opts.noLlm,
+          strictLlm: opts.strictLlm,
         });
         if (!publication.published) {
           await client.query("ROLLBACK");

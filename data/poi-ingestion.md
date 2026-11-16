@@ -1021,11 +1021,17 @@ to do depends on what is outdated.
 Records are **never upgraded in place**. The raw captures are kept and paid geocode lookups
 are cached, so an outdated record is removed and imported again.
 
-Memberships, match decisions and canonical POIs are different: they are derived wholly from
+Memberships and research-derived canonical POIs are different: they are derived wholly from
 stored records. After a matcher or canonical-builder change, `ingest:rebuild-canonicals` drops
 that layer and matches every record again. No capture is re-read and no record is normalized,
 geocoded or embedded again; the only provider calls are the matcher's own (same-place
-verdicts and description merges). Canonical IDs change, as they do after a purge.
+verdicts and description merges).
+
+- **Kept:** manually curated POIs (`origin = 'manual'`), manual match overrides, and earlier
+  match decisions, which stay as history.
+- **Not kept:** canonical IDs and the redirects between them, as after a purge.
+- **While it runs,** the map shows only the POIs already rebuilt. It is not a build-aside
+  swap; plan it like a purge and re-import, which it replaces and is far shorter than.
 
 ```bash
 pnpm --filter @lib/db-map ingest:staleness            # per-source counts and the remedy (read-only)
@@ -1038,14 +1044,18 @@ pnpm --filter @lib/db-map ingest:purge --maintenance-token <owned-token> --confi
 # Only matcher or canonical builder outdated: rebuild, under owned maintenance.
 pnpm --filter @lib/db-map ingest:control maintenance enter --reason 'Rebuild canonicals' --wait-seconds 30
 pnpm --filter @lib/db-map ingest:rebuild-canonicals --dry-run
-pnpm --filter @lib/db-map ingest:rebuild-canonicals --maintenance-token <owned-token>
+pnpm --filter @lib/db-map ingest:rebuild-canonicals --maintenance-token <owned-token>   # add --consolidate if the dry run says so
+pnpm --filter @lib/db-map ingest:rebuild-canonicals --maintenance-token <owned-token> --continue   # only after a stopped rebuild
 pnpm --filter @lib/db-map ingest:control maintenance exit --token <owned-token>
 ```
 
-The rebuild refuses while any record is itself outdated (re-ingest those sources first) and
-stops on a failed model call instead of recording "different place". If it stops, continue
-with `ingest:match` under the same maintenance: unlinked records are matched and nothing is
-reset again. Afterwards each file's verification is older than its new builds, so the
+The rebuild refuses while any record is itself outdated (re-ingest those sources first). It
+stops on a failed model call: it never records "different place" or publishes a fallback
+description in its place. If it stops, run it again with `--continue` under the same
+maintenance: the records left unlinked are matched, with the same strictness, and nothing
+is reset again. Do not continue with plain `ingest:match`, which tolerates model failures.
+The dry run reports whether the database holds verdicts from an earlier global
+consolidation; if it does, pass `--consolidate` so that sweep is redone after matching. Afterwards each file's verification is older than its new builds, so the
 inventory lists it as `ready_to_verify`; run its `--from report` command.
 
 New runs refuse a source in either state (`assertSourceCurrent`): error code `outdated_data`

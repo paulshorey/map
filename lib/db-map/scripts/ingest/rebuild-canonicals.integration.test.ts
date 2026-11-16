@@ -178,6 +178,20 @@ test(
         "freshly matched records are current",
       );
       await assertSourceCurrent(db, SOURCE);
+      // A manually curated POI has no research record behind it.
+      const manual = (
+        await client.query(
+          `INSERT INTO canonical_pois(name,lng,lat,status,attributes,field_provenance,popularity,origin)
+           VALUES('Curated lookout',-97.5,30.5,'published','{}','{}',1,'manual') RETURNING id`,
+        )
+      ).rows[0].id;
+      const decisionsBefore = (
+        await client.query(
+          "SELECT count(*)::int AS n FROM research_match_decisions d JOIN research_pois rp ON rp.id=d.research_id WHERE rp.source_id=$1",
+          [source],
+        )
+      ).rows[0].n;
+      assert.equal(decisionsBefore, 2);
 
       // 1. Only the matcher is older: the remedy is a rebuild, not a re-ingest.
       await client.query(
@@ -245,6 +259,24 @@ test(
         0,
       );
 
+      // The stopped rebuild left the second record unlinked. --continue matches only what
+      // is left, resets nothing, and is just as strict about model failures.
+      const partial = [await canonicalOf(anchor.id), await canonicalOf(second.id)];
+      assert.ok(partial[0] && !partial[1]);
+      assert.equal((await rebuildPlan(db)).unlinked, 1);
+      await assert.rejects(
+        rebuildCanonicals(db, { maintenanceToken: token, noLlm: false, resume: true }),
+        /fixture provider outage|Network|fetch/i,
+      );
+      const continued = await rebuildCanonicals(db, {
+        maintenanceToken: token,
+        noLlm: true,
+        resume: true,
+      });
+      assert.equal(continued.stats.processed, 1);
+      assert.equal(await canonicalOf(anchor.id), partial[0], "a continue resets nothing");
+      assert.ok(await canonicalOf(second.id));
+
       // 5. The rebuild matches every record again with the current matcher and builder.
       const { stats } = await rebuildCanonicals(db, { maintenanceToken: token, noLlm: true });
       assert.equal(stats.processed, 2);
@@ -266,6 +298,20 @@ test(
           [v.matcher_version, v.builder_version],
           [PIPELINE_VERSIONS.matcher, PIPELINE_VERSIONS.canonicalBuilder],
         );
+      // Manual POIs survive, and earlier decisions remain as history.
+      assert.equal(
+        (await client.query("SELECT status FROM canonical_pois WHERE id=$1", [manual])).rows[0]
+          ?.status,
+        "published",
+      );
+      assert.ok(
+        (
+          await client.query(
+            "SELECT count(*)::int AS n FROM research_match_decisions d JOIN research_pois rp ON rp.id=d.research_id WHERE rp.source_id=$1",
+            [source],
+          )
+        ).rows[0].n > decisionsBefore,
+      );
       // The records themselves were not touched.
       assert.equal(
         (

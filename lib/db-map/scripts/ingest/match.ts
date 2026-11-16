@@ -71,8 +71,10 @@ export interface CliOptions {
   dryRun: boolean;
   noLlm: boolean;
   recluster: boolean;
-  /** A failed model call stops the run instead of deciding "different place". */
+  /** A failed model call stops the run instead of deciding "different place" or publishing a fallback description. */
   strictLlm?: boolean;
+  /** With recluster: keep earlier match decisions as history instead of deleting them. */
+  keepDecisions?: boolean;
   gcOrphans: boolean;
   consolidate: boolean;
   consolidateOnly: boolean;
@@ -1270,18 +1272,26 @@ async function writeDecision(
 
 async function resetClusters(
   client: PoolClient,
+  keepDecisions = false,
 ): Promise<{ researchRows: number; canonicals: number }> {
+  // Manually curated POIs have no research records to rebuild them from: they are kept.
   const canonicalCount = await client.query<{ count: string }>(
-    `SELECT count(*)::text AS count FROM canonical_pois`,
+    `SELECT count(*)::text AS count FROM canonical_pois WHERE origin <> 'manual'`,
   );
   const linkedCount = await client.query<{ count: string }>(
     `SELECT count(*)::text AS count FROM research_pois WHERE canonical_poi_id IS NOT NULL`,
   );
-  await client.query(`DELETE FROM research_match_decisions`);
+  if (!keepDecisions) await client.query(`DELETE FROM research_match_decisions`);
   await client.query(
     `UPDATE research_pois SET canonical_poi_id = NULL WHERE canonical_poi_id IS NOT NULL`,
   );
-  await client.query(`DELETE FROM canonical_pois`);
+  // Memberships of deleted canonicals go with them; one in a kept manual POI is retired.
+  await client.query(
+    `UPDATE research_canonical_memberships
+     SET active = false, retired_at = now(), retirement_reason = 'rematched'
+     WHERE active`,
+  );
+  await client.query(`DELETE FROM canonical_pois WHERE origin <> 'manual'`);
   return {
     researchRows: Number(linkedCount.rows[0]?.count ?? 0),
     canonicals: Number(canonicalCount.rows[0]?.count ?? 0),
@@ -1357,6 +1367,7 @@ async function applyDecision(
   );
   const publication = await rebuildCanonicalPoi(client, canonicalId, {
     noLlm: opts.noLlm,
+    strictLlm: opts.strictLlm,
   });
   if (!publication.published)
     throw Object.assign(
@@ -1436,7 +1447,7 @@ async function runMatchInternal(
     if (opts.recluster) {
       await client.query("BEGIN");
       try {
-        const reset = await resetClusters(client);
+        const reset = await resetClusters(client, opts.keepDecisions);
         await client.query("COMMIT");
         console.log(
           `Recluster reset: unlinked ${reset.researchRows} research rows and removed ${reset.canonicals} canonicals`,
@@ -1558,6 +1569,7 @@ async function runMatchInternal(
       stats.consolidated = await runConsolidation(client, {
         dryRun: opts.dryRun,
         noLlm: opts.noLlm,
+        strictLlm: opts.strictLlm,
         shouldStop: () => shutdown.requested,
       });
     }
