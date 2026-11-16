@@ -27,7 +27,7 @@
  */
 import { pathToFileURL } from "node:url";
 import type { Pool } from "pg";
-import { getDb } from "../../lib/db/postgres.js";
+import { dedicatedClient, getDb } from "../../lib/db/postgres.js";
 import { ingestConfig } from "./config.js";
 import { runMatch } from "./match.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
@@ -42,7 +42,11 @@ export interface RebuildPlan {
   canonicals: number;
   /** Records not linked to any canonical: what `--continue` would match. */
   unlinked: number;
-  /** Pair verdicts from an earlier global consolidation: pass `--consolidate` to redo it. */
+  /**
+   * Evidence that canonicals were merged after matching: pair verdicts from a global
+   * consolidation, or redirects (rule-based consolidation merges write only those).
+   * Pass `--consolidate` to redo the sweep.
+   */
   consolidated: number;
 }
 
@@ -54,7 +58,8 @@ export async function rebuildPlan(db: Pool): Promise<RebuildPlan> {
         (SELECT count(*) FROM canonical_pois WHERE origin <> 'manual')::int AS canonicals,
         (SELECT count(*) FROM research_pois WHERE canonical_poi_id IS NULL AND retired_at IS NULL AND is_poi
           AND lat IS NOT NULL AND lng IS NOT NULL AND name_normalized IS NOT NULL AND category_slugs IS NOT NULL)::int AS unlinked,
-        (SELECT count(*) FROM research_consolidation_decisions)::int AS consolidated`,
+        ((SELECT count(*) FROM research_consolidation_decisions)
+          + (SELECT count(*) FROM canonical_poi_redirects))::int AS consolidated`,
     )
   ).rows[0];
   return {
@@ -73,32 +78,26 @@ export async function rebuildPlan(db: Pool): Promise<RebuildPlan> {
  * if someone exits maintenance meanwhile.
  */
 async function holdOwnedMaintenance(db: Pool, token: string) {
-  const client = await db.connect();
+  // Its own connection, outside the pool: a small pool cannot starve the rebuild of the
+  // connections matching needs while this one sits holding the lock.
+  const lock = await dedicatedClient("ingest-rebuild-canonicals");
   const refuse = () =>
     new Error("Owned, quiescent maintenance is required to rebuild canonicals");
   try {
     const drain = (
-      await client.query("SELECT pg_try_advisory_lock(91832,1) AS acquired")
+      await lock.query("SELECT pg_try_advisory_lock(91832,1) AS acquired")
     ).rows[0];
     if (!drain.acquired) throw refuse();
     const gate = (
-      await client.query("SELECT * FROM research_ingest_control WHERE singleton")
+      await db.query("SELECT * FROM research_ingest_control WHERE singleton")
     ).rows[0];
-    if (!gate?.maintenance || gate.maintenance_token !== token) {
-      await client.query("SELECT pg_advisory_unlock(91832,1)");
-      throw refuse();
-    }
+    if (!gate?.maintenance || gate.maintenance_token !== token) throw refuse();
   } catch (error) {
-    client.release();
+    // Closing the connection releases its session lock.
+    await lock.end().catch(() => undefined);
     throw error;
   }
-  return async () => {
-    try {
-      await client.query("SELECT pg_advisory_unlock(91832,1)");
-    } finally {
-      client.release();
-    }
-  };
+  return () => lock.end();
 }
 
 /** Flags the command accepts; anything else is refused rather than ignored. */
@@ -212,8 +211,8 @@ async function main() {
           `A rebuild removes ${plan.canonicals} research-derived canonicals (manual POIs are kept) ` +
           `and matches ${plan.linked + plan.unlinked} records again; --continue would match ${plan.unlinked}.` +
           (plan.consolidated
-            ? ` This database holds ${plan.consolidated} consolidation verdicts: pass --consolidate to redo the global sweep.`
-            : ""),
+            ? ` This database holds ${plan.consolidated} consolidation verdicts or merge redirects: pass --consolidate to redo the global sweep.`
+            : " No sign of an earlier consolidation; pass --consolidate anyway if you ran one."),
       );
       return;
     }
