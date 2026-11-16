@@ -22,7 +22,8 @@ import { pathToFileURL } from "node:url";
 import type { Pool, PoolClient } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
 import { ingestConfig } from "./config.js";
-import { rebuildCanonicalPoi } from "./merge.js";
+import { prefetchDescription, rebuildCanonicalPoi } from "./merge.js";
+import { memoizedLlm, withLlmMemo, withLlmOutsideLock } from "./llm-memo.js";
 import {
   distinctiveName,
   isAnchor,
@@ -428,6 +429,8 @@ async function fetchNextRow(
   sourceId: string | null,
   excludedIds: Set<string> = new Set(),
   recordId?: string,
+  /** The writing pass locks its row; a read-only pass must neither take nor skip locks. */
+  lock = true,
 ): Promise<ResearchMatchRow | null> {
   const params: unknown[] = [];
   let sourceClause = "";
@@ -466,7 +469,7 @@ async function fetchNextRow(
        ${excludedClause}
      ORDER BY rp.first_seen_at, rp.id
      LIMIT 1
-     FOR UPDATE SKIP LOCKED`,
+     ${lock ? "FOR UPDATE SKIP LOCKED" : ""}`,
     params,
   );
   return rows[0] ?? null;
@@ -839,7 +842,7 @@ async function llmDecisionForCandidate(
   signals: Record<string, unknown>,
 ): Promise<Decision> {
   try {
-    const llm = await adjudicateMatch({
+    const request = {
       current: {
         name: row.name,
         address: row.address,
@@ -876,7 +879,11 @@ async function llmDecisionForCandidate(
       distance_m: Math.round(candidate.distance_m),
       score: score.score,
       signals,
-    });
+    };
+    // The verdict depends only on this request, so it may be fetched before the lock is taken.
+    const llm = await memoizedLlm("match", request, () =>
+      adjudicateMatch(request),
+    );
 
     return {
       decision: llm.samePlace ? "merge" : "new",
@@ -1629,10 +1636,41 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
     process.exit(1);
   });
 
+/**
+ * Read-only first pass for one record: decide its match and ask for the description its
+ * canonical would get, so both model answers are in the memo before the lock is taken.
+ * It writes nothing and may run beside other records' passes.
+ *
+ * Each query borrows a pool connection only for its own duration. No connection is held
+ * while a model request is in flight, so concurrent passes cannot exhaust the pool that
+ * the provider ledger also writes through.
+ */
+async function prefetchMatchAnswers(pool: Pool, opts: CliOptions) {
+  const reader = { query: pool.query.bind(pool) } as unknown as PoolClient;
+  const sourceId = opts.source ? await resolveSourceId(reader, opts.source) : null;
+  // Unlocked: with FOR UPDATE SKIP LOCKED this read would also wait on, or skip past, the
+  // source row that another record's locked pass holds.
+  const row = await fetchNextRow(reader, sourceId, new Set(), opts.recordId, false);
+  if (!row) return;
+  const decision = await decideRow(reader, row, opts);
+  await prefetchDescription(
+    reader,
+    decision.decision === "merge" ? decision.candidatePoiId : null,
+    row.id,
+  );
+}
+
 export async function runMatch(
   pool: Pool,
   opts: CliOptions,
   shutdown: ShutdownSignal,
 ): Promise<MatchStats> {
-  return canonicalLane.run(() => runMatchInternal(pool, opts, shutdown));
+  const locked = () =>
+    canonicalLane.run(() => runMatchInternal(pool, opts, shutdown));
+  // A managed single-record match keeps its model calls outside the canonical lock.
+  if (!currentAttempt() || !opts.recordId || opts.noLlm || opts.dryRun)
+    return locked();
+  const memo = new Map<string, unknown>();
+  await withLlmMemo(memo, false, () => prefetchMatchAnswers(pool, opts));
+  return withLlmOutsideLock(locked, memo);
 }

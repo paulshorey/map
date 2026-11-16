@@ -14,27 +14,24 @@ captures, never upgraded in place ([runbook](../data/poi-ingestion.md#outdated-d
 
 ## Re-import, one file at a time
 
-Only one full import runs at once. Each command detaches; check it with
-`pnpm --silent --filter @lib/db-map ingest:supervise status --job <job-id>`, and confirm the
-outcome before starting the next one.
+Use the import queue. It runs the plan's files in order, starts the next only after the
+previous one is verified complete, and waits out the daily geocoding quota.
 
 ```bash
 cd ~/git/map
-python3 scripts/coordinator-ingestion.py snapshot   # quiescent, no claims
-start() { pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- "$1" --category "$2" --unlimited; }
-
-# Small sources first (minutes each)
-start data/poi/art-fairs/biennials/biennale_com.json            art_fair          # 43
-start data/poi/art-fairs/biennials/biennial_association.json    art_fair          # ~41
-start data/poi/art-fairs/biennials/biennial_foundation.json     art_fair          # 304
-start data/poi/art-parades/street-arts/aurillac_festival.json   art_parade        # 6
-start data/poi/hostels/california-hostels.json                  hostel            # 52
-start data/poi/music-festivals/apis/jambase_festivals.json      music_festival    # ~1,260
-start data/poi/music-festivals/directories/thatfestivalsite_festivals.json music_festival  # ~1,420
-start data/poi/botanical_gardens_data/bgci_gardens_full.json    botanical_garden  # 3,649 (~3 h)
-# Last, and only after the reverse-lookup budget is addressed (see below):
-start data/poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv   campground        # 43,272
+pnpm --silent --filter @lib/db-map ingest:overview --json          # quiescent, not in maintenance
+pnpm --silent --filter @lib/db-map ingest:inventory --refresh
+pnpm --silent --filter @lib/db-map ingest:import-queue start --plan data/import-plans/reset-20261105.json
+pnpm --silent --filter @lib/db-map ingest:import-queue status
 ```
+
+The plan lists nine files, small sources first: `biennale_com` (43), `biennial_association`
+(~41), `biennial_foundation` (304), `aurillac_festival` (6), `california-hostels` (52),
+`jambase_festivals` (~1,260), `thatfestivalsite_festivals` (~1,420), `bgci_gardens_full`
+(3,649) and The Dyrt (43,272). The queue refuses to start while BGCI is `needs_review` in the
+inventory, so the first seven were started on 2026-11-16 with the ad hoc form
+(`start -- <file>=<category> …`). The rest of the backlog is
+`data/import-plans/backlog-20261116.json`.
 
 RIDB `facilities.csv` stays deferred (see [source readiness](source-ingestion-readiness.md)).
 

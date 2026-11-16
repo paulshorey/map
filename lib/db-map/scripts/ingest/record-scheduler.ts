@@ -78,7 +78,9 @@ export async function runRecordScheduler(options: {
     normalize: options.finiteBudget ? 1 : options.concurrency,
     geocode: 1,
     embed: 32,
-    match: 1,
+    // Each record's read-only pass and model calls overlap; canonical writes stay one at a
+    // time behind the canonical lane. Capped so held connections cannot exhaust the pool.
+    match: Math.min(options.concurrency, 3),
     canonical: 1,
     verify: 2,
   };

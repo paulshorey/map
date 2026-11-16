@@ -1,4 +1,27 @@
-# Ingestion next decision — 2026-10-25, revised
+# Ingestion next decision
+
+## Current status — 2026-11-16
+
+The holds recorded below are over. The location fixes they waited for shipped as
+`location-v5` to `location-v9`. All imported data was purged on 2026-11-05
+([reset note](data-reset-20261105.md)); the re-import only began on 2026-11-16 and most of
+it is still to do, as listed here.
+
+- Whole files now run through `ingest:import-queue`
+  ([agent operations](../data/ingestion-agents.md)). A queue of the seven small reset-plan
+  files was started on 2026-11-16.
+- Not yet queued, each for a stated reason: **BGCI** (`needs_review` since 2026-10-15,
+  pending a bounded check of its geocoder fallback) and **The Dyrt** (wait for the offline
+  reverse lookup, PR #89; it still needs about 24,000 forward lookups afterwards).
+- The remaining backlog is `data/import-plans/backlog-20261116.json`: 145 captures, about
+  104,000 records, smallest first.
+- Still to classify: 15 captures marked `needs_review` and 7 whose inventory classification
+  disagrees with `data/poi-research/expected-captures.json` (`ingest:overview --json` lists
+  them as `catalog_classification_mismatch`).
+
+Everything below is history, kept for the evidence it links to.
+
+## Earlier decisions (superseded)
 
 ## Current decision — 2026-10-29, after continuation
 
