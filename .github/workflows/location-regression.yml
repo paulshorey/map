@@ -51,6 +51,7 @@ jobs:
       - run: pnpm --filter @lib/db-map ingest:test-location-assessment
       - run: pnpm --filter @lib/db-map ingest:test-location-assessment:integration
       - run: pnpm --filter @lib/db-map ingest:test-match-lock:integration
+      - run: pnpm --filter @lib/db-map ingest:test-drop-unlocated:integration
       - run: pnpm --filter @lib/db-map ingest:test-rebuild-canonicals:integration
       - name: Existing location and resume contracts
         run: >-

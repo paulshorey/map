@@ -83,6 +83,7 @@
     "ingest:test-artifacts:integration": "tsx scripts/ingest/artifact-consistency.integration.ts",
     "ingest:test-coordinates:integration": "tsx scripts/ingest/normalization-coordinates.integration.ts",
     "ingest:test-scheduler": "tsx --test scripts/ingest/database-telemetry.test.ts scripts/ingest/record-scheduler.test.ts scripts/ingest/concurrency.test.ts scripts/ingest/embedding-batcher.test.ts scripts/ingest/llm-memo.test.ts",
+    "ingest:test-drop-unlocated:integration": "tsx --test scripts/ingest/drop-unlocated.integration.test.ts",
     "ingest:test-match-lock:integration": "tsx --test scripts/ingest/match-llm-lock.integration.test.ts",
     "ingest:quality": "tsx scripts/ingest/quality.ts",
     "ingest:location-audit": "tsx scripts/ingest/location-audit.ts",

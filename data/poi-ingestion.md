@@ -43,6 +43,8 @@ before resuming. Queue the next file until the first run is verified and its pro
 Cross-process waiting/serialization would require a separate stop-aware implementation and
 multi-process validation; removing the matching guard is unsafe.
 
+A record that cannot be located from its own data is dropped automatically and does not
+hold up its file; see [unlocatable records](#unlocatable-records-are-dropped).
 Recognized record validation failures are quarantined with durable issues; independent records
 continue and the run ends partial. Ten consecutive validation failures in one stage trip a
 systemic circuit breaker. Authentication, billing, unexpected provider shapes, database, schema,
@@ -982,6 +984,26 @@ pnpm --filter @lib/db-map ingest:review-flags            # published POIs per fl
 pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's flags
 ```
 
+## Unlocatable records are dropped
+
+Owner policy (2026-11-16): a record with no usable point, which the geocoder cannot place
+from the record's own listed text even after its city and country fallbacks, is dropped.
+Nobody researches it by hand, and it never stops an import or leaves a file partial.
+
+The geocode stage finishes such a record as `skipped` with reason `unlocated_dropped`, and
+in the same transaction:
+
+- retires the research record (its raw observation and listed text stay stored);
+- skips its embed, match, canonical and verify tasks;
+- records an excluded issue with code `unlocated_dropped` and actor `policy`, and a record
+  verification with outcome `operator_excluded`, so the inventory counts the record as
+  excluded and the file can reach `complete`.
+
+`ingest:issues list --run <uuid>` shows what was dropped. Twenty-five such records in a row
+stop the run with `systemic_unlocated`: that many is a sign of a broken source mapping or
+geocoder, not of unlucky records. To bring a dropped record back, fix its capture or the
+lookup and import the file again as a new run.
+
 ## Daily geocoding quota
 
 LocationIQ's free plan allows 5,000 requests a day (2 a second, 60 a minute) and resets at
@@ -1251,8 +1273,8 @@ listed country's English name, skipping queries already tried. The fallback is
 `{reason: miss|rejected, query}`; canonical ranking gives such a fallback no address priority. When
 query fitting drops the address, venue or name, the basis is what survived (`basisAfterFit`). Any locality-only result that comes back as a `point` (a business that
 shares the city's name) is labelled `city` (`locality_query_cap`). A record with a supplied or retained point keeps it.
-An unrecognized country text with no city (`East Africa`) leaves the record unlocated. An unlocated record is unpublished, its geocode task needs
-intervention, and `attributes.location_unresolved` records why (query, basis, rejected
+An unrecognized country text with no city (`East Africa`) leaves the record unlocated. An unlocated record is dropped from its run
+(see [unlocatable records](#unlocatable-records-are-dropped)), and `attributes.location_unresolved` records why (query, basis, rejected
 results, invalid queries). A later successful geocode removes it; canonicals never publish it.
 
 Each canonical build writes `attributes.location_specificity`: `precise` when a

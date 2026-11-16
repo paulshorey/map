@@ -6,6 +6,7 @@ import { refreshRunReviewFlags } from "../../sql/review-flags.js";
 import { locationReadySql } from "./location.js";
 import { measureDatabase } from "./database-telemetry.js";
 import { runRecordScheduler } from "./record-scheduler.js";
+import { UNLOCATED_DROPPED } from "../../sql/ingestion-tasks.js";
 import { EmbeddingBatcher } from "./embedding-batcher.js";
 import { buildEmbedText } from "./embed.js";
 import { configureLlmConcurrency, canonicalLane } from "./concurrency.js";
@@ -1175,6 +1176,7 @@ export async function runOrchestration(
     configureLlmConcurrency(opts.llmConcurrency ?? 4);
     const embeddings = new EmbeddingBatcher(db);
     let geocodeCalls = 0;
+    let unlocatedInARow = 0;
     const schedule = await runRecordScheduler({
       db,
       ex,
@@ -1276,12 +1278,28 @@ export async function runOrchestration(
                 db,
                 item.research_poi_id!,
               );
+              const located = after.lat !== null && after.lng !== null;
+              // A record that cannot be located from its own data is dropped, not left
+              // waiting for a decision. A long unbroken run of them is not bad luck: it
+              // points at the source mapping or the geocoder, so stop instead.
+              unlocatedInARow = located ? 0 : unlocatedInARow + 1;
+              if (unlocatedInARow >= 25)
+                throw Object.assign(
+                  new Error(
+                    "25 records in a row could not be located; inspect the source mapping and geocoder before resuming",
+                  ),
+                  { code: "systemic_unlocated" },
+                );
               return {
-                status:
-                  after.lat !== null && after.lng !== null
-                    ? "succeeded"
-                    : "blocked",
-                reason: stats.noQuery ? "missing_locality" : "geocode_result",
+                status: located ? "succeeded" : "skipped",
+                reason: located
+                  ? undefined
+                  : UNLOCATED_DROPPED,
+                unlocated: located
+                  ? undefined
+                  : stats.noQuery
+                    ? "missing_locality"
+                    : "geocode_result",
                 ...stats,
                 geocode_id: after.active_geocode_id,
                 location_assessment_id: assessment.id,
@@ -1589,9 +1607,11 @@ export async function runOrchestration(
     );
   } catch (error) {
     finalStatus = "failed";
+    const code = (error as { code?: string })?.code;
+    // Deliberate stops keep their own name so status and the queue can tell them apart.
     reason =
-      (error as { code?: string })?.code === "provider_recovery_exhausted"
-        ? "provider_recovery_exhausted"
+      code === "provider_recovery_exhausted" || code === "systemic_unlocated"
+        ? code
         : "stage_error";
     await ex.finish("failed", reason, error);
     throw error;
