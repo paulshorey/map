@@ -6,6 +6,7 @@ import {
   taskCounts,
   unfinishedTaskCounts,
   RECORD_STAGES,
+  UNLOCATED_DROPPED,
   type TaskClaim,
   type RecordStage,
 } from "../../sql/ingestion-tasks.js";
@@ -141,7 +142,11 @@ export async function runRecordScheduler(options: {
             const work = options
               .execute(claim)
               .then((result) => {
-                if (
+                if (result?.reason === UNLOCATED_DROPPED) {
+                  // Dropped: nothing downstream will run for this record.
+                  finishedRecords.add(claim.source_record_id);
+                  frontier.delete(claim.source_record_id);
+                } else if (
                   result &&
                   ["succeeded", "reused", "skipped"].includes(result.status)
                 ) {

@@ -4,6 +4,14 @@ import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import type { AttemptResult } from "../scripts/ingest/execution.js";
 import { PIPELINE_VERSIONS } from "../scripts/ingest/pipeline-versions.js";
+import { rebuildCanonicalPoi } from "../scripts/ingest/merge.js";
+
+/**
+ * Reason of a geocode task finished as `skipped` because the record cannot be located from
+ * its own data. Owner policy (2026-11-16): such a record is dropped, never researched by
+ * hand, and never holds up its file.
+ */
+export const UNLOCATED_DROPPED = "unlocated_dropped";
 export const RECORD_STAGES = [
   "normalize",
   "geocode",
@@ -169,6 +177,8 @@ export async function finishTask(
       `UPDATE research_ingest_tasks SET state='pending',output=NULL,finished_at=NULL,updated_at=now() WHERE run_id=$1 AND source_record_id=$2 AND rank>$3 AND state IN ('succeeded','reused','skipped')`,
       [claim.run_id, claim.source_record_id, claim.rank],
     );
+  if (output.status === "skipped" && output.reason === UNLOCATED_DROPPED)
+    await dropRecord(client, claim, output);
   if (output.status === "blocked")
     await recordIssue(
       client,
@@ -202,6 +212,77 @@ export async function finishTask(
       ],
     );
   }
+}
+/**
+ * Drop a record from its run, in the transaction that finishes its task: retire it, skip
+ * its later stages, and record the exclusion so the file can still complete. The raw
+ * observation and its listed text stay stored.
+ */
+async function dropRecord(
+  client: PoolClient,
+  claim: TaskClaim,
+  output: AttemptResult,
+) {
+  const explanation =
+    "Owner policy: a record that cannot be located from its own data is dropped";
+  const dropped = { ...output, status: "skipped", explanation };
+  const record = (
+    await client.query(
+      `UPDATE research_pois SET retired_at=now() WHERE id=$1 RETURNING canonical_poi_id`,
+      [claim.research_poi_id],
+    )
+  ).rows[0];
+  await client.query(
+    `UPDATE research_canonical_memberships SET active=false,retired_at=now(),retirement_reason='operator_excluded'
+    WHERE research_poi_id=$1 AND active`,
+    [claim.research_poi_id],
+  );
+  if (record?.canonical_poi_id)
+    await rebuildCanonicalPoi(client, record.canonical_poi_id, { noLlm: true });
+  await client.query(
+    `UPDATE research_ingest_tasks SET state='skipped',output=$4,finished_at=now(),updated_at=now()
+    WHERE run_id=$1 AND source_record_id=$2 AND rank>$3`,
+    [claim.run_id, claim.source_record_id, claim.rank, JSON.stringify(dropped)],
+  );
+  // The stored outcome name predates automatic drops; the output says who decided and why.
+  await client.query(
+    `INSERT INTO research_ingest_record_verifications(run_id,source_record_id,execution_id,observation_id,output,pipeline_versions,outcome)
+    VALUES($1,$2,$3,$4,$5,$6,'operator_excluded') ON CONFLICT(run_id,source_record_id) DO UPDATE SET execution_id=EXCLUDED.execution_id,
+    observation_id=EXCLUDED.observation_id,output=EXCLUDED.output,pipeline_versions=EXCLUDED.pipeline_versions,outcome='operator_excluded',verified_at=now()`,
+    [
+      claim.run_id,
+      claim.source_record_id,
+      claim.execution_id,
+      claim.observation_id,
+      JSON.stringify(dropped),
+      JSON.stringify(PIPELINE_VERSIONS),
+    ],
+  );
+  const issue = (
+    await client.query(
+      `INSERT INTO research_ingest_issues(run_id,source_record_id,stage,code,scope,severity,message,evidence,retryable,status)
+      VALUES($1,$2,$3,$4,'record','info',$5,$6,false,'excluded') ON CONFLICT(run_id,source_record_id,stage,code) DO UPDATE SET
+      message=EXCLUDED.message,evidence=EXCLUDED.evidence,status='excluded',last_seen_at=now() RETURNING id`,
+      [
+        claim.run_id,
+        claim.source_record_id,
+        claim.stage,
+        UNLOCATED_DROPPED,
+        explanation,
+        JSON.stringify(dropped),
+      ],
+    )
+  ).rows[0];
+  // An earlier attempt may have left this record blocked and waiting for a decision.
+  await client.query(
+    `UPDATE research_ingest_issues SET status='excluded',last_seen_at=now()
+    WHERE run_id=$1 AND source_record_id=$2 AND status='open'`,
+    [claim.run_id, claim.source_record_id],
+  );
+  await client.query(
+    "INSERT INTO research_ingest_issue_events(issue_id,actor,action,reason) VALUES($1,'policy','exclude',$2)",
+    [issue.id, explanation],
+  );
 }
 export async function recordIssue(
   db: Pool | PoolClient,
