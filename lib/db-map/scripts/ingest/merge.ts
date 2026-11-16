@@ -15,7 +15,8 @@ import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
 import { CANONICAL_WRITER_LOCK } from "../../lib/ingestion/locks.js";
 import { currentAttempt } from "./execution.js";
 import type { PoolClient } from "pg";
-import { chat } from "./providers/llm.js";
+import { chat, type ChatOptions } from "./providers/llm.js";
+import { memoizedLlm } from "./llm-memo.js";
 import { getSourceDefinition } from "./sources.js";
 import { isWithinProximityBox, proximityDegFor } from "./match/anchors.js";
 import { nameSimilarity, normalizeComparable } from "./match/text.js";
@@ -329,7 +330,7 @@ async function chooseDescription(
   }
 
   try {
-    const fused = await chat({
+    const request: ChatOptions = {
       purpose: "description_fusion",
       system:
         "Combine multiple source descriptions for one POI into concise factual Markdown. Preserve useful links and basic formatting. Do not invent details or URLs.",
@@ -340,7 +341,11 @@ async function chooseDescription(
         })),
       }),
       maxTokens: 700,
-    });
+    };
+    // The answer depends only on this request, so it may be fetched before the lock is taken.
+    const fused = await memoizedLlm("description_fusion", request, () =>
+      chat(request),
+    );
     const introduced = [...extractUrls(fused)].filter(
       (url) => !allowedUrls.has(url),
     );
@@ -531,6 +536,53 @@ async function syncOccurrences(
   return occurrences;
 }
 
+/** Member columns a canonical build reads; `m` is the membership, `rp` the research record. */
+const MEMBER_COLUMNS = `rp.id, m.id AS membership_id, rp.active_normalization_id, rp.active_geocode_id,
+       rp.active_embedding_id, rp.source_id, rs.slug AS source_slug, rs.trust AS source_trust,
+       rp.name, rp.description, rp.website, rp.phone, rp.address, rp.city, rp.region, rp.country_code,
+       rp.lng, rp.lat, rp.coordinate_precision, rp.coordinate_source,
+       COALESCE(rp.attributes->>'opening_hours', rp.attributes->>'hours') AS hours,
+       COALESCE(rp.attributes->>'photo_url', rp.attributes->>'image') AS photo_url,
+       rp.starts_at, rp.ends_at, rp.date_precision,
+       rp.category_slugs, rp.attributes, g.validation AS location_validation`;
+const MEMBER_JOINS = `JOIN research_sources rs ON rs.id = rp.source_id
+     LEFT JOIN research_poi_geocodes g ON g.id=rp.active_geocode_id AND g.normalization_id=rp.active_normalization_id AND g.status='resolved'`;
+const MEMBER_SELECT = `SELECT
+       ${MEMBER_COLUMNS}
+     FROM research_canonical_memberships m
+     JOIN research_pois rp ON rp.id = m.research_poi_id
+     ${MEMBER_JOINS}`;
+// The id breaks ties (a bulk import shares one last_seen_at), so every query shape lists
+// members, and therefore descriptions, in the same order.
+const MEMBER_ORDER = "ORDER BY rs.trust DESC, rp.last_seen_at DESC, rp.id";
+
+/**
+ * Ask for the description a build would write if `joiningId` joined `canonicalId` (or
+ * started a new canonical when null), without writing anything. Its only purpose is to
+ * make the model call before the canonical lock is taken: inside an LLM memo, the later
+ * locked build finds the answer waiting. A wrong guess costs nothing; the build asks again.
+ */
+export async function prefetchDescription(
+  client: Pick<PoolClient, "query">,
+  canonicalId: string | null,
+  joiningId: string,
+): Promise<void> {
+  const { rows } = await client.query<MergeRow>(
+    `SELECT
+       ${MEMBER_COLUMNS}
+     FROM research_pois rp
+     LEFT JOIN research_canonical_memberships m
+       ON m.research_poi_id = rp.id AND m.active AND m.canonical_poi_id = $1
+     ${MEMBER_JOINS}
+     WHERE rp.is_poi AND rp.retired_at IS NULL AND (m.id IS NOT NULL OR rp.id = $2)
+     ${MEMBER_ORDER}`,
+    [canonicalId, joiningId],
+  );
+  if (rows.length < 2) return;
+  const name = chooseText(rows, (row) => row.name, { preferShorter: true });
+  await chooseDescription(rows, false, name.value);
+}
+
 export async function rebuildCanonicalPoi(
   client: PoolClient,
   canonicalId: string,
@@ -549,21 +601,9 @@ export async function rebuildCanonicalPoi(
     [canonicalId],
   );
   const { rows } = await client.query<MergeRow>(
-    `SELECT
-       rp.id, m.id AS membership_id, rp.active_normalization_id, rp.active_geocode_id,
-       rp.active_embedding_id, rp.source_id, rs.slug AS source_slug, rs.trust AS source_trust,
-       rp.name, rp.description, rp.website, rp.phone, rp.address, rp.city, rp.region, rp.country_code,
-       rp.lng, rp.lat, rp.coordinate_precision, rp.coordinate_source,
-       COALESCE(rp.attributes->>'opening_hours', rp.attributes->>'hours') AS hours,
-       COALESCE(rp.attributes->>'photo_url', rp.attributes->>'image') AS photo_url,
-       rp.starts_at, rp.ends_at, rp.date_precision,
-       rp.category_slugs, rp.attributes, g.validation AS location_validation
-     FROM research_canonical_memberships m
-     JOIN research_pois rp ON rp.id = m.research_poi_id
-     JOIN research_sources rs ON rs.id = rp.source_id
-     LEFT JOIN research_poi_geocodes g ON g.id=rp.active_geocode_id AND g.normalization_id=rp.active_normalization_id AND g.status='resolved'
+    `${MEMBER_SELECT}
      WHERE m.canonical_poi_id = $1 AND m.active AND rp.is_poi AND rp.retired_at IS NULL
-     ORDER BY rs.trust DESC, rp.last_seen_at DESC`,
+     ${MEMBER_ORDER}`,
     [canonicalId],
   );
 

@@ -9,6 +9,7 @@ import { runRecordScheduler } from "./record-scheduler.js";
 import { EmbeddingBatcher } from "./embedding-batcher.js";
 import { buildEmbedText } from "./embed.js";
 import { configureLlmConcurrency, canonicalLane } from "./concurrency.js";
+import { withLlmOutsideLock } from "./llm-memo.js";
 import { artifactTransaction } from "./execution.js";
 import { assertSourceCurrent } from "./staleness.js";
 import { spawn } from "node:child_process";
@@ -1325,7 +1326,8 @@ export async function runOrchestration(
               );
               if (state.canonical_poi_id && state.membership_valid) {
                 if (!(await recordState(db, item)).lineage_ready) {
-                  const publication = await canonicalLane.run(() =>
+                  // A description merge is asked outside the lock, then replayed inside it.
+                  const publication = await withLlmOutsideLock(() => canonicalLane.run(() =>
                     artifactTransaction(db, async (client) => {
                       const publication = await rebuildCanonicalPoi(
                         client,
@@ -1350,7 +1352,7 @@ export async function runOrchestration(
                         },
                       };
                     }),
-                  );
+                  ));
                   if (!publication.published)
                     return {
                       status: "blocked",
