@@ -259,10 +259,11 @@ test(
         0,
       );
 
-      // The stopped rebuild left the second record unlinked. --continue matches only what
-      // is left, resets nothing, and is just as strict about model failures.
+      // The stopped rebuild matched one record (whichever came first) and left the other
+      // unlinked. --continue matches only what is left, resets nothing, and is just as
+      // strict about model failures.
       const partial = [await canonicalOf(anchor.id), await canonicalOf(second.id)];
-      assert.ok(partial[0] && !partial[1]);
+      assert.equal(partial.filter(Boolean).length, 1);
       assert.equal((await rebuildPlan(db)).unlinked, 1);
       await assert.rejects(
         rebuildCanonicals(db, { maintenanceToken: token, noLlm: false, resume: true }),
@@ -274,8 +275,12 @@ test(
         resume: true,
       });
       assert.equal(continued.stats.processed, 1);
-      assert.equal(await canonicalOf(anchor.id), partial[0], "a continue resets nothing");
-      assert.ok(await canonicalOf(second.id));
+      const resumed = [await canonicalOf(anchor.id), await canonicalOf(second.id)];
+      assert.ok(resumed[0] && resumed[1]);
+      assert.ok(
+        partial.every((id, i) => !id || id === resumed[i]),
+        "a continue resets nothing",
+      );
 
       // 5. The rebuild matches every record again with the current matcher and builder.
       const { stats } = await rebuildCanonicals(db, { maintenanceToken: token, noLlm: true });
