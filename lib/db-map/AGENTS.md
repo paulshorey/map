@@ -7,15 +7,12 @@ work. It owns command semantics, limits, completion criteria, and troubleshootin
 
 ## Agent execution cost
 
-Follow the root model/delegation rules and [agent operations](../../data/ingestion-agents.md).
-Full ingestion uses deterministic supervision after an approved launch. The verified native
-scheduled coordinator may launch directly under the root exception; coding engineers use
-short, time-limited smoke selections or the explicitly scoped runner/manual workflow. Do not add model calls to progress/heartbeat/health loops.
-`supervise.ts` owns detached jobs and terminal evidence; `supervisor-process.ts` owns live child
-groups; `codex-notify.ts` is the optional verified parent transport. Keep monitoring deterministic,
-notification failures durable, delivery conservative, and resume decisions with the orchestrator.
-Never use a persisted PID as signal authorization, auto-relaunch an abandoned job, or report
-terminal delivery as proven without a transport receipt. Tests must mock parent wake-ups.
+Follow [agent operations](../../data/ingestion-agents.md). Whole files run through
+`ingest:import-queue`; coding work uses short, time-limited smoke selections. Do not add
+model calls to progress, heartbeat, health or terminal-result code: supervision is ordinary
+code throughout. `import-queue.ts` owns the file sequence; `supervise.ts` owns detached jobs
+and terminal evidence; `supervisor-process.ts` owns live child groups. Never use a persisted
+PID as signal authorization or auto-relaunch an abandoned job.
 `provider-recovery.ts` owns bounded managed provider cooldowns. Keep failed attempts
 append-only, honor optional operator limits on each retry, preserve heartbeat/stop responsiveness, and never
 retry authentication, validation or database failures as provider throttling. Use mocked

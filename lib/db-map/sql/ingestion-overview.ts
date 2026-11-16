@@ -127,6 +127,7 @@ async function localEvidence() {
     throw error;
   }
   const jobs: any[] = [],
+    // Launch claims belonged to the removed coordinator script; the field stays in the contract.
     claims: any[] = [],
     errors: string[] = [];
   for (const id of entries.filter((x) => /^[0-9a-f-]{36}$/i.test(x))) {
@@ -152,26 +153,6 @@ async function localEvidence() {
     } catch {
       errors.push(`Unreadable job ${id}`);
     }
-  }
-  try {
-    const imports = join(base, ".coordinator/imports");
-    for (const id of (await readdir(imports)).filter((x) =>
-      /^[0-9a-f-]{36}$/i.test(x),
-    )) {
-      const intent = JSON.parse(
-        await readFile(join(imports, id, "intent.json"), "utf8"),
-      );
-      if (!["released", "finished", "cancelled"].includes(intent.status))
-        claims.push({
-          id,
-          status: intent.status,
-          job_id: intent.job_id ?? intent.job?.id ?? null,
-          path: join(imports, id, "intent.json"),
-        });
-    }
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT")
-      errors.push("Coordinator claims unavailable");
   }
   return { observed_at, jobs, claims, errors };
 }

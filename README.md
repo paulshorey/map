@@ -173,7 +173,7 @@ recovery steps. Agents should follow the repository's
 
 ## POI Ingestion
 
-For local ingestion job coordination, start with the [agent discovery procedure](AGENTS.md#discover-and-coordinate-ingestion-jobs). The project-local `python3 scripts/coordinator-ingestion.py` provides discovery and detached import control; [agent ingestion operations](data/ingestion-agents.md#native-codex-scheduled-coordinator) covers commands, credentials, admission and recovery. Scheduling and prompts are managed in Codex.
+To see what ingestion is doing, start with the [discovery procedure](AGENTS.md#discover-and-coordinate-ingestion-jobs). Whole files are imported with `ingest:import-queue`; [agent ingestion operations](data/ingestion-agents.md) covers its commands and recovery.
 
 You usually launch full imports manually. AI agents share ownership of every stage and may
 stop/resume your runs, migrate schema, and repair experimental data as needed. They normally
@@ -408,18 +408,16 @@ completion requires final global verification; sampled quality acceptance is rep
 
 ### Agent-operated long ingestion
 
-The native Codex scheduled map coordinator launches one intended source file at a time
-through the coordinator toolkit's detached supervisor. Ordinary Node owns waiting,
-hourly health checks, and durable results; later scheduled passes reconcile them and
-advance only after verified whole-file completion. Full imports and resumes use
-`--unlimited` without an overall deadline. This workflow requires verified scheduled
-discovery and does not promise an immediate callback.
+Agents and humans run whole files the same way: `ingest:import-queue start` imports a list
+of files one at a time. Ordinary Node owns waiting, hourly health checks and durable
+results; no model is called while an import runs. The queue advances only after verified
+whole-file completion, waits out the daily geocoding quota, and stops for a decision on
+anything else. Full imports and resumes use `--unlimited` without an overall deadline.
 
-Other agent hosts use a cheap runner with a verified terminal-notification path, or
-prepare a manual command. See [agent operations](data/ingestion-agents.md) for the
-execution procedures and recovery limits. Manual foreground `ingest:run` remains
-available. The dashboard and audited inventory edits share classification state
-with the queue; no second mutable status file is needed among captures.
+See [agent operations](data/ingestion-agents.md) for the commands and recovery limits.
+Manual foreground `ingest:run` remains available for bounded diagnostics. The dashboard
+and audited inventory edits share classification state with the queue; no second mutable
+status file is needed among captures.
 
 ## Private phone access through Tailscale
 

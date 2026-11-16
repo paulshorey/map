@@ -23,8 +23,9 @@ export interface Job {
   child_pid?: number;
   run_id?: string;
   execution_id?: string;
+  /** Only in job files written before the parent callback and model summary were removed. */
   parent_thread?: string;
-  runner_model: "gpt-5.6-luna" | "external";
+  runner_model?: string;
   started_at: string;
   status: "queued" | "running" | "finished";
   // Null means continuous operation; old finite-deadline job files remain readable.

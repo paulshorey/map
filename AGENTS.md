@@ -45,7 +45,7 @@ PR previews inherit dev; an existing preview does not acquire later IaC changes 
 ## Processing source data
 
 Read [the runbook](data/poi-ingestion.md) before ingestion work and
-[agent operations](data/ingestion-agents.md) before orchestration. Keep full-run
+[agent operations](data/ingestion-agents.md) before running imports. Keep full-run
 recipes in README/runbooks and implementation rules in the owning folder guide.
 
 ## Execution responsibilities
@@ -64,38 +64,40 @@ running. Never silently drain a backlog or chain small tests into a full run.
 
 ## Discover and coordinate ingestion jobs
 
-For any ingestion inspection/operation, use the primary checkout and run
-`python3 scripts/coordinator-ingestion.py snapshot` once. Pin actual job/run/execution
-IDs and timestamps; follow returned journals/results, unresolved claims, and matching
-`imports/active.claim` / intent records. Inspect bounded `ingest:status` and relevant
-execution-log excerpts. Acceptance/discovery receipts do not prove current health.
+For any ingestion inspection or operation, use the primary checkout and take one snapshot:
 
-Reconcile workers and lost launch responses before starting again. Preserve healthy
-imports; diagnose failed/stalled/conflicting evidence before stop/resume. Use helper
-`stop`/`release`, verify process/lock exit, and never discard claims by age. Tools own
-job/intent records; keep raw logs private and preserve active/unresolved recovery evidence.
-When continued ingestion is in scope, inspect `ingest:queue --json` and verify whole-file
-completion before advancing. See [coordinator details](data/ingestion-agents.md#native-codex-scheduled-coordinator).
+```sh
+pnpm --silent --filter @lib/db-map ingest:overview --json     # workers, locks, maintenance, next action
+pnpm --silent --filter @lib/db-map ingest:import-queue status # the queue and each file's outcome
+```
 
-## Economical long-run orchestration
+Pin the actual run, execution and job IDs and timestamps from that output, then inspect
+bounded `ingest:status --run <uuid>` and the relevant log excerpt. A finished process or an
+old receipt does not prove current health.
 
-Ordinary Node supervision owns waiting and hourly health checks; end the AI turn
-after recording the launch receipt. Follow [agent operations](data/ingestion-agents.md):
+Reconcile live workers before starting anything. Preserve healthy imports; diagnose failed,
+stalled or conflicting evidence before a stop or resume. Never signal a saved PID, and keep
+raw logs private. Verify whole-file completion (`coverage: complete`) before advancing.
 
-- The verified native scheduled coordinator may launch reviewed `data/poi` scope
-  directly through `coordinator-ingestion.py start`, one file at a time, with durable
-  journals and scheduled reconciliation. Other coding agents use the configured
-  `ingestion-runner` / `gpt-5.6-luna` with low reasoning and verified callback, or
-  prepare the manual command. Do not add frequent AI monitoring.
-- Smoke tests use a new 1–5 record cohort, expected under 45 seconds (maximum 60s
-  plus grace), with suitable provider/stage limits. Diagnose timeouts before more runs.
-- Full imports/resumes use `--unlimited`, preserve cohort/stages/checkpoints, and
-  need no overall deadline or new backlog cost allowance. Usage telemetry is informational.
-- Run only one full import process. Within-process concurrency does not permit
-  parallel full-file workers. Return exact IDs; advancement needs verified file/database
-  completion, not exit zero. No blind process retry or scope expansion.
-- Diagnose terminal/source-lock/provider failures before resuming; pipeline code owns
-  bounded cooldown. Global schema/provider/lineage blockers stop progression;
+## Running imports economically
+
+Ordinary Node code owns waiting, hourly health checks and results. No model is called while
+an import runs, and nothing notifies an agent when it ends. See
+[agent operations](data/ingestion-agents.md).
+
+- **Whole files:** `ingest:import-queue start`, one file at a time, in the order given. It
+  resumes across the daily geocoding quota and stops with `needs_attention` on anything
+  else. Start it, record the queue ID, and end the turn; check back infrequently.
+- **Bounded diagnostics:** `ingest:supervise smoke` with a new 1–5 record cohort, expected
+  under 45 seconds (maximum 60 s plus grace), with suitable provider and stage limits.
+  Diagnose a timeout before running more.
+- Full imports and resumes use `--unlimited`, keep their cohort, stages and checkpoints, and
+  need no overall deadline or cost allowance. Usage telemetry is informational.
+- Only one full import runs at a time; a database lock enforces it. Concurrency inside that
+  process does not permit parallel full-file workers. Advancement needs verified file and
+  database completion, not exit zero. No blind retry or scope expansion.
+- Diagnose terminal, source-lock and provider failures before resuming; pipeline code owns
+  bounded cooldown. Global schema, provider or lineage blockers stop progression;
   source-specific blockers may permit independent captures.
 
 ## Stop before changing a running pipeline
