@@ -737,25 +737,42 @@ async function extractFile(
     stats.failed === 0 &&
     stats.collisions === 0 &&
     !tooManyRejected(stats);
-  if (complete) {
-    if (ctx.resolved.mode === "snapshot") {
-      await retireMissingSnapshotRows(db, ctx);
+  const versionStatus =
+    stats.collisions > 0 ? "failed" : complete ? "complete" : "partial";
+  // One transaction: only an extraction that is recorded as complete may retire rows or
+  // redefine which earlier records count for the file version.
+  const finalize = await db.connect();
+  try {
+    await finalize.query("BEGIN");
+    if (complete) {
+      // Only together with retirement: marking a record superseded while its row stays
+      // active (incremental files) would leave a live record outside coverage.
+      if (ctx.resolved.mode === "snapshot") {
+        await retireMissingSnapshotRows(finalize, ctx);
+        await supersedeEarlierAttempts(finalize, ctx);
+      }
+      await finalize.query(
+        `UPDATE research_source_files SET active_version_id=$2, last_seen_at=now() WHERE id=$1`,
+        [ctx.sourceFileId, ctx.fileVersionId],
+      );
     }
-    await db.query(
-      `UPDATE research_source_files SET active_version_id=$2, last_seen_at=now() WHERE id=$1`,
-      [ctx.sourceFileId, ctx.fileVersionId],
+    await finalize.query(
+      `UPDATE research_source_file_versions SET
+         status=$2, record_count=$3, completed_at=CASE WHEN $2='complete' THEN now() ELSE NULL END
+       WHERE id=$1`,
+      [ctx.fileVersionId, versionStatus, stats.seen],
     );
+    await finalize.query("COMMIT");
+  } catch (error) {
+    await finalize.query("ROLLBACK");
+    await db.query(
+      `UPDATE research_source_file_versions SET status='failed', error=$2 WHERE id=$1`,
+      [ctx.fileVersionId, (error as Error).message],
+    );
+    throw error;
+  } finally {
+    finalize.release();
   }
-  await db.query(
-    `UPDATE research_source_file_versions SET
-       status=$2, record_count=$3, completed_at=CASE WHEN $2='complete' THEN now() ELSE NULL END
-     WHERE id=$1`,
-    [
-      ctx.fileVersionId,
-      stats.collisions > 0 ? "failed" : complete ? "complete" : "partial",
-      stats.seen,
-    ],
-  );
   return stats;
 }
 
@@ -772,13 +789,44 @@ export function tooManyRejected(stats: {
   return stats.rejected > 0 && stats.rejected * 2 > stats.seen;
 }
 
-async function retireMissingSnapshotRows(
-  db: Pool,
+/**
+ * A complete pass defines the identities of this file version. Records an earlier attempt
+ * at the same version wrote under an identity this pass did not produce are marked as
+ * superseded, so everything that reads a file's extraction records (inventory coverage,
+ * run scope, quality samples, lineage) sees one consistent set. The row and its error
+ * text stay as evidence of the earlier attempt.
+ */
+async function supersedeEarlierAttempts(
+  db: PoolClient,
   ctx: RunContext,
 ): Promise<number> {
-  const client = await db.connect();
-  try {
-    await client.query("BEGIN");
+  const { rowCount } = await db.query(
+    `UPDATE research_ingest_run_records old
+     SET extract_state='duplicate', last_error_class='superseded_identity',
+       last_error='Identity not produced by the complete extraction in run ' || $2::text
+     WHERE old.source_file_version_id=$1
+       -- Reached through the file version's runs, which the (run_id, extract_state)
+       -- index serves; the records table has no index on the file version itself.
+       AND old.run_id IN (
+         SELECT r.id FROM research_ingest_runs r
+         WHERE r.source_file_version_id=$1 AND r.id<>$2)
+       AND old.extract_state IN ('written','unchanged')
+       AND NOT EXISTS (
+         SELECT 1 FROM research_ingest_run_records cur
+         WHERE cur.run_id=$2 AND cur.source_record_id=old.source_record_id
+           AND cur.extract_state IN ('written','unchanged'))`,
+    [ctx.fileVersionId, ctx.runId],
+  );
+  return rowCount ?? 0;
+}
+
+async function retireMissingSnapshotRows(
+  client: PoolClient,
+  ctx: RunContext,
+): Promise<number> {
+  // Runs inside the caller's finalize transaction, so a failed finalization leaves the
+  // previous rows active.
+  {
     const { rows } = await client.query<{
       id: string;
       canonical_poi_id: string | null;
@@ -818,13 +866,7 @@ async function retireMissingSnapshotRows(
         });
       }
     }
-    await client.query("COMMIT");
     return rows.length;
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
   }
 }
 

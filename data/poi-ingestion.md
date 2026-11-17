@@ -619,7 +619,10 @@ legacy attempt records.
   name and locality, and records with their own IDs that collide, still stop it.
   Snapshot removals retire only after an unlimited successful extraction, never
   a sample or interrupted pass. That pass also retires identities an earlier stopped attempt at
-  the same file version wrote and the capture no longer produces. File completion is recorded after retirement/finalization.
+  the same file version wrote and the capture no longer produces. The earlier attempt's extraction
+  records for those identities are marked `duplicate` (`superseded_identity`), so coverage
+  and later runs count only what the complete pass produced. Do not resume a failed run
+  across a change to how IDs are derived; start a fresh run. File completion is recorded after retirement/finalization.
   Observation identity includes the raw SHA and a database-generated captured-field/POI-hint
   hash. An extractor mapping change creates a new immutable observation even when raw JSON is
   unchanged, refreshes staging and invalidates normalization. Identical mappings reuse their
