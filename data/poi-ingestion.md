@@ -1040,6 +1040,11 @@ Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
   most trusted generated member's subject plus the canonical's resolved locality (reverse
   geocoding may fill it after normalization), sets `attributes.name_generated = true` and
   `field_provenance.name.generated`, and so carries the `generated_name` review flag.
+- **Earlier normalizations.** `NORMALIZER_VERSION` was not advanced for this rule, because
+  that would mark every source outdated. Records normalized before it are not re-reported by
+  `ingest:staleness`. On 2026-11-17 the dev database had no live nameless records and no OSM
+  caravan-site import. A file whose earlier normalization rejected or misnamed nameless
+  places needs `ingest:clean <file>` and a fresh import to use generated names.
 
 ## Unlocatable records are dropped
 
