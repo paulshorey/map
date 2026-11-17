@@ -586,7 +586,7 @@ async function extractFile(
         await db.query(
           `UPDATE research_ingest_run_records SET extract_state='rejected',
              last_error_class='missing_source_record_id',
-             last_error='Record has no stable source id'
+             last_error='No ID field, and no name or no location to derive one from; dropped'
            WHERE id=$1`,
           [runRecordId],
         );
@@ -736,7 +736,7 @@ async function extractFile(
     opts.limit === undefined &&
     stats.failed === 0 &&
     stats.collisions === 0 &&
-    stats.rejected === 0;
+    !tooManyRejected(stats);
   if (complete) {
     if (ctx.resolved.mode === "snapshot") {
       await retireMissingSnapshotRows(db, ctx);
@@ -757,6 +757,19 @@ async function extractFile(
     ],
   );
   return stats;
+}
+
+/**
+ * A row with no ID of its own and no name or no location cannot be identified or placed,
+ * so it is dropped and the file carries on (owner policy: move on to better data). When
+ * more than half of the rows read are in that state the file itself was misread (wrong
+ * field names, wrong shape), and that still stops it.
+ */
+export function tooManyRejected(stats: {
+  seen: number;
+  rejected: number;
+}): boolean {
+  return stats.rejected > 0 && stats.rejected * 2 > stats.seen;
 }
 
 async function retireMissingSnapshotRows(
@@ -894,6 +907,25 @@ async function freezeItems(
       FROM research_ingest_run_records rr JOIN research_ingest_runs r ON r.id=rr.run_id
       WHERE rr.source_file_version_id=$2 AND rr.extract_state IN ('written','unchanged')
         AND r.category_slug=$3 AND rr.source_record_id IS NOT NULL
+        -- A run that extracted the file itself uses only what it produced: an earlier
+        -- attempt may have written identities the capture no longer yields. A run that
+        -- reused a completed extraction has no records of its own and takes the latest.
+        AND (rr.run_id=$1 OR NOT EXISTS (
+          SELECT 1 FROM research_ingest_run_records own WHERE own.run_id=$1))
+        -- Either way, a retired row that the last extraction of this file version did not
+        -- produce is such a leftover, not part of the capture.
+        AND NOT EXISTS (
+          SELECT 1 FROM research_pois gone
+          WHERE gone.id=rr.research_poi_id AND gone.retired_at IS NOT NULL
+            AND NOT EXISTS (
+              SELECT 1 FROM research_ingest_run_records last
+              WHERE last.source_file_version_id=$2
+                AND last.source_record_id=rr.source_record_id
+                AND last.extract_state IN ('written','unchanged')
+                AND last.run_id=(
+                  SELECT l.run_id FROM research_ingest_run_records l
+                  WHERE l.source_file_version_id=$2
+                  ORDER BY l.last_attempt_at DESC NULLS LAST, l.id DESC LIMIT 1)))
       ORDER BY rr.source_record_id, rr.last_attempt_at DESC, rr.id DESC
     )
     INSERT INTO research_ingest_run_items(run_id,source_record_id,research_poi_id,observation_id,source_ordinal)
@@ -1166,7 +1198,7 @@ export async function runOrchestration(
             return { status: "reused" };
           const stats = await extractFile(db, ctx, opts, ex);
           await updateRun(db, ctx, { counters: { extract: stats } });
-          if (stats.failed || stats.collisions || stats.rejected)
+          if (stats.failed || stats.collisions || tooManyRejected(stats))
             throw new Error(`Extraction incomplete: ${JSON.stringify(stats)}`);
           return { status: ex.stopped ? "paused" : "succeeded", ...stats };
         },

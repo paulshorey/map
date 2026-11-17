@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { mapGenericRecord, separateOccurrences } from "./generic.js";
+import { tooManyRejected } from "../orchestrator.js";
 import type { RawRecord } from "../types.js";
 
 async function ids(raws: Array<Record<string, unknown>>) {
@@ -169,4 +170,16 @@ test("dates are read into one spelling, and a time of day keeps performances apa
     vague.after.map((r) => r.identity_inputs?.edition ?? null),
     ["2026", null],
   );
+});
+
+test("rows with no identity are dropped unless they are most of the file", () => {
+  assert.equal(tooManyRejected({ seen: 590, rejected: 22 }), false);
+  assert.equal(tooManyRejected({ seen: 241, rejected: 43 }), false);
+  assert.equal(tooManyRejected({ seen: 10, rejected: 0 }), false);
+  assert.equal(
+    tooManyRejected({ seen: 10, rejected: 6 }),
+    true,
+    "a misread file still stops",
+  );
+  assert.equal(tooManyRejected({ seen: 1, rejected: 1 }), true);
 });
