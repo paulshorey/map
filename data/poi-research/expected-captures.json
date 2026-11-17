@@ -1951,16 +1951,24 @@
       "source": "campsites_rv_hookup",
       "category": null,
       "required": false,
-      "disposition": "needs_review",
-      "reason": "Classification pending"
+      "disposition": "supporting",
+      "reason": "RIDB individual campsites (child records of facilities.csv FacilityIDs). Supporting child data for a separately reviewed facility enrichment; never import campsites as independent campgrounds (owner decision 2026-11-06)."
     },
     {
       "file": "data/poi/rv_campgrounds_data/ridb/facilities.csv",
       "source": "ridb",
       "category": "campground",
+      "required": false,
+      "disposition": "alternate",
+      "reason": "Original 2026-06-18 RIDB facility capture without address/locality columns and with truncated descriptions. Superseded by facilities_with_addresses.csv (same 5,979 FacilityIDs, refreshed from the 2026-11-04 RIDB full export). Preserve for provenance."
+    },
+    {
+      "file": "data/poi/rv_campgrounds_data/ridb/facilities_with_addresses.csv",
+      "source": "ridb",
+      "category": "campground",
       "required": true,
       "disposition": "import",
-      "reason": "Explicit registered source mapping"
+      "reason": "RIDB facility cohort of facilities.csv (5,979 FacilityIDs) refreshed from the official 2026-11-04 RIDB full export, with address/city/region chosen from FacilityAddresses by scripts/ridb-facility-addresses.py and verbatim address rows in facility_addresses. See working/ridb-addresses-20261106.md."
     },
     {
       "file": "data/poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv",
