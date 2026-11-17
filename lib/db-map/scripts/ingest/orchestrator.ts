@@ -739,19 +739,18 @@ async function extractFile(
     !tooManyRejected(stats);
   const versionStatus =
     stats.collisions > 0 ? "failed" : complete ? "complete" : "partial";
-  if (complete && ctx.resolved.mode === "snapshot") {
-    await retireMissingSnapshotRows(db, ctx);
-  }
-  // One transaction: only an extraction that is recorded as complete may redefine which
-  // earlier records count for the file version.
+  // One transaction: only an extraction that is recorded as complete may retire rows or
+  // redefine which earlier records count for the file version.
   const finalize = await db.connect();
   try {
     await finalize.query("BEGIN");
     if (complete) {
       // Only together with retirement: marking a record superseded while its row stays
       // active (incremental files) would leave a live record outside coverage.
-      if (ctx.resolved.mode === "snapshot")
+      if (ctx.resolved.mode === "snapshot") {
+        await retireMissingSnapshotRows(finalize, ctx);
         await supersedeEarlierAttempts(finalize, ctx);
+      }
       await finalize.query(
         `UPDATE research_source_files SET active_version_id=$2, last_seen_at=now() WHERE id=$1`,
         [ctx.sourceFileId, ctx.fileVersionId],
@@ -766,6 +765,10 @@ async function extractFile(
     await finalize.query("COMMIT");
   } catch (error) {
     await finalize.query("ROLLBACK");
+    await db.query(
+      `UPDATE research_source_file_versions SET status='failed', error=$2 WHERE id=$1`,
+      [ctx.fileVersionId, (error as Error).message],
+    );
     throw error;
   } finally {
     finalize.release();
@@ -818,12 +821,12 @@ async function supersedeEarlierAttempts(
 }
 
 async function retireMissingSnapshotRows(
-  db: Pool,
+  client: PoolClient,
   ctx: RunContext,
 ): Promise<number> {
-  const client = await db.connect();
-  try {
-    await client.query("BEGIN");
+  // Runs inside the caller's finalize transaction, so a failed finalization leaves the
+  // previous rows active.
+  {
     const { rows } = await client.query<{
       id: string;
       canonical_poi_id: string | null;
@@ -863,13 +866,7 @@ async function retireMissingSnapshotRows(
         });
       }
     }
-    await client.query("COMMIT");
     return rows.length;
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
   }
 }
 
