@@ -907,6 +907,11 @@ async function freezeItems(
       FROM research_ingest_run_records rr JOIN research_ingest_runs r ON r.id=rr.run_id
       WHERE rr.source_file_version_id=$2 AND rr.extract_state IN ('written','unchanged')
         AND r.category_slug=$3 AND rr.source_record_id IS NOT NULL
+        -- A run that extracted the file itself uses only what it produced: an earlier
+        -- attempt may have written identities the capture no longer yields. A run that
+        -- reused a completed extraction has no records of its own and takes the latest.
+        AND (rr.run_id=$1 OR NOT EXISTS (
+          SELECT 1 FROM research_ingest_run_records own WHERE own.run_id=$1))
       ORDER BY rr.source_record_id, rr.last_attempt_at DESC, rr.id DESC
     )
     INSERT INTO research_ingest_run_items(run_id,source_record_id,research_poi_id,observation_id,source_ordinal)

@@ -120,6 +120,13 @@ test(
          WHERE source_record_id=$1 AND source_id=(SELECT id FROM research_sources WHERE slug=$3)`,
         [moved.source_record_id, "leftover-base-id", slug],
       );
+      await db.query(
+        `UPDATE research_ingest_run_records SET source_record_id=$2
+         WHERE source_record_id=$1 AND run_id IN (
+           SELECT r.id FROM research_ingest_runs r JOIN research_sources s ON s.id=r.source_id
+           WHERE s.slug=$3)`,
+        [moved.source_record_id, "leftover-base-id", slug],
+      );
       await runOrchestration(db, { ...options, reprocess: "extract" as const });
       process.exitCode = 0;
       const second = await active();
@@ -127,6 +134,22 @@ test(
         second.map((row) => row.source_record_id).sort(),
         first.map((row) => row.source_record_id).sort(),
         "the leftover identity is retired and the occurrence is back under its own ID",
+      );
+      const { rows: scope } = await db.query<{
+        leftovers: number;
+        items: number;
+      }>(
+        `SELECT count(*) FILTER (WHERE i.source_record_id='leftover-base-id')::int AS leftovers,
+                count(*)::int AS items
+         FROM research_ingest_run_items i
+         WHERE i.run_id=(SELECT r.id FROM research_ingest_runs r JOIN research_sources s ON s.id=r.source_id
+                         WHERE s.slug=$1 ORDER BY r.created_at DESC LIMIT 1)`,
+        [slug],
+      );
+      assert.deepEqual(
+        scope,
+        [{ leftovers: 0, items: 3 }],
+        "the run works on what it extracted",
       );
     } finally {
       // The rows stay in the isolated test database under a unique source slug.
