@@ -236,52 +236,54 @@ export async function* parseGenericRecords(
 }
 
 /**
- * Give repeated occurrences of one event their own identity.
- *
- * A capture without an ID field gets a synthetic ID from name and locality. A listing that
- * repeats an event (the same market on four dates, the same parade in two years) then
- * yields the same ID for different records, and extraction stops the file as a collision.
- * Here the second and later records that would repeat a synthetic ID are re-keyed with
- * their own start date or year.
- *
- * Only a record that would collide is changed, and the first keeps its original ID, so
- * every file that already imported cleanly produces exactly the IDs it did before. A
- * record with no date of its own, or the same date as the one it repeats, is left as it
- * is: that is a true duplicate or a real collision, and extraction reports it as before.
+ * Give repeated occurrences of one event their own identity. A capture with no ID field
+ * gets a synthetic ID from name and locality, so one market held on four dates would
+ * collide. Every record in such a group that carries a date or year is re-keyed with it;
+ * the rule looks at the whole group, so the result does not depend on record order. A
+ * record whose derived ID is unique in the file is untouched, so files without repeats
+ * keep every ID. The file is read twice: once to find the repeated IDs, once to yield.
  */
 export async function* separateOccurrences(
-  records: AsyncIterable<RawRecord>,
+  read: () => AsyncIterable<RawRecord>,
   sourceSlug: string,
 ): AsyncIterable<RawRecord> {
-  const seen = new Set<string>();
-  for await (const original of records) {
-    let record = original;
+  const once = new Set<string>();
+  const repeated = new Set<string>();
+  for await (const record of read()) {
+    if (record.source_record_id_kind !== "synthetic" || !record.source_record_id) continue;
+    if (once.has(record.source_record_id)) repeated.add(record.source_record_id);
+    else once.add(record.source_record_id);
+  }
+  once.clear();
+  for await (const record of read()) {
     const inputs = record.identity_inputs;
     if (
-      record.source_record_id_kind === "synthetic" &&
-      record.source_record_id &&
-      inputs?.name &&
-      inputs.locality
+      repeated.size === 0 ||
+      record.source_record_id_kind !== "synthetic" ||
+      !record.source_record_id ||
+      !repeated.has(record.source_record_id) ||
+      !inputs?.name ||
+      !inputs.locality ||
+      inputs.edition
     ) {
-      if (seen.has(record.source_record_id) && !inputs.edition) {
-        const raw = (record.raw ?? {}) as Record<string, unknown>;
-        const edition =
-          str(raw.start_date) ??
-          str(raw.starts_at) ??
-          str(raw.date) ??
-          (typeof raw.year === "number" ? String(raw.year) : str(raw.year));
-        if (edition) {
-          const id = synthSourceRecordId(sourceSlug, inputs.name, inputs.locality, edition);
-          if (!seen.has(id))
-            record = {
-              ...record,
-              source_record_id: id,
-              identity_inputs: { ...inputs, edition },
-            };
-        }
-      }
-      seen.add(record.source_record_id);
+      yield record;
+      continue;
     }
-    yield record;
+    const raw = (record.raw ?? {}) as Record<string, unknown>;
+    const edition =
+      str(raw.start_date) ??
+      str(raw.starts_at) ??
+      str(raw.date) ??
+      str(raw.dates) ??
+      (typeof raw.year === "number" ? String(raw.year) : str(raw.year));
+    if (!edition) {
+      yield record;
+      continue;
+    }
+    yield {
+      ...record,
+      source_record_id: synthSourceRecordId(sourceSlug, inputs.name, inputs.locality, edition),
+      identity_inputs: { ...inputs, edition },
+    };
   }
 }

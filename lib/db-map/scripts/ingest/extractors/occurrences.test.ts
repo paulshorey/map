@@ -9,7 +9,7 @@ async function ids(raws: Array<Record<string, unknown>>) {
     yield* mapped;
   }
   const out: RawRecord[] = [];
-  for await (const record of separateOccurrences(stream(), "fixture")) out.push(record);
+  for await (const record of separateOccurrences(stream, "fixture")) out.push(record);
   return { before: mapped.map((r) => r.source_record_id), after: out };
 }
 const market = (start_date: string | undefined, extra: Record<string, unknown> = {}) => ({
@@ -20,17 +20,18 @@ const market = (start_date: string | undefined, extra: Record<string, unknown> =
   ...extra,
 });
 
-test("repeated occurrences of one event get their own identity; the first keeps its ID", async () => {
-  const { before, after } = await ids([
-    market("2026-05-09"),
-    market("2026-06-13"),
-    market("2026-07-11"),
-  ]);
+test("repeated occurrences of one event get their own identity, whatever the order", async () => {
+  const dates = ["2026-05-09", "2026-06-13", "2026-07-11"];
+  const { before, after } = await ids(dates.map((d) => market(d)));
   assert.equal(new Set(before).size, 1, "name and locality alone collide");
-  assert.equal(after[0]!.source_record_id, before[0], "the first record is unchanged");
   assert.equal(new Set(after.map((r) => r.source_record_id)).size, 3);
-  assert.equal(after[1]!.identity_inputs?.edition, "2026-06-13");
-  assert.equal(after[0]!.identity_inputs?.edition ?? null, null);
+  assert.deepEqual(after.map((r) => r.identity_inputs?.edition), dates);
+  const reversed = await ids([...dates].reverse().map((d) => market(d)));
+  assert.deepEqual(
+    reversed.after.map((r) => r.source_record_id).reverse(),
+    after.map((r) => r.source_record_id),
+    "an occurrence keeps its ID when the capture is reordered",
+  );
 });
 
 test("a year distinguishes occurrences when there is no date", async () => {
@@ -46,6 +47,7 @@ test("records that cannot be told apart are left for extraction to report", asyn
   // No date at all, and the same date twice: nothing to distinguish them by.
   const undated = await ids([market(undefined, { booth_fee: 10 }), market(undefined, { booth_fee: 20 })]);
   assert.equal(new Set(undated.after.map((r) => r.source_record_id)).size, 1);
+  assert.ok(undated.after.every((r) => !r.identity_inputs?.edition), "undated repeats are not marked as occurrences");
   const sameDate = await ids([
     market("2026-05-09"),
     market("2026-06-13", { booth_fee: 10 }),

@@ -267,7 +267,7 @@ export async function* recordsFor(
   }
   // Generic captures: repeated occurrences of one event get their own identity.
   const { separateOccurrences } = await import("./extractors/generic.js");
-  yield* separateOccurrences(genericRecordsFor(resolved), resolved.source.meta.slug);
+  yield* separateOccurrences(() => genericRecordsFor(resolved), resolved.source.meta.slug);
 }
 
 export async function* genericRecordsFor(
@@ -611,10 +611,15 @@ async function extractFile(
           console.log(
             `extract duplicate #${ordinal} ${recordLabel(record)} (same as #${prior.ordinal})`,
           );
-        } else if (record.source_record_id_kind === "synthetic") {
+        } else if (
+          record.source_record_id_kind === "synthetic" &&
+          record.identity_inputs?.edition
+        ) {
           // No ID of its own, and the same name, locality and date as an earlier record:
-          // the capture gives nothing to tell them apart, so the later one is dropped
-          // rather than failing the whole file (owner policy: move on to better data).
+          // the same occurrence listed twice, so the later one is dropped rather than
+          // failing the whole file (owner policy: move on to better data). Undated
+          // records that share a name and locality may be different places, so they
+          // still count as a collision below.
           stats.duplicates++;
           await db.query(
             `UPDATE research_ingest_run_records SET extract_state='duplicate',
