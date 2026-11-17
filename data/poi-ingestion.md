@@ -609,7 +609,8 @@ legacy attempt records.
   Each record commits separately and is replayable. Missing IDs/collisions/write failures stop
   advancement. A capture without an ID field gets a synthetic ID from name and locality; when
   several records would share one (the same market on four dates), each that carries a start
-  date or year is re-keyed with it, whatever the record order. Records whose synthetic ID is
+  date or year is re-keyed with it (an ISO date or year only, never free-text wording),
+  whatever the record order. Records whose synthetic ID is
   unique in the file are untouched. A record that still shares a dated synthetic ID (same
   name, locality and date, different content) is dropped as a duplicate
   (`synthetic_identity_repeat`) instead of failing the file; undated records that share a

@@ -9,6 +9,7 @@
  * lng/lon/longitude, url/source_url, country/country_code) but does no other
  * normalization: cleanup belongs to ingest:normalize.
  */
+import { rawContentHash } from "../hash.js";
 import type { Extractor, RawRecord } from "../types.js";
 import { streamRecords } from "../io.js";
 import { synthSourceRecordId } from "../hash.js";
@@ -236,6 +237,24 @@ export async function* parseGenericRecords(
 }
 
 /**
+ * The date that tells one occurrence from another, in a form that survives rewording:
+ * an ISO date where the field holds one, the structured value otherwise, and from the
+ * free-text `dates` field only an ISO date or a year.
+ */
+function occurrenceEdition(raw: Record<string, unknown>): string | undefined {
+  for (const key of ["start_date", "starts_at", "date"]) {
+    const value = str(raw[key]);
+    if (value) return /^\d{4}-\d{2}-\d{2}/.exec(value)?.[0] ?? value;
+  }
+  if (typeof raw.year === "number") return String(raw.year);
+  const prose = str(raw.year) ?? str(raw.dates);
+  return prose
+    ? (/\d{4}-\d{2}-\d{2}/.exec(prose)?.[0] ??
+        /\b(?:19|20)\d{2}\b/.exec(prose)?.[0])
+    : undefined;
+}
+
+/**
  * Give repeated occurrences of one event their own identity. A capture with no ID field
  * gets a synthetic ID from name and locality, so one market held on four dates would
  * collide. Every record in such a group that carries a date or year is re-keyed with it;
@@ -247,14 +266,23 @@ export async function* separateOccurrences(
   read: () => AsyncIterable<RawRecord>,
   sourceSlug: string,
 ): AsyncIterable<RawRecord> {
-  const once = new Set<string>();
+  // Only IDs shared by records with different content count: identical rows are plain
+  // duplicates, and a file that imported before this rule existed has none that differ,
+  // so it keeps every ID it had.
+  const first = new Map<string, string>();
   const repeated = new Set<string>();
   for await (const record of read()) {
-    if (record.source_record_id_kind !== "synthetic" || !record.source_record_id) continue;
-    if (once.has(record.source_record_id)) repeated.add(record.source_record_id);
-    else once.add(record.source_record_id);
+    if (
+      record.source_record_id_kind !== "synthetic" ||
+      !record.source_record_id
+    )
+      continue;
+    const hash = rawContentHash(record.raw).hash;
+    const prior = first.get(record.source_record_id);
+    if (prior === undefined) first.set(record.source_record_id, hash);
+    else if (prior !== hash) repeated.add(record.source_record_id);
   }
-  once.clear();
+  first.clear();
   for await (const record of read()) {
     const inputs = record.identity_inputs;
     if (
@@ -270,19 +298,19 @@ export async function* separateOccurrences(
       continue;
     }
     const raw = (record.raw ?? {}) as Record<string, unknown>;
-    const edition =
-      str(raw.start_date) ??
-      str(raw.starts_at) ??
-      str(raw.date) ??
-      str(raw.dates) ??
-      (typeof raw.year === "number" ? String(raw.year) : str(raw.year));
+    const edition = occurrenceEdition(raw);
     if (!edition) {
       yield record;
       continue;
     }
     yield {
       ...record,
-      source_record_id: synthSourceRecordId(sourceSlug, inputs.name, inputs.locality, edition),
+      source_record_id: synthSourceRecordId(
+        sourceSlug,
+        inputs.name,
+        inputs.locality,
+        edition,
+      ),
       identity_inputs: { ...inputs, edition },
     };
   }
