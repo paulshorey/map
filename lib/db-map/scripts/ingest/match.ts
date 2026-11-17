@@ -699,7 +699,7 @@ async function fetchCandidates(
            WHERE bm.research_poi_id=rp.id AND bm.canonical_poi_id=cp.id AND bm.active)
        -- A real-named member represents the canonical (as its published name does), so
        -- best_name_generated holds only when no live member has a real name.
-       ORDER BY (rp.attributes->>'name_generated' IS DISTINCT FROM 'true') DESC, rs.trust DESC, (rp.content_embedding IS NOT NULL) DESC, rp.last_seen_at DESC
+       ORDER BY (rp.attributes->>'name_generated' IS DISTINCT FROM 'true') DESC, rs.trust DESC, (rp.content_embedding IS NOT NULL) DESC, rp.last_seen_at DESC, rp.id
        LIMIT 1
      ) br ON true
      WHERE cp.status <> 'hidden'
