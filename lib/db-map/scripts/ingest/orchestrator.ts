@@ -912,6 +912,20 @@ async function freezeItems(
         -- reused a completed extraction has no records of its own and takes the latest.
         AND (rr.run_id=$1 OR NOT EXISTS (
           SELECT 1 FROM research_ingest_run_records own WHERE own.run_id=$1))
+        -- Either way, a retired row that the last extraction of this file version did not
+        -- produce is such a leftover, not part of the capture.
+        AND NOT EXISTS (
+          SELECT 1 FROM research_pois gone
+          WHERE gone.id=rr.research_poi_id AND gone.retired_at IS NOT NULL
+            AND NOT EXISTS (
+              SELECT 1 FROM research_ingest_run_records last
+              WHERE last.source_file_version_id=$2
+                AND last.source_record_id=rr.source_record_id
+                AND last.extract_state IN ('written','unchanged')
+                AND last.run_id=(
+                  SELECT l.run_id FROM research_ingest_run_records l
+                  WHERE l.source_file_version_id=$2
+                  ORDER BY l.last_attempt_at DESC NULLS LAST, l.id DESC LIMIT 1)))
       ORDER BY rr.source_record_id, rr.last_attempt_at DESC, rr.id DESC
     )
     INSERT INTO research_ingest_run_items(run_id,source_record_id,research_poi_id,observation_id,source_ordinal)

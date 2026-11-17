@@ -151,6 +151,26 @@ test(
         [{ leftovers: 0, items: 3 }],
         "the run works on what it extracted",
       );
+
+      // A later run reuses the completed extraction and has no records of its own.
+      await runOrchestration(db, options);
+      process.exitCode = 0;
+      const { rows: reused } = await db.query<{
+        leftovers: number;
+        items: number;
+      }>(
+        `SELECT count(*) FILTER (WHERE i.source_record_id='leftover-base-id')::int AS leftovers,
+                count(*)::int AS items
+         FROM research_ingest_run_items i
+         WHERE i.run_id=(SELECT r.id FROM research_ingest_runs r JOIN research_sources s ON s.id=r.source_id
+                         WHERE s.slug=$1 ORDER BY r.created_at DESC LIMIT 1)`,
+        [slug],
+      );
+      assert.deepEqual(
+        reused,
+        [{ leftovers: 0, items: 3 }],
+        "a later run that reuses the extraction leaves the leftover out too",
+      );
     } finally {
       // The rows stay in the isolated test database under a unique source slug.
       await rm(dir, { recursive: true, force: true });
