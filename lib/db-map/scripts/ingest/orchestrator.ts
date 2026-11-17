@@ -741,6 +741,7 @@ async function extractFile(
     if (ctx.resolved.mode === "snapshot") {
       await retireMissingSnapshotRows(db, ctx);
     }
+    await supersedeEarlierAttempts(db, ctx);
     await db.query(
       `UPDATE research_source_files SET active_version_id=$2, last_seen_at=now() WHERE id=$1`,
       [ctx.sourceFileId, ctx.fileVersionId],
@@ -770,6 +771,32 @@ export function tooManyRejected(stats: {
   rejected: number;
 }): boolean {
   return stats.rejected > 0 && stats.rejected * 2 > stats.seen;
+}
+
+/**
+ * A complete pass defines the identities of this file version. Records an earlier attempt
+ * at the same version wrote under an identity this pass did not produce are marked as
+ * superseded, so everything that reads a file's extraction records (inventory coverage,
+ * run scope, quality samples, lineage) sees one consistent set. The row and its error
+ * text stay as evidence of the earlier attempt.
+ */
+async function supersedeEarlierAttempts(
+  db: Pool,
+  ctx: RunContext,
+): Promise<number> {
+  const { rowCount } = await db.query(
+    `UPDATE research_ingest_run_records old
+     SET extract_state='duplicate', last_error_class='superseded_identity',
+       last_error='Identity not produced by the complete extraction in run ' || $2::text
+     WHERE old.source_file_version_id=$1 AND old.run_id<>$2
+       AND old.extract_state IN ('written','unchanged')
+       AND NOT EXISTS (
+         SELECT 1 FROM research_ingest_run_records cur
+         WHERE cur.run_id=$2 AND cur.source_record_id=old.source_record_id
+           AND cur.extract_state IN ('written','unchanged'))`,
+    [ctx.fileVersionId, ctx.runId],
+  );
+  return rowCount ?? 0;
 }
 
 async function retireMissingSnapshotRows(

@@ -151,6 +151,22 @@ test(
         [{ leftovers: 0, items: 3 }],
         "the run works on what it extracted",
       );
+      const { rows: earlier } = await db.query(
+        `SELECT rr.extract_state, rr.last_error_class FROM research_ingest_run_records rr
+         JOIN research_ingest_runs r ON r.id=rr.run_id JOIN research_sources s ON s.id=r.source_id
+         WHERE s.slug=$1 AND rr.source_record_id='leftover-base-id'`,
+        [slug],
+      );
+      assert.deepEqual(
+        earlier,
+        [
+          {
+            extract_state: "duplicate",
+            last_error_class: "superseded_identity",
+          },
+        ],
+        "the earlier attempt's record no longer counts as part of the file",
+      );
 
       // A later run reuses the completed extraction and has no records of its own.
       await runOrchestration(db, options);
