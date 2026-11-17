@@ -265,6 +265,14 @@ export async function* recordsFor(
     yield* custom.parse(resolved.absolutePath);
     return;
   }
+  // Generic captures: repeated occurrences of one event get their own identity.
+  const { separateOccurrences } = await import("./extractors/generic.js");
+  yield* separateOccurrences(genericRecordsFor(resolved), resolved.source.meta.slug);
+}
+
+export async function* genericRecordsFor(
+  resolved: ResolvedSourceFile,
+): AsyncIterable<RawRecord> {
   if (resolved.file.wrapperPath) {
     const parsed = JSON.parse(
       await readFile(resolved.absolutePath, "utf8"),
@@ -602,6 +610,23 @@ async function extractFile(
           );
           console.log(
             `extract duplicate #${ordinal} ${recordLabel(record)} (same as #${prior.ordinal})`,
+          );
+        } else if (record.source_record_id_kind === "synthetic") {
+          // No ID of its own, and the same name, locality and date as an earlier record:
+          // the capture gives nothing to tell them apart, so the later one is dropped
+          // rather than failing the whole file (owner policy: move on to better data).
+          stats.duplicates++;
+          await db.query(
+            `UPDATE research_ingest_run_records SET extract_state='duplicate',
+               last_error_class='synthetic_identity_repeat',
+               last_error=$2 WHERE id=$1`,
+            [
+              runRecordId,
+              `Same derived identity as ordinal ${prior.ordinal} with different content; dropped`,
+            ],
+          );
+          console.log(
+            `extract repeat #${ordinal} ${recordLabel(record)} (same derived identity as #${prior.ordinal}; dropped)`,
           );
         } else {
           stats.collisions++;

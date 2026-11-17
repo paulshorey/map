@@ -9,7 +9,7 @@
  * lng/lon/longitude, url/source_url, country/country_code) but does no other
  * normalization: cleanup belongs to ingest:normalize.
  */
-import type { Extractor } from "../types.js";
+import type { Extractor, RawRecord } from "../types.js";
 import { streamRecords } from "../io.js";
 import { synthSourceRecordId } from "../hash.js";
 import { str, num } from "./utils.js";
@@ -232,5 +232,56 @@ export async function* parseGenericRecords(
   for await (const raw of streamRecords(file)) {
     const record = mapGenericRecord(raw, { ...options, uniqueUrls });
     if (record) yield record;
+  }
+}
+
+/**
+ * Give repeated occurrences of one event their own identity.
+ *
+ * A capture without an ID field gets a synthetic ID from name and locality. A listing that
+ * repeats an event (the same market on four dates, the same parade in two years) then
+ * yields the same ID for different records, and extraction stops the file as a collision.
+ * Here the second and later records that would repeat a synthetic ID are re-keyed with
+ * their own start date or year.
+ *
+ * Only a record that would collide is changed, and the first keeps its original ID, so
+ * every file that already imported cleanly produces exactly the IDs it did before. A
+ * record with no date of its own, or the same date as the one it repeats, is left as it
+ * is: that is a true duplicate or a real collision, and extraction reports it as before.
+ */
+export async function* separateOccurrences(
+  records: AsyncIterable<RawRecord>,
+  sourceSlug: string,
+): AsyncIterable<RawRecord> {
+  const seen = new Set<string>();
+  for await (const original of records) {
+    let record = original;
+    const inputs = record.identity_inputs;
+    if (
+      record.source_record_id_kind === "synthetic" &&
+      record.source_record_id &&
+      inputs?.name &&
+      inputs.locality
+    ) {
+      if (seen.has(record.source_record_id) && !inputs.edition) {
+        const raw = (record.raw ?? {}) as Record<string, unknown>;
+        const edition =
+          str(raw.start_date) ??
+          str(raw.starts_at) ??
+          str(raw.date) ??
+          (typeof raw.year === "number" ? String(raw.year) : str(raw.year));
+        if (edition) {
+          const id = synthSourceRecordId(sourceSlug, inputs.name, inputs.locality, edition);
+          if (!seen.has(id))
+            record = {
+              ...record,
+              source_record_id: id,
+              identity_inputs: { ...inputs, edition },
+            };
+        }
+      }
+      seen.add(record.source_record_id);
+    }
+    yield record;
   }
 }

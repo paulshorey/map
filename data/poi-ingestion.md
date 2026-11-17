@@ -607,7 +607,12 @@ legacy attempt records.
 
 - **Extract:** stable `(source_id, source_record_id)` identities; immutable raw observations.
   Each record commits separately and is replayable. Missing IDs/collisions/write failures stop
-  advancement. Snapshot removals retire only after an unlimited successful extraction, never
+  advancement. A capture without an ID field gets a synthetic ID from name and locality; when
+  a later record would repeat one (the same market on four dates), it is re-keyed with its own
+  start date or year, and the first keeps its ID, so files that already imported keep theirs.
+  A later record that still shares a synthetic ID (same name, locality and date, different
+  content) is dropped as a duplicate (`synthetic_identity_repeat`) instead of failing the
+  file; a collision between records with their own IDs still stops it. Snapshot removals retire only after an unlimited successful extraction, never
   a sample or interrupted pass. File completion is recorded after retirement/finalization.
   Observation identity includes the raw SHA and a database-generated captured-field/POI-hint
   hash. An extractor mapping change creates a new immutable observation even when raw JSON is
