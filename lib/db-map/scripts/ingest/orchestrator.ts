@@ -265,6 +265,14 @@ export async function* recordsFor(
     yield* custom.parse(resolved.absolutePath);
     return;
   }
+  // Generic captures: repeated occurrences of one event get their own identity.
+  const { separateOccurrences } = await import("./extractors/generic.js");
+  yield* separateOccurrences(() => genericRecordsFor(resolved), resolved.source.meta.slug);
+}
+
+export async function* genericRecordsFor(
+  resolved: ResolvedSourceFile,
+): AsyncIterable<RawRecord> {
   if (resolved.file.wrapperPath) {
     const parsed = JSON.parse(
       await readFile(resolved.absolutePath, "utf8"),
@@ -556,6 +564,7 @@ async function extractFile(
 
   let ordinal = 0;
   const seenIds = new Map<string, { hash: string; ordinal: number }>();
+  const genericSource = !getExtractor(ctx.resolved.source.meta.slug);
   try {
     for await (const record of recordsFor(ctx.resolved)) {
       if (execution?.stopped) break;
@@ -602,6 +611,29 @@ async function extractFile(
           );
           console.log(
             `extract duplicate #${ordinal} ${recordLabel(record)} (same as #${prior.ordinal})`,
+          );
+        } else if (
+          genericSource &&
+          record.source_record_id_kind === "synthetic" &&
+          record.identity_inputs?.edition
+        ) {
+          // No ID of its own, and the same name, locality and date as an earlier record:
+          // the same occurrence listed twice, so the later one is dropped rather than
+          // failing the whole file (owner policy: move on to better data). Undated
+          // records that share a name and locality may be different places, so they
+          // still count as a collision below.
+          stats.duplicates++;
+          await db.query(
+            `UPDATE research_ingest_run_records SET extract_state='duplicate',
+               last_error_class='synthetic_identity_repeat',
+               last_error=$2 WHERE id=$1`,
+            [
+              runRecordId,
+              `Same derived identity as ordinal ${prior.ordinal} with different content; dropped`,
+            ],
+          );
+          console.log(
+            `extract repeat #${ordinal} ${recordLabel(record)} (same derived identity as #${prior.ordinal}; dropped)`,
           );
         } else {
           stats.collisions++;
@@ -743,17 +775,18 @@ async function retireMissingSnapshotRows(
        JOIN research_poi_observations o ON o.id = rp.active_observation_id
        JOIN research_source_file_versions previous ON previous.id = o.source_file_version_id
        WHERE previous.source_file_id = $1
-         AND o.source_file_version_id <> $2
          AND rp.retired_at IS NULL
          AND NOT EXISTS (
            SELECT 1
            FROM research_ingest_run_records rirr
-           WHERE rirr.run_id = $3
+           WHERE rirr.run_id = $2
              AND rirr.source_record_id = rp.source_record_id
              AND rirr.extract_state IN ('written','unchanged')
          )
        FOR UPDATE OF rp`,
-      [ctx.sourceFileId, ctx.fileVersionId, ctx.runId],
+      // Rows of this same file version count too: an earlier attempt that stopped part
+      // way may have written identities this complete pass no longer produces.
+      [ctx.sourceFileId, ctx.runId],
     );
     for (const row of rows) {
       await client.query(
