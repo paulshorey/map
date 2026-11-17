@@ -35,7 +35,8 @@ try {
   const found = (
     await db.query(
       `SELECT DISTINCT rr.source_record_id FROM research_ingest_run_records rr JOIN research_source_file_versions v ON v.id=rr.source_file_version_id
-   JOIN research_source_files sf ON sf.id=v.source_file_id WHERE sf.logical_path=$1 AND v.file_sha256=$2 AND rr.source_record_id=ANY($3::text[])`,
+   JOIN research_source_files sf ON sf.id=v.source_file_id WHERE sf.logical_path=$1 AND v.file_sha256=$2 AND rr.source_record_id=ANY($3::text[])
+   AND rr.extract_state IN ('written','unchanged')`,
       [f.logical_path, f.file_sha256, samples],
     )
   ).rows;

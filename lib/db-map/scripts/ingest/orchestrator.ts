@@ -737,28 +737,39 @@ async function extractFile(
     stats.failed === 0 &&
     stats.collisions === 0 &&
     !tooManyRejected(stats);
-  if (complete) {
-    if (ctx.resolved.mode === "snapshot") {
-      await retireMissingSnapshotRows(db, ctx);
+  const versionStatus =
+    stats.collisions > 0 ? "failed" : complete ? "complete" : "partial";
+  if (complete && ctx.resolved.mode === "snapshot") {
+    await retireMissingSnapshotRows(db, ctx);
+  }
+  // One transaction: only an extraction that is recorded as complete may redefine which
+  // earlier records count for the file version.
+  const finalize = await db.connect();
+  try {
+    await finalize.query("BEGIN");
+    if (complete) {
       // Only together with retirement: marking a record superseded while its row stays
       // active (incremental files) would leave a live record outside coverage.
-      await supersedeEarlierAttempts(db, ctx);
+      if (ctx.resolved.mode === "snapshot")
+        await supersedeEarlierAttempts(finalize, ctx);
+      await finalize.query(
+        `UPDATE research_source_files SET active_version_id=$2, last_seen_at=now() WHERE id=$1`,
+        [ctx.sourceFileId, ctx.fileVersionId],
+      );
     }
-    await db.query(
-      `UPDATE research_source_files SET active_version_id=$2, last_seen_at=now() WHERE id=$1`,
-      [ctx.sourceFileId, ctx.fileVersionId],
+    await finalize.query(
+      `UPDATE research_source_file_versions SET
+         status=$2, record_count=$3, completed_at=CASE WHEN $2='complete' THEN now() ELSE NULL END
+       WHERE id=$1`,
+      [ctx.fileVersionId, versionStatus, stats.seen],
     );
+    await finalize.query("COMMIT");
+  } catch (error) {
+    await finalize.query("ROLLBACK");
+    throw error;
+  } finally {
+    finalize.release();
   }
-  await db.query(
-    `UPDATE research_source_file_versions SET
-       status=$2, record_count=$3, completed_at=CASE WHEN $2='complete' THEN now() ELSE NULL END
-     WHERE id=$1`,
-    [
-      ctx.fileVersionId,
-      stats.collisions > 0 ? "failed" : complete ? "complete" : "partial",
-      stats.seen,
-    ],
-  );
   return stats;
 }
 
@@ -783,14 +794,19 @@ export function tooManyRejected(stats: {
  * text stay as evidence of the earlier attempt.
  */
 async function supersedeEarlierAttempts(
-  db: Pool,
+  db: PoolClient,
   ctx: RunContext,
 ): Promise<number> {
   const { rowCount } = await db.query(
     `UPDATE research_ingest_run_records old
      SET extract_state='duplicate', last_error_class='superseded_identity',
        last_error='Identity not produced by the complete extraction in run ' || $2::text
-     WHERE old.source_file_version_id=$1 AND old.run_id<>$2
+     WHERE old.source_file_version_id=$1
+       -- Reached through the file version's runs, which the (run_id, extract_state)
+       -- index serves; the records table has no index on the file version itself.
+       AND old.run_id IN (
+         SELECT r.id FROM research_ingest_runs r
+         WHERE r.source_file_version_id=$1 AND r.id<>$2)
        AND old.extract_state IN ('written','unchanged')
        AND NOT EXISTS (
          SELECT 1 FROM research_ingest_run_records cur
