@@ -226,7 +226,7 @@ exclusive maintenance key `(91832,1)` and admission mutex `(91832,2)`. New worke
 record a persistent installation UUID plus process start time. Legacy hostname reconciliation
 remains conservative. A stored PID alone never authorizes signaling.
 
-`data/poi-research/expected-captures.json` accounts for the audited 247 captures, required imports,
+`data/poi-research/expected-captures.json` accounts for the audited 248 captures, required imports,
 supporting captures and explicit review/exclusion reasons. It holds expectations, not progress.
 Structural completion, degraded output, sampled quality acceptance and category completeness
 are separate. No quality acceptance is inferred from an exit code or a few valid coordinates.
@@ -934,8 +934,16 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
   coverage is `complete`;
 - a run stopped by the daily geocoding quota (`provider_daily_quota`) is resumed with the same
   run UUID two minutes after the reset; two immediate re-exhaustions stop the queue;
-- any other outcome stops the queue as `needs_attention` with the run UUID; nothing is retried
-  blindly, so diagnose it (see the troubleshooting sections) and start a new queue;
+- a run that failed only because it lost its database connection (a DNS failure, an
+  unreachable network, a dropped or refused connection, or the pool timing out while
+  connecting, raised by the pg driver or naming the database host or port) is resumed with the same
+  run UUID once the database answers again: after a five-minute wait, for up to about an
+  hour, at most twice per file. Its checkpoints are intact; nothing is wrong with the file.
+  A provider's network error is not retried this way, and a queue restarted later does not
+  adopt such a failed run by itself: resume it with `ingest:supervise start -- --resume <uuid> --unlimited`
+  after checking it;
+- any other outcome stops the queue as `needs_attention` with the run UUID; nothing else is
+  retried, so diagnose it (see the troubleshooting sections) and start a new queue;
 - before each launch the pipeline must be quiescent and out of maintenance (it waits up to an
   hour, then stops).
 - a file counts as complete only when its inventory category matches the entry and the file on
@@ -988,6 +996,7 @@ while ingestion is active, and takes the canonical writer lock so it never races
 | `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
 | `generated_name` | No member has a real name; the shown name is generated (see [Nameless places](#nameless-places)) |
 | `source_needs_review` | A member's active observation comes from a capture whose inventory disposition is still `needs_review` |
+| `missing_address` | No active member has a source street address (reverse-geocoded addresses and PO boxes alone do not count); a manually curated POI with its own address is not flagged. The POI is still mapped |
 
 Rules live in `lib/db-map/sql/review-flags.ts` (`REVIEW_FLAG_RULES`, one SQL predicate per
 flag); add a flag there and a label in `apps/map/src/map/usePoiReviewFilter.ts`. The map API

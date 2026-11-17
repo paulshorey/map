@@ -2,14 +2,20 @@ import { streamCsv } from "../io.js";
 import type { Extractor } from "../types.js";
 import { mapGenericRecord } from "./generic.js";
 
-/** RIDB's facility CSV uses API field names, not capture-spec column aliases. */
+/**
+ * RIDB's facility CSV uses API field names, not capture-spec column aliases. The
+ * `facilities_with_addresses.csv` capture adds `address`/`city`/`region`/`country_code`
+ * (chosen by `scripts/ridb-facility-addresses.py`) and the verbatim export address rows
+ * as JSON in `facility_addresses`; the older `facilities.csv` has neither.
+ */
 export const ridbFacilitiesExtractor: Extractor = {
   slug: "ridb",
   async *parse(file) {
     for await (const raw of streamCsv(file)) {
+      const { facility_addresses: addressRows, ...fields } = raw;
       const record = mapGenericRecord(
         {
-          ...raw,
+          ...fields,
           source_record_id: raw.FacilityID,
           name: raw.FacilityName,
           description: raw.FacilityDescription,
@@ -18,7 +24,12 @@ export const ridbFacilitiesExtractor: Extractor = {
           phone: raw.FacilityPhone,
           email: raw.FacilityEmail,
           raw_category: raw.FacilityTypeDescription,
-          attributes: { reservation_url: raw.FacilityReservationURL },
+          attributes: {
+            reservation_url: raw.FacilityReservationURL,
+            facility_addresses: addressRows
+              ? JSON.parse(addressRows)
+              : undefined,
+          },
         },
         { sourceSlug: "ridb" },
       );
