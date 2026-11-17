@@ -6,7 +6,6 @@ import { rm, access } from "node:fs/promises";
 import {
   parseSupervisorArgs,
   terminalOutcome,
-  dispatchJob,
   budgetedResume,
 } from "./supervise.js";
 import {
@@ -25,7 +24,6 @@ test("supervisor status checks exact local job PIDs", async () => {
     host: hostname(),
     supervisor_pid: process.pid,
     child_pid: 2147483647,
-    runner_model: "external",
     started_at: new Date().toISOString(),
     status: "running",
     timeout_seconds: null,
@@ -98,51 +96,22 @@ test("expensive smoke cannot resume or expand cohort/deadline", () => {
     45,
   );
 });
-test("long launch requires callback choice; completion deadline is optional", () => {
+test("start needs no callback choice; the completion deadline is optional", () => {
+  const run = randomUUID();
+  assert.equal(parseSupervisorArgs(["start", "--", "--resume", run]).maxHours, null);
+  // The former flag is still accepted, so saved commands keep working.
+  assert.deepEqual(
+    parseSupervisorArgs(["start", "--local-only", "--max-hours", "48", "--", "file"]),
+    parseSupervisorArgs(["start", "--max-hours", "48", "--", "file"]),
+  );
+  assert.throws(() => parseSupervisorArgs(["start", "--max-hours", "169", "--", "file"]));
+  assert.throws(() => parseSupervisorArgs(["start"]));
+  // The parent callback, its probe and the manual dispatch no longer exist.
   assert.throws(() =>
-    parseSupervisorArgs(["start", "--", "--resume", randomUUID()]),
+    parseSupervisorArgs(["start", "--notify-thread", randomUUID(), "--", "file"]),
   );
-  assert.throws(() =>
-    parseSupervisorArgs([
-      "start",
-      "--local-only",
-      "--notify-thread",
-      randomUUID(),
-      "--",
-      "file",
-    ]),
-  );
-  assert.throws(() =>
-    parseSupervisorArgs([
-      "start",
-      "--local-only",
-      "--max-hours",
-      "169",
-      "--",
-      "file",
-    ]),
-  );
-  assert.equal(
-    parseSupervisorArgs([
-      "start",
-      "--notify-thread",
-      randomUUID(),
-      "--",
-      "file",
-    ]).maxHours,
-    null,
-  );
-  assert.equal(
-    parseSupervisorArgs([
-      "start",
-      "--local-only",
-      "--max-hours",
-      "48",
-      "--",
-      "file",
-    ]).maxHours,
-    48,
-  );
+  assert.throws(() => parseSupervisorArgs(["probe", "--notify-thread", randomUUID()]));
+  assert.throws(() => parseSupervisorArgs(["dispatch", "--job", randomUUID()]));
 });
 test("exit zero is insufficient proof of success", () => {
   assert.equal(
@@ -191,7 +160,6 @@ test("native watch allows uncapped continuous imports and validates optional lim
     "watch",
   );
   for (const bad of [
-    ["watch", "--local-only", "--", ...args],
     ["watch", "--notify-thread", randomUUID(), "--", ...args],
     ["watch", "--", ...args, "--max-cost-usd", "10"],
     ["watch", "--", ...args, "--consolidate"],
@@ -199,51 +167,4 @@ test("native watch allows uncapped continuous imports and validates optional lim
     ["watch", "--", ...args, "--unlimited"],
   ])
     assert.throws(() => parseSupervisorArgs(bad));
-});
-test("healthy job cannot dispatch any model event", async () => {
-  const id = randomUUID();
-  await createJob({
-    id,
-    mode: "runner",
-    argv: [],
-    host: "fixture",
-    runner_model: "gpt-5.6-luna",
-    started_at: new Date().toISOString(),
-    status: "running",
-    timeout_seconds: 3600,
-    health_interval_seconds: 3600,
-    health_checks: 0,
-  });
-  try {
-    await assert.rejects(dispatchJob(id), /No terminal result/);
-  } finally {
-    await rm(jobPath(id, ""), { recursive: true, force: true });
-  }
-});
-
-test("accepted or ambiguous outbox receipts never call a model again", async () => {
-  for (const status of ["sent", "sending", "uncertain"]) {
-    const id = randomUUID();
-    await createJob({
-      id,
-      mode: "runner",
-      argv: [],
-      host: "fixture",
-      parent_thread: randomUUID(),
-      runner_model: "gpt-5.6-luna",
-      started_at: new Date().toISOString(),
-      status: "finished",
-      timeout_seconds: 3600,
-      health_interval_seconds: 3600,
-      health_checks: 0,
-      result: { outcome: "needs_attention" },
-    });
-    try {
-      await atomicJson(jobPath(id, "delivery.json"), { status });
-      assert.equal((await dispatchJob(id)).status, status);
-      await assert.rejects(access(jobPath(id, "summary.claim")));
-    } finally {
-      await rm(jobPath(id, ""), { recursive: true, force: true });
-    }
-  }
 });

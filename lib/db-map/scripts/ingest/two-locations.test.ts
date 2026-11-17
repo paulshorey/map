@@ -169,16 +169,13 @@ test("saved Sao Paulo cache replays without providers, cache mutation, or coordi
     precision: "point",
     payload: { hit: sao.forward.result },
   });
-  f.cache.set(`location-v2:reverse:${f.row.lat}:${f.row.lng}`, {
-    payload: { hit: null },
-  });
   const before = structuredClone([...f.cache]);
   globalThis.fetch = async () => {
     throw new Error("Paid caches must be reused");
   };
   const stats = await runGeocode(f.db, opts);
   assert.equal(stats.apiCalls, 0);
-  assert.equal(stats.cacheHits, 2);
+  assert.equal(stats.cacheHits, 1);
   assert.deepEqual([...f.cache], before);
   assert.deepEqual(f.activated.point, {
     lat: sao.source.lat,
@@ -264,43 +261,33 @@ test("address query is based on captured text/hints, never reverse-generated pro
   assert.equal(hints.display, "Auckland, NZ");
 });
 
-test("contradictory source/address points both activate atomically; budget resume reuses paid lookup", async () => {
+test("contradictory source/address points both activate atomically; reverse fields come from the offline gazetteer", async () => {
   const f = fixture();
   process.env.LOCATIONIQ_API_KEY = "fixture";
   const calls: string[] = [];
   globalThis.fetch = async (input) => {
     const u = new URL(String(input));
-    if (u.pathname.endsWith("/search"))
-      assert.equal(u.searchParams.get("countrycodes"), "ch");
+    assert.equal(u.searchParams.get("countrycodes"), "ch");
     calls.push(u.pathname);
-    assert.equal(
-      f.activated,
-      null,
-      "neither lookup can activate a partial artifact",
-    );
-    if (u.pathname.endsWith("/search"))
-      return Response.json([
-        {
-          lat: "46.9185",
-          lon: "7.4402",
-          type: "attraction",
-          display_name: "Swiss venue",
-          address: { city: "Köniz", country_code: "ch" },
-        },
-      ]);
-    return Response.json({
-      lat: "6.9185",
-      lon: "7.4402",
-      address: { country_code: "ng", city: "Aka", state: "Enugu" },
-    });
+    assert.equal(f.activated, null, "the lookup cannot activate a partial artifact");
+    return Response.json([
+      {
+        lat: "46.9185",
+        lon: "7.4402",
+        type: "attraction",
+        display_name: "Swiss venue",
+        address: { city: "Köniz", country_code: "ch" },
+      },
+    ]);
   };
-  const first = await runGeocode(f.db, { ...opts, geocodeLimit: 1 });
+  const first = await runGeocode(f.db, { ...opts, geocodeLimit: 0 });
   assert.equal(first.budgetHit, true);
-  assert.equal(f.activated, null);
-  assert.equal(f.cache.size, 1);
+  assert.equal(f.activated, null, "an exhausted budget settles nothing");
+  assert.equal(f.cache.size, 0);
+  // One forward call is the whole provider cost: the reverse lookup is offline.
   const second = await runGeocode(f.db, { ...opts, geocodeLimit: 1 });
-  assert.equal(second.cacheHits, 1);
   assert.equal(second.apiCalls, 1);
+  assert.equal(second.budgetHit, false);
   const activated = f.activated as any;
   assert.ok(activated.coordinate_evidence.source_coordinates);
   assert.ok(activated.coordinate_evidence.inferred_coordinates);
@@ -316,8 +303,11 @@ test("contradictory source/address points both activate atomically; budget resum
   );
   assert.equal(activated.listed.country_code, "CH");
   assert.equal(activated.reverse.country_code, "NG");
+  assert.equal(activated.reverse.provider, "geonames");
+  assert.equal(activated.reverse.address, null);
   assert.ok(activated.warnings.includes("coordinate_country_conflict"));
-  assert.deepEqual(calls, ["/v1/search", "/v1/reverse"]);
+  assert.deepEqual(calls, ["/v1/search"]);
+  assert.equal(f.cache.size, 1, "only the forward lookup is cached");
   assert.equal((await runGeocode(f.db, opts)).selected, 0);
 });
 
@@ -325,19 +315,17 @@ test("the daily quota pauses like a budget stop: the paid lookup is kept and the
   const f = fixture();
   process.env.LOCATIONIQ_API_KEY = "fixture";
   const calls: string[] = [];
+  // The venue lookup lands in another city, so the listed city is looked up too.
+  const bern = {
+    lat: "46.9480",
+    lon: "7.4474",
+    type: "attraction",
+    display_name: "Bern venue",
+    address: { city: "Bern", country_code: "ch" },
+  };
   globalThis.fetch = async (input) => {
-    const u = new URL(String(input));
-    calls.push(u.pathname);
-    if (u.pathname.endsWith("/search"))
-      return Response.json([
-        {
-          lat: "46.9185",
-          lon: "7.4402",
-          type: "attraction",
-          display_name: "Swiss venue",
-          address: { city: "Köniz", country_code: "ch" },
-        },
-      ]);
+    calls.push(new URL(String(input)).searchParams.get("q")!);
+    if (calls.length === 1) return Response.json([bern]);
     return new Response(JSON.stringify({ error: "Rate Limited Day" }), { status: 429 });
   };
   const first = await runGeocode(f.db, opts);
@@ -349,18 +337,26 @@ test("the daily quota pauses like a budget stop: the paid lookup is kept and the
   // Later lookups in the same process are refused without a request.
   const again = await runGeocode(f.db, opts);
   assert.equal(again.budgetHit, true);
-  assert.deepEqual(calls, ["/v1/search", "/v1/reverse"]);
-  // After the reset (a new process), the record finishes from the cache plus one reverse call.
+  assert.equal(calls.length, 2);
+  // After the reset (a new process), the record finishes from the cache plus the city lookup.
   resetProviderQuotaState();
   globalThis.fetch = async (input) => {
-    calls.push(new URL(String(input)).pathname);
-    return Response.json({ lat: "6.9185", lon: "7.4402", address: { country_code: "ng", city: "Aka" } });
+    calls.push(new URL(String(input)).searchParams.get("q")!);
+    return Response.json([
+      {
+        lat: "46.9185",
+        lon: "7.4402",
+        type: "city",
+        display_name: "Köniz",
+        address: { city: "Köniz", country_code: "ch" },
+      },
+    ]);
   };
   const resumed = await runGeocode(f.db, opts);
   assert.equal(resumed.budgetHit, false);
   assert.equal(resumed.cacheHits, 1);
   assert.ok(f.activated);
-  assert.deepEqual(calls, ["/v1/search", "/v1/reverse", "/v1/reverse"]);
+  assert.deepEqual(calls, ["Gurtenkulm, Köniz, CH", "Köniz, CH", "Köniz, CH"]);
 });
 
 test("forward miss does not discard an existing source point; known miss is cacheable", async () => {
@@ -669,9 +665,6 @@ test("a legacy geocoded point still obtains country-level inferred evidence", as
     attributes: {},
   });
   f.row.coordinate_source = "geocode";
-  f.cache.set(`location-v2:reverse:${f.row.lat}:${f.row.lng}`, {
-    payload: { hit: null },
-  });
   process.env.LOCATIONIQ_API_KEY = "fixture";
   const queries: string[] = [];
   globalThis.fetch = async (input) => {
@@ -974,9 +967,6 @@ test("a venue lookup in another city is kept only as rejected evidence and retri
     attributes: { venue_name: "Aichi Arts Center" },
   });
   Object.assign(f.row, { lat: 35.1815, lng: 136.9066 });
-  f.cache.set(`location-v2:reverse:35.1815:136.9066`, {
-    payload: { hit: null },
-  });
   process.env.LOCATIONIQ_API_KEY = "fixture";
   const queries: string[] = [];
   globalThis.fetch = async (input) => {
@@ -1154,12 +1144,6 @@ test("an exonym result confirmed by the listed city's own lookup is kept, not re
   const queries: string[] = [];
   globalThis.fetch = async (input) => {
     const u = new URL(String(input));
-    if (u.pathname.endsWith("/reverse"))
-      return Response.json({
-        lat: "45.4286",
-        lon: "12.3602",
-        address: { country_code: "it", city: "Venezia", state: "Veneto" },
-      });
     const q = u.searchParams.get("q")!;
     queries.push(q);
     return Response.json([
@@ -1633,8 +1617,6 @@ test("an address miss without any point falls back to the listed city, flagged a
   const queries: string[] = [];
   globalThis.fetch = async (input) => {
     const url = new URL(String(input));
-    if (url.pathname.endsWith("/reverse"))
-      return Response.json({ lat: "35.18", lon: "136.90", address: { city: "Nagoya", country_code: "jp" } });
     const q = url.searchParams.get("q")!;
     queries.push(q);
     return q === "Nagoya, JP"
@@ -1682,8 +1664,6 @@ test("over-long queries keep their local end; a 400 is a record-level miss, not 
   process.env.LOCATIONIQ_API_KEY = "fixture";
   globalThis.fetch = async (input) => {
     const url = new URL(String(input));
-    if (url.pathname.endsWith("/reverse"))
-      return Response.json({ lat: "35.18", lon: "136.90", address: { city: "Nagoya", country_code: "jp" } });
     return url.searchParams.get("q") === "Nagoya, JP"
       ? Response.json([{ lat: "35.18", lon: "136.90", class: "boundary", type: "administrative", address: { city: "名古屋市", country_code: "jp" } }])
       : Response.json({ error: "Invalid Request" }, { status: 400 });

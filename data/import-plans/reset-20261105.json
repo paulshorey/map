@@ -1,0 +1,14 @@
+{
+  "description": "Re-import after the 2026-11-05 data reset: small sources first, The Dyrt last (several days on the LocationIQ free plan; the queue pauses at the daily quota and resumes after 00:00 UTC).",
+  "entries": [
+    { "file": "data/poi/art-fairs/biennials/biennale_com.json", "category": "art_fair" },
+    { "file": "data/poi/art-fairs/biennials/biennial_association.json", "category": "art_fair" },
+    { "file": "data/poi/art-fairs/biennials/biennial_foundation.json", "category": "art_fair" },
+    { "file": "data/poi/art-parades/street-arts/aurillac_festival.json", "category": "art_parade" },
+    { "file": "data/poi/hostels/california-hostels.json", "category": "hostel" },
+    { "file": "data/poi/music-festivals/apis/jambase_festivals.json", "category": "music_festival" },
+    { "file": "data/poi/music-festivals/directories/thatfestivalsite_festivals.json", "category": "music_festival" },
+    { "file": "data/poi/botanical_gardens_data/bgci_gardens_full.json", "category": "botanical_garden" },
+    { "file": "data/poi/rv_campgrounds_data/thedyrt/rv_campgrounds.csv", "category": "campground" }
+  ]
+}

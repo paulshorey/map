@@ -16,6 +16,7 @@ import {
 } from "./orchestrator.js";
 import { holdSystemAwake } from "./sleep-inhibitor.js";
 import { providerUsageToday, useProviderQuotaLedger } from "./providers/quota.js";
+import { admitImport } from "./import-admission.js";
 
 const STAGES = new Set<IngestStage>([
   "extract",
@@ -164,8 +165,22 @@ async function main() {
   try {
     process.env.PG_POOL_MAX ||= "16";
     const db = getDb();
+    let releaseAdmission: (() => Promise<void>) | null = null;
     try {
       useProviderQuotaLedger(db);
+      // One full-file import at a time, and none beside a running import queue (any host).
+      // A resume keeps its saved scope: admit it as the run it continues (bounded or full).
+      const saved = opts.resume
+        ? (
+            await db.query("SELECT options FROM research_ingest_runs WHERE id=$1", [opts.resume])
+          ).rows[0]?.options ?? {}
+        : {};
+      releaseAdmission = await admitImport(db, {
+        dryRun: opts.dryRun,
+        limit: opts.resume ? (saved.limit ?? undefined) : opts.limit,
+        record: opts.resume ? (saved.record ?? undefined) : opts.record,
+        shadow: opts.resume ? !!saved.shadow : opts.shadow,
+      });
       if (!opts.dryRun) {
         const usage = await providerUsageToday(db);
         console.log(
@@ -175,6 +190,7 @@ async function main() {
       }
       await runOrchestration(db, opts);
     } finally {
+      if (releaseAdmission) await releaseAdmission();
       await db.end();
     }
   } finally {

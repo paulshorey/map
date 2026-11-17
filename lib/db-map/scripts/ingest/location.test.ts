@@ -13,11 +13,8 @@ import {
 } from "./location.js";
 import { canonicalLocation } from "./canonical-location.js";
 import { suppliedCountryCentroid } from "./supplied-centroids.js";
-import {
-  parseReverseLocation,
-  reverseGeocode,
-  GeocodeError,
-} from "./providers/locationiq.js";
+import { geocode, GeocodeError } from "./providers/locationiq.js";
+import { buildGazetteer, offlineReverse } from "./offline-reverse.js";
 const empty = { country_code: null, city: null, region: null, address: null };
 const hit: ReverseLocation = {
   country_code: "US",
@@ -71,48 +68,148 @@ test("conflicting country and distant lookup never contaminate source fields", (
   assert.equal(distant.fields.city, null);
   assert.deepEqual(distant.warnings, ["reverse_result_too_distant"]);
 });
-test("reverse result is normalized without changing input coordinates or inventing address", () => {
-  const r = parseReverseLocation(
-    {
-      lat: "30",
-      lon: "-97",
-      licence: "attribution",
-      address: {
-        country_code: "us",
-        state: "Texas",
-        state_code: "TX",
-        city: "Austin",
-        road: "Test St",
-        house_number: "12",
-      },
-    },
-    30,
-    -97,
-  )!;
+// GeoNames columns: id, name, asciiname, alternates, lat, lng, class, code, country, cc2, admin1.
+const place = (name: string, lat: number, lng: number, cc: string, a1: string) =>
+  ["1", name, name, "", lat, lng, "P", "PPL", cc, "", a1, "", "", "", "5000"].join("\t");
+// A square boundary in thousandths of a degree: [west, south, east, north].
+const square = (w: number, s: number, e: number, n: number) =>
+  [w, s, e, s, e, n, w, n, w, s].map((v) => Math.round(v * 1000));
+const gazetteer = buildGazetteer(
+  [
+    place("West Yellowstone", 44.66, -111.1, "US", "MT"),
+    place("Gardiner", 45.03, -110.7, "US", "MT"),
+    place("Austin", 30.27, -97.74, "US", "TX"),
+    place("Basel", 47.56, 7.59, "CH", "BS"),
+    place("Saint-Louis", 47.59, 7.56, "FR", "44"),
+    place("Taveuni", -16.85, -179.97, "FJ", "03"),
+    place("Key West", 24.56, -81.78, "US", "FL"),
+  ].join("\n"),
+  ["US.FL\tFlorida\tFlorida\t1", "FJ.03\tNorthern\tNorthern\t2"].join("\n"),
+  {
+    scale: 1000,
+    units: [
+      { c: "US", r: "Wyoming", rc: "US-WY", p: [[square(-111.05, 41, -104.05, 45)]] },
+      { c: "US", r: "Montana", rc: "US-MT", p: [[square(-116, 45, -104.05, 49)], [square(-116, 44.4, -111.05, 45)]] },
+      // A hole: the enclave is not part of the surrounding unit.
+      { c: "US", r: "Texas", rc: "US-TX", p: [[square(-100, 29, -96, 32), square(-99, 31, -98.5, 31.5)]] },
+      { c: "CH", r: "Basel-City", rc: "CH-BS", p: [[square(7.57, 47.5, 7.7, 47.585)]] },
+      { c: "FR", r: "Grand Est", rc: null, p: [[square(7.4, 47.585, 7.7, 47.7)]] },
+      { c: null, r: null, rc: null, p: [[square(10, 10, 11, 11)]] },
+    ],
+  },
+);
+test("offline reverse reads country and region from the containing boundary", () => {
+  // Old Faithful: every nearby town is in Montana, the point is in Wyoming.
+  const r = offlineReverse(44.4605, -110.8281, gazetteer)!;
   assert.equal(r.country_code, "US");
-  assert.equal(r.region_code, "US-TX");
-  assert.equal(r.address, "12 Test St");
-  assert.equal(r.distance_m, 0);
-  assert.equal(
-    parseReverseLocation(
-      {
-        lat: "30",
-        lon: "-97",
-        address: { country_code: "us", city: "Austin" },
-      },
-      30,
-      -97,
-    )?.address,
-    null,
+  assert.equal(r.region, "Wyoming");
+  assert.equal(r.region_code, "US-WY");
+  assert.equal(r.city, null, "no town within 15 km");
+  assert.equal(r.address, null);
+  assert.equal(r.postcode, null);
+  assert.equal(r.basis, "containing_area");
+  assert.equal(r.provider, "geonames");
+  // A town centre a few kilometres away is still usable: this is an area lookup.
+  const austin = resolveLocation(empty, offlineReverse(30.3, -97.8, gazetteer));
+  assert.equal(austin.fields.city, "Austin");
+  assert.equal(austin.fields.region, "Texas");
+  assert.deepEqual(austin.warnings, []);
+  // Inside a hole of the Texas boundary, no boundary contains the point.
+  assert.equal(offlineReverse(31.25, -98.75, gazetteer), null);
+});
+test("offline reverse never names a town across a border", () => {
+  const basel = offlineReverse(47.57, 7.58, gazetteer)!;
+  assert.equal(basel.country_code, "CH");
+  assert.equal(basel.city, "Basel");
+  // Just inside France, 2 km from Basel's centre: the French town, not Basel.
+  const france = offlineReverse(47.586, 7.58, gazetteer)!;
+  assert.equal(france.country_code, "FR");
+  assert.equal(france.city, "Saint-Louis");
+  assert.equal(france.region_code, null);
+});
+test("outside every boundary, nearby places name the area only when they agree", () => {
+  const key = offlineReverse(24.55, -81.8, gazetteer)!;
+  assert.equal(key.basis, "nearby_places");
+  assert.equal(key.country_code, "US");
+  assert.equal(key.region, "Florida");
+  assert.equal(key.region_code, "US-FL");
+  assert.equal(key.city, "Key West");
+  // Across the antimeridian.
+  assert.equal(offlineReverse(-16.85, 179.99, gazetteer)?.city, "Taveuni");
+  // Open ocean: nothing names the area.
+  assert.equal(offlineReverse(0.5, -30, gazetteer), null);
+  // A disputed unit carries no country.
+  assert.equal(offlineReverse(10.5, 10.5, gazetteer), null);
+  // A gap between two countries' boundaries: the places disagree, so nothing is named,
+  // not even the nearest town.
+  assert.equal(offlineReverse(47.59, 7.39, gazetteer), null);
+  assert.throws(() => offlineReverse(91, 0, gazetteer), /Invalid reverse/);
+});
+test("the town's other names are returned and one-letter region codes kept", () => {
+  const munich = offlineReverse(48.1372, 11.5756)!;
+  assert.equal(munich.city, "Munich");
+  assert.ok(munich.city_aliases!.includes("München"));
+  // Off the coast of Dublin Bay: no boundary, places agree on Leinster (IE.L).
+  const leinster = offlineReverse(53.345, -6.19)!;
+  assert.equal(leinster.country_code, "IE");
+  if (leinster.region) assert.match(leinster.region_code ?? "", /^IE-[A-Z]$/);
+});
+test("a boundary contradicted by a place at the point names nothing", () => {
+  // Goma (CD) sits where the simplified boundary says Rwanda: neither is trusted.
+  assert.equal(offlineReverse(-1.67409, 29.22845), null);
+});
+test("offline region names are compared only where an ISO region code exists", () => {
+  const aichi: ReverseLocation = {
+    ...hit,
+    country_code: "JP",
+    city: "Nagoya",
+    region: "Aichi",
+    region_code: null,
+    address: null,
+    postcode: null,
+    distance_m: 4000,
+    basis: "containing_area",
+    provider: "geonames",
+  };
+  const local = resolveLocation({ ...empty, region: "愛知県" }, aichi);
+  assert.deepEqual(local.warnings, []);
+  assert.equal(local.fields.city, "Nagoya");
+  assert.equal(local.fields.country_code, "JP");
+  assert.equal(local.fields.region, "愛知県", "the listed region is kept verbatim");
+  // English and local spellings differ (Bayern, Bavaria), so without a code a different
+  // name is not treated as a different region.
+  assert.deepEqual(resolveLocation({ ...empty, region: "Aichi-ken" }, aichi).warnings, []);
+  // Where the lookup has an ISO code, a listed region that matches neither is a conflict.
+  const texas = { ...aichi, country_code: "US", city: "Austin", region: "Texas", region_code: "US-TX" };
+  assert.deepEqual(resolveLocation({ ...empty, region: "TX" }, texas).warnings, []);
+  const other = resolveLocation({ ...empty, region: "Oklahoma" }, texas);
+  assert.deepEqual(other.warnings, ["coordinate_region_conflict"]);
+  assert.equal(other.fields.city, null);
+  // A provider point result keeps the strict comparison.
+  const provider = resolveLocation(
+    { ...empty, region: "愛知県" },
+    { ...aichi, basis: undefined, distance_m: 5 },
   );
-  assert.throws(
-    () => parseReverseLocation({ lat: "", lon: "-97", address: {} }, 30, -97),
-    /Invalid reverse/,
-  );
-  assert.equal(
-    parseReverseLocation({ error: "Unable to geocode" }, 30, -97),
-    null,
-  );
+  assert.deepEqual(provider.warnings, ["coordinate_region_conflict"]);
+});
+test("the vendored data answers real points", () => {
+  const cases: Array<[number, number, string, string | null, string | null]> = [
+    [30.2672, -97.7431, "US", "Texas", "Austin"],
+    [44.4605, -110.8281, "US", "Wyoming", null], // Old Faithful
+    [48.8566, 2.3522, "FR", "Île-de-France", "Paris"],
+    [51.5074, -0.1278, "GB", "England", "London"],
+    [45.4343, 12.3388, "IT", "Veneto", "Venice"],
+    [-33.8688, 151.2093, "AU", "New South Wales", "Sydney"],
+    [35.1815, 136.9066, "JP", "Aichi", "Nagoya"],
+    [48.985, -123.07, "US", "Washington", "Point Roberts"], // an exclave below Canada
+    [-12.78, 45.23, "YT", null, "Mamoudzou"], // Mayotte: its own code, not FR
+    [40.744, -74.032, "US", "New Jersey", "Hoboken"], // not New York City across the river
+    [43.7384, 7.4246, "MC", "Municipality of Monaco", "Monaco"], // a French town 550 m away is not a contradiction
+  ];
+  for (const [lat, lng, country, region, city] of cases) {
+    const r = offlineReverse(lat, lng)!;
+    assert.deepEqual([r.country_code, r.region, r.city], [country, region, city], `${lat},${lng}`);
+  }
 });
 const fetchBefore = globalThis.fetch,
   key = process.env.LOCATIONIQ_API_KEY;
@@ -121,12 +218,12 @@ afterEach(() => {
   if (key === undefined) delete process.env.LOCATIONIQ_API_KEY;
   else process.env.LOCATIONIQ_API_KEY = key;
 });
-test("reverse transport/auth failure remains a provider failure, not a cached miss", async () => {
+test("forward transport/auth failure remains a provider failure, not a cached miss", async () => {
   process.env.LOCATIONIQ_API_KEY = "fixture";
   globalThis.fetch = async () =>
     Response.json({ error: "denied" }, { status: 401 });
   await assert.rejects(
-    reverseGeocode(30, -97),
+    geocode("Austin, Texas"),
     (e: unknown) =>
       e instanceof GeocodeError && e.status === 401 && !e.retryable,
   );

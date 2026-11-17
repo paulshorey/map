@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { reverseGeocode, geocode } from "./providers/locationiq.js";
+import { geocode } from "./providers/locationiq.js";
 import { withAttemptContext, errorDetails } from "./execution.js";
 import { isTransientProviderError } from "./provider-recovery.js";
 
@@ -39,11 +39,13 @@ function fixture(failAt = 0) {
   return { ctx, failure, writes, lifecycle };
 }
 const response = () =>
-  Response.json({
-    lat: "25.0731",
-    lon: "121.526",
-    address: { country_code: "tw", city: "Taipei" },
-  });
+  Response.json([
+    {
+      lat: "25.0731",
+      lon: "121.526",
+      address: { country_code: "tw", city: "Taipei" },
+    },
+  ]);
 
 test("preflight failures in either database write stop before fetch and preserve the failing phase", async () => {
   for (const failAt of [1, 2]) {
@@ -54,7 +56,7 @@ test("preflight failures in either database write stop before fetch and preserve
       return response();
     };
     await assert.rejects(
-      withAttemptContext(f.ctx, () => reverseGeocode(25.0731, 121.526)),
+      withAttemptContext(f.ctx, () => geocode("fixture query")),
       (error: any) => {
         assert.equal(error, f.failure);
         assert.equal(isTransientProviderError(error), false);
@@ -81,7 +83,7 @@ test("HTTP success followed by bookkeeping failure retains HTTP evidence and att
     return response();
   };
   await assert.rejects(
-    withAttemptContext(f.ctx, () => reverseGeocode(25.0731, 121.526)),
+    withAttemptContext(f.ctx, () => geocode("fixture query")),
     (error: any) => {
       assert.equal(error, f.failure);
       assert.equal(error.provider_call.phase, "result_recording_failed");
@@ -109,7 +111,7 @@ test("provider error plus terminal DB failure retains both errors without repeat
     return new Response("unavailable", { status: 503 });
   };
   await assert.rejects(
-    withAttemptContext(f.ctx, () => reverseGeocode(25.0731, 121.526)),
+    withAttemptContext(f.ctx, () => geocode("fixture query")),
     (error: any) => {
       assert.equal(error, f.failure);
       assert.equal(error.provider_error.status, 503);
@@ -122,11 +124,8 @@ test("provider error plus terminal DB failure retains both errors without repeat
   assert.equal(f.writes.length, 3);
 });
 
-test("database cancellation during forward/reverse HTTP preserves the scheduler error and never becomes a geocoder miss", async () => {
-  for (const lookup of [
-    () => reverseGeocode(25.0731, 121.526),
-    () => geocode("fixture query"),
-  ]) {
+test("database cancellation during forward HTTP preserves the scheduler error and never becomes a geocoder miss", async () => {
+  for (const lookup of [() => geocode("fixture query")]) {
     const f = fixture();
     let requests = 0;
     globalThis.fetch = async (_url, init) => {
@@ -160,7 +159,7 @@ test("a definitive 404 records an HTTP miss distinctly from cancellation or data
   const f = fixture();
   globalThis.fetch = async () => new Response(null, { status: 404 });
   assert.equal(
-    await withAttemptContext(f.ctx, () => reverseGeocode(25.0731, 121.526)),
+    await withAttemptContext(f.ctx, () => geocode("fixture query")),
     null,
   );
   assert.equal(f.writes[2].args[1], "succeeded");

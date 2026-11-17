@@ -1,7 +1,8 @@
 import { pathToFileURL } from "node:url";
 /** Collect source and listed-text coordinates plus administrative evidence with versioned provenance.
- * Valid source points never move; supplied addresses win over approximate reverse addresses.
- * Optional misses are cached and reported; transport/auth failures retain provider recovery.
+ * Valid source points never move. Missing country, region and city for a point come from the
+ * offline gazetteer (offline-reverse.ts); only forward lookups call the provider.
+ * Forward misses are cached and reported; transport/auth failures retain provider recovery.
  */
 import type { Pool } from "pg";
 import { getDb } from "../../lib/db/postgres.js";
@@ -11,7 +12,6 @@ import {
 } from "../../lib/ingestion/geocode-precision.js";
 import {
   geocode,
-  reverseGeocode,
   GeocodeError,
   type GeocodeHit,
 } from "./providers/locationiq.js";
@@ -38,6 +38,7 @@ import {
 import countries from "i18n-iso-countries";
 import { countryToCode } from "./normalize/country.js";
 import { suppliedCountryCentroid } from "./supplied-centroids.js";
+import { offlineReverse } from "./offline-reverse.js";
 import { recordLocations, writeRecordLocations } from "./record-locations.js";
 import { stableHash } from "./hash.js";
 import { assertNoOutdatedSources } from "./staleness.js";
@@ -224,9 +225,9 @@ export function countryOnlyQuery(code: string) {
 /** Listed fields a reverse lookup can supply at each point precision (see reverseForPrecision). */
 const REVERSE_FIELDS: Record<
   string,
-  Array<"country_code" | "region" | "city" | "address">
+  Array<"country_code" | "region" | "city">
 > = {
-  point: ["country_code", "region", "city", "address"],
+  point: ["country_code", "region", "city"],
   city: ["country_code", "region", "city"],
   unknown: ["country_code", "region", "city"],
   region: ["country_code", "region"],
@@ -873,9 +874,10 @@ export async function runGeocode(
           }
         : null,
     };
+    // Identifies the artifact's point; reverse lookups themselves are offline and uncached.
     const queryNorm = `${LOCATION_CACHE_VERSION}:reverse:${lat}:${lng}`;
-    // Only fields a reverse lookup may still supply at this precision justify a call; a
-    // centroid match already names its country.
+    // Only fields the offline lookup may still supply at this precision justify it; a
+    // centroid match already names its country. It never supplies a street address.
     const reverseNeeded = REVERSE_FIELDS[
       coordinatePrecision ?? "unknown"
     ]!.some(
@@ -887,40 +889,14 @@ export async function runGeocode(
           countryToCode(suppliedCentroid)
         ),
     );
-    let hit: ReverseLocation | null = null;
-    if (reverseNeeded) {
-      const cache = (
-        await db.query(
-          "SELECT payload FROM research_geocode_cache WHERE query_norm=$1",
-          [queryNorm],
-        )
-      ).rows[0];
-      if (cache?.payload) {
-        hit = cache.payload.hit;
-        stats.cacheHits++;
-        if (!hit) stats.knownMisses++;
-      } else {
-        if (remaining() === 0) {
-          stats.budgetHit = true;
-          break;
-        }
-        if (opts.throttleMs > 0) await sleep(opts.throttleMs);
-        try {
-          hit = await reverseGeocode(lat!, lng!);
-        } catch (error) {
-          if (!(error instanceof ProviderQuotaExhausted)) throw error;
-          stats.quota = error.toJSON();
-          stats.budgetHit = true;
-          break;
-        }
-        stats.apiCalls++;
-        await db.query(
-          `INSERT INTO research_geocode_cache(query_norm,lat,lng,precision,provider,payload) VALUES($1,$2,$3,'point','locationiq',$4::jsonb)
-          ON CONFLICT(query_norm) DO UPDATE SET payload=EXCLUDED.payload,fetched_at=now()`,
-          [queryNorm, lat, lng, JSON.stringify({ hit })],
-        );
-      }
-    }
+    // Offline gazetteer lookup: no provider call, quota or cache entry. It is free, so it
+    // runs even when nothing is missing: it is the independent check that a complete
+    // listing's point lies in the listed country and city. A country-precision point with
+    // its country known says nothing more, so it is skipped.
+    const hit: ReverseLocation | null =
+      reverseNeeded || coordinatePrecision !== "country"
+        ? offlineReverse(lat!, lng!)
+        : null;
     const resolved = resolveLocation(
       source,
       reverseForPrecision(hit, coordinatePrecision),

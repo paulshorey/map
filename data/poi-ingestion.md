@@ -1,7 +1,7 @@
 # POI ingestion: operation and recovery
 
-For agent-operated long runs, use [economical agent operations](ingestion-agents.md): explicit
-cheap-runner delegation, hourly model-free supervision, terminal reporting, and bounded smoke tests.
+To run imports as an agent, use [agent operations](ingestion-agents.md): the import queue for
+whole files, time-limited smokes for checks, and model-free supervision throughout.
 The process-control and maintenance rules in this runbook still apply.
 
 This is the shared reference for humans and agents. [README](../README.md#poi-ingestion)
@@ -27,7 +27,8 @@ file → extract → fixed record cohort → normalize → geocode → embed →
 Canonical builds happen transactionally inside matching/merging and normalization refresh;
 `canonical` checks their existence. It is not a separate rebuild algorithm. Extraction finishes
 and freezes the cohort before the record scheduler starts. Independent records then progress
-through their own dependencies; ready downstream work has priority. Shared Fireworks admission
+through their own dependencies; ready downstream work has priority. Matching runs up to three records' read-only passes and model
+calls at once; canonical writes stay one at a time. Shared Fireworks admission
 defaults to four requests in flight (`--llm-concurrency 1..16`), across normalization, matching
 and fusion. The selected normalization model, prompt and thinking mode are unchanged: every
 eligible POI still uses the LLM. Explicit `--no-llm` remains a diagnostic option.
@@ -42,6 +43,8 @@ before resuming. Queue the next file until the first run is verified and its pro
 Cross-process waiting/serialization would require a separate stop-aware implementation and
 multi-process validation; removing the matching guard is unsafe.
 
+A record that cannot be located from its own data is dropped automatically and does not
+hold up its file; see [unlocatable records](#unlocatable-records-are-dropped).
 Recognized record validation failures are quarantined with durable issues; independent records
 continue and the run ends partial. Ten consecutive validation failures in one stage trip a
 systemic circuit breaker. Authentication, billing, unexpected provider shapes, database, schema,
@@ -213,7 +216,7 @@ The payload's TypeScript contract and JSON Schema live in `lib/db-map/contracts/
 API filters are `run`, `file`, `limit`, `offset`, `detail=1`; `inventory=1` includes the original
 inventory projection so the dashboard can refresh both panels with one database snapshot.
 Detail/doctor also returns five pending/paused/quarantined/budget-held task samples per stage/state.
-Focused status/control/trace and coordinator snapshot interfaces remain the drill-down tools.
+Focused status, control and trace interfaces remain the drill-down tools.
 Hourly Node checks persist committed progress separately from latest attempted work and task counts
 in each job journal; they do not invoke a model for healthy progress.
 
@@ -496,19 +499,18 @@ records. Managed resume still preserves
 already completed checkpoints and their original provenance; it does not rewrite
 the entire prior run using a new provider. Current resolver/prompt versions are
 hybrid-v6 / poi-normalize-v4; both are in the cache key, so older resolver cache results
-cannot be reused for pending work. Exact hybrid-v3 / poi-normalize-v2 and interim
-hybrid-v4 / poi-normalize-v3 and hybrid-v5 / poi-normalize-v4 checkpoints can resume when every other pipeline
-version matches. The execution options audit both version sets while the original
-run and artifacts retain their original versions. Other version drift still
-requires a new run. Use an explicit new reprocessing run
+cannot be reused for pending work. Only a run whose stored pipeline versions all equal the
+current ones can resume (`compatibleCheckpointVersions()` is empty); any version drift
+requires a new run, and records from older logic are handled as
+[outdated data](#outdated-data-re-ingest-never-upgrade). Use an explicit new reprocessing run
 only when a reviewed quality issue requires that extra work. Deterministic-only
 cache keys retain their existing shape. Normalization request rows record the full
 non-secret request body, including effective thinking and output limits.
 
 Final successful scope verification records its effective pipeline versions and execution ID
 in `research_ingest_runs.counters.verification`. Inventory uses this verification version for
-whole-file proof while preserving the original run/artifact versions. Compatible old full
-runs remain visible as resumable work; incompatible versions never advertise a resume command.
+whole-file proof while preserving the original run/artifact versions. A run from other
+pipeline versions never advertises a resume command.
 
 Run `pnpm --filter @lib/db-map ingest:test-llm` and
 `pnpm --filter @lib/db-map ingest:test-provider-recovery` for mocked provider checks.
@@ -518,8 +520,7 @@ for an isolated provider-free resume check against the development database.
 Management account/model reads can verify key validity and model availability without
 inference billing; they do not prove sufficient credits, successful inference, JSON
 quality or end-to-end ingestion. Before unattended imports, validate a new 1–5 record
-managed smoke through the necessary stages, then update the native scheduled coordinator handoff with the observed
-result. Full imports require no spending allowance, unknown-cost approval, ETA or overall deadline.
+managed smoke through the necessary stages. Full imports require no spending allowance, unknown-cost approval, ETA or overall deadline.
 Follow [agent operations](ingestion-agents.md) for execution.
 
 ### Transient provider recovery
@@ -563,7 +564,7 @@ joined to the exact execution ID. Unrestricted executions suggest `--resume UUID
 which clears historical provider caps while preserving checkpoints. Unknown costs are telemetry,
 not an admission or approval requirement. If an operator explicitly selects finite caps, the
 suggested resume subtracts recorded usage from those optional caps. A bare resume of an old
-capped run retains its original limits; the native scheduled coordinator must use `--unlimited` for continuous execution.
+capped run retains its original limits; pass `--unlimited` for continuous execution.
 
 ```bash
 pnpm --filter @lib/db-map ingest:pause --run <uuid>
@@ -605,9 +606,23 @@ legacy attempt records.
 ## Stage behavior and invalidation
 
 - **Extract:** stable `(source_id, source_record_id)` identities; immutable raw observations.
-  Each record commits separately and is replayable. Missing IDs/collisions/write failures stop
-  advancement. Snapshot removals retire only after an unlimited successful extraction, never
-  a sample or interrupted pass. File completion is recorded after retirement/finalization.
+  Each record commits separately and is replayable. Collisions and write failures stop
+  advancement. A row with no ID field and no name or no location to derive one from is
+  dropped (`rejected`, `missing_source_record_id`); more than half of a file in that state
+  means the file was misread and stops it. A capture without an ID field gets a synthetic ID from name and locality; when
+  several records would share one (the same market on four dates), each that carries a start
+  date or year is re-keyed with it (a date read into one spelling, or a year; never
+  free-text wording), whatever the record order. Records whose synthetic ID is
+  unique in the file are untouched. A record that still shares a dated synthetic ID (same
+  name, locality and date, different content) is dropped as a duplicate
+  (`synthetic_identity_repeat`) instead of failing the file; undated records that share a
+  name and locality, and records with their own IDs that collide, still stop it.
+  Snapshot removals retire only after an unlimited successful extraction, never
+  a sample or interrupted pass. That pass also retires identities an earlier stopped attempt at
+  the same file version wrote and the capture no longer produces. The earlier attempt's extraction
+  records for those identities are marked `duplicate` (`superseded_identity`), so coverage
+  and later runs count only what the complete pass produced. Do not resume a failed run
+  across a change to how IDs are derived; start a fresh run. File completion is recorded after retirement/finalization.
   Observation identity includes the raw SHA and a database-generated captured-field/POI-hint
   hash. An extractor mapping change creates a new immutable observation even when raw JSON is
   unchanged, refreshes staging and invalidates normalization. Identical mappings reuse their
@@ -624,15 +639,17 @@ legacy attempt records.
   Failed refresh keeps prior valid output and marks it stale. Accepted changes clear derived
   embeddings/geocode pointers, invalidate old geocoded coordinates, and refresh or retire
   memberships/builds according to match changes. Prompt output must retain the input UUID.
-- **Geocode:** missing points use forward lookup; missing administrative fields can use reverse lookup. Queries and misses are
-  cached. Missing locality or a remembered miss is `blocked`; rerunning cannot fix bad input.
+- **Geocode:** missing points use a forward provider lookup; a point's missing country, region and city come
+  from the offline gazetteer, with no provider call. Forward queries and misses are cached. Missing locality or a remembered miss is `blocked`; rerunning cannot fix bad input.
   Successful/reused managed geocode completion requeues completed embed/match/canonical/verify
   checkpoints in the activation transaction, including on compatible older-geocoder resumes.
   Unchanged artifacts may be reused on reevaluation. City, region or country changes clear both
   the embedding vector and active embedding ID; address-only enrichment preserves them.
-- **Embed:** normalized POIs need a stored embedding in the managed pipeline. Current managed
-  execution uses one-record requests for precise checkpointing. Standalone embedding supports
-  batches, but does not provide the managed execution ledger.
+- **Embed:** normalized POIs need a stored embedding in the managed pipeline. Managed
+  execution collects up to 32 records per request, waiting at most two seconds, and still
+  checkpoints each record. Records arrive from the geocode stage about one a second, so
+  batches are usually small (the mean was 1 in the last measured run). Standalone embedding
+  also batches, but does not provide the managed execution ledger.
 - **Match/build:** source coordinates, normalized name/category and embedding stage completion
   feed matching. Decisions, memberships and canonical rebuilds commit together. Managed LLM
   adjudication/fusion errors propagate as failures instead of silently falling back to success.
@@ -696,10 +713,24 @@ Conflicting edits fail; reread and reconcile rather than overwriting. Scans pres
 operator fields and batch metadata writes to avoid a database round trip per capture.
 Do not maintain a second mutable status file in `data/poi`; database evidence is authoritative.
 
-The [native scheduled coordinator procedure](ingestion-agents.md#native-codex-scheduled-coordinator) owns durable
-execution reconciliation and repair handoff. `ingest:status --json` exposes exact per-execution normalization
+The [import queue](#sequential-import-queue) owns launching whole files in order;
+[agent operations](ingestion-agents.md) covers running and recovering it. `ingest:status --json` exposes exact per-execution normalization
 usage for diagnostics, including failed requests and costs that are still unknown. This telemetry
 does not block uncapped imports or require spending approval.
+
+### Live monitor
+
+The dashboard's first panel (`GET /api/monitor`, refreshed every 10 seconds) shows:
+
+- the running (or latest) run: per-stage done/total bars, active, quota-waiting and quarantined
+  records, the finish rate (over the last 15 minutes, or the stage's age if younger), and
+  per-stage and whole-file ETAs;
+- today's LocationIQ requests against the daily limit, and when it resets;
+- the active (or latest) import queue with each file's status (`ingest:import-queue`);
+- published POIs (precise vs general), review-flag counts, unlocated, failed and degraded
+  source records, and a per-source quality table (cached for two minutes).
+
+Run progress is one bounded read-only snapshot (`sql/ingestion-monitor.ts`).
 
 ## Assessing category completeness
 
@@ -778,9 +809,9 @@ import or certify a source/category.
 | Old run refuses resume                  | Its pinned input/output or pipeline version changed; start a new run with an explicit repair selection and review cached artifacts.                            |
 | Slow run                                | Compare attempt duration, provider latency/tokens/cost, query plans and cache hits on the same sample. Distinguish warm-cache speedups from code improvements. |
 
-Current tradeoffs: canonical matching/fusion remains serialized and can become the next bottleneck.
-Matching can hold its transaction across a provider call; decoupling proposal generation from
-fenced canonical activation is a future improvement that needs candidate-version checks.
+Current tradeoffs: canonical writes remain serialized (one record at a time behind the
+canonical lane), so the database work of matching bounds throughput. Model calls are no longer
+part of that serial section; see [model calls outside the canonical lock](#model-calls-outside-the-canonical-lock).
 Provider quota headers and reasoning/cost fields may be absent; unknown values stay explicit.
 Optional budgets are stage thresholds, not a universal quota service. Standalone legacy scripts
 do not gain managed lifecycle registration. Recommendations are advisory and never auto-relaunch,
@@ -825,8 +856,8 @@ The matcher uses a cascade:
    the same full URLs (`matcher-v4`). Paths keep their case and are not decoded; hash
    routes (`#/event/a`, `#!/…`) are kept, in-page anchors dropped.
    Ports other than the default are part of the identity. A membership is valid only for
-   the current matcher version; records from older logic are re-ingested, never rematched
-   in place (see [Outdated data](#outdated-data-re-ingest-never-upgrade)).
+   the current matcher version; after a matcher change the whole matching layer is rebuilt
+   at once, never one record at a time (see [Outdated data](#outdated-data-re-ingest-never-upgrade)).
 5. LLM adjudication for ambiguous gray-zone pairs when LLM is enabled.
 
 Each non-dry-run decision writes `research_match_decisions`.
@@ -835,6 +866,26 @@ When a row links to a canonical, `rebuildCanonicalPoi` recomputes the published 
 from all linked research rows. This prevents description text from being appended repeatedly across reruns. When LLMs are
 enabled, ambiguous matching and canonical description fusion can make provider calls;
 matching itself does not geocode records or create embeddings.
+
+### Model calls outside the canonical lock
+
+Matching asks a model two questions: whether a record and a candidate are the same place,
+and how to merge several descriptions. Both answers depend only on the text sent. A managed
+match therefore runs in two steps (`llm-memo.ts`):
+
+1. **Read-only pass, no lock.** It decides the match and asks for the description the
+   canonical would get. Up to three records do this at once. Answers are kept in a
+   per-record memo keyed by a hash of the exact request.
+2. **Locked pass.** It takes the canonical lock, decides again against current data and
+   writes. Each model question is answered from the memo.
+
+If the data changed between the passes (another record created or changed a candidate), the
+request differs and the memo has no answer. The locked pass then rolls back, releasing the
+lock, the call is made, and the pass runs again. After three such rollbacks for one record
+the remaining calls are made inside the lock, as before, so a record always finishes. An
+answer is never reused for a different request, so decisions are the same as when the calls
+were made inside the transaction. The canonical-stage rebuild of a stale build uses the same
+mechanism. Standalone `ingest:match`, `--no-llm` runs and consolidation are unchanged.
 
 ## Aggressive Conflation
 
@@ -872,6 +923,57 @@ columns:
 
 The canonical row stores the representative occurrence: next upcoming when available,
 otherwise the most recent. Status such as upcoming, ongoing, or past is derived at read time.
+
+## Sequential import queue
+
+`ingest:import-queue` runs a list of whole-file imports one at a time through the supervisor
+(`ingest:supervise watch`), with ordinary Node waiting and no model calls:
+
+- a file whose inventory coverage is already `complete` is skipped;
+- the next file starts only after the previous one finished `succeeded` **and** its inventory
+  coverage is `complete`;
+- a run stopped by the daily geocoding quota (`provider_daily_quota`) is resumed with the same
+  run UUID two minutes after the reset; two immediate re-exhaustions stop the queue;
+- any other outcome stops the queue as `needs_attention` with the run UUID; nothing is retried
+  blindly, so diagnose it (see the troubleshooting sections) and start a new queue;
+- before each launch the pipeline must be quiescent and out of maintenance (it waits up to an
+  hour, then stops).
+- a file counts as complete only when its inventory category matches the entry and the file on
+  disk still has the scanned SHA-256; an unfinished full-file run of that file is resumed with
+  its UUID (cohort and checkpoints kept), never restarted;
+- one queue worker is live at a time on any host: it holds a presence lock for life, waiting
+  or running, and an exclusive queue lock while it owns ingestion;
+  a queue whose worker died is marked `stopped` as interrupted, and `resume` continues it.
+- every full-scope import (`ingest:run`/`ingest:extract` without `--limit`, `--record`,
+  `--shadow` or `--dry-run`), plain or queued, holds a database lock for its whole run, so only
+  one full-file import runs at a time on any host, even if a queue worker dies; bounded
+  diagnostics are not blocked. A plain import also holds the queue lock in shared mode while
+  the queue worker holds it exclusively, so a plain import refuses while a queue runs, and a
+  queue started during a plain import waits until it finishes (reported as "waiting for a
+  plain import to finish"); a plain full import is refused while a queue is active or waiting. If an import's lock connection drops,
+  the import exits at once (resume it later) rather than run unfenced. A confirmed `stop --now`
+  is recorded as an operator stop;
+- an unfinished earlier run of a file is adopted automatically only if it stopped at the daily
+  geocoding quota or by an operator stop (and resumes with its saved limits); anything else,
+  including a run stopped at its own provider caps, stops the queue for a decision. Files the
+  inventory marks `needs_review` or not importable also stop it (set the disposition first);
+- an entry whose file changed since the last inventory scan, is missing from the inventory or
+  is classified under another category stops the queue before launching (refresh or reclassify,
+  then `resume`).
+
+```bash
+cd ~/git/map
+pnpm --silent --filter @lib/db-map ingest:import-queue start --plan data/import-plans/reset-20261105.json
+pnpm --silent --filter @lib/db-map ingest:import-queue status          # latest queue
+pnpm --silent --filter @lib/db-map ingest:import-queue stop            # before the next launch
+pnpm --silent --filter @lib/db-map ingest:import-queue stop --now      # also stop the current import gracefully
+pnpm --silent --filter @lib/db-map ingest:import-queue resume          # continue a stopped/interrupted queue
+# or ad hoc: ingest:import-queue start -- data/poi/x.json=art_fair data/poi/y.json=hostel
+```
+
+Queue state is in `lib/db-map/.ingest-queues/<id>/` (`state.json`, `queue.log`, ignored by Git);
+each file's supervisor job keeps its usual journal under `.ingest-jobs/`. Only one queue runs
+at a time, and the queue counts as a supervisor (not a worker) for quiescence checks.
 
 ## Review flags
 
@@ -939,10 +1041,30 @@ Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
   geocoding may fill it after normalization), sets `attributes.name_generated = true` and
   `field_provenance.name.generated`, and so carries the `generated_name` review flag.
 
+## Unlocatable records are dropped
+
+Owner policy (2026-11-16): a record with no usable point, which the geocoder cannot place
+from the record's own listed text even after its city and country fallbacks, is dropped.
+Nobody researches it by hand, and it never stops an import or leaves a file partial.
+
+The geocode stage finishes such a record as `skipped` with reason `unlocated_dropped`, and
+in the same transaction:
+
+- retires the research record (its raw observation and listed text stay stored);
+- skips its embed, match, canonical and verify tasks;
+- records an excluded issue with code `unlocated_dropped` and actor `policy`, and a record
+  verification with outcome `operator_excluded`, so the inventory counts the record as
+  excluded and the file can reach `complete`.
+
+`ingest:issues list --run <uuid>` shows what was dropped. Twenty-five such records in a row
+stop the run with `systemic_unlocated`: that many is a sign of a broken source mapping or
+geocoder, not of unlucky records. To bring a dropped record back, fix its capture or the
+lookup and import the file again as a new run.
+
 ## Daily geocoding quota
 
 LocationIQ's free plan allows 5,000 requests a day (2 a second, 60 a minute) and resets at
-00:00 UTC; unsuccessful requests are not charged. Every real forward or reverse request is
+00:00 UTC; unsuccessful requests are not charged. Every real forward request is
 reserved first in `research_provider_daily_usage`, shared by all managed and standalone
 processes and kept by `ingest:purge`. Set `LOCATIONIQ_DAILY_LIMIT` for another plan (`0`
 disables the local limit). Every unsuccessful request (network error, 400, 404 "Unable to
@@ -959,29 +1081,90 @@ the run prints the resume command. Per-second and per-minute 429s keep the bound
 pnpm --filter @lib/db-map ingest:quota                      # today's count, limit and reset
 pnpm --filter @lib/db-map ingest:quota --clear-rate-limit   # after upgrading the plan today
 # After 00:00 UTC, resume the same run (completed work and saved operator limits are kept):
-pnpm --silent --filter @lib/db-map ingest:supervise start --local-only -- --resume <run-id>
+pnpm --silent --filter @lib/db-map ingest:supervise start -- --resume <run-id>
 ```
 
-A large source such as The Dyrt (about 25,000 uncached reverse lookups) therefore takes
-several days on the free plan: start it, let it pause at the quota, and resume it each day.
+Only forward lookups spend this quota. A record makes one when it has listed text to look
+up (its name, venue, address or locality), **whether or not it also has a source point**:
+the lookup supplies the inferred slot. One record can spend up to three uncached requests:
+the first lookup, a listed-city lookup when the result lands in another city, and the city
+and country fallbacks after a miss. The number of records with listed text is therefore a
+lower bound for a file, not an estimate. The cache makes repeats free, so the reliable
+number is the `apiCalls` a bounded sample reports. A file needing more than 5,000 uncached
+lookups takes several days on the free plan: start it, let it pause at the quota, and
+resume it each day.
 
 ## Outdated data: re-ingest, never upgrade
 
-Records produced by older pipeline logic (normalizer/prompt/schema/profile, location
-enrichment, geocoder, embedding, matcher or canonical builder versions) are **never upgraded in place**.
-The raw captures are kept, LLM normalization is cheap and paid geocode lookups are cached, so
-the fix is always to remove the source's data and import it again.
+`ingest:staleness` reports, per source, the records produced by older pipeline logic. What
+to do depends on what is outdated.
+
+| What is older than the current code | Meaning | Remedy |
+| --- | --- | --- |
+| Normalizer, prompt, schema or profile; location enrichment; geocoder; embedding | The record itself is outdated | Re-ingest: `ingest:clean <file>` for each of the source's files (or `ingest:purge`), then import again |
+| Only the matcher or the canonical builder | The record is current; only its grouping or published build is old | Rebuild the canonicals once, for the whole database: `ingest:rebuild-canonicals` |
+
+Records are **never upgraded in place**. The raw captures are kept and paid geocode lookups
+are cached, so an outdated record is removed and imported again.
+
+Memberships and research-derived canonical POIs are different: they are derived wholly from
+stored records. After a matcher or canonical-builder change, `ingest:rebuild-canonicals` drops
+that layer and matches every record again. No capture is re-read and no record is normalized,
+geocoded or embedded again; the only provider calls are the matcher's own (same-place
+verdicts and description merges).
+
+- **Kept:** manually curated POIs (`origin = 'manual'`), manual match overrides, and earlier
+  match decisions, which stay as history.
+- **Not kept:** canonical IDs and the redirects between them, as after a purge.
+- **While it runs,** the map shows only the POIs already rebuilt. It is not a build-aside
+  swap; plan it like a purge and re-import, which it replaces and is far shorter than.
 
 ```bash
-pnpm --filter @lib/db-map ingest:staleness            # per-source outdated counts (read-only)
+pnpm --filter @lib/db-map ingest:staleness            # per-source counts and the remedy (read-only)
+
+# Records outdated: re-ingest the source.
 pnpm --filter @lib/db-map ingest:clean <file> --dry-run   # one file: review, then without --dry-run
 pnpm --filter @lib/db-map ingest:purge --dry-run          # everything
 pnpm --filter @lib/db-map ingest:purge --maintenance-token <owned-token> --confirm purge-all-imports
+
+# Only matcher or canonical builder outdated: rebuild, under owned maintenance.
+pnpm --filter @lib/db-map ingest:control maintenance enter --reason 'Rebuild canonicals' --wait-seconds 30
+pnpm --filter @lib/db-map ingest:rebuild-canonicals --dry-run
+pnpm --filter @lib/db-map ingest:rebuild-canonicals --maintenance-token <owned-token>   # add --consolidate if the dry run says so
+pnpm --filter @lib/db-map ingest:rebuild-canonicals --maintenance-token <owned-token> --continue   # only after a stopped rebuild
+pnpm --filter @lib/db-map ingest:control maintenance exit --token <owned-token>
 ```
 
-New runs refuse a source holding outdated records (`assertSourceCurrent`, error code
-`outdated_data`); the standalone `ingest:normalize` (except `--shadow`), `ingest:geocode`
-(except `--dry-run`) and `ingest:match` (except `--recluster`) refuse too. Every
+The rebuild refuses while any record is itself outdated (re-ingest those sources first). It
+stops on a failed model call: it never records "different place" or publishes a fallback
+description in its place. If it stops, run it again with `--continue` under the same
+maintenance: the records left unlinked are matched, with the same strictness, and nothing
+is reset again. Do not continue with plain `ingest:match`, which tolerates model failures.
+The dry run reports whether the database holds verdicts from an earlier global
+consolidation; if it does, pass `--consolidate` so that sweep is redone after matching. Afterwards each file's verification is older than its new builds, so the
+inventory lists it as `ready_to_verify`; run its `--from report` command.
+
+When both kinds are present, the order matters: `ingest:clean` the outdated sources' files,
+then rebuild the canonicals, and only then import the cleaned sources again. An import is
+refused while any source still holds an outdated matching layer, because matching reads
+every source's canonicals.
+
+Known limits of a rebuild, accepted for now:
+
+- A chain of `force_same` overrides (A–B, B–C) can leave one edge unmet, depending on the
+  order records are matched; the matcher resolves one linked neighbour. The same happens
+  on any re-import.
+- A manual POI that had research members keeps publishing its previous build until those
+  members rejoin it.
+- A description merge whose output fails validation (a URL not in the sources) falls back
+  to the unmerged description, as it does in managed imports; only a failed call stops the
+  rebuild.
+
+New runs refuse a source in either state (`assertSourceCurrent`): error code `outdated_data`
+names the re-ingest, `outdated_canonicals` names the rebuild. The standalone
+`ingest:normalize` (except `--shadow`), `ingest:geocode` and `ingest:embed` (except
+`--dry-run`) and `ingest:match` refuse too; `ingest:match --recluster`, which the rebuild uses, refuses only
+when records themselves are outdated. Every
 normalization artifact records its profile version (`profile_version`), including
 deterministic `--no-llm` ones; an artifact with no known profile version counts as outdated.
 Embeddings record `PIPELINE_VERSIONS.embedding` in `model_version`. Only exact
@@ -989,7 +1172,8 @@ current-version checkpoints resume (`compatibleCheckpointVersions()` is empty by
 `ingest:purge` truncates every import, run and canonical table and keeps the geocode query
 cache, category taxonomy, users, ingestion controls, capture inventory and centroid
 references; `purge.test.ts` keeps its table list aligned with `schema/current.sql`. When a
-change bumps a version, purge (or clean) the affected sources before re-running them.
+change bumps a record-level version, purge (or clean) the affected sources before re-running
+them; when it bumps only the matcher or canonical builder, rebuild the canonicals.
 
 ## Targeted cleanup
 
@@ -1084,8 +1268,7 @@ precision; pre-slot legacy points and source/URL points are kept.
 Forward queries use immutable captured text and source location hints, never fields
 filled by reverse lookup or model coordinate proposals. Supplied address/locality
 wins over composite venue names for lookup; recognized listed countries constrain
-search. Hits and misses are cached by query policy/country. Forward and reverse share
-provider budgets and recovery. If the budget expires between calls, activation waits
+search. Hits and misses are cached by query policy/country. If the budget expires between calls, activation waits
 and resume reuses cached results; a miss preserves a usable source point.
 
 Listing filler such as `Various`, `Various venues`, `Various (England)`, `TBA`, `Online` or
@@ -1107,7 +1290,7 @@ is never an anchor for the 50 km checks below. A centroid's country fills a miss
 when it is a current ISO code (not the vendored `GZ`/`AN`). A reverse lookup is trusted only to the
 point's precision: a `country` point keeps only the country, a `region` point drops the
 city, and any coarse or unknown-precision point drops the street address and postcode. A country centroid
-otherwise reverse-geocodes to whatever village lies under it. A reverse call is made only when
+otherwise reverse-geocodes to whatever village lies under it. A reverse lookup runs only when
 a field that precision can still supply is missing, and a centroid match fills a missing
 country itself (provenance `supplied_centroid`), so Adelaide needs no provider call.
 
@@ -1147,8 +1330,8 @@ listed country's English name, skipping queries already tried. The fallback is
 `{reason: miss|rejected, query}`; canonical ranking gives such a fallback no address priority. When
 query fitting drops the address, venue or name, the basis is what survived (`basisAfterFit`). Any locality-only result that comes back as a `point` (a business that
 shares the city's name) is labelled `city` (`locality_query_cap`). A record with a supplied or retained point keeps it.
-An unrecognized country text with no city (`East Africa`) leaves the record unlocated. An unlocated record is unpublished, its geocode task needs
-intervention, and `attributes.location_unresolved` records why (query, basis, rejected
+An unrecognized country text with no city (`East Africa`) leaves the record unlocated. An unlocated record is dropped from its run
+(see [unlocatable records](#unlocatable-records-are-dropped)), and `attributes.location_unresolved` records why (query, basis, rejected
 results, invalid queries). A later successful geocode removes it; canonicals never publish it.
 
 Each canonical build writes `attributes.location_specificity`: `precise` when a
@@ -1170,7 +1353,7 @@ whose new lookup missed stays plottable and is judged by its stored precision.
 publication. A supplied point that repeats a published country centroid (for example
 Google's Australia centroid) is stored as `country` precision, so it counts as coarse.
 
-The `location-v9` / `locationiq-location-v4` artifact binds `validation.coordinate_evidence`
+The `location-v10` / `locationiq-location-v5` artifact binds `validation.coordinate_evidence`
 to its normalization/primary point, alongside separate listed text, forward query/result
 and reverse lookup, and records every known location in `research_poi_locations`.
 Canonical builder `canonical-build-v8` writes `canonical_poi_locations` (with the members'
@@ -1186,7 +1369,9 @@ geocode reuse). Records from an older location version are not re-enriched in pl
 staleness guard requires purging and re-ingesting the source; the `location-v2` query cache
 makes that re-ingestion mostly free of provider calls. v5 added coarse-point reverse
 trimming and supplied-centroid precision; v6 plausibility checks and precision v3; v7 the
-no-point fallback chain and precision v4; v8 caps locality-only results at `city` (above). The
+no-point fallback chain and precision v4; v8 caps locality-only results at `city` (above); v10
+(with geocoder `locationiq-location-v5`) replaces the LocationIQ reverse call with the offline
+gazetteer (below). The
 additive country-precision migration widens the two storage constraints; it does
 not reclassify stored points or rebuild existing artifacts.
 
@@ -1231,15 +1416,45 @@ count markers. Approximate locality points do not establish venue/entrance preci
 A future source/inferred/both display policy can select these fields without rerunning
 ingestion or losing the other observation.
 
-The managed geocode stage also fills missing administrative/address fields for valid points.
-Source addresses/locality win; country values use the pinned ISO country dataset. Reverse
-LocationIQ fields are approximate, cached by exact point and policy version, and never move
-valid source coordinates. Country/region conflicts, distant results and missing fields remain
-visible in `research_pois.attributes.location_enrichment` and the bound geocode artifact.
-A definitive optional reverse miss does not fail the geocode stage for a coordinate-bearing
-POI. The assessment records that missing evidence and still lets the source point publish.
-API failures retain normal bounded recovery and systemic stop behavior. Source-precision centroids do not
-receive inferred street addresses. Forward and reverse calls share `--geocode-limit`.
+The managed geocode stage also fills a valid point's missing country, region and city offline
+(`scripts/ingest/offline-reverse.ts`), from data vendored in `lib/db-map/data/geonames`. It
+makes no provider call, spends no quota and writes no cache entry; `--geocode-limit` and the
+daily quota now cover forward lookups only.
+
+- **Country and region** come from the boundary that contains the point (Natural Earth 1:10m
+  units, each labelled with its GeoNames first-level region, so Paris is `Île-de-France` and
+  Old Faithful is `Wyoming`). Boundaries are accurate to a few hundred metres; a point that
+  close to a border can land on the wrong side.
+- **City** is the largest GeoNames place whose built-up area plausibly covers the point,
+  otherwise the nearest place within 15 km, always in the point's country. In open country
+  this is the nearest town, as it was with the provider.
+- A point outside every boundary (a pier, a small island) takes country and region from the
+  places within 25 km, only when they all agree on the country; otherwise nothing is filled.
+- A dependent territory has its own ISO code (`YT`, `RE`, `PR`), not its sovereign's.
+- Region names are English, so a listed region is compared with the lookup's only where an
+  ISO region code exists (`TX` against `US-TX`). Elsewhere a different spelling (`愛知県`,
+  `Bayern`) raises no `coordinate_region_conflict`; country conflicts are detected everywhere.
+- Natural Earth predates some region splits (Indonesia's Papua provinces, Kazakhstan's
+  Abai). A boundary whose places belong to several regions takes the region the places
+  around the point agree on.
+- The town must lie in the boundary's region as well as its country (Hoboken, not New York
+  City). A place of another country at the point itself (within 300 m) means the boundary
+  is wrong there, and nothing is filled; a foreign town merely nearby is normal at a border.
+- The town's other GeoNames names come with the result, so a listing that says `München`
+  agrees with `Munich` in the location assessment.
+- Known gaps: a city carved out of a province as its own region (Gwangju, Shymkent) takes
+  the province's name, and Kosovo gets no result because `XK` is not an ISO 3166-1 code.
+- The lookup also runs when nothing is missing: it is the independent check that a complete
+  listing's point lies in the listed country and city.
+- **Street address and postcode** are never inferred. They come from the listing or stay empty.
+
+Source addresses/locality win; country values use the pinned ISO country dataset. The lookup
+never moves a source point. Country/region conflicts and missing fields remain visible in
+`research_pois.attributes.location_enrichment` and the bound geocode artifact, whose
+`reverse.provider` is `geonames` (`locationiq` on artifacts from `location-v9` and earlier).
+A miss (open sea) does not fail the geocode stage: the assessment records the missing
+evidence and the source point still publishes. The 2,884 LocationIQ reverse results in the
+query cache are no longer read.
 
 Canonical builds publish selected `attributes.country_code`, `city`, and `region` with
 member/derivation provenance. A versioned location artifact binds normalization and point;
@@ -1257,8 +1472,9 @@ country filter, and the snapshot remain available through `ingest:trace`. Accept
 means the diagnostic found agreement. It is not a publication requirement and it
 does not verify a venue or an edition.
 
-`matcher-v3` scores the research row's stored point. `canonical-build-v7` publishes
-every plottable candidate. A source point with no inferred point, reverse result,
+The matcher scores the research row's stored point (since `matcher-v3`; current
+`matcher-v4`). The canonical builder publishes every plottable candidate (since
+`canonical-build-v7`; current `canonical-build-v8`). A source point with no inferred point, reverse result,
 or country text still publishes. Far-apart and cross-country candidates publish
 both markers. Equal coordinates keep both evidence records and one marker. A
 record with no plottable point stays unpublished and its assessment is
@@ -1266,7 +1482,7 @@ record with no plottable point stays unpublished and its assessment is
 not hide the canonical or quarantine the record.
 
 Build inputs still store the current assessment ID, including `needs_review`.
-Checkpoint reuse requires that current snapshot binding and the v7 builder. It
+Checkpoint reuse requires that current snapshot binding and the current builder. It
 does not require `status=accepted`. An inactive membership on a live research row
 keeps the previous serving snapshot during a normalization refresh. Explicit
 retirement, exclusion, and cleanup still withdraw output. Paid provider query
@@ -1394,7 +1610,7 @@ variable unset, the SQL test is explicitly skipped; no shared database is used.
 
 ### Canonical origin repair and resume
 
-`canonical-build-v7` preserves fixed source/inferred coordinate provenance and legacy origins, and publishes conflicting candidates. Deploying it does not
+Since `canonical-build-v7` the builder preserves fixed source/inferred coordinate provenance and legacy origins, and publishes conflicting candidates (current: `canonical-build-v8`). Deploying a new builder does not
 rewrite historical data. Older builders are not resumable (outdated data is re-ingested). On a new run or exact-version resume,
 completed downstream tasks and batch/attempt caches reject older builders. The
 match stage rebuilds the existing canonical from its active members when its build

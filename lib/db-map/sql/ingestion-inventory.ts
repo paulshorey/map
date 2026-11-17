@@ -59,7 +59,12 @@ WITH compatible_proof_versions AS (
     GREATEST(n.activated_at,em.activated_at,b.activated_at,g.activated_at,rv.verified_at) AS proof_changed_at,
     EXISTS(SELECT 1 FROM current_versions v JOIN research_ingest_runs r ON r.source_file_version_id=v.id
       JOIN research_ingest_record_verifications x ON x.run_id=r.id WHERE v.inventory_id=a.inventory_id AND x.observation_id=a.observation_id
-        AND x.outcome='operator_excluded' AND (x.pipeline_versions=$1::jsonb OR (x.pipeline_versions IN (SELECT pipeline_versions FROM compatible_proof_versions)
+        AND x.outcome='operator_excluded'
+        /* A later verification of the same observation supersedes an exclusion: a record
+           dropped as unlocatable counts again once a later run locates and verifies it. */
+        AND NOT EXISTS(SELECT 1 FROM research_ingest_record_verifications y WHERE y.observation_id=x.observation_id
+          AND y.outcome<>'operator_excluded' AND y.verified_at>x.verified_at)
+        AND (x.pipeline_versions=$1::jsonb OR (x.pipeline_versions IN (SELECT pipeline_versions FROM compatible_proof_versions)
           AND r.status='succeeded' AND r.verified_at IS NOT NULL AND r.counters->'verification'->'pipeline_versions'=$1::jsonb))) AS operator_excluded,
     (rp.id IS NOT NULL AND rp.retired_at IS NULL AND rp.active_observation_id=a.observation_id) AS input_valid,
     (n.id IS NOT NULL AND n.observation_id=a.observation_id AND rp.normalization_state IN ('active','degraded','rejected')) AS normalized,
