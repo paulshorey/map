@@ -609,14 +609,15 @@ legacy attempt records.
   Each record commits separately and is replayable. Missing IDs/collisions/write failures stop
   advancement. A capture without an ID field gets a synthetic ID from name and locality; when
   several records would share one (the same market on four dates), each that carries a start
-  date or year is re-keyed with it (an ISO date or year only, never free-text wording),
-  whatever the record order. Records whose synthetic ID is
+  date or year is re-keyed with it (a date read into one spelling, or a year; never
+  free-text wording), whatever the record order. Records whose synthetic ID is
   unique in the file are untouched. A record that still shares a dated synthetic ID (same
   name, locality and date, different content) is dropped as a duplicate
   (`synthetic_identity_repeat`) instead of failing the file; undated records that share a
   name and locality, and records with their own IDs that collide, still stop it.
   Snapshot removals retire only after an unlimited successful extraction, never
-  a sample or interrupted pass. File completion is recorded after retirement/finalization.
+  a sample or interrupted pass. That pass also retires identities an earlier stopped attempt at
+  the same file version wrote and the capture no longer produces. File completion is recorded after retirement/finalization.
   Observation identity includes the raw SHA and a database-generated captured-field/POI-hint
   hash. An extractor mapping change creates a new immutable observation even when raw JSON is
   unchanged, refreshes staging and invalidates normalization. Identical mappings reuse their

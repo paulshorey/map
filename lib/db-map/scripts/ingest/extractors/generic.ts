@@ -237,21 +237,53 @@ export async function* parseGenericRecords(
 }
 
 /**
- * The date that tells one occurrence from another, in a form that survives rewording:
- * an ISO date where the field holds one, the structured value otherwise, and from the
- * free-text `dates` field only an ISO date or a year.
+ * A date in one stable spelling, or nothing when it cannot be read as a date. The time is
+ * kept when it is not midnight, so two performances on one day stay apart; "Dec 3, 2026"
+ * and "December 3, 2026" give the same value.
+ */
+function stableDate(value: string): string | undefined {
+  const iso = /^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}))?/.exec(value);
+  if (iso) return iso[2] && iso[2] !== "00:00" ? `${iso[1]}T${iso[2]}` : iso[1];
+  const numeric = /^(\d{1,4})[/.](\d{1,2})[/.](\d{1,4})$/.exec(value);
+  if (numeric)
+    return numeric
+      .slice(1)
+      .map((part) => part.padStart(2, "0"))
+      .join("/");
+  if (
+    !/[a-z]{3}/i.test(value) ||
+    !/\d{4}/.test(value) ||
+    !/\b\d{1,2}\b/.test(value)
+  )
+    return undefined;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}`;
+}
+
+/**
+ * The date that tells one occurrence from another, in a form that survives rewording: a
+ * date read from a structured field, else an ISO date or a year found in any date field.
+ * Wording itself never enters an identity.
  */
 function occurrenceEdition(raw: Record<string, unknown>): string | undefined {
-  for (const key of ["start_date", "starts_at", "date"]) {
-    const value = str(raw[key]);
-    if (value) return /^\d{4}-\d{2}-\d{2}/.exec(value)?.[0] ?? value;
+  const fields = ["start_date", "starts_at", "date"].map((key) =>
+    str(raw[key]),
+  );
+  for (const value of fields) {
+    const date = value && stableDate(value);
+    if (date) return date;
   }
   if (typeof raw.year === "number") return String(raw.year);
-  const prose = str(raw.year) ?? str(raw.dates);
-  return prose
-    ? (/\d{4}-\d{2}-\d{2}/.exec(prose)?.[0] ??
-        /\b(?:19|20)\d{2}\b/.exec(prose)?.[0])
-    : undefined;
+  for (const prose of [...fields, str(raw.year), str(raw.dates)]) {
+    const found =
+      prose &&
+      (/\d{4}-\d{2}-\d{2}/.exec(prose)?.[0] ??
+        /\b(?:19|20)\d{2}\b/.exec(prose)?.[0]);
+    if (found) return found;
+  }
+  return undefined;
 }
 
 /**

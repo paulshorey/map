@@ -132,3 +132,41 @@ test("identical rows are not occurrences, and prose dates give only a date or ye
     ["2026-06-26", "2026-07-03"],
   );
 });
+
+test("dates are read into one spelling, and a time of day keeps performances apart", async () => {
+  const a = await ids([market("Dec 3, 2026"), market("Nov 18, 2026")]);
+  assert.deepEqual(
+    a.after.map((r) => r.identity_inputs?.edition),
+    ["2026-12-03", "2026-11-18"],
+  );
+  const b = await ids([
+    market("December 3, 2026"),
+    market("November 18, 2026"),
+  ]);
+  assert.deepEqual(
+    b.after.map((r) => r.source_record_id),
+    a.after.map((r) => r.source_record_id),
+  );
+  const show = (starts_at: string) => ({
+    name: "The Show",
+    city: "Leeds",
+    country: "UK",
+    starts_at,
+  });
+  const times = await ids([
+    show("2026-06-26T14:00:00Z"),
+    show("2026-06-26T19:30:00Z"),
+  ]);
+  assert.deepEqual(
+    times.after.map((r) => r.identity_inputs?.edition),
+    ["2026-06-26T14:00", "2026-06-26T19:30"],
+  );
+  const vague = await ids([
+    market("Spring 2026", { fee: 1 }),
+    market("To be announced", { fee: 2 }),
+  ]);
+  assert.deepEqual(
+    vague.after.map((r) => r.identity_inputs?.edition ?? null),
+    ["2026", null],
+  );
+});

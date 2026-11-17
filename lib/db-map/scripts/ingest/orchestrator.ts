@@ -564,6 +564,7 @@ async function extractFile(
 
   let ordinal = 0;
   const seenIds = new Map<string, { hash: string; ordinal: number }>();
+  const genericSource = !getExtractor(ctx.resolved.source.meta.slug);
   try {
     for await (const record of recordsFor(ctx.resolved)) {
       if (execution?.stopped) break;
@@ -612,6 +613,7 @@ async function extractFile(
             `extract duplicate #${ordinal} ${recordLabel(record)} (same as #${prior.ordinal})`,
           );
         } else if (
+          genericSource &&
           record.source_record_id_kind === "synthetic" &&
           record.identity_inputs?.edition
         ) {
@@ -773,17 +775,18 @@ async function retireMissingSnapshotRows(
        JOIN research_poi_observations o ON o.id = rp.active_observation_id
        JOIN research_source_file_versions previous ON previous.id = o.source_file_version_id
        WHERE previous.source_file_id = $1
-         AND o.source_file_version_id <> $2
          AND rp.retired_at IS NULL
          AND NOT EXISTS (
            SELECT 1
            FROM research_ingest_run_records rirr
-           WHERE rirr.run_id = $3
+           WHERE rirr.run_id = $2
              AND rirr.source_record_id = rp.source_record_id
              AND rirr.extract_state IN ('written','unchanged')
          )
        FOR UPDATE OF rp`,
-      [ctx.sourceFileId, ctx.fileVersionId, ctx.runId],
+      // Rows of this same file version count too: an earlier attempt that stopped part
+      // way may have written identities this complete pass no longer produces.
+      [ctx.sourceFileId, ctx.runId],
     );
     for (const row of rows) {
       await client.query(
