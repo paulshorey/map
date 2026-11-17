@@ -268,7 +268,6 @@ async function runMatchesFile(
   );
 }
 
-/** Only runs that stopped for a budget/quota or an operator stop resume without diagnosis. */
 /** How often one file is resumed automatically after its import lost its connection. */
 export const MAX_CONNECTIVITY_RETRIES = 2;
 const CONNECTIVITY_WAIT_MS = 5 * 60_000;
@@ -298,6 +297,10 @@ async function failedOnConnectivity(runId: string): Promise<boolean> {
   return rows[0]?.status === "failed" && isConnectivityError(rows[0].error);
 }
 
+/**
+ * Only runs that stopped for a budget/quota, an operator stop or a lost connection resume
+ * without diagnosis.
+ */
 async function continuationSafe(runId: string): Promise<{ safe: boolean; detail: string }> {
   const { rows } = await getDb().query(
     "SELECT status, stop_reason FROM research_ingest_runs WHERE id=$1",
@@ -323,6 +326,12 @@ async function continuationSafe(runId: string): Promise<{ safe: boolean; detail:
  */
 async function recoverFromConnectivityLoss(id: string, entry: QueueEntry): Promise<boolean> {
   if (!entry.run_id || (entry.connectivity_retries ?? 0) >= MAX_CONNECTIVITY_RETRIES) return false;
+  // When the database answers now, any other failure stops at once instead of after a wait.
+  try {
+    if (!(await failedOnConnectivity(entry.run_id))) return false;
+  } catch {
+    // Unreachable right now: that is the case being waited out.
+  }
   // Up to an hour for the network to come back: six waits of ten minutes after the first.
   for (let attempt = 0; attempt < 7; attempt++) {
     if (!(await waitUntil(id, Date.now() + (attempt ? 2 : 1) * CONNECTIVITY_WAIT_MS))) return false;
