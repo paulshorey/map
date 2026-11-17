@@ -274,12 +274,13 @@ async function runMatchesFile(
 export const MAX_CONNECTIVITY_RETRIES = 2;
 const CONNECTIVITY_WAIT_MS = 5 * 60_000;
 
-/** The database host from DB_MAP_URL, used to tell its connection errors from a provider's. */
-function databaseHost(): string | null {
+/** The database host and port from DB_MAP_URL, to tell its connection errors from a provider's. */
+function databaseEndpoint(): { host: string | null; port: string } {
   try {
-    return process.env.DB_MAP_URL ? new URL(process.env.DB_MAP_URL).hostname || null : null;
+    const url = new URL(process.env.DB_MAP_URL ?? "");
+    return { host: url.hostname || null, port: url.port || "5432" };
   } catch {
-    return null;
+    return { host: null, port: "5432" };
   }
 }
 
@@ -290,9 +291,14 @@ function databaseHost(): string | null {
  * checkpoints are intact. A provider's network error is not counted: provider failures are
  * diagnosed first (provider-recovery owns their bounded retries). An error counts as the
  * database's only when it comes from the pg driver (its stack, the pool checkout code or pg's
- * own messages) or names the database host.
+ * own messages), names the database host, or names the database port (Node's socket errors
+ * give the resolved address and port, e.g. `connect ENETUNREACH 10.0.0.1:5432`). A bare
+ * `read ECONNRESET` names neither, so it still needs a person.
  */
-export function isConnectivityError(error: unknown, dbHost: string | null = databaseHost()): boolean {
+export function isConnectivityError(
+  error: unknown,
+  db: { host: string | null; port: string } = databaseEndpoint(),
+): boolean {
   if (!error) return false;
   const text = typeof error === "string" ? error : JSON.stringify(error);
   const network =
@@ -304,7 +310,9 @@ export function isConnectivityError(error: unknown, dbHost: string | null = data
     /database_pool_checkout_timeout|timeout exceeded when trying to connect|Connection terminated|node_modules[\\/](?:\.pnpm[\\/])?pg(?:-pool)?[@\\/]/i.test(
       text,
     );
-  return fromPg || (!!dbHost && text.includes(dbHost));
+  const namesDb =
+    (!!db.host && text.includes(db.host)) || new RegExp(`:${db.port}(?!\\d)`).test(text);
+  return fromPg || namesDb;
 }
 
 /** The run failed on a lost connection (see isConnectivityError), judged from its last execution. */
