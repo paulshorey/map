@@ -70,7 +70,12 @@ The rules are deterministic:
 3. A row whose street line is rejected contributes nothing: its city, ZIP and even its state
    can be the managing office's (e.g. a Nebraska campground's office in South Dakota). City,
    ZIP and state come only from rows whose street is accepted or empty.
-4. A state comes from the first row with an accepted street or a city. Rows with neither
+4. The first row with an accepted street anchors the locality: city, ZIP and state come
+   from that row. Another row fills a missing value only when it describes the same place
+   (the same street, or for the state the same city), never a street-less row such as a
+   managing office (e.g. Greenbelt Park's Physical row lacks a state; its Default row with
+   the same street gives MD). Without an
+   accepted street, the state comes from the first row with a city. Rows with neither
    are used only when they all agree; 242 facilities whose state-only rows name several states
    get no source state (`ambiguous_state`).
 5. States are normalized to USPS codes, and full names are converted. `country_code` is `US`

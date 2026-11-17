@@ -142,6 +142,7 @@ def select_address(rows):
               "address_type": ""}
     reasons = []
     blank_states = set()
+    accepted = []
     for r in usable:
         street = street_of(r)
         if street and not physical_street(street):
@@ -149,25 +150,53 @@ def select_address(rows):
             # An office/PO-box row describes the managing office, which can be in another
             # state; none of its locality is used.
             continue
-        if street and not fields["address"]:
-            fields["address"] = display_case(street)
-            fields["address_type"] = r["FacilityAddressType"]
-        if clean(r.get("City")) and not fields["city"]:
-            fields["city"] = display_case(clean(r["City"]))
-            fields["address_type"] = fields["address_type"] or r["FacilityAddressType"]
+        accepted.append((r, street))
+    anchor = next((r for r, street in accepted if street), None)
+    if anchor is not None:
+        # The row that supplies the street anchors the locality: another row (often the
+        # managing office, with an empty street) never fills in its city, ZIP or state.
+        fields["address"] = display_case(street_of(anchor))
+        fields["address_type"] = anchor["FacilityAddressType"]
+        fields["city"] = display_case(clean(anchor.get("City")))
+        postal = clean(anchor.get("PostalCode"))
+        if fields["city"] and re.fullmatch(r"\d{5}(-\d{4})?", postal):
+            fields["postal_code"] = postal
+        fields["region"] = state_code(anchor.get("AddressStateCode"))
+        # Another row may fill a missing city, ZIP or state only when it describes the same
+        # place: the same street, or (for the state) the same city.
+        key = lambda v: re.sub(r"[^A-Z0-9]", "", clean(v).upper())
+        for r, street in accepted:
+            same_street = street and key(street) == key(street_of(anchor))
+            same_city = fields["city"] and key(r.get("City")) == key(fields["city"])
+            if same_street and not fields["city"] and clean(r.get("City")):
+                fields["city"] = display_case(clean(r["City"]))
+                fields["postal_code"] = ""
             postal = clean(r.get("PostalCode"))
-            if re.fullmatch(r"\d{5}(-\d{4})?", postal):
+            if (same_street and fields["city"] and not fields["postal_code"]
+                    and key(r.get("City")) == key(fields["city"])
+                    and re.fullmatch(r"\d{5}(-\d{4})?", postal)):
                 fields["postal_code"] = postal
-        state = state_code(r.get("AddressStateCode"))
-        if street or clean(r.get("City")):
-            # A row with an accepted street or a city anchors the state.
-            fields["region"] = fields["region"] or state
-        elif state:
-            blank_states.add(state)
+            if (same_street or same_city) and not fields["region"]:
+                fields["region"] = state_code(r.get("AddressStateCode"))
+    else:
+        for r, _ in accepted:
+            city = clean(r.get("City"))
+            state = state_code(r.get("AddressStateCode"))
+            if city and not fields["city"]:
+                fields["city"] = display_case(city)
+                fields["address_type"] = r["FacilityAddressType"]
+                postal = clean(r.get("PostalCode"))
+                if re.fullmatch(r"\d{5}(-\d{4})?", postal):
+                    fields["postal_code"] = postal
+            if city:
+                # A row with a city anchors the state.
+                fields["region"] = fields["region"] or state
+            elif state:
+                blank_states.add(state)
     if not fields["region"] and len(blank_states) == 1:
         fields["region"] = blank_states.pop()
     elif not fields["region"] and blank_states:
-        # Several state-only rows disagree (e.g. a forest administered across states).
+        # Several rows disagree (e.g. a forest administered across states).
         reasons.append("ambiguous_state")
     # Only US state/territory codes survive state_code(); AddressCountryCode is noisy ("1").
     # Territories carry their own ISO code, which equals their USPS code.
