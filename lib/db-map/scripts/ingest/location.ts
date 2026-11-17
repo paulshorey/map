@@ -2,8 +2,8 @@
 import { countryToCode } from "./normalize/country.js";
 import { haversineMeters } from "./match/geo.js";
 import { validPoint } from "../../lib/ingestion/location-points.js";
-export const LOCATION_VERSION = "location-v9";
-export const LOCATION_GEOCODER_VERSION = "locationiq-location-v4";
+export const LOCATION_VERSION = "location-v10";
+export const LOCATION_GEOCODER_VERSION = "locationiq-location-v5";
 export const LOCATION_CACHE_VERSION = "location-v2";
 export const LOCATION_QUERY_VERSION = "listed-location-v1";
 export interface LocationFields {
@@ -15,7 +15,12 @@ export interface LocationFields {
 export interface ReverseLocation extends LocationFields {
   region_code: string | null;
   postcode: string | null;
+  /** Metres from the query point to the returned result (offline: to the named town, else 0). */
   distance_m: number;
+  /** Other names of `city` (offline lookups only), for comparing with a listed city. */
+  city_aliases?: string[];
+  /** Offline lookups describe the area around the point, not a nearby address. */
+  basis?: "containing_area" | "nearby_places";
   provider: string;
   attribution: string | null;
 }
@@ -365,7 +370,12 @@ export function resolveLocation(
       .trim()
       .toUpperCase();
   const region = textValue(source.region) ? fold(source.region!) : null;
+  // Offline region names are English, so a different spelling (愛知県 or Bayern against
+  // Aichi or Bavaria) is not evidence of a different region. They are compared only where
+  // the lookup also has an ISO region code (US-TX), which listings do use.
+  const comparable = !reverse?.basis || !!reverse.region_code;
   if (
+    comparable &&
     region &&
     reverse?.region &&
     region !== fold(reverse.region) &&
@@ -373,7 +383,8 @@ export function resolveLocation(
     region !== reverse.region_code?.split("-").slice(1).join("-").toUpperCase()
   )
     warnings.push("coordinate_region_conflict");
-  if (reverse && reverse.distance_m > 1000)
+  // An area lookup enforces its own radii; only a point result must sit on the query point.
+  if (reverse && !reverse.basis && reverse.distance_m > 1000)
     warnings.push("reverse_result_too_distant");
   const usable = warnings.length === 0 ? reverse : null;
   const fields: LocationFields = {

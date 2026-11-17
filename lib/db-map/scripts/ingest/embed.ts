@@ -1,3 +1,4 @@
+import { assertNoOutdatedSources } from "./staleness.js";
 import { pathToFileURL } from "node:url";
 /**
  * Embed research_pois rows missing content_embedding (M7).
@@ -253,6 +254,9 @@ export async function runEmbed(
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const db = getDb();
+  // Activating an embedding rebuilds a linked record's canonical with the current builder,
+  // so a writable run must not start while any matching layer is outdated.
+  if (!opts.dryRun) await assertNoOutdatedSources(db, opts.source ?? null);
   const stats = await runEmbed(db, opts);
   await db.end();
 

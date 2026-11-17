@@ -142,3 +142,14 @@ test("mutations require JSON and a non-simple same-origin request", () => {
     false,
   );
 });
+
+test("the monitor returns a bounded queue window around the current entry with full counts", async () => {
+  const { queueWindow } = await import("./server");
+  const entries = Array.from({ length: 200 }, (_, i) => ({ status: i < 120 ? "succeeded" : "pending" }));
+  const w = queueWindow({ entries, current: 120 })!;
+  assert.equal(w.entries.length, 30);
+  assert.equal(w.entries_offset, 115);
+  assert.equal(w.entries_total, 200);
+  assert.deepEqual(w.entry_counts, { succeeded: 120, pending: 80 });
+  assert.equal(queueWindow(null), null);
+});

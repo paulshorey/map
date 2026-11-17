@@ -266,23 +266,6 @@ for (const changed of [
           return { rows: [] };
         if (sql.startsWith("SELECT lat, lng, precision"))
           return { rows: [{ lat: row.lat, lng: row.lng, precision: "point" }] };
-        if (sql.startsWith("SELECT payload"))
-          return {
-            rows: [
-              {
-                payload: {
-                  hit: {
-                    ...source,
-                    region_code: "US-TX",
-                    postcode: "78701",
-                    distance_m: 0,
-                    provider: "locationiq",
-                    attribution: "fixture",
-                  },
-                },
-              },
-            ],
-          };
         if (sql.includes("INSERT INTO research_poi_geocodes"))
           return { rows: [{ id: "geocode-new" }] };
         if (sql.startsWith("UPDATE research_pois SET lat=")) {
@@ -332,9 +315,10 @@ for (const changed of [
       dryRun: false,
     });
     assert.equal(stats.apiCalls, 0);
-    assert.equal(stats.cacheHits, 2);
+    assert.equal(stats.cacheHits, 1);
     assert.equal(stats.resolved, 1);
     assert.equal(row.active_geocode_id, "geocode-new");
+    // The missing region comes from the offline boundary lookup, with no provider call.
     assert.equal(row.region, "Texas");
     assert.deepEqual([row.lat, row.lng], [30, -97]);
     assert.equal(row.address, source.address);

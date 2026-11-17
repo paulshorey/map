@@ -469,3 +469,148 @@ setInterval(() => {
   if (!document.hidden) void refresh();
 }, 10000);
 void refresh();
+
+/* Live monitor: current run progress, import queue, geocoding quota and data quality. */
+const minutes = (m) =>
+  m === null || m === undefined
+    ? "unknown"
+    : m < 1
+      ? "under a minute"
+      : m < 120
+        ? `${Math.round(m)} min`
+        : m < 2880
+          ? `${(m / 60).toFixed(1)} h`
+          : `${(m / 1440).toFixed(1)} days`;
+const bar = (value, max, title) =>
+  `<progress value="${Number(value) || 0}" max="${Math.max(1, Number(max) || 0)}" title="${esc(title)}"></progress>`;
+const QUEUE_ICON = {
+  pending: "·",
+  running: "▶",
+  waiting_quota: "⏸",
+  succeeded: "✔",
+  skipped_complete: "✔",
+  needs_attention: "✖",
+  stopped: "■",
+};
+const FLAG_LABEL = {
+  general_location: "General location",
+  source_needs_review: "Source needs review",
+  generated_name: "Generated name",
+  missing_address: "Missing address",
+};
+
+function renderMonitor(m) {
+  const run = m.run;
+  const runHtml = run
+    ? `<div class="monitor-card wide">
+        <h3>${esc(run.source)} · ${badge(run.status)}</h3>
+        <p class="muted-note">${esc(run.file ?? "")} · run <code>${esc(run.run_id)}</code>${
+          run.stop_reason
+            ? run.status === "succeeded"
+              ? ` · result: ${esc(label(run.stop_reason))}`
+              : ` · stopped: ${esc(label(run.stop_reason))}`
+            : ""
+        } · heartbeat ${date(run.heartbeat_at)}</p>
+        <table class="monitor-stages"><tbody>${run.stages
+          .map(
+            (s) => `<tr><th>${esc(label(s.stage))}</th>
+              <td>${bar(s.done, s.total, `${s.done} of ${s.total}`)}</td>
+              <td>${number(s.done)} / ${number(s.total)}</td>
+              <td>${s.running ? `${number(s.running)} active · ` : ""}${
+                s.waiting_budget ? `${number(s.waiting_budget)} waiting for quota · ` : ""
+              }${s.quarantined ? `${number(s.quarantined)} quarantined · ` : ""}${s.per_minute}/min</td>
+              <td>${s.done + s.quarantined >= s.total ? "done" : run.status === "running" ? `ETA ${minutes(s.eta_minutes)}` : ""}</td></tr>`,
+          )
+          .join("")}</tbody></table>
+        <p>${number(run.records)} records in scope${
+          run.status === "running" ? ` · whole file ETA ${minutes(run.eta_minutes)} (last ${m.window_minutes} min rate)` : ""
+        }${run.verified_at ? ` · verified ${date(run.verified_at)}` : ""}${
+          run.status === "waiting_budget" && run.stop_reason === "provider_daily_quota" && run.provider_quota?.resets_at
+            ? ` · paused for the geocoding quota until ${date(run.provider_quota.resets_at)}`
+            : ""
+        }</p>
+      </div>`
+    : `<div class="monitor-card wide"><h3>No run yet</h3><p>Start an import or an import queue.</p></div>`;
+  const quota = m.quota;
+  const quotaHtml = quota
+    ? `<div class="monitor-card"><h3>LocationIQ today</h3>
+        ${bar(quota.requests, quota.limit ?? quota.requests, `${quota.requests} requests`)}
+        <p><strong>${number(quota.requests)}</strong>${quota.limit ? ` of ${number(quota.limit)} · ${number(quota.remaining)} left` : " requests (no local limit)"}</p>
+        <p class="muted-note">${quota.exhausted ? "Quota reached: geocoding pauses runs" : "Available"} · resets ${date(quota.resets_at)}</p></div>`
+    : `<div class="monitor-card"><h3>LocationIQ today</h3><p>Unavailable</p></div>`;
+  const queue = m.queue;
+  const queueHtml = queue
+    ? `<div class="monitor-card"><h3>Import queue · ${badge(queue.status)}</h3>
+        ${queue.message ? `<p>${esc(queue.message)}</p>` : ""}
+        ${
+          queue.entry_counts
+            ? `<p class="muted-note">${Object.entries(queue.entry_counts)
+                .map(([s, n]) => `${number(n)} ${esc(label(s))}`)
+                .join(" · ")}${
+                queue.entries_total > queue.entries.length
+                  ? ` · showing ${number(queue.entries_offset + 1)}–${number(queue.entries_offset + queue.entries.length)} of ${number(queue.entries_total)}`
+                  : ""
+              }</p>`
+            : ""
+        }
+        <ol class="queue-list">${queue.entries
+          .map(
+            (e) =>
+              `<li class="${esc(e.status)}" title="${esc(e.reason ?? e.status)}"><span>${QUEUE_ICON[e.status] ?? "·"}</span> ${esc(
+                e.file.split("/").pop(),
+              )} <small>${esc(label(e.status))}${e.status === "waiting_quota" && e.resets_at ? ` until ${date(e.resets_at)}` : ""}</small></li>`,
+          )
+          .join("")}</ol>
+        <p class="muted-note">Queue <code>${esc(queue.id)}</code> · updated ${date(queue.updated_at)}</p></div>`
+    : `<div class="monitor-card"><h3>Import queue</h3><p>No queue. Start one with <code>ingest:import-queue start --plan …</code></p></div>`;
+  const q = m.quality;
+  const flags = q ? Object.entries(q.review_flags) : [];
+  const qualityHtml = !q
+    ? `<div class="monitor-card"><h3>Published data</h3><p>Unavailable right now (the quality query failed); retrying.</p></div>`
+    : `<div class="monitor-card"><h3>Published data</h3>
+      <p class="muted-note">As of ${date(m.quality_observed_at)}${
+        m.quality_stale ? " · <strong>stale: the latest refresh failed, retrying</strong>" : ""
+      }</p>
+      <p><strong>${number(q.published_pois)}</strong> POIs · ${number(q.precise_pois)} precise · ${number(q.general_pois)} general${
+        q.unknown_specificity_pois ? ` · ${number(q.unknown_specificity_pois)} unknown` : ""
+      }</p>
+      ${bar(q.precise_pois, q.published_pois, "precise share")}
+      <p class="muted-note">${number(q.research_records)} source records · ${number(q.unlocated_records)} unlocated · ${number(q.normalization_failed)} normalization failed · ${number(q.degraded)} degraded</p>
+      <h4>Review flags</h4>${
+        flags.length
+          ? `<ul>${flags.map(([f, n]) => `<li>${esc(FLAG_LABEL[f] ?? label(f))}: ${number(n)}</li>`).join("")}</ul>`
+          : "<p>None flagged.</p>"
+      }</div>`;
+  const sources = q?.by_source?.length
+    ? `<details class="monitor-sources"><summary>Per-source quality (${
+        q.sources_total > q.by_source.length
+          ? `largest ${number(q.by_source.length)} of ${number(q.sources_total)} sources; totals above cover all`
+          : number(q.by_source.length)
+      })</summary>
+        <table><thead><tr><th>Source</th><th>Records</th><th>Published POIs</th><th>Unlocated</th><th>Failed</th><th>Degraded</th><th>Non-POI</th></tr></thead><tbody>${q.by_source
+          .map(
+            (s) =>
+              `<tr><td>${esc(s.source)}</td><td>${number(s.records)}</td><td>${number(s.published_pois)}</td><td>${number(s.unlocated)}</td><td>${number(s.normalization_failed)}</td><td>${number(s.degraded)}</td><td>${number(s.non_poi)}</td></tr>`,
+          )
+          .join("")}</tbody></table></details>`
+    : "";
+  $("monitor").innerHTML = `<h2>Live monitor <small class="muted-note">${date(m.observed_at)}</small></h2>
+    <div class="monitor-grid">${runHtml}${quotaHtml}${queueHtml}${qualityHtml}</div>${sources}`;
+}
+
+let monitorLoading = false;
+async function refreshMonitor() {
+  if (monitorLoading) return;
+  monitorLoading = true;
+  try {
+    renderMonitor(await api("/api/monitor"));
+  } catch (e) {
+    $("monitor").innerHTML = `<h2>Live monitor</h2><p>Monitor unavailable: ${esc(e.message ?? e)}</p>`;
+  } finally {
+    monitorLoading = false;
+  }
+}
+setInterval(() => {
+  if (!document.hidden) void refreshMonitor();
+}, 10000);
+void refreshMonitor();

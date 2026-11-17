@@ -235,3 +235,28 @@ for (const [name, source] of [
     assert.equal(result.status, "needs_review");
     assert.ok(result.reasons.includes("location_text_coordinate_conflict"));
   });
+test("an offline area lookup confirms the listed city without the 1 km provider-point limit", () => {
+  const input = fixtureInput(),
+    v = input.validation as any;
+  v.coordinate_evidence.inferred_coordinates = null;
+  v.forward = { country_filter: "US", result: null };
+  const area = { country_code: "US", city: "Austin", distance_m: 6000 };
+  // A provider point result 6 km away is not evidence about this point.
+  v.reverse = area;
+  assert.ok(
+    assessLocation(input).reasons.includes("insufficient_independent_locality_evidence"),
+  );
+  // The offline lookup names the town whose area covers the point.
+  v.reverse = { ...area, basis: "containing_area", provider: "geonames" };
+  const accepted = assessLocation(input);
+  assert.equal(accepted.status, "accepted");
+  assert.ok(accepted.reasons.includes("point_reverse_locality_agree"));
+  // A listing may use another of the town's names.
+  (input.validation as any).listed.city = "Austin TX";
+  v.reverse = { ...area, basis: "containing_area", city_aliases: ["Austin TX"] };
+  assert.equal(assessLocation(input).status, "accepted");
+  (input.validation as any).listed.city = "Austin";
+  // It still has to agree with the listing.
+  v.reverse = { ...area, city: "Round Rock", basis: "containing_area" };
+  assert.equal(assessLocation(input).status, "needs_review");
+});
