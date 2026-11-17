@@ -77,6 +77,8 @@ export interface QueueEntry {
   quick_quota_pauses?: number;
   /** Automatic resumes after a lost connection, for this file (at most MAX_CONNECTIVITY_RETRIES). */
   connectivity_retries?: number;
+  /** The run recoverFromConnectivityLoss authorised for one relaunch (cleared at launch). */
+  connectivity_resume_run?: string | null;
   started_at: string | null;
   finished_at: string | null;
   outcome: string | null;
@@ -272,18 +274,37 @@ async function runMatchesFile(
 export const MAX_CONNECTIVITY_RETRIES = 2;
 const CONNECTIVITY_WAIT_MS = 5 * 60_000;
 
+/** The database host from DB_MAP_URL, used to tell its connection errors from a provider's. */
+function databaseHost(): string | null {
+  try {
+    return process.env.DB_MAP_URL ? new URL(process.env.DB_MAP_URL).hostname || null : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * True when an execution failed because it could not reach the database or a provider host:
- * a DNS failure, an unreachable network, a dropped or refused connection, or the local pool
- * timing out while connecting. Nothing is wrong with the file or the pipeline in that case,
- * and the run's checkpoints are intact.
+ * True when an execution failed because it could not reach the database: a DNS failure, an
+ * unreachable network, a dropped or refused connection, or the pool timing out while
+ * connecting. Nothing is wrong with the file or the pipeline in that case, and the run's
+ * checkpoints are intact. A provider's network error is not counted: provider failures are
+ * diagnosed first (provider-recovery owns their bounded retries). An error counts as the
+ * database's only when it comes from the pg driver (its stack, the pool checkout code or pg's
+ * own messages) or names the database host.
  */
-export function isConnectivityError(error: unknown): boolean {
+export function isConnectivityError(error: unknown, dbHost: string | null = databaseHost()): boolean {
   if (!error) return false;
   const text = typeof error === "string" ? error : JSON.stringify(error);
-  return /\b(ENOTFOUND|EAI_AGAIN|ETIMEDOUT|ENETUNREACH|ENETDOWN|EHOSTUNREACH|EADDRNOTAVAIL|ECONNRESET|ECONNREFUSED|EPIPE)\b|database_pool_checkout_timeout|timeout exceeded when trying to connect|Connection terminated/i.test(
-    text,
-  );
+  const network =
+    /\b(ENOTFOUND|EAI_AGAIN|ETIMEDOUT|ENETUNREACH|ENETDOWN|EHOSTUNREACH|EADDRNOTAVAIL|ECONNRESET|ECONNREFUSED|EPIPE)\b|database_pool_checkout_timeout|timeout exceeded when trying to connect|Connection terminated/i.test(
+      text,
+    );
+  if (!network) return false;
+  const fromPg =
+    /database_pool_checkout_timeout|timeout exceeded when trying to connect|Connection terminated|node_modules[\\/](?:\.pnpm[\\/])?pg(?:-pool)?[@\\/]/i.test(
+      text,
+    );
+  return fromPg || (!!dbHost && text.includes(dbHost));
 }
 
 /** The run failed on a lost connection (see isConnectivityError), judged from its last execution. */
@@ -291,17 +312,21 @@ async function failedOnConnectivity(runId: string): Promise<boolean> {
   const { rows } = await getDb().query(
     `SELECT r.status, e.error FROM research_ingest_runs r
      LEFT JOIN LATERAL (SELECT error FROM research_ingest_executions x WHERE x.run_id=r.id
-       ORDER BY started_at DESC LIMIT 1) e ON true WHERE r.id=$1`,
+       ORDER BY x.started_at DESC, x.id DESC LIMIT 1) e ON true WHERE r.id=$1`,
     [runId],
   );
   return rows[0]?.status === "failed" && isConnectivityError(rows[0].error);
 }
 
 /**
- * Only runs that stopped for a budget/quota, an operator stop or a lost connection resume
- * without diagnosis.
+ * Only runs that stopped for a budget/quota or an operator stop resume without diagnosis.
+ * A run that failed on a lost database connection resumes only when this queue authorised
+ * it (`allowConnectivity`, set by recoverFromConnectivityLoss within the per-file cap).
  */
-async function continuationSafe(runId: string): Promise<{ safe: boolean; detail: string }> {
+async function continuationSafe(
+  runId: string,
+  allowConnectivity = false,
+): Promise<{ safe: boolean; detail: string }> {
   const { rows } = await getDb().query(
     "SELECT status, stop_reason FROM research_ingest_runs WHERE id=$1",
     [runId],
@@ -314,34 +339,39 @@ async function continuationSafe(runId: string): Promise<{ safe: boolean; detail:
     (r.status === "paused" &&
       ["operator_stop", "SIGTERM", "SIGINT", "supervisor_signal"].includes(r.stop_reason ?? "")) ||
     // A run that only lost its connection keeps its checkpoints and resumes as it was.
-    (await failedOnConnectivity(runId));
+    (allowConnectivity && (await failedOnConnectivity(runId)));
   return { safe, detail: `${r.status}${r.stop_reason ? ` (${r.stop_reason})` : ""}` };
 }
 
 /**
  * After an import failed, decide whether the queue may resume it by itself: only when the
  * run failed on a lost connection and this file has retries left. Waits a few minutes first
- * and requires the database to answer again. Returns false on a stop request or when the
- * failure is anything else, which still needs a person.
+ * and requires the database to answer again. Returns "resume" to relaunch the run,
+ * "interrupted" when a stop request or lock loss ended a wait, and "no" when the failure is
+ * anything else (or the cap is reached), which still needs a person.
  */
-async function recoverFromConnectivityLoss(id: string, entry: QueueEntry): Promise<boolean> {
-  if (!entry.run_id || (entry.connectivity_retries ?? 0) >= MAX_CONNECTIVITY_RETRIES) return false;
+async function recoverFromConnectivityLoss(
+  id: string,
+  entry: QueueEntry,
+): Promise<"resume" | "interrupted" | "no"> {
+  if (!entry.run_id || (entry.connectivity_retries ?? 0) >= MAX_CONNECTIVITY_RETRIES) return "no";
   // When the database answers now, any other failure stops at once instead of after a wait.
   try {
-    if (!(await failedOnConnectivity(entry.run_id))) return false;
+    if (!(await failedOnConnectivity(entry.run_id))) return "no";
   } catch {
     // Unreachable right now: that is the case being waited out.
   }
   // Up to an hour for the network to come back: six waits of ten minutes after the first.
   for (let attempt = 0; attempt < 7; attempt++) {
-    if (!(await waitUntil(id, Date.now() + (attempt ? 2 : 1) * CONNECTIVITY_WAIT_MS))) return false;
+    if (!(await waitUntil(id, Date.now() + (attempt ? 2 : 1) * CONNECTIVITY_WAIT_MS)))
+      return "interrupted";
     try {
-      return await failedOnConnectivity(entry.run_id);
+      return (await failedOnConnectivity(entry.run_id)) ? "resume" : "no";
     } catch {
       // Still unreachable: wait again.
     }
   }
-  return false;
+  return "no";
 }
 
 async function quotaResetsAt(runId: string): Promise<string | null> {
@@ -654,7 +684,10 @@ export async function runQueue(id: string) {
         }
         // A saved run (e.g. kept after an interrupted worker) resumes only if it stopped safely.
         if (entry.run_id && entry.coverage !== "complete") {
-          const check = await continuationSafe(entry.run_id);
+          const check = await continuationSafe(
+            entry.run_id,
+            entry.connectivity_resume_run === entry.run_id,
+          );
           if (!check.safe)
             return stop(
               `Run ${entry.run_id} stopped as ${check.detail}; inspect it with ingest:status --run ${entry.run_id} before resuming`,
@@ -746,6 +779,7 @@ export async function runQueue(id: string) {
         entry.status = "running";
         entry.started_at ??= new Date().toISOString();
         entry.reason = null;
+        entry.connectivity_resume_run = null;
         await saveQueue(q);
         const launched = Date.now();
         const resumedAfterReset = afterReset;
@@ -822,15 +856,17 @@ export async function runQueue(id: string) {
           q.status = "waiting";
           q.message = `${entry.file}: import failed; checking whether it only lost its connection`;
           await saveQueue(q);
-          if (await recoverFromConnectivityLoss(id, entry)) {
+          const recovery = await recoverFromConnectivityLoss(id, entry);
+          if (recovery === "resume") {
             entry.connectivity_retries = (entry.connectivity_retries ?? 0) + 1;
+            entry.connectivity_resume_run = entry.run_id;
             entry.reason = `Connection was lost; resuming run ${entry.run_id} (automatic retry ${entry.connectivity_retries} of ${MAX_CONNECTIVITY_RETRIES})`;
             q.status = "running";
             q.message = null;
             await saveQueue(q);
             continue;
           }
-          if (lockLost || (await stopRequested(id))) continue; // the loop top records the stop
+          if (recovery === "interrupted") continue; // the loop top records the stop
         }
         entry.status = "needs_attention";
         entry.reason = step.reason;

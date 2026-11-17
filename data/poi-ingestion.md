@@ -934,11 +934,14 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
   coverage is `complete`;
 - a run stopped by the daily geocoding quota (`provider_daily_quota`) is resumed with the same
   run UUID two minutes after the reset; two immediate re-exhaustions stop the queue;
-- a run that failed only because it lost its connection (a DNS failure, an unreachable
-  network, a dropped or refused connection, or the pool timing out while connecting) is
-  resumed with the same run UUID once the database answers again: after a five-minute wait,
-  for up to about an hour, at most twice per file. Its checkpoints are intact; nothing is
-  wrong with the file;
+- a run that failed only because it lost its database connection (a DNS failure, an
+  unreachable network, a dropped or refused connection, or the pool timing out while
+  connecting, raised by the pg driver or naming the database host) is resumed with the same
+  run UUID once the database answers again: after a five-minute wait, for up to about an
+  hour, at most twice per file. Its checkpoints are intact; nothing is wrong with the file.
+  A provider's network error is not retried this way, and a queue restarted later does not
+  adopt such a failed run by itself: resume it with `ingest:supervise start -- --resume <uuid>`
+  after checking it;
 - any other outcome stops the queue as `needs_attention` with the run UUID; nothing else is
   retried, so diagnose it (see the troubleshooting sections) and start a new queue;
 - before each launch the pipeline must be quiescent and out of maintenance (it waits up to an

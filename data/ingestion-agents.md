@@ -38,7 +38,7 @@ pnpm --silent --filter @lib/db-map ingest:import-queue resume
 The queue runs one file at a time, starts the next only after the previous one succeeded
 with `coverage: complete`, waits out the daily geocoding quota, and stops as
 `needs_attention` on anything else. The one thing it retries by itself is a run that only
-lost its connection, at most twice per file. The exact rules are in the
+lost its database connection, at most twice per file. The exact rules are in the
 runbook's [sequential import queue](poi-ingestion.md#sequential-import-queue).
 
 After starting it: record the queue ID, check once after a few minutes that the first file
