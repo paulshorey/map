@@ -8,7 +8,7 @@
  * - `source_needs_review`: a member's active observation came from a capture whose inventory
  *   disposition is still `needs_review` (its category or import decision is unconfirmed).
  * - `missing_address`: no active member has a source street address (an address filled in by
- *   reverse geocoding does not count), and for a manually curated POI (`origin = 'manual'`)
+ *   reverse geocoding or a PO box alone does not count), and for a manually curated POI (`origin = 'manual'`)
  *   its own address is blank. The POI is still mapped from its coordinates or locality.
  *
  * Add a flag by adding one entry to REVIEW_FLAG_RULES (an SQL predicate over canonical `p`).
@@ -35,6 +35,8 @@ export const REVIEW_FLAG_RULES = {
     SELECT 1 FROM research_canonical_memberships m
     JOIN research_pois rp ON rp.id = m.research_poi_id
     WHERE m.canonical_poi_id = p.id AND m.active AND btrim(rp.address) <> ''
+      -- A mailing-only value ("P.O. Box 2381", "Box 104") is not a street address.
+      AND rp.address !~* '^\\W*(p\\.?\\s*o\\.?\\s*(box|drawer)|box|drawer)\\s*#?\\s*\\w*\\W*$'
       AND rp.attributes->'location_enrichment'->'provenance'->>'address'
         IS DISTINCT FROM 'reverse_geocode')`,
 } as const;

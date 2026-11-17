@@ -62,7 +62,9 @@ The rules are deterministic:
 2. Accept a street line only if it starts with a house number, names a numbered road, or
    names a road by its suffix (`Porcupine Bay Rd.`; a bare trail name is not enough). It must
    also contain no PO box/drawer or box number (attached or spaced), office, district, ranger/guard station, work center,
-   headquarters, c/o or mailing wording, singular or plural, and no explicit source label
+   headquarters, c/o or mailing wording, singular or plural, no visitor center, managing
+   agency ("Bureau of Land Management", "U S D A Forest Service", but not "Forest Service
+   Road 382") or office suite, and no explicit source label
    such as "(Not Physical Address)", "No physical address", "Managed By ..." or "(For
    Information)". Directions that mention a road ("8 miles west of Ely on Highway 50",
    "approximately", "intersection", "end of", "turn off", "Gilman Road Exit off I-5",

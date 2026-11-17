@@ -60,6 +60,10 @@ NOT_PHYSICAL = re.compile(
     r"\b(P\.?\s*O\.?\s*(?:BOX|DRAWER)(?:\s*\d+)?|BOX\s*\d+|DRAWER\s*\d+|OFFICES?|DISTRICTS?|HEADQUARTERS|"
     r"C/O|MAILING|CORPS\s+OF\s+ENGINEERS|NATIONAL\s+FORESTS?|"
     r"(?:FIELD|RANGER|GUARD)\s+STATIONS?|WORK\s+CENTERS?|ADMINISTRATIVE|ADMIN\s+SITES?|"
+    # Visitor centers, managing agencies and office suites name where the manager is.
+    r"VISITORS?\s+CENTERS?|BUREAU\s+OF|NATIONAL\s+PARK\s+SERVICE|FOREST\s+SERVICE(?!\s+(?:ROAD|RD|ROUTE|RTE|TRAIL)\b)|"
+    r"DEPARTMENT\s+OF|DEPT\.?\s+OF|FISH\s+(?:AND|&)\s+WILDLIFE\s+SERVICE|"
+    r"SUITE\s*#?\s*[A-Z0-9]+|STE\.?\s*#?\s*[A-Z]?\d+[A-Z]?|"
     # Explicit source labels: "(Not Physical Address)", "Managed By ...", "(For Information)".
     r"(?:NOT|NO)\s+(?:A\s+)?PHYSICAL|NON-?\s*PHYSICAL|MANAGED\s+BY|FOR\s+INFORMATION)\b",
     re.I,
