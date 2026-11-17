@@ -740,8 +740,10 @@ async function extractFile(
   if (complete) {
     if (ctx.resolved.mode === "snapshot") {
       await retireMissingSnapshotRows(db, ctx);
+      // Only together with retirement: marking a record superseded while its row stays
+      // active (incremental files) would leave a live record outside coverage.
+      await supersedeEarlierAttempts(db, ctx);
     }
-    await supersedeEarlierAttempts(db, ctx);
     await db.query(
       `UPDATE research_source_files SET active_version_id=$2, last_seen_at=now() WHERE id=$1`,
       [ctx.sourceFileId, ctx.fileVersionId],
