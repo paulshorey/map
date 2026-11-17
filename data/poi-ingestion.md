@@ -606,8 +606,10 @@ legacy attempt records.
 ## Stage behavior and invalidation
 
 - **Extract:** stable `(source_id, source_record_id)` identities; immutable raw observations.
-  Each record commits separately and is replayable. Missing IDs/collisions/write failures stop
-  advancement. A capture without an ID field gets a synthetic ID from name and locality; when
+  Each record commits separately and is replayable. Collisions and write failures stop
+  advancement. A row with no ID field and no name or no location to derive one from is
+  dropped (`rejected`, `missing_source_record_id`); more than half of a file in that state
+  means the file was misread and stops it. A capture without an ID field gets a synthetic ID from name and locality; when
   several records would share one (the same market on four dates), each that carries a start
   date or year is re-keyed with it (a date read into one spelling, or a year; never
   free-text wording), whatever the record order. Records whose synthetic ID is

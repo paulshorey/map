@@ -586,7 +586,7 @@ async function extractFile(
         await db.query(
           `UPDATE research_ingest_run_records SET extract_state='rejected',
              last_error_class='missing_source_record_id',
-             last_error='Record has no stable source id'
+             last_error='No ID field, and no name or no location to derive one from; dropped'
            WHERE id=$1`,
           [runRecordId],
         );
@@ -736,7 +736,7 @@ async function extractFile(
     opts.limit === undefined &&
     stats.failed === 0 &&
     stats.collisions === 0 &&
-    stats.rejected === 0;
+    !tooManyRejected(stats);
   if (complete) {
     if (ctx.resolved.mode === "snapshot") {
       await retireMissingSnapshotRows(db, ctx);
@@ -757,6 +757,19 @@ async function extractFile(
     ],
   );
   return stats;
+}
+
+/**
+ * A row with no ID of its own and no name or no location cannot be identified or placed,
+ * so it is dropped and the file carries on (owner policy: move on to better data). When
+ * more than half of the rows read are in that state the file itself was misread (wrong
+ * field names, wrong shape), and that still stops it.
+ */
+export function tooManyRejected(stats: {
+  seen: number;
+  rejected: number;
+}): boolean {
+  return stats.rejected > 0 && stats.rejected * 2 > stats.seen;
 }
 
 async function retireMissingSnapshotRows(
@@ -1166,7 +1179,7 @@ export async function runOrchestration(
             return { status: "reused" };
           const stats = await extractFile(db, ctx, opts, ex);
           await updateRun(db, ctx, { counters: { extract: stats } });
-          if (stats.failed || stats.collisions || stats.rejected)
+          if (stats.failed || stats.collisions || tooManyRejected(stats))
             throw new Error(`Extraction incomplete: ${JSON.stringify(stats)}`);
           return { status: ex.stopped ? "paused" : "succeeded", ...stats };
         },

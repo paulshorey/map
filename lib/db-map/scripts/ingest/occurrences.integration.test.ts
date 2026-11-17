@@ -51,6 +51,8 @@ test(
           country: "US",
           start_date: "2026-05-09",
         },
+        // Nothing to identify or place this row by: dropped, and the file still completes.
+        { name: "Somewhere Festival", start_date: "2026-07-01" },
       ]),
     );
     const options = {
@@ -89,6 +91,26 @@ test(
       assert.deepEqual(dropped, [
         { last_error_class: "synthetic_identity_repeat" },
       ]);
+      const { rows: rejected } = await db.query(
+        `SELECT rr.last_error_class FROM research_ingest_run_records rr
+         JOIN research_ingest_runs r ON r.id=rr.run_id JOIN research_sources s ON s.id=r.source_id
+         WHERE s.slug=$1 AND rr.extract_state='rejected'`,
+        [slug],
+      );
+      assert.deepEqual(rejected, [
+        { last_error_class: "missing_source_record_id" },
+      ]);
+      const { rows: version } = await db.query(
+        `SELECT v.status FROM research_source_file_versions v
+         JOIN research_ingest_runs r ON r.source_file_version_id=v.id
+         JOIN research_sources s ON s.id=r.source_id WHERE s.slug=$1`,
+        [slug],
+      );
+      assert.deepEqual(
+        version,
+        [{ status: "complete" }],
+        "the file's extraction is complete",
+      );
 
       // An earlier attempt at this same file version left an identity the capture no longer
       // produces (the pre-fix base ID). A complete pass retires it.
