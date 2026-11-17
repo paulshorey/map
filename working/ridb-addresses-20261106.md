@@ -31,18 +31,18 @@ on 2026-11-06.
 - 5,974 are in the export; 5 are no longer in it (kept with `export_status = missing_from_export`).
 - 5,706 have at least one export address row (Default 4,357 alone; Mailing 604 alone;
   Physical 87 alone; the rest have a mix of types); 273 have none.
-- After selection (below): **1,883 get a street address**, 2,402 a city, 2,423 a street
-  address or city, 1,873 a ZIP code, and 3,366 a state (`region`) plus `country_code`.
-  4,096 have no street address and will carry `missing_address`.
+- After selection (below): **1,852 get a street address**, 2,371 a city, 2,392 a street
+  address or city, 1,842 a ZIP code, and 3,335 a state (`region`) plus `country_code`.
+  4,127 have no street address and will carry `missing_address`.
 - Only the 4,590 rows typed `Campground` can publish. The RIDB normalization rule
   (`hardIsPoi` in `normalize/deterministic.ts`, older than this work) excludes the 1,382
   `Facility` rows (mostly ranger districts, areas, trailheads, marinas and parks) and 7 other
   types as `source_hard_exclusion`. Their observations are saved but not published. Of the
-  4,590 campgrounds, 1,784 get a street address, 1,902 a street address or city, and 2,806 will
+  4,590 campgrounds, 1,754 get a street address, 1,872 a street address or city, and 2,836 will
   carry `missing_address`. 189 excluded `Facility` rows have camp/cabin-like names; promoting any
   of them would need a separate reviewed rule.
-- 434 have `(0,0)` sentinel coordinates (1 is fixed in the export). 43 of those get a street
-  address and 56 a city, so forward geocoding can now place them. 218 have a state. The 216
+- 434 have `(0,0)` sentinel coordinates (1 is fixed in the export). 42 of those get a street
+  address and 55 a city, so forward geocoding can now place them. 217 have a state. The 217
   with no usable locality get `country_code = US` (`address_selection` includes
   `country_assumed_us`, because RIDB lists only US federal sites) so they are still mapped,
   at the country fallback and flagged.
