@@ -265,6 +265,14 @@ export async function* recordsFor(
     yield* custom.parse(resolved.absolutePath);
     return;
   }
+  // Generic captures: repeated occurrences of one event get their own identity.
+  const { separateOccurrences } = await import("./extractors/generic.js");
+  yield* separateOccurrences(() => genericRecordsFor(resolved), resolved.source.meta.slug);
+}
+
+export async function* genericRecordsFor(
+  resolved: ResolvedSourceFile,
+): AsyncIterable<RawRecord> {
   if (resolved.file.wrapperPath) {
     const parsed = JSON.parse(
       await readFile(resolved.absolutePath, "utf8"),
@@ -556,6 +564,7 @@ async function extractFile(
 
   let ordinal = 0;
   const seenIds = new Map<string, { hash: string; ordinal: number }>();
+  const genericSource = !getExtractor(ctx.resolved.source.meta.slug);
   try {
     for await (const record of recordsFor(ctx.resolved)) {
       if (execution?.stopped) break;
@@ -577,7 +586,7 @@ async function extractFile(
         await db.query(
           `UPDATE research_ingest_run_records SET extract_state='rejected',
              last_error_class='missing_source_record_id',
-             last_error='Record has no stable source id'
+             last_error='No ID field, and no name or no location to derive one from; dropped'
            WHERE id=$1`,
           [runRecordId],
         );
@@ -602,6 +611,29 @@ async function extractFile(
           );
           console.log(
             `extract duplicate #${ordinal} ${recordLabel(record)} (same as #${prior.ordinal})`,
+          );
+        } else if (
+          genericSource &&
+          record.source_record_id_kind === "synthetic" &&
+          record.identity_inputs?.edition
+        ) {
+          // No ID of its own, and the same name, locality and date as an earlier record:
+          // the same occurrence listed twice, so the later one is dropped rather than
+          // failing the whole file (owner policy: move on to better data). Undated
+          // records that share a name and locality may be different places, so they
+          // still count as a collision below.
+          stats.duplicates++;
+          await db.query(
+            `UPDATE research_ingest_run_records SET extract_state='duplicate',
+               last_error_class='synthetic_identity_repeat',
+               last_error=$2 WHERE id=$1`,
+            [
+              runRecordId,
+              `Same derived identity as ordinal ${prior.ordinal} with different content; dropped`,
+            ],
+          );
+          console.log(
+            `extract repeat #${ordinal} ${recordLabel(record)} (same derived identity as #${prior.ordinal}; dropped)`,
           );
         } else {
           stats.collisions++;
@@ -704,36 +736,97 @@ async function extractFile(
     opts.limit === undefined &&
     stats.failed === 0 &&
     stats.collisions === 0 &&
-    stats.rejected === 0;
-  if (complete) {
-    if (ctx.resolved.mode === "snapshot") {
-      await retireMissingSnapshotRows(db, ctx);
+    !tooManyRejected(stats);
+  const versionStatus =
+    stats.collisions > 0 ? "failed" : complete ? "complete" : "partial";
+  // One transaction: only an extraction that is recorded as complete may retire rows or
+  // redefine which earlier records count for the file version.
+  const finalize = await db.connect();
+  try {
+    await finalize.query("BEGIN");
+    if (complete) {
+      // Only together with retirement: marking a record superseded while its row stays
+      // active (incremental files) would leave a live record outside coverage.
+      if (ctx.resolved.mode === "snapshot") {
+        await retireMissingSnapshotRows(finalize, ctx);
+        await supersedeEarlierAttempts(finalize, ctx);
+      }
+      await finalize.query(
+        `UPDATE research_source_files SET active_version_id=$2, last_seen_at=now() WHERE id=$1`,
+        [ctx.sourceFileId, ctx.fileVersionId],
+      );
     }
-    await db.query(
-      `UPDATE research_source_files SET active_version_id=$2, last_seen_at=now() WHERE id=$1`,
-      [ctx.sourceFileId, ctx.fileVersionId],
+    await finalize.query(
+      `UPDATE research_source_file_versions SET
+         status=$2, record_count=$3, completed_at=CASE WHEN $2='complete' THEN now() ELSE NULL END
+       WHERE id=$1`,
+      [ctx.fileVersionId, versionStatus, stats.seen],
     );
+    await finalize.query("COMMIT");
+  } catch (error) {
+    await finalize.query("ROLLBACK");
+    await db.query(
+      `UPDATE research_source_file_versions SET status='failed', error=$2 WHERE id=$1`,
+      [ctx.fileVersionId, (error as Error).message],
+    );
+    throw error;
+  } finally {
+    finalize.release();
   }
-  await db.query(
-    `UPDATE research_source_file_versions SET
-       status=$2, record_count=$3, completed_at=CASE WHEN $2='complete' THEN now() ELSE NULL END
-     WHERE id=$1`,
-    [
-      ctx.fileVersionId,
-      stats.collisions > 0 ? "failed" : complete ? "complete" : "partial",
-      stats.seen,
-    ],
-  );
   return stats;
 }
 
-async function retireMissingSnapshotRows(
-  db: Pool,
+/**
+ * A row with no ID of its own and no name or no location cannot be identified or placed,
+ * so it is dropped and the file carries on (owner policy: move on to better data). When
+ * more than half of the rows read are in that state the file itself was misread (wrong
+ * field names, wrong shape), and that still stops it.
+ */
+export function tooManyRejected(stats: {
+  seen: number;
+  rejected: number;
+}): boolean {
+  return stats.rejected > 0 && stats.rejected * 2 > stats.seen;
+}
+
+/**
+ * A complete pass defines the identities of this file version. Records an earlier attempt
+ * at the same version wrote under an identity this pass did not produce are marked as
+ * superseded, so everything that reads a file's extraction records (inventory coverage,
+ * run scope, quality samples, lineage) sees one consistent set. The row and its error
+ * text stay as evidence of the earlier attempt.
+ */
+async function supersedeEarlierAttempts(
+  db: PoolClient,
   ctx: RunContext,
 ): Promise<number> {
-  const client = await db.connect();
-  try {
-    await client.query("BEGIN");
+  const { rowCount } = await db.query(
+    `UPDATE research_ingest_run_records old
+     SET extract_state='duplicate', last_error_class='superseded_identity',
+       last_error='Identity not produced by the complete extraction in run ' || $2::text
+     WHERE old.source_file_version_id=$1
+       -- Reached through the file version's runs, which the (run_id, extract_state)
+       -- index serves; the records table has no index on the file version itself.
+       AND old.run_id IN (
+         SELECT r.id FROM research_ingest_runs r
+         WHERE r.source_file_version_id=$1 AND r.id<>$2)
+       AND old.extract_state IN ('written','unchanged')
+       AND NOT EXISTS (
+         SELECT 1 FROM research_ingest_run_records cur
+         WHERE cur.run_id=$2 AND cur.source_record_id=old.source_record_id
+           AND cur.extract_state IN ('written','unchanged'))`,
+    [ctx.fileVersionId, ctx.runId],
+  );
+  return rowCount ?? 0;
+}
+
+async function retireMissingSnapshotRows(
+  client: PoolClient,
+  ctx: RunContext,
+): Promise<number> {
+  // Runs inside the caller's finalize transaction, so a failed finalization leaves the
+  // previous rows active.
+  {
     const { rows } = await client.query<{
       id: string;
       canonical_poi_id: string | null;
@@ -743,17 +836,18 @@ async function retireMissingSnapshotRows(
        JOIN research_poi_observations o ON o.id = rp.active_observation_id
        JOIN research_source_file_versions previous ON previous.id = o.source_file_version_id
        WHERE previous.source_file_id = $1
-         AND o.source_file_version_id <> $2
          AND rp.retired_at IS NULL
          AND NOT EXISTS (
            SELECT 1
            FROM research_ingest_run_records rirr
-           WHERE rirr.run_id = $3
+           WHERE rirr.run_id = $2
              AND rirr.source_record_id = rp.source_record_id
              AND rirr.extract_state IN ('written','unchanged')
          )
        FOR UPDATE OF rp`,
-      [ctx.sourceFileId, ctx.fileVersionId, ctx.runId],
+      // Rows of this same file version count too: an earlier attempt that stopped part
+      // way may have written identities this complete pass no longer produces.
+      [ctx.sourceFileId, ctx.runId],
     );
     for (const row of rows) {
       await client.query(
@@ -772,13 +866,7 @@ async function retireMissingSnapshotRows(
         });
       }
     }
-    await client.query("COMMIT");
     return rows.length;
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
   }
 }
 
@@ -861,6 +949,25 @@ async function freezeItems(
       FROM research_ingest_run_records rr JOIN research_ingest_runs r ON r.id=rr.run_id
       WHERE rr.source_file_version_id=$2 AND rr.extract_state IN ('written','unchanged')
         AND r.category_slug=$3 AND rr.source_record_id IS NOT NULL
+        -- A run that extracted the file itself uses only what it produced: an earlier
+        -- attempt may have written identities the capture no longer yields. A run that
+        -- reused a completed extraction has no records of its own and takes the latest.
+        AND (rr.run_id=$1 OR NOT EXISTS (
+          SELECT 1 FROM research_ingest_run_records own WHERE own.run_id=$1))
+        -- Either way, a retired row that the last extraction of this file version did not
+        -- produce is such a leftover, not part of the capture.
+        AND NOT EXISTS (
+          SELECT 1 FROM research_pois gone
+          WHERE gone.id=rr.research_poi_id AND gone.retired_at IS NOT NULL
+            AND NOT EXISTS (
+              SELECT 1 FROM research_ingest_run_records last
+              WHERE last.source_file_version_id=$2
+                AND last.source_record_id=rr.source_record_id
+                AND last.extract_state IN ('written','unchanged')
+                AND last.run_id=(
+                  SELECT l.run_id FROM research_ingest_run_records l
+                  WHERE l.source_file_version_id=$2
+                  ORDER BY l.last_attempt_at DESC NULLS LAST, l.id DESC LIMIT 1)))
       ORDER BY rr.source_record_id, rr.last_attempt_at DESC, rr.id DESC
     )
     INSERT INTO research_ingest_run_items(run_id,source_record_id,research_poi_id,observation_id,source_ordinal)
@@ -1133,7 +1240,7 @@ export async function runOrchestration(
             return { status: "reused" };
           const stats = await extractFile(db, ctx, opts, ex);
           await updateRun(db, ctx, { counters: { extract: stats } });
-          if (stats.failed || stats.collisions || stats.rejected)
+          if (stats.failed || stats.collisions || tooManyRejected(stats))
             throw new Error(`Extraction incomplete: ${JSON.stringify(stats)}`);
           return { status: ex.stopped ? "paused" : "succeeded", ...stats };
         },

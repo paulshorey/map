@@ -22,6 +22,7 @@ import {
   type Job,
 } from "./supervisor-state.js";
 import { superviseProcess } from "./supervisor-process.js";
+import { childEnv } from "./child-env.js";
 
 const PACKAGE = fileURLToPath(new URL("../../", import.meta.url));
 const SELF = fileURLToPath(import.meta.url);
@@ -459,7 +460,12 @@ async function start(opts: ReturnType<typeof parseSupervisorArgs>) {
   const child = spawn(
     process.execPath,
     ["--import", "tsx", SELF, "worker", "--job", job.id],
-    { cwd: PACKAGE, detached: true, stdio: ["ignore", log.fd, log.fd, "ipc"] },
+    {
+      cwd: PACKAGE,
+      detached: true,
+      stdio: ["ignore", log.fd, log.fd, "ipc"],
+      env: childEnv(),
+    },
   );
   const ready = new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => {
