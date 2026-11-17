@@ -65,7 +65,8 @@ The rules are deterministic:
    headquarters, c/o or mailing wording, singular or plural, and no explicit source label
    such as "(Not Physical Address)", "No physical address", "Managed By ..." or "(For
    Information)". Directions that mention a road ("8 miles west of Ely on Highway 50",
-   "approximately", "intersection", "end of", "turn off") are rejected too; parkway
+   "approximately", "intersection", "end of", "turn off", "Gilman Road Exit off I-5",
+   "Off Forest Development Rd 67") are rejected too; parkway
    mileposts ("Milepost 238, Blue Ridge Parkway") are accepted.
 3. A row whose street line is rejected contributes nothing: its city, ZIP and even its state
    can be the managing office's (e.g. a Nebraska campground's office in South Dakota). City,

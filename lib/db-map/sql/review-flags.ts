@@ -8,7 +8,8 @@
  * - `source_needs_review`: a member's active observation came from a capture whose inventory
  *   disposition is still `needs_review` (its category or import decision is unconfirmed).
  * - `missing_address`: no active member has a source street address (an address filled in by
- *   reverse geocoding does not count). The POI is still mapped from its coordinates or locality.
+ *   reverse geocoding does not count), and for a manually curated POI (`origin = 'manual'`)
+ *   its own address is blank. The POI is still mapped from its coordinates or locality.
  *
  * Add a flag by adding one entry to REVIEW_FLAG_RULES (an SQL predicate over canonical `p`).
  */
@@ -28,7 +29,9 @@ export const REVIEW_FLAG_RULES = {
     JOIN research_source_files f ON f.id = v.source_file_id
     JOIN research_ingest_inventory i ON i.logical_path = f.logical_path
     WHERE m.canonical_poi_id = p.id AND m.active AND i.disposition = 'needs_review')`,
-  missing_address: `NOT EXISTS (
+  // A manually curated canonical has no research members; its own address counts.
+  missing_address: `NOT (p.origin = 'manual' AND btrim(COALESCE(p.address, '')) <> '')
+    AND NOT EXISTS (
     SELECT 1 FROM research_canonical_memberships m
     JOIN research_pois rp ON rp.id = m.research_poi_id
     WHERE m.canonical_poi_id = p.id AND m.active AND btrim(rp.address) <> ''

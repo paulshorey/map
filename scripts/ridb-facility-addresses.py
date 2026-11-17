@@ -73,7 +73,9 @@ DIRECTIONS = re.compile(
     r"\b\d+(?:\.\d+)?\s*(?:MILES?|MI|KM|KILOMETERS?)\b(?!\s*\d)|\bMILES?\s+(?:NORTH|SOUTH|EAST|"
     r"WEST|FROM|PAST|OFF|UP|DOWN)\b|\b(?:NORTH|SOUTH|EAST|WEST|N|S|E|W)\.?\s+OF\b|\bAPPROX|"
     r"\bINTERSECTION\b|\bJUNCTION\b|\bJCT\b|\bNEAR\b|\bLOCATED\b|\bTURN\b|\bPAST\b|"
-    r"\bEND\s+OF\b|\bFROM\s+THE\b|\bDIRECTIONS?\b",
+    r"\bEND\s+OF\b|\bFROM\s+THE\b|\bDIRECTIONS?\b|\bEXIT\b|^\W*OFF\b|"
+    # "Gilman Road Exit off I-5", "Off Forest Development Rd 67".
+    r"\bOFF\s+(?:OF\s+)?(?:I|US|SR|FR|FS|CR|HWY|HIGHWAY|ROUTE|RTE|STATE|COUNTY|FOREST|INTERSTATE)\b",
     re.I,
 )
 ROAD = re.compile(
@@ -165,12 +167,15 @@ def select_address(rows):
         # Another row may fill a missing city, ZIP or state only when it describes the same
         # place: the same street, or (for the state) the same city.
         key = lambda v: re.sub(r"[^A-Z0-9]", "", clean(v).upper())
+        anchor_key = key(street_of(anchor))
+        # The city first, so the ZIP and state checks below all see the final city.
         for r, street in accepted:
-            same_street = street and key(street) == key(street_of(anchor))
-            same_city = fields["city"] and key(r.get("City")) == key(fields["city"])
-            if same_street and not fields["city"] and clean(r.get("City")):
+            if street and key(street) == anchor_key and not fields["city"] and clean(r.get("City")):
                 fields["city"] = display_case(clean(r["City"]))
                 fields["postal_code"] = ""
+        for r, street in accepted:
+            same_street = street and key(street) == anchor_key
+            same_city = fields["city"] and key(r.get("City")) == key(fields["city"])
             postal = clean(r.get("PostalCode"))
             if (same_street and fields["city"] and not fields["postal_code"]
                     and key(r.get("City")) == key(fields["city"])

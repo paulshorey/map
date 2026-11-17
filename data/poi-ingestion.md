@@ -987,7 +987,7 @@ while ingestion is active, and takes the canonical writer lock so it never races
 | --- | --- |
 | `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
 | `source_needs_review` | A member's active observation comes from a capture whose inventory disposition is still `needs_review` |
-| `missing_address` | No active member has a source street address (reverse-geocoded addresses do not count); the POI is still mapped |
+| `missing_address` | No active member has a source street address (reverse-geocoded addresses do not count); a manually curated POI with its own address is not flagged. The POI is still mapped |
 
 Rules live in `lib/db-map/sql/review-flags.ts` (`REVIEW_FLAG_RULES`, one SQL predicate per
 flag); add a flag there and a label in `apps/map/src/map/usePoiReviewFilter.ts`. The map API
