@@ -189,6 +189,19 @@ function render() {
     $("notice").hidden = false;
   }
 }
+function renderQueueEvidence(queue) {
+  if (!queue || queue.evidence === "none") return "";
+  const current = queue.current;
+  const evidence = { lock: "Queue lock held", starting: "Starting", journal_only: "Local history" }[queue.evidence];
+  return `<h3>Import queue</h3>
+    <p>${queue.id ? `<code>${esc(queue.id)}</code> · ` : ""}${esc(evidence)}${queue.recorded_status ? ` · recorded ${esc(label(queue.recorded_status))}` : ""}</p>
+    ${queue.active && !queue.journal_available ? "<p>Queue journal unavailable on this host.</p>" : ""}
+    ${current ? `<p>${esc(current.file)} · ${esc(label(current.status))}${current.run_id ? ` · run <code>${esc(current.run_id)}</code>` : ""}${current.execution_id ? ` · execution <code>${esc(current.execution_id)}</code>` : ""}</p>` : ""}
+    ${queue.recent_finished.length ? `<details><summary>Recent queue results</summary><ul>${queue.recent_finished.map((file) => {
+      const newer = file.verification_evidence?.newer_canonical_build_records;
+      return `<li>${esc(file.file)} · ${esc(label(file.outcome || file.status))}${file.recorded_coverage ? ` · recorded ${esc(label(file.recorded_coverage))}` : ""}${file.current_coverage ? ` · current ${esc(label(file.current_coverage))}` : ""}${newer ? ` · ${number(newer)} records with newer canonical builds` : ""}</li>`;
+    }).join("")}</ul></details>` : ""}`;
+}
 function renderOperations(o) {
   const panel = $("operations");
   if (o.components.database.status !== "available") {
@@ -216,6 +229,10 @@ function renderOperations(o) {
     )
     .join("");
   panel.innerHTML = `<h2>${esc(label(o.decision.action))}</h2><p>${esc(o.decision.reason || o.decision.item?.reason || o.execution?.logical_path || "No active worker")}</p>
+    ${o.worker_liveness ? `<p>${number(o.worker_liveness.confirmed)} confirmed managed workers · ${number(o.worker_liveness.unconfirmed)} unconfirmed · ${number(o.summary.ready_to_verify)} files ready to verify</p>` : ""}
+    ${o.components.local.jobs.some((job) => job.assessment === "terminal_execution") ? `<p class="muted-note">${number(o.components.local.jobs.filter((job) => job.assessment === "terminal_execution").length)} unfinished journals reference terminal executions.</p>` : ""}
+    ${renderQueueEvidence(o.import_queue)}
+    ${o.recent_executions?.length ? `<details><summary>Recent executions</summary><ul>${o.recent_executions.map((execution) => `<li>${esc(execution.file)} · ${esc(label(execution.status))} · ${date(execution.finished_at)}${execution.stop_reason ? ` · ${esc(label(execution.stop_reason))}` : ""}</li>`).join("")}</ul></details>` : ""}
     ${o.execution ? `<p class="muted-note">Run <code>${esc(o.execution.run_id)}</code> · ${esc(label(o.execution.status))} · scheduler ${o.execution.scheduler_version} · heartbeat ${date(o.execution.heartbeat_at)}</p>` : ""}
     ${o.active_tasks?.length ? `<p>Active records: ${o.active_tasks.map((t) => `${esc(t.source_record_id)} (${esc(t.stage)}, ${Math.round(t.active_seconds)}s)`).join(" · ")}</p>` : ""}
     <div class="stage-overview">${Object.entries(stages)
@@ -226,7 +243,7 @@ function renderOperations(o) {
       .join("")}</div>
     <h3>Interventions (${o.interventions.length})</h3>${o.interventions.length ? "<ul>" + o.interventions.map((x) => `<li><strong>${esc(label(x.code))}</strong> · ${esc(x.scope)}${x.source_record_id ? " · record " + esc(x.source_record_id) : ""}<br>${esc(x.message || "Inspect pinned evidence")}</li>`).join("") + "</ul>" : "<p>No current interventions.</p>"}
     <details><summary>Provider performance and improvement opportunities</summary><ul>${metrics}</ul>${o.improvements.map((x) => `<p><strong>${esc(label(x.code))}</strong> · ${esc(x.confidence)}<br>${esc(x.recommendation)}<br><small>${esc(x.experiment)}</small></p>`).join("")}</details>
-    <p class="muted-note">Scan: ${o.scans.length ? date(o.scans[0].started_at) + " · " + esc(o.scans[0].status) : "No durable scan receipt yet"} · Database evidence ${date(o.observed_at)} · ${number(o.summary.degraded_records)} degraded source records require quality review.</p>`;
+    <p class="muted-note">Scan: ${o.scans.length ? date(o.scans[0].started_at) + " · " + esc(o.scans[0].status) + (o.scans[0].git_commit ? " · " + esc(o.scans[0].git_commit.slice(0, 8)) : "") : "No durable scan receipt yet"} · Database evidence ${date(o.observed_at)} · ${number(o.summary.degraded_records)} degraded source records require quality review.</p>`;
 }
 async function refresh() {
   if (loading) return;

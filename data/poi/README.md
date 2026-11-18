@@ -1,21 +1,16 @@
-# Raw POI import queue
+# Raw POI captures
 
-Read [data instructions](../AGENTS.md), the [runbook](../poi-ingestion.md), and
-[agent operations](../ingestion-agents.md) before operating these captures.
-This tree contains downloads and research artifacts, not a list of interchangeable import jobs.
-The database inventory, CLI and [local dashboard](../../apps/ingestion/README.md) share status.
+Use [agent status triage](../ingestion-agents.md#inspect-ingestion-status) to inspect
+active work. Run `ingest:inventory --json` to read indexed files and coverage, and
+`ingest:queue --json` to see recommended actions. Use `ingest:import-queue status --json`
+for the actual import sequence. The [local dashboard](../../apps/ingestion/README.md) shows
+the same inventory and execution evidence.
 
-```sh
-pnpm --silent --filter @lib/db-map ingest:inventory --refresh
-pnpm --silent --filter @lib/db-map ingest:queue --json
-pnpm dev:ingestion
-```
-
-The queue recommends inspection of interrupted full runs, verification of existing outputs,
-new full-file work, and classification review. It never launches work. Keep original captures
-and history; exclude alternate/supporting files with audited notes rather than deleting them.
-Progress is computed from file fingerprints, stage artifacts and verification in PostgreSQL.
-Do not write another status JSON here: it could disagree with a resume or another checkout.
+Refresh inventory from the primary checkout after adding or changing captures. A scan
+writes discovery metadata and retains historical missing paths, including temporary test
+captures seen by a scan. Check the path and scan commit before restoring a missing file.
+Keep originals and record supporting or alternate dispositions with reasons. Use inventory and the
+[capture catalog](../poi-research/expected-captures.json) to assess what is present and expected.
 
 Before marking a file `import`, review its category, shape, record identity and granularity.
 Flat JSON arrays/JSONL/CSV use the generic extractor. Object-wrapped arrays need a registered
@@ -26,10 +21,10 @@ Use the CLI's `--edit-file` or the dashboard to save classifications, reasons an
 
 | Capture                                                                                      | Handling                                                                                                                                                    |
 | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rv_campgrounds_data/thedyrt/rv_campgrounds.csv`                                             | Continue the existing fixed full cohort; inspect its latest execution first. Do not split or restart it to sidestep failure.                                |
+| `rv_campgrounds_data/thedyrt/rv_campgrounds.csv`                                             | Check current inventory for a compatible run. Plan forward-geocoding demand before a whole-file import.                                |
 | `rv_campgrounds_data/ridb/facilities_with_addresses.csv`                                     | Registered campground facilities capture (RIDB adapter), with addresses from the RIDB full export.                                                          |
 | `rv_campgrounds_data/ridb/facilities.csv`                                                    | Alternate (superseded, kept for provenance): the earlier API capture without addresses; not registered.                                                                                       |
-| `rv_campgrounds_data/ridb/campsites_rv_hookup.csv`                                           | Individual campsites, not campground facilities. Review aggregation to facility identity before making map POIs.                                            |
+| `rv_campgrounds_data/ridb/campsites_rv_hookup.csv`                                           | Supporting campsite records. Facility enrichment requires a capture with a verified facility key and a separate review of aggregation.                                            |
 | `rv_campgrounds_data/osm/caravan_sites.csv` and `uscampgrounds/all_campgrounds_combined.csv` | Registered flat captures; OSM retains `node/way/relation` identity. Preserve source identity and review overlap through matching.                           |
 | `rv_campgrounds_data/analysis_summary.json`, `carnival/_extraction_summary.json`             | Supporting analysis, not POI records.                                                                                                                       |
 | `music-festivals/apis/jambase_countries.json` and `jambase_genres.json`                      | Supporting API lookup lists, not festivals.                                                                                                                 |

@@ -5,6 +5,8 @@
 /** Normalized staging shape produced by extractors before DB upsert. */
 export interface RawRecord {
   source_record_id: string;
+  /** Audited source-specific rejection retained in the extraction ledger. */
+  extraction_rejection?: { code: string; reason: string };
   /** How the source record key was chosen; persisted as lineage provenance. */
   source_record_id_kind?: "natural" | "url" | "synthetic";
   /** Stable components used to derive a synthetic source_record_id. */
@@ -31,6 +33,8 @@ export interface RawRecord {
 export interface Extractor {
   slug: string;
   parse(file: string): AsyncIterable<RawRecord>;
+  /** Dated synthetic IDs from the generic occurrence pipeline can repeat. */
+  genericOccurrenceIdentity?: boolean;
   /**
    * Optional per-source inclusion predicate. When false, the row is still stored in
    * research_pois (provenance) but tagged with attributes._is_poi = false so later

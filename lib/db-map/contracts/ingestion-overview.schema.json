@@ -10,7 +10,10 @@
     "decision",
     "interventions",
     "improvements",
-    "files"
+    "files",
+    "worker_liveness",
+    "import_queue",
+    "recent_executions"
   ],
   "properties": {
     "schema_version": {
@@ -57,7 +60,21 @@
       }
     },
     "summary": {
-      "type": ["object", "null"]
+      "type": ["object", "null"],
+      "required": ["ready_to_verify", "coverage_counts"],
+      "properties": {
+        "ready_to_verify": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coverage_counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
     },
     "decision": {
       "type": "object",
@@ -79,6 +96,57 @@
       "type": "array"
     },
     "files": {
+      "type": "array"
+    },
+    "worker_liveness": {
+      "type": ["object", "null"],
+      "required": ["confirmed", "unconfirmed", "workers"],
+      "properties": {
+        "confirmed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unconfirmed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "workers": {
+          "type": "array"
+        }
+      }
+    },
+    "import_queue": {
+      "type": ["object", "null"],
+      "required": [
+        "active",
+        "evidence",
+        "id",
+        "journal_available",
+        "current",
+        "recent_finished"
+      ],
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "evidence": {
+          "enum": ["lock", "starting", "journal_only", "none"]
+        },
+        "id": {
+          "type": ["string", "null"]
+        },
+        "journal_available": {
+          "type": "boolean"
+        },
+        "current": {
+          "type": ["object", "null"]
+        },
+        "recent_finished": {
+          "type": "array"
+        }
+      }
+    },
+    "recent_executions": {
       "type": "array"
     }
   },
@@ -110,6 +178,12 @@
                 "const": "inspect"
               }
             }
+          },
+          "worker_liveness": {
+            "type": "null"
+          },
+          "import_queue": {
+            "type": "null"
           }
         }
       }
