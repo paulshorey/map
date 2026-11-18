@@ -1039,7 +1039,7 @@ eligibility problem. The generated-label policy starts with the registered `osm_
   cannot auto-merge them into an anchor. Matching still considers IDs, contacts, location and
   anchor adjudication. The embed stage still produces vectors for these records.
 
-Affected OSM rows have a source-specific normalization cache version. For older artifacts,
+The OSM campground capture has a source-specific normalization cache version. For older artifacts,
 inspect the active state and start a fresh scoped run if a repair is needed. Resuming a checkpoint
 retains its completed stages. The full OSM
 capture defaults to `needs_review` on its first inventory scan. A refresh preserves an

@@ -359,13 +359,13 @@ export function buildDeterministicFacts(
     : null;
   if (generated) warnings.push("source_name_missing_generated_name");
 
-  // The facts are hashed into the normalization input. Re-key only the records the
-  // OSM policy changes so unrelated captures can reuse their artifacts and checkpoints.
-  const policyApplies = needsOsmName || sourceExclusionReason !== null;
-
   return {
     normalizedName,
-    ...(policyApplies ? { osmCampgroundPolicyVersion: OSM_CAMPGROUND_POLICY_VERSION } : {}),
+    // Include the policy version for the full OSM capture, including named rows
+    // whose model output can now be checked for placeholders at resolution time.
+    ...(input.osmCampgroundSource
+      ? { osmCampgroundPolicyVersion: OSM_CAMPGROUND_POLICY_VERSION }
+      : {}),
     ...(sourceExclusionReason ? { sourceExclusionReason } : {}),
     ...(unnamedOsmCampground ? { unnamedOsmCampground: true as const } : {}),
     ...(generated

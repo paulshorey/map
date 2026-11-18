@@ -628,6 +628,16 @@ export function withoutGeneratedCandidateName<T extends CandidateNameEvidence>(
     : candidate;
 }
 
+export function candidateNamesForAdjudication(candidate: CandidateNameEvidence) {
+  const unnamed = candidateUsesGeneratedName(candidate);
+  return {
+    name: unnamed ? UNNAMED_FOR_LLM : (candidate.best_name ?? candidate.canonical_name),
+    canonical_name: unnamed || candidate.canonical_name_generated
+      ? UNNAMED_FOR_LLM
+      : candidate.canonical_name,
+  };
+}
+
 async function fetchCandidates(
   client: PoolClient,
   row: ResearchMatchRow,
@@ -925,12 +935,7 @@ async function llmDecisionForCandidate(
         date_precision: row.date_precision,
       },
       candidate: {
-        name: candidateUsesGeneratedName(candidate)
-          ? UNNAMED_FOR_LLM
-          : (candidate.best_name ?? candidate.canonical_name),
-        canonical_name: candidateUsesGeneratedName(candidate)
-          ? UNNAMED_FOR_LLM
-          : candidate.canonical_name,
+        ...candidateNamesForAdjudication(candidate),
         address: candidate.best_address ?? candidate.canonical_address,
         city: candidate.best_city,
         region: candidate.best_region,

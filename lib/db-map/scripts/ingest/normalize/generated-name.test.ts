@@ -133,12 +133,12 @@ test("generated names state the kind, qualifiers and locality, never a proper na
   assert.equal(composeGeneratedName("Caravan site", null, null, null), "Caravan site");
 });
 
-test("named records' deterministic facts are unchanged (no generated keys, cache stays valid)", () => {
+test("named OSM rows receive the policy cache version without a generated label", () => {
   const facts = buildDeterministicFacts(input({ name: "Blue Ponds RV Park" }));
   assert.equal(facts.normalizedName, "Blue Ponds RV Park");
   assert.equal(Object.hasOwn(facts, "generatedName"), false);
   assert.equal(Object.hasOwn(facts, "generatedNameSubject"), false);
-  assert.equal(facts.osmCampgroundPolicyVersion, undefined);
+  assert.equal(facts.osmCampgroundPolicyVersion, "osm-campground-v1");
   assert.equal(facts.warnings.includes("source_name_missing_generated_name"), false);
 });
 
@@ -151,6 +151,12 @@ test("the unnamed-label policy is scoped to OSM campgrounds", () => {
   const other = input({ name: "NA", osmCampgroundSource: false, raw: { alt_name: "Other" } });
   assert.equal(resolve(other).displayName, "NA");
   assert.equal(buildDeterministicFacts(other).osmCampgroundPolicyVersion, undefined);
+
+  const namedOsm = resolve(input({ name: "Mill Camp" }), modelOutput({
+    display_name: "Unknown",
+    evidence: [{ field: "display_name", paths: ["$.captured.name"] }],
+  }));
+  assert.equal(namedOsm.displayName, "Mill Camp");
 });
 
 test("a nameless place is accepted with a flagged generated name (deterministic path)", () => {

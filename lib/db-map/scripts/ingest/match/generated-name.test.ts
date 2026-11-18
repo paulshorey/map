@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { withoutGeneratedCandidateName, withoutGeneratedName } from "../match.js";
+import {
+  candidateNamesForAdjudication,
+  withoutGeneratedCandidateName,
+  withoutGeneratedName,
+} from "../match.js";
 import { scoreCandidate } from "./score.js";
 import { normalizedExactName } from "./anchors.js";
 
@@ -84,4 +88,8 @@ test("a generated published label stays out of matching during a member rebuild"
   assert.equal(withRealMember.canonical_name, "");
   assert.equal(withRealMember.best_name_normalized, "camping du lac");
   assert.equal(withRealMember.best_content_embedding, embedding);
+  assert.deepEqual(candidateNamesForAdjudication(withRealMember), {
+    name: "Camping du Lac",
+    canonical_name: "(no name in source)",
+  });
 });
