@@ -9,6 +9,7 @@ import { wikipediaIntlExtractor } from "./extractors/wikipedia-intl.js";
 import { gardenologyExtractor } from "./extractors/gardenology.js";
 import { globalCarnivalistExtractor } from "./extractors/global-carnivalist.js";
 import { roughGuidesExtractor } from "./extractors/rough-guides.js";
+import { criticalStagesExtractor } from "./extractors/critical-stages.js";
 import { artFairsListExtractor } from "./extractors/artfairslist.js";
 import { thatFestivalSiteExtractor } from "./extractors/thatfestivalsite.js";
 import {
@@ -219,6 +220,18 @@ const CAMPGROUND_SOURCES: SourceDefinition[] = [
 
 /** Festival sources use generic captures or an explicit record-array wrapper. */
 const FESTIVAL_SOURCES: SourceDefinition[] = [
+  {
+    meta: { slug: "critical_stages", name: "Critical Stages", trust: 50 },
+    extractor: criticalStagesExtractor,
+    files: [
+      {
+        pattern: "data/poi/art-parades/street-arts/critical_stages_festivals.json",
+        category: "art_parade",
+        extractorVersion: "critical-stages-v1",
+      },
+    ],
+    normalizationProfile: "event",
+  },
   {
     meta: { slug: "thatfestivalsite", name: "That Festival Site", trust: 60 },
     extractor: thatFestivalSiteExtractor,

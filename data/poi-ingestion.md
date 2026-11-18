@@ -674,8 +674,12 @@ See the [dashboard guide](../apps/ingestion/README.md) for setup and exact compl
 
 Inventory scans discover untouched files independently of ingestion, hash content, retain old
 hashes and missing paths, and preserve operator notes, explicit category, disposition and priority.
-They do not call providers or start ingestion. Resolve `needs_review` files before treating them
-as an expected import set; alternate exports and supporting JSON are not automatically imports.
+They do not call providers or start ingestion. New inventory entries inherit
+`needs_review`, `alternate`, `supporting` and `ignored` decisions and reasons from the
+[versioned capture catalog](poi-research/expected-captures.json). Existing inventory entries
+keep their operator decisions. To hold an existing capture, update its inventory disposition
+with the reason as well as the catalog. Use `needs_review` when new evidence could make the
+capture usable. Keep a capture-specific row audit when only part of the data is inadequate.
 
 The dashboard derives current progress from extraction records, active artifacts, memberships,
 build inputs and verification. Retries are deduplicated by source record ID. A completed
