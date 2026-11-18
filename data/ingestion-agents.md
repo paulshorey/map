@@ -22,9 +22,10 @@ section before changing anything that a running worker uses.
 | Stop work | `ingest:import-queue stop [--now]`, or `ingest:control stop --run <uuid>` |
 
 Use the primary checkout for inspection and whole-file imports. When it is in use by another
-task, run pinned, bounded smokes from a synced worktree. Keep those job receipts and private
-log paths before removing the worktree. Whole-file queue start and resume require the
-primary checkout.
+task, run pinned, bounded smokes from a synced worktree. Before removing the worktree,
+copy the smoke’s job receipt and logs from `lib/db-map/.ingest-jobs/<job-id>/` to private
+storage outside the worktree and record the new paths. Whole-file queue start and resume
+require the primary checkout.
 
 ## Inspect ingestion status
 
