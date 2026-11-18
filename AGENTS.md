@@ -72,15 +72,13 @@ pnpm --silent --filter @lib/db-map ingest:import-queue status --json # the queue
 # (status prints "No import queue exists" and exits non-zero until a first queue is started)
 ```
 
-Pin the actual run, execution and job IDs and timestamps from that output. The overview
-lists only jobs still running; a finished file's job IDs are in the queue's `status --json`
-(each entry's `jobs`), and `ingest:supervise status --job <uuid>` gives its result and log
-paths. Then inspect bounded `ingest:status --run <uuid>` and the relevant log excerpt. A finished process or an
-old receipt does not prove current health.
+Pin the run, execution and job IDs and timestamps. Use `control.workers`, heartbeat and
+lock evidence to establish managed-worker liveness. Local job journals can retain a stale
+`running` label. Follow [status triage](data/ingestion-agents.md#inspect-ingestion-status)
+to resolve conflicting evidence or find finished jobs.
 
-Reconcile live workers before starting anything. Preserve healthy imports; diagnose failed,
-stalled or conflicting evidence before a stop or resume. Never signal a saved PID, and keep
-raw logs private. Verify whole-file completion (`coverage: complete`) before advancing.
+Preserve healthy imports. Verify whole-file coverage before advancing, never signal a
+saved PID, and keep raw logs private.
 
 ## Running imports economically
 

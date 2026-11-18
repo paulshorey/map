@@ -14,6 +14,7 @@ section before changing anything that a running worker uses.
 | You want to | Use |
 | --- | --- |
 | See what is running and what to do next | `ingest:overview --json`, `ingest:import-queue status --json` |
+| Inspect indexed captures and their current coverage | `ingest:inventory --json` |
 | Import whole files | `ingest:import-queue start` |
 | Try a change on 1–5 records, time-limited | `ingest:supervise smoke` |
 | Debug one record through chosen stages, in the foreground | `ingest:run … --record <id> --stop-after <stage>` |
@@ -23,7 +24,38 @@ section before changing anything that a running worker uses.
 Run everything from the repository root of the primary checkout. A coding worktree must not
 launch whole-file imports; `ingest:import-queue start` and `resume` refuse to run from one.
 
-## Whole files: the import queue
+## Inspect ingestion status
+
+1. Take the [two-command snapshot](../AGENTS.md#discover-and-coordinate-ingestion-jobs).
+   The queue status command can mark a dead queue as stopped in its local journal
+   and leaves verified live workers running. Check `control.workers`, source locks, and admitted workers in the overview. On the
+   primary host, corroborate PID and start time when needed. An old
+   `components.local.jobs[].status` can outlive a process. Match its execution ID to
+   database history before treating it as active or abandoned. For older jobs, a missing
+   terminal receipt and `ERR_IPC_CHANNEL_CLOSED` at the end of `supervisor.log` can be
+   signs of a stale journal. Check the matching database execution for its outcome.
+   A live queue may also be waiting for quota with no ingestion worker.
+2. Pin the queue, file, run, execution and job IDs. Use a queue entry's `jobs` ID with
+   `ingest:supervise status --job <uuid>` to print its `job.json`, including the result
+   once the supervisor saves it. The supervisor writes `result.json` first, so check it
+   if the final job save was interrupted. Active jobs may have no terminal result in
+   either file. See the [job directory layout](#a-single-detached-run) for log paths.
+   A newly active file can have a null queue `run_id` until the worker returns its
+   receipt. Get its run and execution IDs from the overview or job journal.
+3. Use `ingest:status --run <uuid> --json --limit 10` for the pinned run and
+   `ingest:issues list --run <uuid> --json` for issue dispositions. Compare the latest
+   committed task, heartbeat and stop reason. Keep raw logs private. Report bounded
+   counts, errors and timestamps instead.
+4. Compare the terminal receipt, current `ingest:inventory --file <path> --json`, and
+   the latest scan receipt. Run-stage verification counts describe the selected
+   cohort. A later canonical rebuild can move a previously complete file to
+   `ready_to_verify`. Roll up that state from inventory when reporting totals.
+   Track sampled quality separately. For a missing capture, check the file in this
+   checkout and the scan commit before recommending a restore or scan.
+
+For diagnosis by failure class, see the [troubleshooting table](poi-ingestion.md#troubleshooting-and-optimization).
+
+## Whole-file imports
 
 ```sh
 pnpm --silent --filter @lib/db-map ingest:inventory --refresh     # the queue refuses unscanned changes
@@ -45,11 +77,10 @@ After starting it: record the queue ID, check once after a few minutes that the 
 is progressing, then end the turn. Check back infrequently (every 30 minutes or more).
 A provider cooldown with a current heartbeat is expected; leave it alone.
 
-When the queue stops as `needs_attention`, diagnose before resuming: pin the run UUID from
-`status`, read `ingest:status --run <uuid> --json --limit 10` and
-`ingest:issues list --run <uuid> --json`, and find the earliest failing stage. A few
-quarantined records in a file are expected. Resume once for a cause that is understood and
-gone; a repeat of the same failure needs a code or data fix, not another resume.
+When the queue stops as `needs_attention`, use the [status steps](#inspect-ingestion-status)
+to identify the earliest failed stage and any open issues. Resume the original scope once the
+cause is understood and cleared. A repeat needs a code or data fix. Check the file fingerprint,
+extractor and checkpoint compatibility before resuming.
 
 ## Bounded checks: smoke
 
@@ -83,8 +114,8 @@ ignored: it used to choose between a parent callback and none, and there is no c
 Each job has a private, ignored directory `lib/db-map/.ingest-jobs/<uuid>/`:
 
 - `job.json`: launch scope, process IDs, host, pinned run and execution IDs, status.
-- `worker.log`, `supervisor.log`: complete raw output. Keep it out of agent context; read
-  bounded excerpts.
+- `worker.log`: raw worker output. Detached jobs can also write `supervisor.log`.
+  Queue-driven `watch` supervisor messages go to the queue log. Read bounded excerpts privately.
 - `result.json`: exit code or signal, stop reason, verified database outcome, recent
   attempts, a bounded error tail and the exact resume command.
 
