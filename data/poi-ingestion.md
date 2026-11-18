@@ -999,6 +999,7 @@ while ingestion is active, and takes the canonical writer lock so it never races
 | Flag | Meaning |
 | --- | --- |
 | `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
+| `generated_name` | No member has a real name; the shown name is generated (see [Nameless places](#nameless-places)) |
 | `source_needs_review` | A member's active observation comes from a capture whose inventory disposition is still `needs_review` |
 | `missing_address` | No active member has a source street address (reverse-geocoded addresses and PO boxes alone do not count); a manually curated POI with its own address is not flagged. The POI is still mapped |
 
@@ -1011,6 +1012,40 @@ lists a POI's flags.
 pnpm --filter @lib/db-map ingest:review-flags            # published POIs per flag
 pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's flags
 ```
+
+## Nameless places
+
+A missing source name can be a display problem. A missing site type or position is an
+eligibility problem. The generated-label policy starts with the registered `osm_camp` capture.
+
+- **Real names first.** Treat blanks and placeholders such as `unnamed` and `N/A` as missing.
+  Use a real alternate name from an OSM name tag when present. Keep the typed OSM ID, name field
+  and original tags in the observation.
+- **Eligibility.** An unnamed row needs explicit `tourism=camp_site` or `tourism=caravan_site`
+  and a valid captured coordinate pair. City-only records, URL coordinates and points needing
+  an obvious axis swap do not qualify. All rows in this OSM capture are excluded from publication
+  for explicit `access=private` / `access=no` or inactive lifecycle tags. Keep customer, permit
+  and seasonal sites eligible. Absence of an access tag carries no claim about access.
+- **Audit.** Normalization preserves the capture and records the reason in `invalid_reason`:
+  `osm_unnamed_missing_site_type`, `osm_unnamed_missing_source_point`,
+  `osm_campground_restricted_access`, or `osm_campground_inactive`. An eligible unnamed row
+  carries `source_name_missing_generated_name`. Use a bounded sample to verify these outcomes
+  before changing the capture's [inventory disposition](ingestion-agents.md#inspect-ingestion-status).
+- **Display.** The pipeline builds a label from the kind, source qualifiers and locality or
+  coordinates. The canonical rebuild prefers a real name, otherwise it can attach the resolved
+  locality to the label. Generated labels carry `attributes.name_generated` and
+  `field_provenance.name.generated`. The drawer and review filter say **Unnamed in source**.
+- **Matching.** Generated labels and their embeddings carry no identity weight. Proximity alone
+  cannot auto-merge them into an anchor. Matching still considers IDs, contacts, location and
+  anchor adjudication. The embed stage still produces vectors for these records.
+
+The OSM campground capture has a source-specific normalization cache version. For older artifacts,
+inspect the active state and start a fresh scoped run if a repair is needed. Resuming a checkpoint
+retains its completed stages. The full OSM
+capture defaults to `needs_review` on its first inventory scan. A refresh preserves an
+existing inventory decision, so check the live disposition before queueing. Record a
+bounded normalization-to-publication sample before approving the
+[whole-file queue](ingestion-agents.md#whole-file-imports).
 
 ## Unlocatable records are dropped
 

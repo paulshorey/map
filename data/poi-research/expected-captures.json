@@ -1943,8 +1943,8 @@
       "source": "osm_camp",
       "category": "campground",
       "required": true,
-      "disposition": "import",
-      "reason": "Explicit registered source mapping"
+      "disposition": "needs_review",
+      "reason": "Validate the unnamed-site evidence, access, and lifecycle rules on a bounded normalization-to-publication sample before queuing this capture."
     },
     {
       "file": "data/poi/rv_campgrounds_data/ridb/campsites_rv_hookup.csv",
