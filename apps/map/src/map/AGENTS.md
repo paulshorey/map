@@ -68,7 +68,7 @@ keep theirs until rebuilt).
 `canonical_pois.review_flags` entry: `general_location`, `generated_name`, `source_needs_review`, and flags added
 later in `lib/db-map/sql/review-flags.ts` (add a label in `REVIEW_FLAG_LABELS`). Flags are
 derived: each rebuild refreshes its POI, migration `202611060710` backfilled existing POIs, and
-`ingest:review-flags --refresh` recomputes all. The drawer lists a POI's flags.
+`ingest:review-flags --refresh` recomputes all. The drawer shows **Unnamed in source** beside generated labels and lists other review flags in the details.
 
 ## Quirks
 

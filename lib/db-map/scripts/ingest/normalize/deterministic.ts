@@ -7,6 +7,7 @@ import { parseOneDate } from "./dates.js";
 import {
   generatePlaceName,
   isPlaceholderName,
+  osmCampgroundExclusion,
   realNameFromTags,
   sourceTags,
 } from "./generated-name.js";
@@ -21,10 +22,11 @@ export interface ValueCandidate<T> {
 export interface DeterministicFacts {
   normalizedName: string | null;
   /**
-   * Present only when the source has no real name and the profile describes places: a
-   * descriptive name composed by code (see generated-name.ts). Absent keys keep the request
-   * packet, and so the normalization cache, unchanged for named records.
+   * Present when an unnamed OSM campground has independent site and location evidence.
+   * Omitted fields preserve the normalization cache for unaffected records.
    */
+  unnamedOsmCampground?: true;
+  sourceExclusionReason?: string;
   generatedName?: string;
   generatedNameSubject?: string;
   countryCode: string | null;
@@ -61,8 +63,8 @@ export interface DeterministicInput {
   attributes: Record<string, unknown>;
   raw: unknown;
   sourceIsPoiHint: boolean | null;
-  /** Ingest category of a place profile; enables generated names for nameless places. */
-  generatedNameCategory?: string | null;
+  /** Enables the campground eligibility rules for the registered OSM campground capture. */
+  osmCampgroundSource?: boolean;
 }
 
 function stringValue(value: unknown): string | null {
@@ -320,26 +322,44 @@ export function buildDeterministicFacts(
     ? capturedName
     : realNameFromTags(sourceTags(input.attributes, input.raw));
   if (capturedName && !normalizedName) warnings.push("placeholder_source_name");
-  let generated: ReturnType<typeof generatePlaceName> | null = null;
-  // Every nameless place gets a subject even without a location yet: an address/operator-only
-  // record can still be geocoded, and the canonical attaches its resolved locality later.
-  if (!normalizedName && input.generatedNameCategory) {
-    generated = generatePlaceName({
-      ingestCategory: input.generatedNameCategory,
-      attributes: input.attributes,
-      raw: input.raw,
-      address: input.address,
-      city: input.city,
-      region: input.region,
-      countryCode,
-      lat,
-      lng,
-    });
-    warnings.push("source_name_missing_generated_name");
-  }
+  const sourceExclusionReason = input.osmCampgroundSource
+    ? osmCampgroundExclusion({
+        attributes: input.attributes,
+        raw: input.raw,
+        hasRealName: normalizedName !== null,
+        hasSourcePoint: coordinateSource === "source" && !fixed.swapped,
+      })
+    : null;
+  const hardExcluded =
+    sourceExclusionReason !== null ||
+    input.sourceIsPoiHint === false ||
+    rawRecord.is_poi === false ||
+    rawRecord.isPoi === false ||
+    rawRecord.is_festival === false ||
+    (typeof rawRecord.FacilityTypeDescription === "string" &&
+      rawRecord.FacilityTypeDescription.toLowerCase() !== "campground");
+
+  // Establish eligibility from captured evidence before generating a display label.
+  const unnamedOsmCampground = input.osmCampgroundSource && !hardExcluded && !normalizedName;
+  const generated = unnamedOsmCampground
+    ? generatePlaceName({
+        ingestCategory: "campground",
+        attributes: input.attributes,
+        raw: input.raw,
+        address: input.address,
+        city: input.city,
+        region: input.region,
+        countryCode,
+        lat,
+        lng,
+      })
+    : null;
+  if (generated) warnings.push("source_name_missing_generated_name");
 
   return {
     normalizedName,
+    ...(sourceExclusionReason ? { sourceExclusionReason } : {}),
+    ...(unnamedOsmCampground ? { unnamedOsmCampground: true as const } : {}),
     ...(generated
       ? { generatedName: generated.name, generatedNameSubject: generated.subject }
       : {}),
@@ -357,15 +377,7 @@ export function buildDeterministicFacts(
     phoneCandidates,
     emailCandidates,
     coordinateCandidates,
-    hardIsPoi:
-      input.sourceIsPoiHint === false ||
-      rawRecord.is_poi === false ||
-      rawRecord.isPoi === false ||
-      rawRecord.is_festival === false ||
-      (typeof rawRecord.FacilityTypeDescription === "string" &&
-        rawRecord.FacilityTypeDescription.toLowerCase() !== "campground")
-        ? false
-        : null,
+    hardIsPoi: hardExcluded ? false : null,
     warnings,
   };
 }

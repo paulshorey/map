@@ -1015,50 +1015,34 @@ pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's
 
 ## Nameless places
 
-Owner policy (2026-11-06): a place whose source gives no real name is still mapped and
-published, never rejected for the missing name and never given an invented proper name.
-Code in `lib/db-map/scripts/ingest/normalize/generated-name.ts` owns it:
+A missing source name can be a display problem. A missing site type or position is an
+eligibility problem. The generated-label policy starts with the registered `osm_camp` capture.
 
-- **Real names first.** A blank or placeholder name (`unnamed`, `N/A`, …; warning
-  `placeholder_source_name`) is not a name. A real name in another OSM tag (`name:en`,
-  `official_name`, `name:<lang>`, `alt_name`, `loc_name`, `short_name`; read from
-  `attributes.osm_tags`, `raw.all_tags`, or a flat export's raw columns such as `name_en`) is
-  used as the name. The match fingerprint includes the generated-name state (only when
-  generated, so named records' fingerprints are unchanged).
-- **Generated name.** For place profiles (not events), deterministic normalization composes a
-  descriptive name from the kind of place (`tourism=caravan_site` → "Caravan site", else the
-  ingest category), operator/brand and `ref`, street (else the captured address's first part),
-  and locality, else coordinates (a record
-  with no location yet still gets a name and proceeds to geocoding):
-  "Campsite (Westward Bound Campgrounds) near Springfield, United States",
-  "Caravan site in Alberta, Canada" (region/country only), "Caravan site at 47.8282, -59.1928". It is added to the deterministic facts (and warning
-  `source_name_missing_generated_name`) only for nameless records, so named records' cache keys
-  are unchanged. The model's display name is ignored for such records.
-- **Durable fact.** The normalization stores `attributes.name_generated = true`,
-  `generated_name` and `generated_name_subject` (the name without its locality); a source
-  attribute can never set these keys. `research_pois.name` keeps only a real source name (NULL
-  here); `name_normalized` holds the normalized generated name so the record can embed and match.
-  Raw OSM identity and tags stay in the observation.
-- **Matching.** A generated name describes a kind of place, not which place it is, so the
-  matcher compares nameless rows and canonicals by identifiers, contacts and location only
-  (name and embedding signals are blanked on either side; the LLM adjudicator sees
-  "(no name in source)"). A nameless row is never auto-merged as a satellite of a nearby
-  anchor, nor a named row into a nameless anchor: it goes to anchor LLM adjudication, or stays separate with `--no-llm`. Global
-  consolidation likewise never merges a nameless canonical by proximity alone, as satellite or
-  as anchor target, and its anchor-anchor adjudication sees "(no name in source)". Nameless
-  rows are still embedded (the managed embed stage requires it) although matching ignores
-  those vectors. A canonical
-  counts as nameless only when no live member has a real name (a real-named member is its
-  matching representative).
-- **Canonical name.** A member with a real name always wins. Otherwise the canonical takes the
-  most trusted generated member's subject plus the canonical's resolved locality (reverse
-  geocoding may fill it after normalization), sets `attributes.name_generated = true` and
-  `field_provenance.name.generated`, and so carries the `generated_name` review flag.
-- **Earlier normalizations.** `NORMALIZER_VERSION` was not advanced for this rule, because
-  that would mark every source outdated. Records normalized before it are not re-reported by
-  `ingest:staleness`. On 2026-11-17 the dev database had no live nameless records and no OSM
-  caravan-site import. A file whose earlier normalization rejected or misnamed nameless
-  places needs `ingest:clean <file>` and a fresh import to use generated names.
+- **Real names first.** Treat blanks and placeholders such as `unnamed` and `N/A` as missing.
+  Use a real alternate name from an OSM name tag when present. Keep the typed OSM ID, name field
+  and original tags in the observation.
+- **Eligibility.** An unnamed row needs explicit `tourism=camp_site` or `tourism=caravan_site`
+  and a valid captured coordinate pair. City-only records, URL coordinates and points needing
+  an obvious axis swap do not qualify. All rows in this OSM capture are excluded from publication
+  for explicit `access=private` / `access=no` or inactive lifecycle tags. Keep customer, permit
+  and seasonal sites eligible. Absence of an access tag carries no claim about access.
+- **Audit.** Normalization preserves the capture and records the reason in `invalid_reason`:
+  `osm_unnamed_missing_site_type`, `osm_unnamed_missing_source_point`,
+  `osm_campground_restricted_access`, or `osm_campground_inactive`. An eligible unnamed row
+  carries `source_name_missing_generated_name`. Use a bounded sample to verify these outcomes
+  before changing the capture's [inventory disposition](ingestion-agents.md#inspect-ingestion-status).
+- **Display.** The pipeline builds a label from the kind, source qualifiers and locality or
+  coordinates. The canonical rebuild prefers a real name, otherwise it can attach the resolved
+  locality to the label. Generated labels carry `attributes.name_generated` and
+  `field_provenance.name.generated`. The drawer and review filter say **Unnamed in source**.
+- **Matching.** Generated labels and their embeddings carry no identity weight. Proximity alone
+  cannot auto-merge them into an anchor. Matching still considers IDs, contacts, location and
+  anchor adjudication. The embed stage still produces vectors for these records.
+
+Existing artifacts are not rewritten by a code update. For an earlier smoke, inspect the run
+and active artifacts, then deliberately reprocess the affected records if needed. The full OSM
+capture begins in `needs_review`. Record a bounded normalization-to-publication sample and
+confirm the inventory decision before starting the [whole-file queue](ingestion-agents.md#whole-file-imports).
 
 ## Unlocatable records are dropped
 

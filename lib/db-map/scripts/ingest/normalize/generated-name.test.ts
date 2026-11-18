@@ -29,7 +29,7 @@ function input(overrides: Partial<DeterministicInput> = {}): DeterministicInput 
     attributes: { osm_tags: { tourism: "caravan_site" } },
     raw: { tourism: "caravan_site" },
     sourceIsPoiHint: null,
-    generatedNameCategory: "campground",
+    osmCampgroundSource: true,
     ...overrides,
   };
 }
@@ -141,10 +141,12 @@ test("named records' deterministic facts are unchanged (no generated keys, cache
   assert.equal(facts.warnings.includes("source_name_missing_generated_name"), false);
 });
 
-test("events and other non-place profiles get no generated name", () => {
-  const facts = buildDeterministicFacts(input({ generatedNameCategory: null }));
+test("the unnamed-label policy is scoped to OSM campgrounds", () => {
+  const captured = input({ osmCampgroundSource: false });
+  const facts = buildDeterministicFacts(captured);
   assert.equal(facts.normalizedName, null);
   assert.equal(facts.generatedName, undefined);
+  assert.equal(resolve(captured).isPoi, false);
 });
 
 test("a nameless place is accepted with a flagged generated name (deterministic path)", () => {
@@ -201,13 +203,87 @@ test("the model can still reject a nameless record that is not a place", () => {
   assert.equal(Object.hasOwn(resolved.attributes, "name_generated"), false);
 });
 
-test("a nameless place without a location yet still gets a name and reaches geocoding", () => {
-  const resolved = resolve(
-    input({ lat: null, lng: null, attributes: { osm_tags: { tourism: "camp_site", "addr:street": "Park Road" } } }),
-  );
-  assert.equal(resolved.isPoi, true);
-  assert.equal(resolved.displayName, "Campsite on Park Road");
-  assert.equal(resolved.attributes.name_generated, true);
+test("an unnamed OSM campground requires source evidence even when the model approves", () => {
+  const cases = [
+    {
+      overrides: { attributes: {}, raw: {}, lat: null, lng: null, city: "Denver", country_code: "US" },
+      reason: "osm_unnamed_missing_site_type",
+    },
+    {
+      overrides: { attributes: {}, raw: { tourism: "picnic_site" } },
+      reason: "osm_unnamed_missing_site_type",
+    },
+    {
+      overrides: {
+        lat: null, lng: null, address: "12 Park Road", city: "Denver",
+        website: "https://maps.google.com/?q=39.7392,-104.9903",
+      },
+      reason: "osm_unnamed_missing_source_point",
+    },
+    {
+      overrides: { lat: 0, lng: 0 },
+      reason: "osm_unnamed_missing_source_point",
+    },
+    {
+      overrides: { lat: -104.9903, lng: 39.7392 },
+      reason: "osm_unnamed_missing_source_point",
+    },
+  ];
+  for (const { overrides, reason } of cases) {
+    for (const output of [null, modelOutput({ display_name: "Campground near Denver" })]) {
+      const resolved = resolve(input(overrides), output);
+      assert.equal(resolved.isPoi, false);
+      assert.equal(resolved.status, "rejected");
+      assert.equal(resolved.invalidReason, reason);
+      assert.equal(resolved.displayName, null);
+      assert.equal(Object.hasOwn(resolved.attributes, "name_generated"), false);
+    }
+  }
+});
+
+test("OSM access and lifecycle exclusions also apply when a site has a real name", () => {
+  const cases = [
+    { tags: { access: "private" }, reason: "osm_campground_restricted_access" },
+    { tags: { access: "no" }, reason: "osm_campground_restricted_access" },
+    { tags: { "disused:tourism": "camp_site" }, reason: "osm_campground_inactive" },
+    { tags: { abandoned: "yes" }, reason: "osm_campground_inactive" },
+    { tags: { opening_hours: "closed" }, reason: "osm_campground_inactive" },
+  ];
+  for (const { tags, reason } of cases) {
+    for (const name of [null, "Mill Camp"]) {
+      const captured = input({ name, attributes: { osm_tags: tags } });
+      const resolved = resolve(captured, modelOutput({}));
+      assert.equal(resolved.isPoi, false);
+      assert.equal(resolved.invalidReason, reason);
+      assert.equal(resolved.displayName, null);
+      assert.equal(Object.hasOwn(resolved.attributes, "name_generated"), false);
+    }
+  }
+});
+
+test("flat tourism combines with access tags and seasonal service remains eligible", () => {
+  for (const access of ["customers", "permit", "yes"]) {
+    const captured = input({
+      attributes: { osm_tags: { access, seasonal: "yes", disused: "no", "disused:amenity": "toilets" } },
+      raw: { tourism: "camp_site" },
+    });
+    const resolved = resolve(captured);
+    assert.equal(resolved.isPoi, true);
+    assert.match(resolved.displayName ?? "", /^Campsite at /);
+  }
+});
+
+test("a label alone cannot promote a row in deterministic normalization", () => {
+  const captured = input({ city: "Denver", lat: null, lng: null, osmCampgroundSource: false });
+  const resolved = resolveNormalization({
+    output: null,
+    deterministic: { ...buildDeterministicFacts(captured), generatedName: "Campsite near Denver" },
+    captured,
+    ingestCategory: "campground",
+    profile: getNormalizationProfile("campground"),
+  });
+  assert.equal(resolved.isPoi, false);
+  assert.equal(resolved.displayName, null);
 });
 
 test("a model-echoed placeholder falls back to the real tagged name", () => {
@@ -226,10 +302,10 @@ test("a model-echoed placeholder falls back to the real tagged name", () => {
 
 test("a captured address qualifies the subject when no street tag exists", () => {
   const resolved = resolve(
-    input({ attributes: {}, raw: {}, address: "12 Park Rd, Springfield, OR", city: "Springfield", country_code: "US" }),
+    input({ attributes: {}, raw: { tourism: "camp_site" }, address: "12 Park Rd, Springfield, OR", city: "Springfield", country_code: "US" }),
   );
-  assert.equal(resolved.attributes.generated_name_subject, "Campground at 12 Park Rd");
-  assert.equal(resolved.displayName, "Campground at 12 Park Rd near Springfield, United States");
+  assert.equal(resolved.attributes.generated_name_subject, "Campsite at 12 Park Rd");
+  assert.equal(resolved.displayName, "Campsite at 12 Park Rd near Springfield, United States");
 });
 
 test("flat OSM captures keep alternate names as raw columns", () => {
@@ -242,7 +318,7 @@ test("flat OSM captures keep alternate names as raw columns", () => {
 });
 
 test("the match fingerprint distinguishes a generated name from the same real name", () => {
-  const generated = resolve(input({ attributes: {}, raw: { tourism: "caravan_site" }, lat: null, lng: null, city: "Lyon", country_code: "FR" }));
+  const generated = resolve(input({ attributes: {}, raw: { tourism: "caravan_site" }, city: "Lyon", country_code: "FR" }));
   const named = resolve(input({ name: generated.displayName, attributes: {}, raw: {}, lat: null, lng: null, city: "Lyon", country_code: "FR" }));
   assert.equal(generated.matchName, named.matchName);
   assert.notEqual(generated.matchFingerprint, named.matchFingerprint);

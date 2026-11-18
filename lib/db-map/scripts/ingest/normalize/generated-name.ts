@@ -1,12 +1,6 @@
 /**
- * Names for places whose source gives no real name (owner policy 2026-11-06).
- *
- * A nameless place is still published: the pipeline composes a descriptive display name from
- * the best data it has (kind of place, operator/brand/ref, street, locality, else coordinates)
- * and marks it generated. A generated name is never a proper name: it is not matched against
- * other names, a member with a real name wins canonical name selection, and the canonical POI
- * carries the `generated_name` review flag. The original source identity and tags stay as raw
- * evidence.
+ * Descriptive map labels for qualifying unnamed OSM campgrounds. Real names
+ * take precedence, and matching ignores generated labels as identity evidence.
  */
 
 /** Attribute keys owned by this policy; a source's own attributes can never set them. */
@@ -76,6 +70,41 @@ export function sourceTags(
   if (Object.keys(parsed).length) return parsed;
   const { all_tags: _ignored, ...flat } = record;
   return flat;
+}
+
+const INACTIVE_OSM_STATES = [
+  "abandoned", "closed", "construction", "demolished", "disused",
+  "former", "no", "planned", "proposed", "removed", "razed", "was",
+] as const;
+
+export function osmCampgroundExclusion(input: {
+  attributes: Record<string, unknown>;
+  raw: unknown;
+  hasRealName: boolean;
+  hasSourcePoint: boolean;
+}): string | null {
+  const tags = sourceTags(input.attributes, input.raw);
+  const raw = asRecord(input.raw);
+  // The campground export stores tourism in a dedicated column and access/lifecycle in all_tags.
+  const tag = (key: string) => (text(tags[key]) ?? text(raw[key]))?.toLowerCase();
+  const isCampground = (value: string | undefined) =>
+    value === "camp_site" || value === "caravan_site";
+
+  const access = tag("access");
+  if (access === "private" || access === "no") return "osm_campground_restricted_access";
+
+  const hours = tag("opening_hours");
+  if (hours === "closed" || hours === "off" || INACTIVE_OSM_STATES.some((state) => {
+    const formerTourism = tag(`${state}:tourism`);
+    return tag(state) === "yes" || formerTourism === "yes" || isCampground(formerTourism);
+  })) {
+    return "osm_campground_inactive";
+  }
+
+  if (input.hasRealName) return null;
+  if (!isCampground(tag("tourism"))) return "osm_unnamed_missing_site_type";
+  if (!input.hasSourcePoint) return "osm_unnamed_missing_source_point";
+  return null;
 }
 
 /**

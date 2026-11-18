@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
 
+export const UNNAMED_IN_SOURCE = "Unnamed in source";
+
 /** Review flags the map can filter by; keys match @lib/db-map REVIEW_FLAGS. */
 export const REVIEW_FLAG_LABELS: Record<string, { label: string; title: string }> = {
   general_location: {
@@ -7,8 +9,8 @@ export const REVIEW_FLAG_LABELS: Record<string, { label: string; title: string }
     title: "Only a country, region or city is known",
   },
   generated_name: {
-    label: "Generated name",
-    title: "The source gives no name; the name describes the place and its location",
+    label: UNNAMED_IN_SOURCE,
+    title: "The map shows a description based on the source details",
   },
   source_needs_review: {
     label: "Source needs review",

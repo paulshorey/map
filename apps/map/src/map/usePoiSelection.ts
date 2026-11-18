@@ -27,6 +27,7 @@ export interface PoiDetail {
   coordinate_evidence?: PoiCoordinateEvidenceRecord;
   attributes?: unknown;
   sources?: string[];
+  review_flags?: string[];
 }
 
 /** Clicked POI first, then every other POI whose marker shares its exact point. */

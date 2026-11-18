@@ -881,8 +881,7 @@ function prepareNormalization(
   );
   const captured = {
     ...deterministicInput(row),
-    // Nameless places get a generated, flagged name; events and other kinds do not.
-    generatedNameCategory: profile.kind === "place" ? row.ingest_category : null,
+    osmCampgroundSource: row.source_slug === "osm_camp" && row.ingest_category === "campground",
   };
   const deterministic = buildDeterministicFacts(captured);
   const packet = requestPacket(row, profile.id, deterministic);

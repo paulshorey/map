@@ -106,8 +106,7 @@ export function resolveNormalization(input: {
     for (const field of ["city", "region", "country_code"]) delete evidence[field];
   }
 
-  // No real name, but a place: code supplies a descriptive name and flags it (owner policy
-  // 2026-11-06). A missing name alone never rejects a place.
+  // The generated label is presentation data. Source and model evidence decide eligibility.
   const generatedName = deterministic.normalizedName
     ? null
     : (deterministic.generatedName ?? null);
@@ -116,10 +115,12 @@ export function resolveNormalization(input: {
       ? false
       : proposed
         ? proposed.is_poi
-        : Boolean(deterministic.normalizedName ?? generatedName);
+        : Boolean(deterministic.normalizedName || deterministic.unnamedOsmCampground);
   const invalidReason = isPoi
     ? null
-    : proposed?.invalid_reason?.trim() || (deterministic.hardIsPoi === false ? "source_hard_exclusion" : "not_a_poi");
+    : deterministic.sourceExclusionReason ??
+      (proposed?.invalid_reason?.trim() ||
+        (deterministic.hardIsPoi === false ? "source_hard_exclusion" : "not_a_poi"));
 
   let displayName = isPoi
     ? generatedName
