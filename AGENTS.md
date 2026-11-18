@@ -162,7 +162,9 @@ wrong, or unclear. Fix what would help the next agent. Put project lessons in th
 file or the project's docs, and lessons for every project in the shared skills at
 `~/.agents/skills/` (linked at `~/.claude/skills/`); `~/.agents/AGENTS.md` explains
 how to save those. Keep each edit short and specific, tell the user what you changed,
-and propose larger changes instead of making them.
+and propose larger changes instead of making them. If you cannot reach `~/.agents`,
+for example as a cloud agent or a read-only reviewer, suggest the improvements in your
+reply instead of editing files.
 
 # Goal: Collect all the interesting places in the world
 
