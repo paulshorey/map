@@ -6,6 +6,7 @@ import type { Pool } from "pg";
 import { execFileSync } from "node:child_process";
 import { hostInstallationId } from "../../scripts/ingest/host-installation.js";
 import { INGEST_LOCK_NAMESPACE, INVENTORY_SCAN_LOCK } from "./locks.js";
+import { expectedCaptures } from "./expected-captures.js";
 import {
   POI_RELATIVE_PATH,
   REPO_ROOT,
@@ -120,6 +121,10 @@ export async function refreshInventory(db: Pool, root = REPO_ROOT) {
       );
     }
     const files = await discoverFiles(root);
+    const heldCaptures = Object.fromEntries(
+      (await expectedCaptures()).filter((capture) => capture.disposition !== "import")
+        .map(({ file, disposition, reason }) => [file, { disposition, reason }]),
+    );
     await client.query("BEGIN");
     await client.query("SET LOCAL statement_timeout='15s'");
     // One metadata batch instead of three remote round trips per capture. Conflict
@@ -130,10 +135,12 @@ export async function refreshInventory(db: Pool, root = REPO_ROOT) {
           path text,format text,sha256 text,size bigint,modified timestamptz,
           source text,category text,extractor text,error text)
       ) INSERT INTO research_ingest_inventory
-        (logical_path,format,file_sha256,byte_size,modified_at,source_slug,category_slug,extractor_version,disposition,scan_error)
+        (logical_path,format,file_sha256,byte_size,modified_at,source_slug,category_slug,extractor_version,disposition,notes,scan_error)
         SELECT x.path,x.format,x.sha256,x.size,x.modified,COALESCE(x.source,h.slug),
           COALESCE(h.category_slug,x.category),x.extractor,
-          CASE WHEN h.slug IS NOT NULL OR x.category IS NOT NULL THEN 'import' ELSE 'needs_review' END,x.error
+          COALESCE($2::jsonb->x.path->>'disposition',
+            CASE WHEN h.slug IS NOT NULL OR x.category IS NOT NULL THEN 'import' ELSE 'needs_review' END),
+          COALESCE($2::jsonb->x.path->>'reason',''),x.error
         FROM captured x LEFT JOIN LATERAL (
           SELECT f.category_slug,s.slug FROM research_source_files f
           JOIN research_sources s ON s.id=f.source_id WHERE f.logical_path=x.path
@@ -143,7 +150,7 @@ export async function refreshInventory(db: Pool, root = REPO_ROOT) {
           byte_size=EXCLUDED.byte_size,modified_at=EXCLUDED.modified_at,
           source_slug=EXCLUDED.source_slug,extractor_version=EXCLUDED.extractor_version,
           last_seen_at=now(),scanned_at=now(),missing_at=NULL,scan_error=EXCLUDED.scan_error`,
-      [JSON.stringify(files)],
+      [JSON.stringify(files), JSON.stringify(heldCaptures)],
     );
     await client.query(
       `INSERT INTO research_ingest_inventory_versions(inventory_id,file_sha256,byte_size)

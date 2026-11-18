@@ -5,6 +5,8 @@
 /** Normalized staging shape produced by extractors before DB upsert. */
 export interface RawRecord {
   source_record_id: string;
+  /** Audited source-specific rejection retained in the extraction ledger. */
+  extraction_rejection?: { code: string; reason: string };
   /** How the source record key was chosen; persisted as lineage provenance. */
   source_record_id_kind?: "natural" | "url" | "synthetic";
   /** Stable components used to derive a synthetic source_record_id. */

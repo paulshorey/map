@@ -21,7 +21,28 @@ All 43 rejected rows have a name and festival month but lack city, country and c
 Thirty-seven have a website URL that may help recover a location. Website and name alone
 need corroboration before publishing a place.
 
-## Implementation sequence
+## Implemented findings
+
+The [row review](../data/poi-research/reviews/critical-stages-guide.json) accounts for all 43
+rejections. The original guide issues supplied most of the fields lost during capture.
+The adapter supplies 36 cited localities, leaves two multi-city listings and two
+theatre-company entries in review, and rejects three page elements. It records these
+outcomes without editing the raw capture. City and country are the limit of the recovery.
+The organizer sources supplement cases where the guide supplies only an island or country,
+or leaves the locality ambiguous.
+
+Issue 14 retains the prior PIF key. Issue 20 uses a separate listing key with a
+`guide-20` suffix. Both retain their own month and citation, with no inferred edition date.
+The old failed extraction had 197 active records and no normalized or linked output.
+The repair preserves those records' IDs and starts with extractor `critical-stages-v1`.
+
+Keep the file `needs_review` in the [catalog](../data/poi-research/expected-captures.json)
+and inventory pending category and publication review. Some historical guide entries
+are broad theatre festivals or carnivals and may need a different category. A location
+in the guide establishes historical locality evidence. Current schedules and venues
+need current evidence.
+
+## Validation and release criteria
 
 1. **Audit identity offline.** Parse all 241 rows through the current extractor and record
    old IDs, guide issue, and proposed IDs. Check for same-issue repeats, cross-issue
@@ -54,3 +75,19 @@ need corroboration before publishing a place.
 The whole-file receipt should report raw rows, accepted listings, duplicates, explicit
 exclusions and unresolved rows. Confirm current coverage and sample location and
 deduplication quality separately from the execution result.
+
+## Validation to date
+
+The offline test replayed the real capture in both orders and kept the 197 existing IDs.
+A fresh local PostgreSQL extraction wrote 234 records. Its ledger retained four
+`source_review_required` and three `not_a_listing` rejections across all 241 input rows.
+The source version reached complete extraction with zero provider calls.
+
+## Future intake
+
+Run an extractor-only check before scheduling unfamiliar captures. Record the capture
+hash, extractor version, duplicate and collision counts, rejected rows by reason, and
+examples of missing or contradictory fields. Save the outcome with the capture's catalog
+entry. If a previous plan includes a held capture, regenerate the selection from current
+inventory before starting it. For current festival schedules, collect dated organizer
+programs as separate captures with their own provenance and review.
