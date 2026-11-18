@@ -202,9 +202,11 @@ pnpm --silent --filter @lib/db-map ingest:doctor --run <run-uuid> --json
 pnpm --silent --filter @lib/db-map ingest:issues list --run <run-uuid> --json
 ```
 
-The default returns 20 files, whole-inventory totals, stage task counts, exact worker/run/job
-identity, interventions, next action, last commits, exact active record IDs and active ages, scan receipts, and measured
-performance suggestions. Metrics are bounded to the latest 1,000 calls/completed attempts.
+The default returns 20 files, inventory totals, stage counts, worker and job evidence,
+interventions, active task ages, scan receipts and performance suggestions. The summary omits
+`ready_to_verify`; count it from `ingest:inventory --json` when reconciling totals. Metrics
+cover the latest 1,000 attributed calls and completed attempts. For an incident, check the
+pinned execution and job receipt for earlier failures and recovery.
 Provider calls include admission wait, response latency, requests, batch size, known/unknown cost,
 model, prompt/cache/completion/reasoning tokens when supplied, HTTP status and quota headers.
 Attempt timing separates provider, database round trips and remaining local work. Batch calls
@@ -295,30 +297,22 @@ Queries use a consistent read-only snapshot and timeouts.
    active normalization output also refuse resume rather than silently mixing data.
 5. Recheck status, trace representative output, and report category coverage separately.
 
-For full history or exact recent writes, connect using the existing `DB_MAP_URL` environment
-variable (never print credentials). For example, in psql set `run_id` to the chosen UUID:
+When bounded status is insufficient, use the `database-query` skill and `agents-sql` on the
+registered target for the pinned run. Use the read-only role. For example, save this query
+to a private file, replace `<execution-uuid>`, and run
+`agents-sql query map-dev --timeout 15 -f /path/to/query.sql --csv` for a development run.
 
 ```sql
--- Most recently attempted/finished units, including prior failed retries.
-SELECT id, execution_id, stage, target_key, status, started_at, finished_at,
-       input, output, error
-FROM research_ingest_attempts
-WHERE run_id = :'run_id'::uuid
-ORDER BY greatest(started_at, finished_at) DESC, id DESC
-LIMIT 30;
-
--- Provider evidence attributable to this run, not merely the same source/time window.
-SELECT q.* FROM research_normalization_requests q
-WHERE q.run_id = :'run_id'::uuid
-ORDER BY q.created_at DESC LIMIT 10;
-
--- Cohort with current output pointers: current state may be newer than the run's artifacts.
-SELECT i.source_record_id, i.observation_id, rp.normalization_state,
-       rp.active_normalization_id, rp.active_geocode_id, rp.active_embedding_id,
-       rp.canonical_poi_id
-FROM research_ingest_run_items i
-LEFT JOIN research_pois rp ON rp.id=i.research_poi_id
-WHERE i.run_id = :'run_id'::uuid ORDER BY i.source_ordinal;
+-- Execution totals, including failures outside the rolling overview window.
+SELECT provider, operation, status, http_status, count(*) AS calls,
+       min(started_at) AS first_call, max(started_at) AS last_call,
+       sum(estimated_cost_usd) AS known_cost_usd,
+       count(*) FILTER (WHERE estimated_cost_usd IS NULL) AS unknown_cost_calls
+FROM research_ingest_provider_calls
+WHERE execution_id = '<execution-uuid>'::uuid
+GROUP BY provider, operation, status, http_status
+ORDER BY provider, operation, status, http_status
+LIMIT 50;
 ```
 
 `first_seen_at` means insertion and `last_seen_at` means source observation, not a general
@@ -679,11 +673,12 @@ They do not call providers or start ingestion. Resolve `needs_review` files befo
 as an expected import set; alternate exports and supporting JSON are not automatically imports.
 
 The dashboard derives current progress from extraction records, active artifacts, memberships,
-build inputs and successful verification scopes. Retries are deduplicated by source record ID.
-A completed sample cannot certify a full file. Complete extraction plus ready outputs without
-current verification becomes `ready_to_verify`; its command uses `--from report` to check the
-whole file. A changed hash/extractor/category requires a new run. Coverage is independent of the
-latest execution's outcome and of whether the source file is still present locally.
+build inputs and verification. Retries are deduplicated by source record ID. A completed
+sample applies only to its selected scope. A file can go from `complete` to `ready_to_verify`
+when later imports rebuild shared canonicals. The old receipt still records what was verified
+at the time. When admission allows it, use the inventory's `--from report` command to verify
+current outputs. Changed hash, extractor or category requires a new run. Sampled quality review
+is tracked separately from structural coverage.
 
 The inventory tables are `research_ingest_inventory`, `research_ingest_inventory_versions`,
 and `research_ingest_inventory_edits`. Current progress is computed, never hand-edited. File
@@ -801,9 +796,10 @@ import or certify a source/category.
 
 | Evidence                                | Action                                                                                                                                                         |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Extraction collision or wrong count     | Check parser, wrapper shape, source identity, ordinal and file hash; fix before normalization.                                                                 |
-| Normalization validation/provider error | Inspect linked request, exact UUID, response, validation warnings and profile; reproduce the exact record.                                                     |
-| Blocked geocode                         | Check normalized locality, source evidence, cache query/miss and quota. Correct evidence/query or deliberately invalidate the specific cache result.           |
+| Extraction collision or wrong count | Check the file hash, wrapper, rejection classes and both collision ordinals. Identical rows can be duplicates. Different undated rows with the same derived ID may be distinct listings. Use a stable source ID or a source-specific rule backed by evidence. Missing identity is logged as a rejection. Review rejected counts for lost coverage. |
+| Truncated or invalid normalization | Inspect the exact request and its repair. For truncation (`finish_reason: length`), compare token usage, request limits and input size. Normalization has one repair attempt with a larger output allowance for incomplete output. If repair also fails, test a smaller prompt or a source-specific profile on the pinned record. Check issue disposition before retrying an exclusion. |
+| Provider fetch failure or cooldown | Check the provider call, database lifecycle evidence, and recovery state. A healthy heartbeat during bounded recovery is expected. Daily geocoding quota has a separate queue wait and same-run resume. Authentication and invalid output need diagnosis. |
+| Blocked geocode | Check normalized locality, source coordinates, the exact query or cached miss, and quota. Correct the source evidence or query, or invalidate the specific cache result when justified. |
 | Failed embed/match/build                | Inspect attempt error and artifact pointers; repair the provider/configuration or responsible algorithm, then resume.                                          |
 | Wrong canonical/merge                   | Trace members, decisions, overrides, coordinate election and build inputs; validate known same/different pairs.                                                |
 | Old run refuses resume                  | Its pinned input/output or pipeline version changed; start a new run with an explicit repair selection and review cached artifacts.                            |
@@ -935,13 +931,13 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
 - a run stopped by the daily geocoding quota (`provider_daily_quota`) is resumed with the same
   run UUID two minutes after the reset; two immediate re-exhaustions stop the queue;
 - a run that failed only because it lost its database connection (a DNS failure, an
-  unreachable network, a dropped or refused connection, or the pool timing out while
-  connecting, raised by the pg driver or naming the database host or port) is resumed with the same
-  run UUID once the database answers again: after a five-minute wait, for up to about an
-  hour, at most twice per file. Its checkpoints are intact; nothing is wrong with the file.
-  A provider's network error is not retried this way, and a queue restarted later does not
-  adopt such a failed run by itself: resume it with `ingest:supervise start -- --resume <uuid> --unlimited`
-  after checking it;
+  unreachable network, a dropped or refused connection, or a pool checkout timeout
+  attributed to PostgreSQL) can be resumed with the same run UUID after the database
+  answers again. The queue waits five minutes before rechecking, for up to about an hour,
+  and retries at most twice per file. See [checkout evidence](#database-connection-acquisition-evidence)
+  to distinguish a pool wait from failed connection establishment. Provider recovery runs
+  inside the worker. A new queue does not adopt a previous connectivity failure automatically.
+  After diagnosis, use `ingest:supervise start -- --resume <uuid> --unlimited` when safe;
 - any other outcome stops the queue as `needs_attention` with the run UUID; nothing else is
   retried, so diagnose it (see the troubleshooting sections) and start a new queue;
 - before each launch the pipeline must be quiescent and out of maintenance (it waits up to an
