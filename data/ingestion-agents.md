@@ -30,8 +30,10 @@ launch whole-file imports; `ingest:import-queue start` and `resume` refuse to ru
    Check `control.workers`, source locks, and admitted workers in the overview. On the
    primary host, corroborate PID and start time when needed. An old
    `components.local.jobs[].status` can outlive a process. Match its execution ID to
-   database history before treating it as active or abandoned. A live queue may also be
-   waiting for quota with no ingestion worker.
+   database history before treating it as active or abandoned. For older jobs, a missing
+   terminal receipt and `ERR_IPC_CHANNEL_CLOSED` at the end of `supervisor.log` can be
+   signs of a stale journal. Check the matching database execution for its outcome.
+   A live queue may also be waiting for quota with no ingestion worker.
 2. Pin the queue, file, run, execution and job IDs. Use
    `ingest:supervise status --job <uuid>` with a queue entry's `jobs` ID for its receipt
    or log path. For a new active
