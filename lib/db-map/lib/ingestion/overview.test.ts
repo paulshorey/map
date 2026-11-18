@@ -129,6 +129,15 @@ test("a source lock does not confirm competing fresh executions", () => {
   const ambiguous = assessWorkers({ ...locks, workers: [live, competing] });
   assert.equal(ambiguous.confirmed, 0);
   assert.equal(ambiguous.unconfirmed, 2);
+  const localUnverified = assessWorkers({
+    ...locks,
+    workers: [
+      live,
+      { ...competing, local_process: "present_identity_unverified" },
+    ],
+  });
+  assert.equal(localUnverified.confirmed, 0);
+  assert.equal(localUnverified.unconfirmed, 2);
   const resolved = assessWorkers({
     ...locks,
     workers: [live, { ...competing, heartbeat_stale: true }],
