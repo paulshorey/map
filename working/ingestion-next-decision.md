@@ -20,7 +20,10 @@ for current queue, coverage and classifications.
   The Dyrt has no post-reset run in the audited inventory. [Offline reverse lookup](https://github.com/paulshorey/map/pull/89)
   has merged. Estimate remaining forward lookups before queueing it.
 
-## Earlier decisions
+## Earlier decisions (superseded)
+
+The holds and run directives below describe the October decisions. Use the current queue,
+coverage and classifications for operational decisions.
 
 ### Decision — 2026-10-29, after continuation
 

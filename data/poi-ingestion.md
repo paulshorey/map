@@ -297,10 +297,13 @@ Queries use a consistent read-only snapshot and timeouts.
    active normalization output also refuse resume rather than silently mixing data.
 5. Recheck status, trace representative output, and report category coverage separately.
 
-When bounded status is insufficient, use the `database-query` skill and `agents-sql` on the
-registered target for the pinned run. Use the read-only role. For example, save this query
-to a private file, replace `<execution-uuid>`, and run
-`agents-sql query map-dev --timeout 15 -f /path/to/query.sql --csv` for a development run.
+When bounded status is insufficient, follow the shared agent setup's
+`~/.agents/skills/database-query/SKILL.md` and use its read-only role on the registered target
+for the pinned run. On a host with that setup, save the query below to a private file, replace
+`<execution-uuid>`, and run
+`~/.agents/bin/agents-sql query map-dev --timeout 15 -f /path/to/query.sql --csv` for a
+development run. If the shared tooling or read-only target is unavailable in this checkout's
+environment, use an approved host with the registered target to run the query.
 
 ```sql
 -- Execution totals, including failures outside the rolling overview window.
