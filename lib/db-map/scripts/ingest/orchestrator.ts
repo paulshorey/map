@@ -564,7 +564,8 @@ async function extractFile(
 
   let ordinal = 0;
   const seenIds = new Map<string, { hash: string; ordinal: number }>();
-  const genericSource = !getExtractor(ctx.resolved.source.meta.slug);
+  const genericOccurrenceIdentity =
+    !extractor || extractor.genericOccurrenceIdentity;
   try {
     for await (const record of recordsFor(ctx.resolved)) {
       if (execution?.stopped) break;
@@ -614,7 +615,7 @@ async function extractFile(
             `extract duplicate #${ordinal} ${recordLabel(record)} (same as #${prior.ordinal})`,
           );
         } else if (
-          genericSource &&
+          genericOccurrenceIdentity &&
           record.source_record_id_kind === "synthetic" &&
           record.identity_inputs?.edition
         ) {

@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import type { Extractor, RawRecord } from "../types.js";
-import { parseGenericRecords } from "./generic.js";
+import { parseGenericRecords, separateOccurrences } from "./generic.js";
 
 type ReviewRow = {
   issue: number;
@@ -82,6 +82,7 @@ function applyReview(
 
 export const criticalStagesExtractor: Extractor = {
   slug: "critical_stages",
+  genericOccurrenceIdentity: true,
   async *parse(file) {
     const { schema_version, rows } = JSON.parse(
       await readFile(reviewPath, "utf8"),
@@ -96,9 +97,9 @@ export const criticalStagesExtractor: Extractor = {
     );
     if (decisions.size !== rows.length)
       throw new Error("Duplicate Critical Stages review key");
-    for await (const record of parseGenericRecords(file, {
-      sourceSlug: "critical_stages",
-    })) {
+    const sourceSlug = "critical_stages";
+    const records = () => parseGenericRecords(file, { sourceSlug });
+    for await (const record of separateOccurrences(records, sourceSlug)) {
       yield applyReview(record, decisions);
     }
   },

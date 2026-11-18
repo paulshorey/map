@@ -94,6 +94,27 @@ test("Critical Stages retains raw rows, prior IDs and distinct stable guide list
     const rows = await read(sameIssue);
     assert.equal(rows[0]?.source_record_id, rows[1]?.source_record_id);
     assert.notDeepEqual(rows[0]?.raw, rows[1]?.raw);
+    assert.equal(rows[0]?.identity_inputs?.edition, null);
+
+    await writeFile(
+      sameIssue,
+      JSON.stringify([
+        { ...pif, start_date: "2026-09-01" },
+        { ...pif, start_date: "2026-09-01", description: "different text" },
+        { ...pif, start_date: "2026-09-02" },
+      ]),
+    );
+    const dated = await collect(
+      recordsFor({ ...source, absolutePath: sameIssue }),
+    );
+    assert.equal(source.source.extractor?.genericOccurrenceIdentity, true);
+    assert.equal(dated[0]?.source_record_id, dated[1]?.source_record_id);
+    assert.notEqual(dated[0]?.source_record_id, dated[2]?.source_record_id);
+    assert.deepEqual(dated.map((row) => row.identity_inputs?.edition), [
+      "2026-09-01",
+      "2026-09-01",
+      "2026-09-02",
+    ]);
   } finally {
     await rm(temp, { recursive: true, force: true });
   }

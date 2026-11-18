@@ -33,6 +33,8 @@ export interface RawRecord {
 export interface Extractor {
   slug: string;
   parse(file: string): AsyncIterable<RawRecord>;
+  /** Dated synthetic IDs from the generic occurrence pipeline can repeat. */
+  genericOccurrenceIdentity?: boolean;
   /**
    * Optional per-source inclusion predicate. When false, the row is still stored in
    * research_pois (provenance) but tagged with attributes._is_poi = false so later
