@@ -4,7 +4,7 @@
 
 The [November 5 reset](data-reset-20261105.md) was followed by re-imports starting November 16.
 The [November 16 backlog plan](../data/import-plans/backlog-20261116.json) records that day's
-selection. Use [agent status triage](../data/ingestion-agents.md#inspect-status-without-changing-it)
+selection. Use [agent status triage](../data/ingestion-agents.md#inspect-ingestion-status)
 for current queue, coverage and classifications.
 
 - **Critical Stages** stopped at extraction. Rows 149 and 182 are undated listings for the

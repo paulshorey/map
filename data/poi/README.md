@@ -1,6 +1,6 @@
 # Raw POI captures
 
-Use [agent status triage](../ingestion-agents.md#inspect-status-without-changing-it) to inspect
+Use [agent status triage](../ingestion-agents.md#inspect-ingestion-status) to inspect
 active work. Run `ingest:inventory --json` to read indexed files and coverage, and
 `ingest:queue --json` to see recommended actions. Use `ingest:import-queue status --json`
 for the actual import sequence. The [local dashboard](../../apps/ingestion/README.md) shows

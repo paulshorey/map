@@ -74,7 +74,7 @@ pnpm --silent --filter @lib/db-map ingest:import-queue status --json # the queue
 
 Pin the run, execution and job IDs and timestamps. Use `control.workers`, heartbeat and
 lock evidence to establish managed-worker liveness. Local job journals can retain a stale
-`running` label. Follow [status triage](data/ingestion-agents.md#inspect-status-without-changing-it)
+`running` label. Follow [status triage](data/ingestion-agents.md#inspect-ingestion-status)
 to resolve conflicting evidence or find finished jobs.
 
 Preserve healthy imports. Verify whole-file coverage before advancing, never signal a
