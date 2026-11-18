@@ -143,6 +143,7 @@ interface ResearchMatchRow {
 interface CandidateRow {
   canonical_id: string;
   canonical_name: string;
+  canonical_name_generated: boolean;
   canonical_lat: number;
   canonical_lng: number;
   canonical_website: string | null;
@@ -593,24 +594,38 @@ export function withoutGeneratedName(row: ResearchMatchRow): ResearchMatchRow {
   return { ...row, name: null, name_normalized: null, content_embedding: null };
 }
 
-export function withoutGeneratedCandidateName<
-  T extends {
-    best_name_generated: boolean;
-    best_name: string | null;
-    best_name_normalized: string | null;
-    best_content_embedding: number[] | null;
-    canonical_name: string;
-  },
->(candidate: T): T {
-  if (!candidate.best_name_generated) return candidate;
-  return {
-    ...candidate,
-    best_name: null,
-    best_name_normalized: null,
-    best_content_embedding: null,
-    // canonical_name is the generated name too; an empty string never compares equal.
-    canonical_name: "",
-  };
+type CandidateNameEvidence = Pick<
+  CandidateRow,
+  | "canonical_name"
+  | "canonical_name_generated"
+  | "best_name_generated"
+  | "best_name"
+  | "best_name_normalized"
+  | "best_content_embedding"
+>;
+
+function candidateUsesGeneratedName(candidate: CandidateNameEvidence): boolean {
+  return candidate.best_name_generated ||
+    (candidate.canonical_name_generated &&
+      !(candidate.best_name || candidate.best_name_normalized));
+}
+
+export function withoutGeneratedCandidateName<T extends CandidateNameEvidence>(
+  candidate: T,
+): T {
+  if (candidateUsesGeneratedName(candidate)) {
+    return {
+      ...candidate,
+      best_name: null,
+      best_name_normalized: null,
+      best_content_embedding: null,
+      canonical_name: "",
+    };
+  }
+  // A real live member can supply evidence while its canonical label awaits a rebuild.
+  return candidate.canonical_name_generated
+    ? { ...candidate, canonical_name: "" }
+    : candidate;
 }
 
 async function fetchCandidates(
@@ -633,6 +648,7 @@ async function fetchCandidates(
     `SELECT
        cp.id AS canonical_id,
        cp.name AS canonical_name,
+       COALESCE(cp.attributes->>'name_generated' = 'true', false) AS canonical_name_generated,
        cp.lat AS canonical_lat,
        cp.lng AS canonical_lng,
        cp.website AS canonical_website,
@@ -666,6 +682,7 @@ async function fetchCandidates(
        (
          cp.lat BETWEEN $9 AND $10
          AND cp.lng BETWEEN $11 AND $12
+         AND cp.attributes->>'name_generated' IS DISTINCT FROM 'true'
          AND lower(cp.name) % $13
          AND similarity(lower(cp.name), $13) >= 0.9
        ) AS via_name
@@ -699,7 +716,9 @@ async function fetchCandidates(
            WHERE bm.research_poi_id=rp.id AND bm.canonical_poi_id=cp.id AND bm.active)
        -- A real-named member represents the canonical (as its published name does), so
        -- best_name_generated holds only when no live member has a real name.
-       ORDER BY (rp.attributes->>'name_generated' IS DISTINCT FROM 'true') DESC, rs.trust DESC, (rp.content_embedding IS NOT NULL) DESC, rp.last_seen_at DESC, rp.id
+       ORDER BY (rp.attributes->>'name_generated' IS DISTINCT FROM 'true'
+                 AND NULLIF(trim(rp.name), '') IS NOT NULL) DESC,
+                rs.trust DESC, (rp.content_embedding IS NOT NULL) DESC, rp.last_seen_at DESC, rp.id
        LIMIT 1
      ) br ON true
      WHERE cp.status <> 'hidden'
@@ -716,6 +735,7 @@ async function fetchCandidates(
          OR (
            cp.lat BETWEEN $9 AND $10
            AND cp.lng BETWEEN $11 AND $12
+           AND cp.attributes->>'name_generated' IS DISTINCT FROM 'true'
            AND lower(cp.name) % $13
            AND similarity(lower(cp.name), $13) >= 0.9
          )
@@ -809,7 +829,7 @@ function scoreCandidates(
       candidate: {
         name: candidate.best_name ?? candidate.canonical_name,
         name_normalized:
-          candidate.best_name_normalized ?? candidate.canonical_name,
+          candidate.best_name_normalized ?? (candidate.canonical_name || candidate.best_name),
         content_embedding: candidate.best_content_embedding,
         website: candidateWebsite(row.website, candidate),
         phone: candidate.best_phone ?? candidate.canonical_phone,
@@ -905,10 +925,10 @@ async function llmDecisionForCandidate(
         date_precision: row.date_precision,
       },
       candidate: {
-        name: candidate.best_name_generated
+        name: candidateUsesGeneratedName(candidate)
           ? UNNAMED_FOR_LLM
           : (candidate.best_name ?? candidate.canonical_name),
-        canonical_name: candidate.best_name_generated
+        canonical_name: candidateUsesGeneratedName(candidate)
           ? UNNAMED_FOR_LLM
           : candidate.canonical_name,
         address: candidate.best_address ?? candidate.canonical_address,
@@ -971,7 +991,7 @@ async function decideRow(
   const nameGenerated = matchRow.attributes?.name_generated === true;
   const satelliteLike = (candidate: CandidateRow, similarity: number) =>
     !nameGenerated &&
-    !candidate.best_name_generated &&
+    !candidateUsesGeneratedName(candidate) &&
     isSatelliteLikeResearch(row, similarity);
   const overrides = await loadOverrideDecision(client, row.id);
   if (overrides.forceNew) {

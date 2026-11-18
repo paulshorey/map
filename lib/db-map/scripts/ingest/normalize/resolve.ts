@@ -136,7 +136,7 @@ export function resolveNormalization(input: {
     warnings.push("id_only_name");
     displayName = null;
   }
-  if (displayName && isPlaceholderName(displayName)) {
+  if (captured.osmCampgroundSource && displayName && isPlaceholderName(displayName)) {
     warnings.push("placeholder_name");
     // A real name from another tag survives the model echoing the placeholder.
     displayName = deterministic.normalizedName;

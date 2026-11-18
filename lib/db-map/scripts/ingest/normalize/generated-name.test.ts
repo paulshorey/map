@@ -138,6 +138,7 @@ test("named records' deterministic facts are unchanged (no generated keys, cache
   assert.equal(facts.normalizedName, "Blue Ponds RV Park");
   assert.equal(Object.hasOwn(facts, "generatedName"), false);
   assert.equal(Object.hasOwn(facts, "generatedNameSubject"), false);
+  assert.equal(facts.osmCampgroundPolicyVersion, undefined);
   assert.equal(facts.warnings.includes("source_name_missing_generated_name"), false);
 });
 
@@ -147,10 +148,15 @@ test("the unnamed-label policy is scoped to OSM campgrounds", () => {
   assert.equal(facts.normalizedName, null);
   assert.equal(facts.generatedName, undefined);
   assert.equal(resolve(captured).isPoi, false);
+  const other = input({ name: "NA", osmCampgroundSource: false, raw: { alt_name: "Other" } });
+  assert.equal(resolve(other).displayName, "NA");
+  assert.equal(buildDeterministicFacts(other).osmCampgroundPolicyVersion, undefined);
 });
 
 test("a nameless place is accepted with a flagged generated name (deterministic path)", () => {
-  const resolved = resolve(input({ city: "Lyon", country_code: "FR" }));
+  const captured = input({ city: "Lyon", country_code: "FR" });
+  assert.equal(buildDeterministicFacts(captured).osmCampgroundPolicyVersion, "osm-campground-v1");
+  const resolved = resolve(captured);
   assert.equal(resolved.isPoi, true);
   assert.equal(resolved.status, "degraded"); // no model output, as for any deterministic-only record
   assert.equal(resolved.displayName, "Caravan site near Lyon, France");
@@ -245,9 +251,12 @@ test("OSM access and lifecycle exclusions also apply when a site has a real name
   const cases = [
     { tags: { access: "private" }, reason: "osm_campground_restricted_access" },
     { tags: { access: "no" }, reason: "osm_campground_restricted_access" },
-    { tags: { "disused:tourism": "camp_site" }, reason: "osm_campground_inactive" },
+    { tags: { "disused:tourism": "caravan_site" }, reason: "osm_campground_inactive" },
     { tags: { abandoned: "yes" }, reason: "osm_campground_inactive" },
     { tags: { opening_hours: "closed" }, reason: "osm_campground_inactive" },
+    { tags: { operational_status: "closed" }, reason: "osm_campground_inactive" },
+    { tags: { closed: "2023" }, reason: "osm_campground_inactive" },
+    { tags: { construction: "caravan_site" }, reason: "osm_campground_inactive" },
   ];
   for (const { tags, reason } of cases) {
     for (const name of [null, "Mill Camp"]) {
@@ -264,7 +273,10 @@ test("OSM access and lifecycle exclusions also apply when a site has a real name
 test("flat tourism combines with access tags and seasonal service remains eligible", () => {
   for (const access of ["customers", "permit", "yes"]) {
     const captured = input({
-      attributes: { osm_tags: { access, seasonal: "yes", disused: "no", "disused:amenity": "toilets" } },
+      attributes: { osm_tags: {
+        access, seasonal: "yes", disused: "no", "disused:amenity": "toilets",
+        "was:tourism": "caravan_site", construction: "parking",
+      } },
       raw: { tourism: "camp_site" },
     });
     const resolved = resolve(captured);

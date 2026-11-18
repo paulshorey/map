@@ -1039,10 +1039,13 @@ eligibility problem. The generated-label policy starts with the registered `osm_
   cannot auto-merge them into an anchor. Matching still considers IDs, contacts, location and
   anchor adjudication. The embed stage still produces vectors for these records.
 
-Existing artifacts are not rewritten by a code update. For an earlier smoke, inspect the run
-and active artifacts, then deliberately reprocess the affected records if needed. The full OSM
-capture begins in `needs_review`. Record a bounded normalization-to-publication sample and
-confirm the inventory decision before starting the [whole-file queue](ingestion-agents.md#whole-file-imports).
+Affected OSM rows have a source-specific normalization cache version. For older artifacts,
+inspect the active state and start a fresh scoped run if a repair is needed. Resuming a checkpoint
+retains its completed stages. The full OSM
+capture defaults to `needs_review` on its first inventory scan. A refresh preserves an
+existing inventory decision, so check the live disposition before queueing. Record a
+bounded normalization-to-publication sample before approving the
+[whole-file queue](ingestion-agents.md#whole-file-imports).
 
 ## Unlocatable records are dropped
 

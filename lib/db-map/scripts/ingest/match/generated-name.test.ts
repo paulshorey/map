@@ -20,6 +20,7 @@ test("a generated name is neither name nor embedding evidence on either side", (
 
   const candidate = withoutGeneratedCandidateName({
     best_name_generated: true,
+    canonical_name_generated: true,
     best_name: null,
     best_name_normalized: "caravan site near lyon france",
     best_content_embedding: embedding,
@@ -54,10 +55,33 @@ test("named rows and candidates are untouched", () => {
   assert.equal(withoutGeneratedName(named as never), named);
   const candidate = {
     best_name_generated: false,
+    canonical_name_generated: false,
     best_name: "Camping du Lac",
     best_name_normalized: "camping du lac",
     best_content_embedding: embedding,
     canonical_name: "Camping du Lac",
   };
   assert.equal(withoutGeneratedCandidateName(candidate), candidate);
+});
+
+test("a generated published label stays out of matching during a member rebuild", () => {
+  const awaitingMember = {
+    best_name_generated: false,
+    canonical_name_generated: true,
+    best_name: null,
+    best_name_normalized: null,
+    best_content_embedding: null,
+    canonical_name: "Caravan site near Lyon, France",
+  };
+  assert.equal(withoutGeneratedCandidateName(awaitingMember).canonical_name, "");
+
+  const withRealMember = withoutGeneratedCandidateName({
+    ...awaitingMember,
+    best_name: "Camping du Lac",
+    best_name_normalized: "camping du lac",
+    best_content_embedding: embedding,
+  });
+  assert.equal(withRealMember.canonical_name, "");
+  assert.equal(withRealMember.best_name_normalized, "camping du lac");
+  assert.equal(withRealMember.best_content_embedding, embedding);
 });

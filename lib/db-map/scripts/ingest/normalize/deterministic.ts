@@ -7,6 +7,7 @@ import { parseOneDate } from "./dates.js";
 import {
   generatePlaceName,
   isPlaceholderName,
+  OSM_CAMPGROUND_POLICY_VERSION,
   osmCampgroundExclusion,
   realNameFromTags,
   sourceTags,
@@ -27,6 +28,7 @@ export interface DeterministicFacts {
    */
   unnamedOsmCampground?: true;
   sourceExclusionReason?: string;
+  osmCampgroundPolicyVersion?: string;
   generatedName?: string;
   generatedNameSubject?: string;
   countryCode: string | null;
@@ -318,9 +320,10 @@ export function buildDeterministicFacts(
 
   // A placeholder ("unnamed", blank) is not a name; a name given only in another tag is.
   const capturedName = input.name?.trim() || null;
-  const normalizedName = !isPlaceholderName(capturedName)
-    ? capturedName
-    : realNameFromTags(sourceTags(input.attributes, input.raw));
+  const needsOsmName = input.osmCampgroundSource && isPlaceholderName(capturedName);
+  const normalizedName = needsOsmName
+    ? realNameFromTags(sourceTags(input.attributes, input.raw))
+    : capturedName;
   if (capturedName && !normalizedName) warnings.push("placeholder_source_name");
   const sourceExclusionReason = input.osmCampgroundSource
     ? osmCampgroundExclusion({
@@ -356,8 +359,13 @@ export function buildDeterministicFacts(
     : null;
   if (generated) warnings.push("source_name_missing_generated_name");
 
+  // The facts are hashed into the normalization input. Re-key only the records the
+  // OSM policy changes so unrelated captures can reuse their artifacts and checkpoints.
+  const policyApplies = needsOsmName || sourceExclusionReason !== null;
+
   return {
     normalizedName,
+    ...(policyApplies ? { osmCampgroundPolicyVersion: OSM_CAMPGROUND_POLICY_VERSION } : {}),
     ...(sourceExclusionReason ? { sourceExclusionReason } : {}),
     ...(unnamedOsmCampground ? { unnamedOsmCampground: true as const } : {}),
     ...(generated

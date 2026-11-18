@@ -3,6 +3,8 @@
  * take precedence, and matching ignores generated labels as identity evidence.
  */
 
+export const OSM_CAMPGROUND_POLICY_VERSION = "osm-campground-v1";
+
 /** Attribute keys owned by this policy; a source's own attributes can never set them. */
 export const GENERATED_NAME_KEYS = [
   "name_generated",
@@ -93,16 +95,32 @@ export function osmCampgroundExclusion(input: {
   const access = tag("access");
   if (access === "private" || access === "no") return "osm_campground_restricted_access";
 
+  const tourism = tag("tourism");
+  const isThisCampgroundType = (value: string | undefined) =>
+    isCampground(value) && (!isCampground(tourism) || value === tourism);
   const hours = tag("opening_hours");
-  if (hours === "closed" || hours === "off" || INACTIVE_OSM_STATES.some((state) => {
-    const formerTourism = tag(`${state}:tourism`);
-    return tag(state) === "yes" || formerTourism === "yes" || isCampground(formerTourism);
-  })) {
+  const closed = tag("closed");
+  if (
+    tag("operational_status") === "closed" ||
+    (closed && /^\d{4}$/.test(closed)) ||
+    hours === "closed" ||
+    hours === "off" ||
+    INACTIVE_OSM_STATES.some((state) => {
+      const status = tag(state);
+      const formerTourism = tag(`${state}:tourism`);
+      return (
+        status === "yes" ||
+        isThisCampgroundType(status) ||
+        formerTourism === "yes" ||
+        isThisCampgroundType(formerTourism)
+      );
+    })
+  ) {
     return "osm_campground_inactive";
   }
 
   if (input.hasRealName) return null;
-  if (!isCampground(tag("tourism"))) return "osm_unnamed_missing_site_type";
+  if (!isCampground(tourism)) return "osm_unnamed_missing_site_type";
   if (!input.hasSourcePoint) return "osm_unnamed_missing_source_point";
   return null;
 }
