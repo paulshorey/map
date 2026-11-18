@@ -21,8 +21,10 @@ section before changing anything that a running worker uses.
 | Start one detached run outside the queue | `ingest:supervise start` |
 | Stop work | `ingest:import-queue stop [--now]`, or `ingest:control stop --run <uuid>` |
 
-Run everything from the repository root of the primary checkout. A coding worktree must not
-launch whole-file imports; `ingest:import-queue start` and `resume` refuse to run from one.
+Use the primary checkout for inspection and whole-file imports. When it is in use by another
+task, run pinned, bounded smokes from a synced worktree. Keep those job receipts and private
+log paths before removing the worktree. Whole-file queue start and resume require the
+primary checkout.
 
 ## Inspect ingestion status
 

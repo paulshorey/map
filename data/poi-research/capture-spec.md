@@ -11,6 +11,9 @@ verbatim fields; `name` (or `title`) is required for records without a natural i
 - Include locality (`city`, `region`/`state`, `country`/`country_code`) or coordinates when
   there is no natural id. The generic extractor derives a deterministic key from name and
   locality. A singleton detail URL is used only when it is unique within the file.
+  Keep the source's locality line verbatim as `location_raw` alongside parsed fields.
+  Leave ambiguous fields empty and check the original listing before marking the
+  source inadequate.
 - For a feed with one row per annual edition, configure the source as `identity.editioned` and
   include `start_date` or `starts_at`; edition is then part of the synthetic identity. Series
   sources must not set that flag.
