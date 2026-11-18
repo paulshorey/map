@@ -13,7 +13,7 @@ section before changing anything that a running worker uses.
 
 | You want to | Use |
 | --- | --- |
-| See what is running and what to do next | `ingest:overview --json`, `ingest:import-queue status --json` |
+| See workers, queue and recent outcomes | `ingest:overview --json` |
 | Inspect indexed captures and their current coverage | `ingest:inventory --json` |
 | Import whole files | `ingest:import-queue start` |
 | Try a change on 1–5 records, time-limited | `ingest:supervise smoke` |
@@ -26,32 +26,24 @@ launch whole-file imports; `ingest:import-queue start` and `resume` refuse to ru
 
 ## Inspect ingestion status
 
-1. Take the [two-command snapshot](../AGENTS.md#discover-and-coordinate-ingestion-jobs).
-   The queue status command can mark a dead queue as stopped in its local journal
-   and leaves verified live workers running. Check `control.workers`, source locks, and admitted workers in the overview. On the
-   primary host, corroborate PID and start time when needed. An old
-   `components.local.jobs[].status` can outlive a process. Match its execution ID to
-   database history before treating it as active or abandoned. For older jobs, a missing
-   terminal receipt and `ERR_IPC_CHANNEL_CLOSED` at the end of `supervisor.log` can be
-   signs of a stale journal. Check the matching database execution for its outcome.
-   A live queue may also be waiting for quota with no ingestion worker.
-2. Pin the queue, file, run, execution and job IDs. Use a queue entry's `jobs` ID with
-   `ingest:supervise status --job <uuid>` to print its `job.json`, including the result
-   once the supervisor saves it. The supervisor writes `result.json` first, so check it
-   if the final job save was interrupted. Active jobs may have no terminal result in
-   either file. See the [job directory layout](#a-single-detached-run) for log paths.
-   A newly active file can have a null queue `run_id` until the worker returns its
-   receipt. Get its run and execution IDs from the overview or job journal.
+1. Start with `ingest:overview --json`. Read `worker_liveness` for the confirmed count.
+   Confirmation requires a fresh heartbeat and matching admission and source locks.
+   On the primary host it also requires process identity. Unfinished journals with
+   `assessment: terminal_execution` reference an execution that already ended.
+2. Pin IDs from `import_queue.current` and `recent_executions`. The current entry can
+   get its IDs from the supervisor journal before the queue records a result. A queue
+   may hold its lock while waiting for quota with no active ingestion worker.
+   Use `ingest:import-queue status --json` for the full queue. That command can mark an
+   abandoned queue as stopped in its journal.
 3. Use `ingest:status --run <uuid> --json --limit 10` for the pinned run and
-   `ingest:issues list --run <uuid> --json` for issue dispositions. Compare the latest
-   committed task, heartbeat and stop reason. Keep raw logs private. Report bounded
-   counts, errors and timestamps instead.
-4. Compare the terminal receipt, current `ingest:inventory --file <path> --json`, and
-   the latest scan receipt. Run-stage verification counts describe the selected
-   cohort. A later canonical rebuild can move a previously complete file to
-   `ready_to_verify`. Roll up that state from inventory when reporting totals.
-   Track sampled quality separately. For a missing capture, check the file in this
-   checkout and the scan commit before recommending a restore or scan.
+   `ingest:issues list --run <uuid> --json` for issue dispositions. To get a job receipt,
+   use `ingest:supervise status --job <uuid>` or read its `result.json` if the final
+   job save was interrupted. Keep raw logs private.
+4. Compare a queue entry's recorded coverage to current inventory coverage.
+   `summary.coverage_counts` counts each import file once, independently of execution
+   and sampled quality. For visible files ready to verify, `verification_evidence`
+   reports current builds and artifacts newer than the matching whole-file verification.
+   Capture warnings distinguish a file on disk awaiting a scan from a missing file.
 
 For diagnosis by failure class, see the [troubleshooting table](poi-ingestion.md#troubleshooting-and-optimization).
 
