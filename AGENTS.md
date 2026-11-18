@@ -64,18 +64,10 @@ running. Never silently drain a backlog or chain small tests into a full run.
 
 ## Discover and coordinate ingestion jobs
 
-For any ingestion inspection or operation, use the primary checkout and take one snapshot:
-
-```sh
-pnpm --silent --filter @lib/db-map ingest:overview --json     # workers, locks, maintenance, next action
-pnpm --silent --filter @lib/db-map ingest:import-queue status --json # the queue; each file's outcome, run and job IDs
-# (status prints "No import queue exists" and exits non-zero until a first queue is started)
-```
-
-Pin the run, execution and job IDs and timestamps. Use `control.workers`, heartbeat and
-lock evidence to establish managed-worker liveness. Local job journals can retain a stale
-`running` label. Follow [status triage](data/ingestion-agents.md#inspect-ingestion-status)
-to resolve conflicting evidence or find finished jobs.
+Start ingestion inspection from the primary checkout with `pnpm --silent --filter @lib/db-map
+ingest:overview --json`. Pin queue, run, execution and job IDs from the reconciled snapshot.
+Use [status triage](data/ingestion-agents.md#inspect-ingestion-status) for journal details,
+coverage changes and older executions.
 
 Preserve healthy imports. Verify whole-file coverage before advancing, never signal a
 saved PID, and keep raw logs private.

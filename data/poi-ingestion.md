@@ -202,11 +202,13 @@ pnpm --silent --filter @lib/db-map ingest:doctor --run <run-uuid> --json
 pnpm --silent --filter @lib/db-map ingest:issues list --run <run-uuid> --json
 ```
 
-The default returns 20 files, inventory totals, stage counts, worker and job evidence,
-interventions, active task ages, scan receipts and performance suggestions. The summary omits
-`ready_to_verify`; count it from `ingest:inventory --json` when reconciling totals. Metrics
-cover the latest 1,000 attributed calls and completed attempts. For an incident, check the
-pinned execution and job receipt for earlier failures and recovery.
+The default returns 20 files, reconciled worker and queue evidence, eight recent terminal
+executions, coverage totals, and scan receipts. `summary.coverage_counts` includes every import
+file in scope, independently of any executing worker. Queue receipt coverage and current
+inventory coverage are shown separately. The overview reads journals without rewriting them.
+See [status triage](ingestion-agents.md#inspect-ingestion-status) for evidence and IDs. Metrics
+cover the latest 1,000 attributed calls and completed attempts. Check the pinned execution and
+job receipt for earlier failures and recovery.
 Provider calls include admission wait, response latency, requests, batch size, known/unknown cost,
 model, prompt/cache/completion/reasoning tokens when supplied, HTTP status and quota headers.
 Attempt timing separates provider, database round trips and remaining local work. Batch calls

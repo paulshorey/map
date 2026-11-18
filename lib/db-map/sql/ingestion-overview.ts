@@ -5,13 +5,22 @@ import {
 import { expectedCaptures } from "../lib/ingestion/expected-captures.js";
 import { PIPELINE_VERSIONS } from "../scripts/ingest/pipeline-versions.js";
 import type { Pool } from "pg";
-import { readFile, readdir } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getInventory } from "./ingestion-inventory.js";
 import { inspectControl } from "../scripts/ingest/control.js";
 import { buildImportQueue } from "../lib/ingestion/queue.js";
+import {
+  assessJournals,
+  assessQueue,
+  assessWorkers,
+  currentCapturePresence,
+  readCoverageChanges,
+  readExecutionReceipts,
+  readOverviewJournals,
+  readQueueLocks,
+} from "./ingestion-overview-evidence.js";
 export interface OverviewOptions {
   run?: string;
   file?: string;
@@ -115,58 +124,31 @@ export function primaryRoot() {
   ).trim();
   return dirname(common);
 }
-async function localEvidence() {
-  const root = primaryRoot(),
-    observed_at = new Date().toISOString();
-  const base = join(root, "lib/db-map/.ingest-jobs");
-  let entries: string[];
-  try {
-    entries = await readdir(base);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT")
-      return { observed_at, jobs: [], claims: [], errors: [] };
-    throw error;
-  }
-  const jobs: any[] = [],
-    // Launch claims belonged to the removed coordinator script; the field stays in the contract.
-    claims: any[] = [],
-    errors: string[] = [];
-  for (const id of entries.filter((x) => /^[0-9a-f-]{36}$/i.test(x))) {
-    try {
-      const job = JSON.parse(
-        await readFile(join(base, id, "job.json"), "utf8"),
-      );
-      if (job.status !== "finished")
-        jobs.push({
-          id: job.id,
-          status: job.status,
-          run_id: job.run_id ?? null,
-          execution_id: job.execution_id ?? null,
-          host: job.host,
-          host_id: job.host_id ?? null,
-          supervisor_pid: job.supervisor_pid,
-          child_pid: job.child_pid,
-          last_health_at: job.last_health_at ?? null,
-          last_health_evidence: job.last_health_evidence ?? null,
-          started_at: job.started_at,
-          journal: join(base, id, "job.json"),
-        });
-    } catch {
-      errors.push(`Unreadable job ${id}`);
-    }
-  }
-  return { observed_at, jobs, claims, errors };
-}
 export async function getOverview(
   db: Pool,
   options: OverviewOptions = {},
 ): Promise<OperationsOverview> {
-  const local = await localEvidence().catch((error) => ({
-    observed_at: new Date().toISOString(),
-    jobs: [] as any[],
-    claims: [] as any[],
-    errors: [String(error.message)],
-  }));
+  const root = (() => {
+    try {
+      return primaryRoot();
+    } catch {
+      return null;
+    }
+  })();
+  const { observed_at, journals, queues, errors } = root
+    ? await readOverviewJournals(root)
+    : {
+        observed_at: new Date().toISOString(),
+        journals: [],
+        queues: [],
+        errors: ["Primary checkout unavailable"],
+      };
+  const local = {
+    observed_at,
+    jobs: assessJournals(journals, [], []),
+    claims: [],
+    errors,
+  };
   const client = await db.connect().catch(() => null);
   if (!client)
     return {
@@ -189,6 +171,9 @@ export async function getOverview(
       ],
       improvements: [],
       summary: null,
+      worker_liveness: null,
+      import_queue: null,
+      recent_executions: [],
       files: [],
     };
   let data: OperationsOverview;
@@ -198,14 +183,53 @@ export async function getOverview(
     await client.query("SET LOCAL lock_timeout='1s'");
     const inventory = await getInventory(db, { client, file: options.file });
     const control = await inspectControl(client);
+    const worker_liveness = assessWorkers(control);
+    const receipts = await readExecutionReceipts(
+      client,
+      journals,
+      options.run,
+      options.file,
+    );
+    local.jobs = assessJournals(
+      journals,
+      worker_liveness.workers,
+      receipts.exact,
+    );
+    const import_queue = assessQueue(
+      queues,
+      await readQueueLocks(client),
+      journals,
+      worker_liveness.workers,
+      new Map(
+        inventory.files.map((file) => [file.logical_path, file.coverage]),
+      ),
+    );
+    const recent_executions = receipts.recent.map((receipt) => {
+      const job = journals.find(
+        (job) =>
+          job.execution_id === receipt.execution_id &&
+          job.run_id === receipt.run_id,
+      );
+      return {
+        ...receipt,
+        job_id: job?.id ?? null,
+        supervisor_result: job?.result ?? null,
+      };
+    });
     const executions = (
       await client.query(
         `SELECT e.*,r.current_stage,r.status AS run_status,r.counters,r.category_slug,s.slug AS source,f.logical_path
       FROM research_ingest_executions e JOIN research_ingest_runs r ON r.id=e.run_id JOIN research_sources s ON s.id=r.source_id
       JOIN research_source_file_versions v ON v.id=r.source_file_version_id JOIN research_source_files f ON f.id=v.source_file_id
       WHERE ($1::uuid IS NULL OR r.id=$1) AND ($2::text IS NULL OR f.logical_path=$2)
-      ORDER BY (e.status='running') DESC,e.started_at DESC LIMIT 5`,
-        [options.run ?? null, options.file ?? null],
+      ORDER BY (e.id=ANY($3::uuid[])) DESC,(e.status='running') DESC,e.started_at DESC,e.id DESC LIMIT 5`,
+        [
+          options.run ?? null,
+          options.file ?? null,
+          worker_liveness.workers
+            .filter((worker) => worker.liveness === "confirmed")
+            .map((worker) => worker.execution_id),
+        ],
       )
     ).rows;
     const run = options.run ?? executions[0]?.run_id ?? null;
@@ -307,6 +331,17 @@ export async function getOverview(
       intended: classified.length,
       complete: classified.filter((f) => f.coverage === "complete").length,
       active: classified.filter((f) => f.execution === "running").length,
+      ready_to_verify: classified.filter(
+        (f) => f.coverage === "ready_to_verify",
+      ).length,
+      coverage_counts: Object.fromEntries(
+        ["unstarted", "partial", "ready_to_verify", "complete", "unknown"].map(
+          (coverage) => [
+            coverage,
+            classified.filter((file) => file.coverage === coverage).length,
+          ],
+        ),
+      ),
       partial: classified.filter(
         (f) => f.coverage === "partial" && f.execution !== "running",
       ).length,
@@ -318,6 +353,29 @@ export async function getOverview(
       ).length,
       degraded_records: classified.reduce((n, f) => n + f.degraded, 0),
     };
+    const page = inventory.files.slice(
+      options.offset ?? 0,
+      (options.offset ?? 0) + (options.limit ?? 20),
+    );
+    const visiblePaths = new Set([
+      ...page.map((file) => file.logical_path),
+      ...(import_queue.current ? [import_queue.current.file] : []),
+      ...import_queue.recent_finished.map((file) => file.file),
+    ]);
+    const coverageChanges = new Map(
+      (
+        await readCoverageChanges(
+          client,
+          inventory.files
+            .filter(
+              (file) =>
+                file.coverage === "ready_to_verify" &&
+                visiblePaths.has(file.logical_path),
+            )
+            .map((file) => file.logical_path),
+        )
+      ).map((change) => [change.file, change]),
+    );
     const catalog = await expectedCaptures();
     const reviews = (
       await client.query(
@@ -374,7 +432,7 @@ export async function getOverview(
         run_id: file.resume_run?.id ?? file.latest_run?.id,
         records: file.normalization_failed,
         message:
-          "Failed or stale normalized outputs remain; inspect their record traces. Managed resume selects them for repair.",
+          "Failed or stale normalization is recorded. Check issue dispositions before retrying.",
         inspect_args: [
           "ingest:status",
           "--run",
@@ -416,21 +474,38 @@ export async function getOverview(
             "Database worker lacks matching local supervisor evidence; inspect its host",
         });
     }
+    const latestSuccessfulScan = scans.find(
+      (scan) => scan.status === "succeeded",
+    );
     for (const capture of catalog.filter((c) => c.required)) {
       const actual = inventory.files.find(
         (f) => f.logical_path === capture.file,
       );
       if (options.file && capture.file !== options.file) continue;
-      if (!actual || actual.missing_at)
+      if (!actual || actual.missing_at) {
+        const presence = root
+          ? await currentCapturePresence(root, capture.file)
+          : "unknown";
+        const present = presence === "present";
         interventions.push({
-          code: "expected_capture_missing",
+          code: present
+            ? "expected_capture_scan_stale"
+            : presence === "missing"
+              ? "expected_capture_missing"
+              : "expected_capture_presence_unknown",
           scope: "file",
           severity: "blocking",
           file: capture.file,
-          message:
-            "Required capture missing; restore or record a reviewed replacement",
+          capture_presence: presence,
+          scan_git_commit: latestSuccessfulScan?.git_commit ?? null,
+          scan_finished_at: latestSuccessfulScan?.finished_at ?? null,
+          message: present
+            ? "Required capture is on disk. Refresh inventory before queueing it."
+            : presence === "missing"
+              ? "Required capture is absent from the primary checkout. Restore it or record an approved replacement."
+              : "Check the required capture in the primary checkout.",
         });
-      else if (
+      } else if (
         actual.category_slug !== capture.category ||
         actual.disposition !== "import"
       )
@@ -479,16 +554,26 @@ export async function getOverview(
             (x) => x.scope === "global" && x.severity === "blocking",
           )
         ? { action: "inspect", reason: "Unresolved global evidence" }
-        : control.workers.length
+        : worker_liveness.unconfirmed
           ? {
-              action: "wait_for_active_run",
-              run_id: control.workers[0].run_id,
-              reason:
-                "Supervisor owns execution; inspect listed interventions separately",
+              action: "inspect",
+              reason: "Managed worker evidence is unconfirmed",
             }
-          : queue.admission.launch_allowed
-            ? { action: queue.next?.action ?? "none", item: queue.next }
-            : { action: "inspect", reason: queue.admission.reason };
+          : worker_liveness.confirmed
+            ? {
+                action: "wait_for_active_run",
+                run_id: worker_liveness.workers[0].run_id,
+                reason:
+                  "Managed worker has a current heartbeat and admission locks",
+              }
+            : import_queue.active
+              ? {
+                  action: "wait_for_import_queue",
+                  reason: "Import queue has admission or is starting",
+                }
+              : queue.admission.launch_allowed
+                ? { action: queue.next?.action ?? "none", item: queue.next }
+                : { action: "inspect", reason: queue.admission.reason };
     data = {
       schema_version: 1,
       observed_at: new Date().toISOString(),
@@ -497,6 +582,20 @@ export async function getOverview(
         local,
       },
       summary,
+      worker_liveness,
+      import_queue: {
+        ...import_queue,
+        current: import_queue.current && {
+          ...import_queue.current,
+          verification_evidence:
+            coverageChanges.get(import_queue.current.file) ?? null,
+        },
+        recent_finished: import_queue.recent_finished.map((file) => ({
+          ...file,
+          verification_evidence: coverageChanges.get(file.file) ?? null,
+        })),
+      },
+      recent_executions,
       control,
       decision,
       interventions,
@@ -523,32 +622,28 @@ export async function getOverview(
       scans,
       category_coverage,
       quality_reviews: reviews,
-      files: inventory.files
-        .slice(
-          options.offset ?? 0,
-          (options.offset ?? 0) + (options.limit ?? 20),
-        )
-        .map((f) => ({
-          id: f.id,
-          file: f.logical_path,
-          source: f.source_slug,
-          category: f.category_slug,
-          disposition: f.disposition,
-          coverage: f.coverage,
-          execution: f.execution,
-          freshness: f.freshness,
-          total: f.total,
-          normalized: f.normalized,
-          embedded: f.embedded,
-          linked: f.linked,
-          verified: f.verified,
-          excluded: f.excluded,
-          degraded: f.degraded,
-          scanned_at: f.scanned_at,
-          next: f.next,
-          commands: f.commands,
-          quality: quality.get(f.id)?.decision ?? "unreviewed",
-        })),
+      files: page.map((f) => ({
+        id: f.id,
+        file: f.logical_path,
+        source: f.source_slug,
+        category: f.category_slug,
+        disposition: f.disposition,
+        coverage: f.coverage,
+        verification_evidence: coverageChanges.get(f.logical_path) ?? null,
+        execution: f.execution,
+        freshness: f.freshness,
+        total: f.total,
+        normalized: f.normalized,
+        embedded: f.embedded,
+        linked: f.linked,
+        verified: f.verified,
+        excluded: f.excluded,
+        degraded: f.degraded,
+        scanned_at: f.scanned_at,
+        next: f.next,
+        commands: f.commands,
+        quality: quality.get(f.id)?.decision ?? "unreviewed",
+      })),
     };
     if (options.includeInventory) data.inventory = inventory;
     if (options.detail && run) {
@@ -558,7 +653,7 @@ export async function getOverview(
        FROM (SELECT t.*,row_number() OVER(PARTITION BY stage,state ORDER BY i.source_ordinal,i.source_record_id) AS sample_rank
         FROM research_ingest_tasks t JOIN research_ingest_run_items i USING(run_id,source_record_id)
         WHERE t.run_id=$1 AND state IN ('pending','paused','quarantined','waiting_budget')) sampled
-       WHERE sample_rank<=5 ORDER BY rank,state,source_record_id`,
+       WHERE sample_rank<=5 ORDER BY stage,state,sample_rank`,
           [run],
         )
       ).rows;
@@ -580,7 +675,7 @@ export async function getOverview(
           status: "unknown",
           message: error instanceof Error ? error.message : String(error),
         },
-        local,
+        local: { ...local, jobs: assessJournals(journals, [], []) },
       },
       decision: {
         action: "inspect",
@@ -595,6 +690,9 @@ export async function getOverview(
       ],
       improvements: [],
       summary: null,
+      worker_liveness: null,
+      import_queue: null,
+      recent_executions: [],
       files: [],
     };
   } finally {

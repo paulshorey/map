@@ -7,7 +7,7 @@ The [November 16 backlog plan](../data/import-plans/backlog-20261116.json) recor
 selection. Use [agent status triage](../data/ingestion-agents.md#inspect-ingestion-status)
 for current queue, coverage and classifications.
 
-- **Critical Stages** stopped at extraction. Rows 149 and 182 are undated listings for the
+- **Critical Stages** stopped at extraction. See the [repair plan](critical-stages-repair.md). Rows 149 and 182 are undated listings for the
   same Zagreb festival from different guide editions. Compare both listings, retain both
   source citations, and review the 43 rejected rows. All 43 have names and a festival month,
   37 have a website URL, and none has locality or coordinates.
