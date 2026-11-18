@@ -44,7 +44,8 @@ need corroboration before publishing a place.
    partial extraction left active observations under displaced IDs. Use source snapshot
    retirement for superseded rows only after a complete replacement is proven.
 5. **Stage the next run.** Once the active queue reaches a safe handoff and validation is
-   authorized, run a 1–5 record smoke with the PIF pair and a recovered location where
+   authorized, use the audited source record IDs for separate `ingest:supervise smoke`
+   runs. Pass one `--record` per run for each PIF listing and one recovered location if
    available. Check published location precision, citation lineage, and whether matching
    represents the same festival consistently. An extractor-version or capture change
    requires a fresh run. Refresh inventory and queue the whole file only after the

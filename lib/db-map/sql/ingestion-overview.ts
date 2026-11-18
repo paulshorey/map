@@ -222,7 +222,7 @@ export async function getOverview(
       FROM research_ingest_executions e JOIN research_ingest_runs r ON r.id=e.run_id JOIN research_sources s ON s.id=r.source_id
       JOIN research_source_file_versions v ON v.id=r.source_file_version_id JOIN research_source_files f ON f.id=v.source_file_id
       WHERE ($1::uuid IS NULL OR r.id=$1) AND ($2::text IS NULL OR f.logical_path=$2)
-      ORDER BY (e.id=ANY($3::uuid[])) DESC,(e.status='running') DESC,e.started_at DESC LIMIT 5`,
+      ORDER BY (e.id=ANY($3::uuid[])) DESC,(e.status='running') DESC,e.started_at DESC,e.id DESC LIMIT 5`,
         [
           options.run ?? null,
           options.file ?? null,

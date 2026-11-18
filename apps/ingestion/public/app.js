@@ -229,10 +229,10 @@ function renderOperations(o) {
     )
     .join("");
   panel.innerHTML = `<h2>${esc(label(o.decision.action))}</h2><p>${esc(o.decision.reason || o.decision.item?.reason || o.execution?.logical_path || "No active worker")}</p>
-    <p>${number(o.worker_liveness.confirmed)} confirmed managed workers · ${number(o.worker_liveness.unconfirmed)} unconfirmed · ${number(o.summary.ready_to_verify)} files ready to verify</p>
+    ${o.worker_liveness ? `<p>${number(o.worker_liveness.confirmed)} confirmed managed workers · ${number(o.worker_liveness.unconfirmed)} unconfirmed · ${number(o.summary.ready_to_verify)} files ready to verify</p>` : ""}
     ${o.components.local.jobs.some((job) => job.assessment === "terminal_execution") ? `<p class="muted-note">${number(o.components.local.jobs.filter((job) => job.assessment === "terminal_execution").length)} unfinished journals reference terminal executions.</p>` : ""}
     ${renderQueueEvidence(o.import_queue)}
-    ${o.recent_executions.length ? `<details><summary>Recent executions</summary><ul>${o.recent_executions.map((execution) => `<li>${esc(execution.file)} · ${esc(label(execution.status))} · ${date(execution.finished_at)}${execution.stop_reason ? ` · ${esc(label(execution.stop_reason))}` : ""}</li>`).join("")}</ul></details>` : ""}
+    ${o.recent_executions?.length ? `<details><summary>Recent executions</summary><ul>${o.recent_executions.map((execution) => `<li>${esc(execution.file)} · ${esc(label(execution.status))} · ${date(execution.finished_at)}${execution.stop_reason ? ` · ${esc(label(execution.stop_reason))}` : ""}</li>`).join("")}</ul></details>` : ""}
     ${o.execution ? `<p class="muted-note">Run <code>${esc(o.execution.run_id)}</code> · ${esc(label(o.execution.status))} · scheduler ${o.execution.scheduler_version} · heartbeat ${date(o.execution.heartbeat_at)}</p>` : ""}
     ${o.active_tasks?.length ? `<p>Active records: ${o.active_tasks.map((t) => `${esc(t.source_record_id)} (${esc(t.stage)}, ${Math.round(t.active_seconds)}s)`).join(" · ")}</p>` : ""}
     <div class="stage-overview">${Object.entries(stages)

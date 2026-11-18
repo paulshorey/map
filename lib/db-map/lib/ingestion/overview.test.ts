@@ -118,6 +118,25 @@ test("a claimed worker needs fresh exact identity and the matching database admi
   );
 });
 
+test("a source lock does not confirm competing fresh executions", () => {
+  const competing = {
+    ...live,
+    run_id: "run-other",
+    execution_id: "execution-other",
+    identity_verified: false,
+    local_process: "remote_unknown" as const,
+  };
+  const ambiguous = assessWorkers({ ...locks, workers: [live, competing] });
+  assert.equal(ambiguous.confirmed, 0);
+  assert.equal(ambiguous.unconfirmed, 2);
+  const resolved = assessWorkers({
+    ...locks,
+    workers: [live, { ...competing, heartbeat_stale: true }],
+  });
+  assert.equal(resolved.confirmed, 1);
+  assert.equal(resolved.workers[0]?.liveness, "confirmed");
+});
+
 test("unfinished journals can reference terminal executions without increasing the worker count", () => {
   const historical = {
     ...job,

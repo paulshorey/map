@@ -128,16 +128,31 @@ export function assessWorkers(control: Control) {
       .filter((lock) => admitted.has(lock.database_pid))
       .map((lock) => lock.source),
   );
-  const workers = control.workers.map((worker) => {
-    const confirmed =
+  const candidates = control.workers.filter(
+    (worker) =>
       worker.heartbeat_stale === false &&
       locked.has(worker.source) &&
-      (worker.identity_verified || worker.local_process === "remote_unknown");
-    return {
-      ...worker,
-      liveness: confirmed ? ("confirmed" as const) : ("unconfirmed" as const),
-    };
-  });
+      (worker.identity_verified || worker.local_process === "remote_unknown"),
+  );
+  const candidatesBySource = new Map<string, number>();
+  for (const worker of candidates) {
+    candidatesBySource.set(
+      worker.source,
+      (candidatesBySource.get(worker.source) ?? 0) + 1,
+    );
+  }
+  // The lock identifies a source. Multiple fresh rows can survive a change of worker.
+  const confirmedExecutions = new Set(
+    candidates
+      .filter((worker) => candidatesBySource.get(worker.source) === 1)
+      .map((worker) => worker.execution_id),
+  );
+  const workers = control.workers.map((worker) => ({
+    ...worker,
+    liveness: confirmedExecutions.has(worker.execution_id)
+      ? ("confirmed" as const)
+      : ("unconfirmed" as const),
+  }));
   const confirmed = workers.filter(
     (worker) => worker.liveness === "confirmed",
   ).length;
@@ -198,7 +213,7 @@ export async function readExecutionReceipts(
   const exact = unresolved.length
     ? (
         await client.query<ExecutionReceipt>(
-          `${receiptSelect} WHERE e.id=ANY($1::uuid[])`,
+          `${receiptSelect} WHERE e.id=ANY($1::uuid[]) ORDER BY e.id`,
           [unresolved],
         )
       ).rows
