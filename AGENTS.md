@@ -139,24 +139,19 @@ If something goes wrong, stop the affected operation and report the relevant fin
 data, and logs. Redact secrets and private content.
 When unsure, research before deciding: search the web for current techniques and best practices.
 
+# Improve your instructions
+
+Before you finish, note where you struggled and which instructions, tools, or skills
+were missing or wrong, and fix them: this file, the project docs, and
+`.agents/skills/` for this project, `~/.agents` for every project. Without access to
+`~/.agents`, as a cloud agent or reviewer, suggest the fixes in your reply instead.
+
 # Next steps
 
 Consider what was recently done, what is in progress, and how it serves the goal.
 Decide and recommend what to do next.
 
-# Improve your instructions
-
-Before you finish, look back at how the work went: where you struggled, which
-troubleshooting took longest, and which instructions, tools, or skills were missing,
-wrong, or unclear. Fix what would help the next agent. Put project lessons in this
-file, the project's docs, or its skills in `.agents/skills/`, and lessons for every
-project in the shared skills at `~/.agents/skills/` (linked at `~/.claude/skills/`);
-`~/.agents/AGENTS.md` explains how to save those. Keep each edit short and specific,
-tell the user what you changed, and propose larger changes instead of making them. If
-you cannot reach `~/.agents`, for example as a cloud agent or a read-only reviewer,
-suggest the improvements in your reply instead of editing files.
-
-# Goal: Collect all the interesting places in the world
+**Goal:** Collect all the interesting places in the world.
 
 Normalize, analyze, and aggregate global POI sources, then make places discoverable
 by category on an interactive map.
