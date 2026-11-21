@@ -54,13 +54,15 @@ jobs:
       - run: pnpm --filter @lib/db-map ingest:test-drop-unlocated:integration
       - run: pnpm --filter @lib/db-map ingest:test-occurrences:integration
       - run: pnpm --filter @lib/db-map ingest:test-rebuild-canonicals:integration
-      - name: Existing location and resume contracts
+      - name: Location, resume, and unnamed campground regressions
         run: >-
           pnpm --filter @lib/db-map exec tsx --test
           scripts/ingest/pipeline-versions.test.ts
           scripts/ingest/location-resume.test.ts
           scripts/ingest/two-locations.test.ts
           scripts/ingest/location-review.test.ts
+          scripts/ingest/normalize/generated-name.test.ts
+          scripts/ingest/match/generated-name.test.ts
           scripts/ingest/precision-metadata.test.ts
           scripts/ingest/providers/llm.test.ts
           scripts/ingest/provider-telemetry.test.ts

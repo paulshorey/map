@@ -64,23 +64,13 @@ running. Never silently drain a backlog or chain small tests into a full run.
 
 ## Discover and coordinate ingestion jobs
 
-For any ingestion inspection or operation, use the primary checkout and take one snapshot:
+Start ingestion inspection from the primary checkout with `pnpm --silent --filter @lib/db-map
+ingest:overview --json`. Pin queue, run, execution and job IDs from the reconciled snapshot.
+Use [status triage](data/ingestion-agents.md#inspect-ingestion-status) for journal details,
+coverage changes and older executions.
 
-```sh
-pnpm --silent --filter @lib/db-map ingest:overview --json     # workers, locks, maintenance, next action
-pnpm --silent --filter @lib/db-map ingest:import-queue status --json # the queue; each file's outcome, run and job IDs
-# (status prints "No import queue exists" and exits non-zero until a first queue is started)
-```
-
-Pin the actual run, execution and job IDs and timestamps from that output. The overview
-lists only jobs still running; a finished file's job IDs are in the queue's `status --json`
-(each entry's `jobs`), and `ingest:supervise status --job <uuid>` gives its result and log
-paths. Then inspect bounded `ingest:status --run <uuid>` and the relevant log excerpt. A finished process or an
-old receipt does not prove current health.
-
-Reconcile live workers before starting anything. Preserve healthy imports; diagnose failed,
-stalled or conflicting evidence before a stop or resume. Never signal a saved PID, and keep
-raw logs private. Verify whole-file completion (`coverage: complete`) before advancing.
+Preserve healthy imports. Verify whole-file coverage before advancing, never signal a
+saved PID, and keep raw logs private.
 
 ## Running imports economically
 

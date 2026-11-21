@@ -564,7 +564,8 @@ async function extractFile(
 
   let ordinal = 0;
   const seenIds = new Map<string, { hash: string; ordinal: number }>();
-  const genericSource = !getExtractor(ctx.resolved.source.meta.slug);
+  const genericOccurrenceIdentity =
+    !extractor || extractor.genericOccurrenceIdentity;
   try {
     for await (const record of recordsFor(ctx.resolved)) {
       if (execution?.stopped) break;
@@ -581,18 +582,19 @@ async function extractFile(
         record,
         hash.hash,
       );
-      if (!record.source_record_id) {
+      if (!record.source_record_id || record.extraction_rejection) {
         stats.rejected++;
+        const rejection = record.extraction_rejection;
         await db.query(
           `UPDATE research_ingest_run_records SET extract_state='rejected',
-             last_error_class='missing_source_record_id',
-             last_error='No ID field, and no name or no location to derive one from; dropped'
+             last_error_class=$2,last_error=$3
            WHERE id=$1`,
-          [runRecordId],
+          [runRecordId, rejection?.code ?? "missing_source_record_id",
+            rejection?.reason ?? "No ID field, and no name or no location to derive one from; dropped"],
         );
         logExtractRecord(ordinal, record, {
           kind: "rejected",
-          reason: "missing source_record_id",
+          reason: rejection?.reason ?? "missing source_record_id",
         });
         continue;
       }
@@ -613,7 +615,7 @@ async function extractFile(
             `extract duplicate #${ordinal} ${recordLabel(record)} (same as #${prior.ordinal})`,
           );
         } else if (
-          genericSource &&
+          genericOccurrenceIdentity &&
           record.source_record_id_kind === "synthetic" &&
           record.identity_inputs?.edition
         ) {

@@ -18,6 +18,15 @@ export async function expectedCaptures() {
       !c.file.startsWith("data/poi/") ||
       c.file.split("/").includes("..") ||
       seen.has(c.file) ||
+      ![
+        "import",
+        "needs_review",
+        "alternate",
+        "supporting",
+        "ignored",
+      ].includes(c.disposition) ||
+      (c.disposition !== "import" &&
+        (typeof c.reason !== "string" || !c.reason.trim())) ||
       typeof c.required !== "boolean"
     )
       throw new Error("Invalid or duplicate expected capture");

@@ -670,9 +670,9 @@
       "file": "data/poi/art-parades/street-arts/critical_stages_festivals.json",
       "source": "critical_stages",
       "category": "art_parade",
-      "required": true,
-      "disposition": "import",
-      "reason": "Per-event international street/theatre festival POI records: 241 records, 198 with city+country, 196 website_url, 210 description/focus (contemporary dance, theatre, street arts). Genuine festival identity records for art_parade; matching/fusion resolves overlap with sibling street-arts captures."
+      "required": false,
+      "disposition": "needs_review",
+      "reason": "Historical guide capture with 43 incomplete rows. The row review in reviews/critical-stages-guide.json recovers 36 localities, holds four ambiguous entries, and excludes three page elements. Hold whole-file import pending category and location-quality validation."
     },
     {
       "file": "data/poi/art-parades/street-arts/festivalfinder_eu.json",
@@ -1943,8 +1943,8 @@
       "source": "osm_camp",
       "category": "campground",
       "required": true,
-      "disposition": "import",
-      "reason": "Explicit registered source mapping"
+      "disposition": "needs_review",
+      "reason": "Validate the unnamed-site evidence, access, and lifecycle rules on a bounded normalization-to-publication sample before queuing this capture."
     },
     {
       "file": "data/poi/rv_campgrounds_data/ridb/campsites_rv_hookup.csv",

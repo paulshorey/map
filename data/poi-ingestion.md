@@ -202,9 +202,13 @@ pnpm --silent --filter @lib/db-map ingest:doctor --run <run-uuid> --json
 pnpm --silent --filter @lib/db-map ingest:issues list --run <run-uuid> --json
 ```
 
-The default returns 20 files, whole-inventory totals, stage task counts, exact worker/run/job
-identity, interventions, next action, last commits, exact active record IDs and active ages, scan receipts, and measured
-performance suggestions. Metrics are bounded to the latest 1,000 calls/completed attempts.
+The default returns 20 files, reconciled worker and queue evidence, eight recent terminal
+executions, coverage totals, and scan receipts. `summary.coverage_counts` includes every import
+file in scope, independently of any executing worker. Queue receipt coverage and current
+inventory coverage are shown separately. The overview reads journals without rewriting them.
+See [status triage](ingestion-agents.md#inspect-ingestion-status) for evidence and IDs. Metrics
+cover the latest 1,000 attributed calls and completed attempts. Check the pinned execution and
+job receipt for earlier failures and recovery.
 Provider calls include admission wait, response latency, requests, batch size, known/unknown cost,
 model, prompt/cache/completion/reasoning tokens when supplied, HTTP status and quota headers.
 Attempt timing separates provider, database round trips and remaining local work. Batch calls
@@ -295,30 +299,25 @@ Queries use a consistent read-only snapshot and timeouts.
    active normalization output also refuse resume rather than silently mixing data.
 5. Recheck status, trace representative output, and report category coverage separately.
 
-For full history or exact recent writes, connect using the existing `DB_MAP_URL` environment
-variable (never print credentials). For example, in psql set `run_id` to the chosen UUID:
+When bounded status is insufficient, follow the shared agent setup's
+`~/.agents/skills/database-query/SKILL.md` and use its read-only role on the registered target
+for the pinned run. On a host with that setup, save the query below to a private file, replace
+`<execution-uuid>`, and run
+`~/.agents/bin/agents-sql query map-dev --timeout 15 -f /path/to/query.sql --csv` for a
+development run. If the shared tooling or read-only target is unavailable in this checkout's
+environment, use an approved host with the registered target to run the query.
 
 ```sql
--- Most recently attempted/finished units, including prior failed retries.
-SELECT id, execution_id, stage, target_key, status, started_at, finished_at,
-       input, output, error
-FROM research_ingest_attempts
-WHERE run_id = :'run_id'::uuid
-ORDER BY greatest(started_at, finished_at) DESC, id DESC
-LIMIT 30;
-
--- Provider evidence attributable to this run, not merely the same source/time window.
-SELECT q.* FROM research_normalization_requests q
-WHERE q.run_id = :'run_id'::uuid
-ORDER BY q.created_at DESC LIMIT 10;
-
--- Cohort with current output pointers: current state may be newer than the run's artifacts.
-SELECT i.source_record_id, i.observation_id, rp.normalization_state,
-       rp.active_normalization_id, rp.active_geocode_id, rp.active_embedding_id,
-       rp.canonical_poi_id
-FROM research_ingest_run_items i
-LEFT JOIN research_pois rp ON rp.id=i.research_poi_id
-WHERE i.run_id = :'run_id'::uuid ORDER BY i.source_ordinal;
+-- Execution totals, including failures outside the rolling overview window.
+SELECT provider, operation, status, http_status, count(*) AS calls,
+       min(started_at) AS first_call, max(started_at) AS last_call,
+       sum(estimated_cost_usd) AS known_cost_usd,
+       count(*) FILTER (WHERE estimated_cost_usd IS NULL) AS unknown_cost_calls
+FROM research_ingest_provider_calls
+WHERE execution_id = '<execution-uuid>'::uuid
+GROUP BY provider, operation, status, http_status
+ORDER BY provider, operation, status, http_status
+LIMIT 50;
 ```
 
 `first_seen_at` means insertion and `last_seen_at` means source observation, not a general
@@ -675,15 +674,20 @@ See the [dashboard guide](../apps/ingestion/README.md) for setup and exact compl
 
 Inventory scans discover untouched files independently of ingestion, hash content, retain old
 hashes and missing paths, and preserve operator notes, explicit category, disposition and priority.
-They do not call providers or start ingestion. Resolve `needs_review` files before treating them
-as an expected import set; alternate exports and supporting JSON are not automatically imports.
+They do not call providers or start ingestion. New inventory entries inherit
+`needs_review`, `alternate`, `supporting` and `ignored` decisions and reasons from the
+[versioned capture catalog](poi-research/expected-captures.json). Existing inventory entries
+keep their operator decisions. To hold an existing capture, update its inventory disposition
+with the reason as well as the catalog. Use `needs_review` when new evidence could make the
+capture usable. Keep a capture-specific row audit when only part of the data is inadequate.
 
 The dashboard derives current progress from extraction records, active artifacts, memberships,
-build inputs and successful verification scopes. Retries are deduplicated by source record ID.
-A completed sample cannot certify a full file. Complete extraction plus ready outputs without
-current verification becomes `ready_to_verify`; its command uses `--from report` to check the
-whole file. A changed hash/extractor/category requires a new run. Coverage is independent of the
-latest execution's outcome and of whether the source file is still present locally.
+build inputs and verification. Retries are deduplicated by source record ID. A completed
+sample applies only to its selected scope. A file can go from `complete` to `ready_to_verify`
+when later imports rebuild shared canonicals. The old receipt still records what was verified
+at the time. When admission allows it, use the inventory's `--from report` command to verify
+current outputs. Changed hash, extractor or category requires a new run. Sampled quality review
+is tracked separately from structural coverage.
 
 The inventory tables are `research_ingest_inventory`, `research_ingest_inventory_versions`,
 and `research_ingest_inventory_edits`. Current progress is computed, never hand-edited. File
@@ -801,9 +805,10 @@ import or certify a source/category.
 
 | Evidence                                | Action                                                                                                                                                         |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Extraction collision or wrong count     | Check parser, wrapper shape, source identity, ordinal and file hash; fix before normalization.                                                                 |
-| Normalization validation/provider error | Inspect linked request, exact UUID, response, validation warnings and profile; reproduce the exact record.                                                     |
-| Blocked geocode                         | Check normalized locality, source evidence, cache query/miss and quota. Correct evidence/query or deliberately invalidate the specific cache result.           |
+| Extraction collision or wrong count | Check the file hash, wrapper, rejection classes and both collision ordinals. Identical rows can be duplicates. Different undated rows with the same derived ID may be distinct listings. Use a stable source ID or a source-specific rule backed by evidence. Missing identity is logged as a rejection. Review rejected counts for lost coverage. |
+| Truncated or invalid normalization | Inspect the exact request and its repair. For truncation (`finish_reason: length`), compare token usage, request limits and input size. Normalization has one repair attempt with a larger output allowance for incomplete output. If repair also fails, test a smaller prompt or a source-specific profile on the pinned record. Check issue disposition before retrying an exclusion. |
+| Provider fetch failure or cooldown | Check the provider call, database lifecycle evidence, and recovery state. A healthy heartbeat during bounded recovery is expected. Daily geocoding quota has a separate queue wait and same-run resume. Authentication and invalid output need diagnosis. |
+| Blocked geocode | Check normalized locality, source coordinates, the exact query or cached miss, and quota. Correct the source evidence or query, or invalidate the specific cache result when justified. |
 | Failed embed/match/build                | Inspect attempt error and artifact pointers; repair the provider/configuration or responsible algorithm, then resume.                                          |
 | Wrong canonical/merge                   | Trace members, decisions, overrides, coordinate election and build inputs; validate known same/different pairs.                                                |
 | Old run refuses resume                  | Its pinned input/output or pipeline version changed; start a new run with an explicit repair selection and review cached artifacts.                            |
@@ -935,13 +940,13 @@ otherwise the most recent. Status such as upcoming, ongoing, or past is derived 
 - a run stopped by the daily geocoding quota (`provider_daily_quota`) is resumed with the same
   run UUID two minutes after the reset; two immediate re-exhaustions stop the queue;
 - a run that failed only because it lost its database connection (a DNS failure, an
-  unreachable network, a dropped or refused connection, or the pool timing out while
-  connecting, raised by the pg driver or naming the database host or port) is resumed with the same
-  run UUID once the database answers again: after a five-minute wait, for up to about an
-  hour, at most twice per file. Its checkpoints are intact; nothing is wrong with the file.
-  A provider's network error is not retried this way, and a queue restarted later does not
-  adopt such a failed run by itself: resume it with `ingest:supervise start -- --resume <uuid> --unlimited`
-  after checking it;
+  unreachable network, a dropped or refused connection, or a pool checkout timeout
+  attributed to PostgreSQL) can be resumed with the same run UUID after the database
+  answers again. The queue waits five minutes before rechecking, for up to about an hour,
+  and retries at most twice per file. See [checkout evidence](#database-connection-acquisition-evidence)
+  to distinguish a pool wait from failed connection establishment. Provider recovery runs
+  inside the worker. A new queue does not adopt a previous connectivity failure automatically.
+  After diagnosis, use `ingest:supervise start -- --resume <uuid> --unlimited` when safe;
 - any other outcome stops the queue as `needs_attention` with the run UUID; nothing else is
   retried, so diagnose it (see the troubleshooting sections) and start a new queue;
 - before each launch the pipeline must be quiescent and out of maintenance (it waits up to an
@@ -994,6 +999,7 @@ while ingestion is active, and takes the canonical writer lock so it never races
 | Flag | Meaning |
 | --- | --- |
 | `general_location` | Only a country, region or city is known (`location_specificity = 'general'`) |
+| `generated_name` | No member has a real name; the shown name is generated (see [Nameless places](#nameless-places)) |
 | `source_needs_review` | A member's active observation comes from a capture whose inventory disposition is still `needs_review` |
 | `missing_address` | No active member has a source street address (reverse-geocoded addresses and PO boxes alone do not count); a manually curated POI with its own address is not flagged. The POI is still mapped |
 
@@ -1006,6 +1012,40 @@ lists a POI's flags.
 pnpm --filter @lib/db-map ingest:review-flags            # published POIs per flag
 pnpm --filter @lib/db-map ingest:review-flags --refresh  # recompute every POI's flags
 ```
+
+## Nameless places
+
+A missing source name can be a display problem. A missing site type or position is an
+eligibility problem. The generated-label policy starts with the registered `osm_camp` capture.
+
+- **Real names first.** Treat blanks and placeholders such as `unnamed` and `N/A` as missing.
+  Use a real alternate name from an OSM name tag when present. Keep the typed OSM ID, name field
+  and original tags in the observation.
+- **Eligibility.** An unnamed row needs explicit `tourism=camp_site` or `tourism=caravan_site`
+  and a valid captured coordinate pair. City-only records, URL coordinates and points needing
+  an obvious axis swap do not qualify. All rows in this OSM capture are excluded from publication
+  for explicit `access=private` / `access=no` or inactive lifecycle tags. Keep customer, permit
+  and seasonal sites eligible. Absence of an access tag carries no claim about access.
+- **Audit.** Normalization preserves the capture and records the reason in `invalid_reason`:
+  `osm_unnamed_missing_site_type`, `osm_unnamed_missing_source_point`,
+  `osm_campground_restricted_access`, or `osm_campground_inactive`. An eligible unnamed row
+  carries `source_name_missing_generated_name`. Use a bounded sample to verify these outcomes
+  before changing the capture's [inventory disposition](ingestion-agents.md#inspect-ingestion-status).
+- **Display.** The pipeline builds a label from the kind, source qualifiers and locality or
+  coordinates. The canonical rebuild prefers a real name, otherwise it can attach the resolved
+  locality to the label. Generated labels carry `attributes.name_generated` and
+  `field_provenance.name.generated`. The drawer and review filter say **Unnamed in source**.
+- **Matching.** Generated labels and their embeddings carry no identity weight. Proximity alone
+  cannot auto-merge them into an anchor. Matching still considers IDs, contacts, location and
+  anchor adjudication. The embed stage still produces vectors for these records.
+
+The OSM campground capture has a source-specific normalization cache version. For older artifacts,
+inspect the active state and start a fresh scoped run if a repair is needed. Resuming a checkpoint
+retains its completed stages. The full OSM
+capture defaults to `needs_review` on its first inventory scan. A refresh preserves an
+existing inventory decision, so check the live disposition before queueing. Record a
+bounded normalization-to-publication sample before approving the
+[whole-file queue](ingestion-agents.md#whole-file-imports).
 
 ## Unlocatable records are dropped
 

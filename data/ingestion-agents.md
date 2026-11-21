@@ -13,17 +13,44 @@ section before changing anything that a running worker uses.
 
 | You want to | Use |
 | --- | --- |
-| See what is running and what to do next | `ingest:overview --json`, `ingest:import-queue status --json` |
+| See workers, queue and recent outcomes | `ingest:overview --json` |
+| Inspect indexed captures and their current coverage | `ingest:inventory --json` |
 | Import whole files | `ingest:import-queue start` |
 | Try a change on 1–5 records, time-limited | `ingest:supervise smoke` |
 | Debug one record through chosen stages, in the foreground | `ingest:run … --record <id> --stop-after <stage>` |
 | Start one detached run outside the queue | `ingest:supervise start` |
 | Stop work | `ingest:import-queue stop [--now]`, or `ingest:control stop --run <uuid>` |
 
-Run everything from the repository root of the primary checkout. A coding worktree must not
-launch whole-file imports; `ingest:import-queue start` and `resume` refuse to run from one.
+Use the primary checkout for inspection and whole-file imports. When it is in use by another
+task, run pinned, bounded smokes from a synced worktree. Before removing the worktree,
+copy the smoke’s job receipt and logs from `lib/db-map/.ingest-jobs/<job-id>/` to private
+storage outside the worktree and record the new paths. Whole-file queue start and resume
+require the primary checkout.
 
-## Whole files: the import queue
+## Inspect ingestion status
+
+1. Start with `ingest:overview --json`. Read `worker_liveness` for the confirmed count.
+   Confirmation requires a fresh heartbeat and matching admission and source locks.
+   On the primary host it also requires process identity. Unfinished journals with
+   `assessment: terminal_execution` reference an execution that already ended.
+2. Pin IDs from `import_queue.current` and `recent_executions`. The current entry can
+   get its IDs from the supervisor journal before the queue records a result. A queue
+   may hold its lock while waiting for quota with no active ingestion worker.
+   Use `ingest:import-queue status --json` for the full queue. That command can mark an
+   abandoned queue as stopped in its journal.
+3. Use `ingest:status --run <uuid> --json --limit 10` for the pinned run and
+   `ingest:issues list --run <uuid> --json` for issue dispositions. To get a job receipt,
+   use `ingest:supervise status --job <uuid>` or read its `result.json` if the final
+   job save was interrupted. Keep raw logs private.
+4. Compare a queue entry's recorded coverage to current inventory coverage.
+   `summary.coverage_counts` counts each import file once, independently of execution
+   and sampled quality. For visible files ready to verify, `verification_evidence`
+   reports current builds and artifacts newer than the matching whole-file verification.
+   Capture warnings distinguish a file on disk awaiting a scan from a missing file.
+
+For diagnosis by failure class, see the [troubleshooting table](poi-ingestion.md#troubleshooting-and-optimization).
+
+## Whole-file imports
 
 ```sh
 pnpm --silent --filter @lib/db-map ingest:inventory --refresh     # the queue refuses unscanned changes
@@ -45,11 +72,10 @@ After starting it: record the queue ID, check once after a few minutes that the 
 is progressing, then end the turn. Check back infrequently (every 30 minutes or more).
 A provider cooldown with a current heartbeat is expected; leave it alone.
 
-When the queue stops as `needs_attention`, diagnose before resuming: pin the run UUID from
-`status`, read `ingest:status --run <uuid> --json --limit 10` and
-`ingest:issues list --run <uuid> --json`, and find the earliest failing stage. A few
-quarantined records in a file are expected. Resume once for a cause that is understood and
-gone; a repeat of the same failure needs a code or data fix, not another resume.
+When the queue stops as `needs_attention`, use the [status steps](#inspect-ingestion-status)
+to identify the earliest failed stage and any open issues. Resume the original scope once the
+cause is understood and cleared. A repeat needs a code or data fix. Check the file fingerprint,
+extractor and checkpoint compatibility before resuming.
 
 ## Bounded checks: smoke
 
@@ -83,8 +109,8 @@ ignored: it used to choose between a parent callback and none, and there is no c
 Each job has a private, ignored directory `lib/db-map/.ingest-jobs/<uuid>/`:
 
 - `job.json`: launch scope, process IDs, host, pinned run and execution IDs, status.
-- `worker.log`, `supervisor.log`: complete raw output. Keep it out of agent context; read
-  bounded excerpts.
+- `worker.log`: raw worker output. Detached jobs can also write `supervisor.log`.
+  Queue-driven `watch` supervisor messages go to the queue log. Read bounded excerpts privately.
 - `result.json`: exit code or signal, stop reason, verified database outcome, recent
   attempts, a bounded error tail and the exact resume command.
 

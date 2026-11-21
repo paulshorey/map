@@ -1,6 +1,6 @@
 "use client";
 
-import { REVIEW_FLAG_LABELS } from "./usePoiReviewFilter";
+import { REVIEW_FLAG_LABELS, UNNAMED_IN_SOURCE } from "./usePoiReviewFilter";
 import { HtmlDescription } from "@/components/HtmlDescription";
 import { useEffect, useRef } from "react";
 import type { PoiMapLocationRecord } from "@lib/db-map/contracts/map-app";
@@ -168,10 +168,10 @@ export function PoiDrawer({ selection, onClose }: Props) {
   );
 }
 
-/** Review flags other than the general-location note shown above them. */
-function reviewFlagsBeyondLocation(poi: Poi): string[] {
-  return ((poi as { review_flags?: string[] }).review_flags ?? []).filter(
-    (flag) => flag !== "general_location",
+/** Review flags without their own badges in the drawer heading. */
+function additionalReviewFlags(poi: Poi): string[] {
+  return (poi.review_flags ?? []).filter(
+    (flag) => flag !== "general_location" && flag !== "generated_name",
   );
 }
 
@@ -200,6 +200,11 @@ function PoiHeading({ poi }: { poi: Poi }) {
             {STATUS_LABELS[status] ?? status}
           </span>
         )}
+        {poi.review_flags?.includes("generated_name") && (
+          <span className="inline-block rounded-full bg-gray-100 text-gray-700 px-2.5 py-0.5 text-xs font-medium">
+            {UNNAMED_IN_SOURCE}
+          </span>
+        )}
         {isGeneral(poi) && (
           <span className="inline-block rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-medium">
             General location
@@ -211,6 +216,7 @@ function PoiHeading({ poi }: { poi: Poi }) {
 }
 
 function PoiBody({ poi }: { poi: Poi }) {
+  const reviewFlags = additionalReviewFlags(poi);
   const eventDates = formatEventDates(
     poi.starts_at,
     poi.ends_at,
@@ -286,10 +292,10 @@ function PoiBody({ poi }: { poi: Poi }) {
                     General location: only a country, region or city is known
                   </p>
                 )}
-                {reviewFlagsBeyondLocation(poi).length > 0 && (
+                {reviewFlags.length > 0 && (
                   <p className="text-xs font-medium text-amber-700">
                     Needs review:{" "}
-                    {reviewFlagsBeyondLocation(poi)
+                    {reviewFlags
                       .map((flag) => REVIEW_FLAG_LABELS[flag]?.label ?? flag)
                       .join(", ")}
                   </p>

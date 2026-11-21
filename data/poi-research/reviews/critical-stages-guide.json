@@ -1,0 +1,383 @@
+{
+  "schema_version": 1,
+  "capture": "data/poi/art-parades/street-arts/critical_stages_festivals.json",
+  "reviewed_on": "2026-11-18",
+  "rows": [
+    {
+      "ordinal": 6,
+      "issue": 14,
+      "name": "Jos Repertory Theatre",
+      "disposition": "needs_review",
+      "reason": "The entry names a theatre company. The guide gives its home city but leaves the festival identity unresolved."
+    },
+    {
+      "ordinal": 13,
+      "issue": 14,
+      "name": "Colorado New Play Summit (Denver Center Theatre Company)",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:colorado-new-play-summit",
+      "city": "Denver",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 21,
+      "issue": 14,
+      "name": "Humana Festival of New American Plays (Actors Theatre of Louisville)",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:humana-new-american-plays",
+      "city": "Louisville",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 24,
+      "issue": 14,
+      "name": "Trado-Modern Cultural Festival/ Carnival – Lagos Black Heritage Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:lagos-black-heritage",
+      "city": "Lagos Island",
+      "country_code": "NG"
+    },
+    {
+      "ordinal": 34,
+      "issue": 14,
+      "name": "Pacific Playwrights Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:pacific-playwrights-festival",
+      "city": "Costa Mesa",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 41,
+      "issue": 14,
+      "name": "European Festival of Performing Arts – Romanian Drama Festival / FEST-FDR",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:fest-fdr",
+      "city": "Timișoara",
+      "country_code": "RO"
+    },
+    {
+      "ordinal": 42,
+      "issue": 14,
+      "name": "Euroregional Theatre Festival Timişoara / TESZT",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:teszt",
+      "city": "Timișoara",
+      "country_code": "RO"
+    },
+    {
+      "ordinal": 52,
+      "issue": 20,
+      "name": "Imaginate Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-20:imaginate",
+      "city": "Edinburgh",
+      "country_code": "GB"
+    },
+    {
+      "ordinal": 65,
+      "issue": 14,
+      "name": "Singapore Arts Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:singapore-arts-festival",
+      "city": "Singapore",
+      "country_code": "SG"
+    },
+    {
+      "ordinal": 66,
+      "issue": 20,
+      "name": "Singapore International Festival of Arts (SIFA)",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-20:sifa",
+      "city": "Singapore",
+      "country_code": "SG"
+    },
+    {
+      "ordinal": 67,
+      "issue": 14,
+      "name": "Spoleto Festival USA",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:spoleto-usa",
+      "city": "Charleston",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 79,
+      "issue": 14,
+      "name": "Fundamental Monodrama Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:fundamental-monodrama",
+      "city": "Luxembourg",
+      "country_code": "LU",
+      "evidence_url": "https://fundamental.lu/en/contact"
+    },
+    {
+      "ordinal": 85,
+      "issue": 14,
+      "name": "Leapfest",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:leapfest",
+      "city": "Chicago",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 86,
+      "issue": 14,
+      "name": "London International Festival of Theatre (LIFT)",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:lift",
+      "city": "London",
+      "country_code": "GB"
+    },
+    {
+      "ordinal": 97,
+      "issue": 20,
+      "name": "24:7 Theatre Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-20:247-theatre",
+      "city": "Manchester",
+      "country_code": "GB"
+    },
+    {
+      "ordinal": 102,
+      "issue": 14,
+      "name": "Contemporary American Theatre Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:contemporary-american-theatre",
+      "city": "Shepherdstown",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 104,
+      "issue": 20,
+      "name": "Everyman Summer Theatre Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-20:everyman-summer-theatre",
+      "city": "Cardiff",
+      "country_code": "GB"
+    },
+    {
+      "ordinal": 115,
+      "issue": 20,
+      "name": "Gdańsk Shakespeare Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-20:gdansk-shakespeare",
+      "city": "Gdańsk",
+      "country_code": "PL"
+    },
+    {
+      "ordinal": 124,
+      "issue": 14,
+      "name": "International Hispanic Theatre Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:international-hispanic-theatre",
+      "city": "Miami",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 125,
+      "issue": 14,
+      "name": "Ko Festival of Performance",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:ko-festival",
+      "city": "Amherst",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 140,
+      "issue": 14,
+      "name": "Boulder International Fringe Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:boulder-fringe",
+      "city": "Boulder",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 143,
+      "issue": 14,
+      "name": "Edinburgh International Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:edinburgh-international",
+      "city": "Edinburgh",
+      "country_code": "GB"
+    },
+    {
+      "ordinal": 148,
+      "issue": 14,
+      "name": "Icicle Creek Theatre Festival",
+      "disposition": "needs_review",
+      "reason": "The guide lists Leavenworth and Seattle. A single festival locality cannot be selected from this entry."
+    },
+    {
+      "ordinal": 163,
+      "issue": 14,
+      "name": "The Edinburgh Festival Fringe",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:edinburgh-fringe",
+      "city": "Edinburgh",
+      "country_code": "GB"
+    },
+    {
+      "ordinal": 164,
+      "issue": 14,
+      "name": "The New York International Fringe Festival (FringeNYC)",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:new-york-fringe",
+      "city": "New York City",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 175,
+      "issue": 14,
+      "name": "Festival International des Francophonies en Limousin",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:francophonies-limousin",
+      "city": "Limoges",
+      "country_code": "FR"
+    },
+    {
+      "ordinal": 176,
+      "issue": 14,
+      "name": "Festival Mindelact",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:mindelact",
+      "city": "Mindelo",
+      "country_code": "CV",
+      "evidence_url": "https://www.mindelact.org/festival"
+    },
+    {
+      "ordinal": 179,
+      "issue": 14,
+      "name": "FiraTàrrega Teatre al Carrer",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:firatarrega",
+      "city": "Tàrrega",
+      "country_code": "ES"
+    },
+    {
+      "ordinal": 188,
+      "issue": 14,
+      "name": "San Francisco Fringe Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:san-francisco-fringe",
+      "city": "San Francisco",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 195,
+      "issue": 14,
+      "name": "Belfast Festival at Queen’s",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:belfast-at-queens",
+      "city": "Belfast",
+      "country_code": "GB"
+    },
+    {
+      "ordinal": 198,
+      "issue": 14,
+      "name": "Dialog Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:dialog-festival",
+      "city": "Wrocław",
+      "country_code": "PL"
+    },
+    {
+      "ordinal": 207,
+      "issue": 14,
+      "name": "Mess Sarajevo Festival",
+      "disposition": "needs_review",
+      "reason": "The guide lists Sarajevo, Zenica, Goražde and Visoko. Review distinct venue or edition evidence before selecting a locality."
+    },
+    {
+      "ordinal": 210,
+      "issue": 14,
+      "name": "Musical Society of Nigeria, MUSON Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:muson-festival",
+      "city": "Lagos",
+      "country_code": "NG"
+    },
+    {
+      "ordinal": 217,
+      "issue": 20,
+      "name": "BTK-Fest",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-20:btk-fest",
+      "city": "St. Petersburg",
+      "country_code": "RU"
+    },
+    {
+      "ordinal": 220,
+      "issue": 14,
+      "name": "European Theatre Festival EUROTHALIA",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:eurothalia",
+      "city": "Timișoara",
+      "country_code": "RO"
+    },
+    {
+      "ordinal": 230,
+      "issue": 14,
+      "name": "New Orleans Fringe Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:new-orleans-fringe",
+      "city": "New Orleans",
+      "country_code": "US"
+    },
+    {
+      "ordinal": 235,
+      "issue": 20,
+      "name": "Share this:",
+      "disposition": "exclude",
+      "reason": "Social sharing control"
+    },
+    {
+      "ordinal": 236,
+      "issue": 14,
+      "name": "Special Pages",
+      "disposition": "exclude",
+      "reason": "Page navigation heading"
+    },
+    {
+      "ordinal": 237,
+      "issue": 20,
+      "name": "Taipei International Festival of Arts (TIFA)",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-20:tifa",
+      "city": "Taipei",
+      "country_code": "TW",
+      "evidence_url": "https://tifa.npac-ntch.org/2019/en/about/"
+    },
+    {
+      "ordinal": 238,
+      "issue": 20,
+      "name": "Theatre Criticism for Young Audiences: New Directions",
+      "disposition": "exclude",
+      "reason": "Related editorial article"
+    },
+    {
+      "ordinal": 239,
+      "issue": 14,
+      "name": "Thespian Family Theatre",
+      "disposition": "needs_review",
+      "reason": "The entry names a theatre company and gives a street address. It lacks a distinct festival identity."
+    },
+    {
+      "ordinal": 240,
+      "issue": 14,
+      "name": "Trado-Modern Cultural Festival/ Carnival – Calabar Festival and Christmas Carnival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:calabar-festival",
+      "city": "Calabar",
+      "country_code": "NG"
+    },
+    {
+      "ordinal": 241,
+      "issue": 14,
+      "name": "Trado-Modern Cultural Festival/ Carnival – CarniRiv Festival",
+      "disposition": "recover_locality",
+      "listing_id": "critical-stages:guide-14:carniriv",
+      "city": "Port Harcourt",
+      "country_code": "NG"
+    }
+  ]
+}

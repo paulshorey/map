@@ -1,29 +1,31 @@
 # Ingestion next decision
 
-## Current status — 2026-11-16
+## Follow-up from the 2026-11-18 audit
 
-The holds recorded below are over. The location fixes they waited for shipped as
-`location-v5` to `location-v9`. All imported data was purged on 2026-11-05
-([reset note](data-reset-20261105.md)); the re-import only began on 2026-11-16 and most of
-it is still to do, as listed here.
+The [November 5 reset](data-reset-20261105.md) was followed by re-imports starting November 16.
+The [November 16 backlog plan](../data/import-plans/backlog-20261116.json) records that day's
+selection. Use [agent status triage](../data/ingestion-agents.md#inspect-ingestion-status)
+for current queue, coverage and classifications.
 
-- Whole files now run through `ingest:import-queue`
-  ([agent operations](../data/ingestion-agents.md)). A queue of the seven small reset-plan
-  files was started on 2026-11-16.
-- Not yet queued, each for a stated reason: **BGCI** (`needs_review` since 2026-10-15,
-  pending a bounded check of its geocoder fallback) and **The Dyrt** (wait for the offline
-  reverse lookup, PR #89; it still needs about 24,000 forward lookups afterwards).
-- The remaining backlog is `data/import-plans/backlog-20261116.json`: 145 captures, about
-  104,000 records, smallest first.
-- Still to classify: 15 captures marked `needs_review` and 7 whose inventory classification
-  disagrees with `data/poi-research/expected-captures.json` (`ingest:overview --json` lists
-  them as `catalog_classification_mismatch`).
-
-Everything below is history, kept for the evidence it links to.
+- **Critical Stages** stopped at extraction. See the [repair plan](critical-stages-repair.md). Rows 149 and 182 are undated listings for the
+  same Zagreb festival from different guide editions. Compare both listings, retain both
+  source citations, and review the 43 rejected rows. All 43 have names and a festival month,
+  37 have a website URL, and none has locality or coordinates.
+- **BGCI** reached run-level verification after six truncated normalizations were explicitly
+  excluded. Each request hit its completion cap in both the initial call and the repair
+  (2,056 and 3,856 tokens including the reasoning allowance). Try a smaller input or repair
+  prompt on a bounded sample. Later shared-canonical builds separately invalidated some
+  record verifications.
+- **Campgrounds** need an inventory refresh to index the merged RIDB address capture.
+  The Dyrt has no post-reset run in the audited inventory. [Offline reverse lookup](https://github.com/paulshorey/map/pull/89)
+  has merged. Estimate remaining forward lookups before queueing it.
 
 ## Earlier decisions (superseded)
 
-## Current decision — 2026-10-29, after continuation
+The holds and run directives below describe the October decisions. Use the current queue,
+coverage and classifications for operational decisions.
+
+### Decision — 2026-10-29, after continuation
 
 PR #68 merged as `4c70d9f`. The human approved the foreground continuation of run
 `ccb63ce7…`; execution `63e9aeb6…` finished in about 40 s with
@@ -38,7 +40,7 @@ Hold the 304-record import until location handling is fixed (inferred-slot
 selection, placeholder queries, city-contradiction checks, country precision)
 and these three records are reprocessed. Both heartbeats stay paused.
 
-## Earlier decision — 2026-10-29
+### Decision — 2026-10-29, after preflight
 
 The human closed PR #61 without merging and explicitly selected the proposed
 three-record Biennial Foundation preflight. Its one documented 45-second smoke
@@ -52,7 +54,7 @@ continuation of the frozen three-record run with suitable completion ownership;
 no continuation or new full cohort has launched. Both ingestion heartbeats stay
 paused. This section supersedes the unstarted-preflight statement below.
 
-## Current decision — 2026-10-26 CT
+### Decision — 2026-10-26 CT
 
 PR #66's precision metadata implementation and the authorized 43-record Biennale.com
 refresh are complete. The fresh [terminal receipt](biennale-refresh-receipt.md)
@@ -99,7 +101,7 @@ consolidation, or checkpoint reuse is not. Venice’s source and inferred points
 are about 710 m apart, so that policy would quarantine the one live record that
 already has both slots.
 
-## Current contract
+### Contract at the time
 
 `source_coordinates` and `inferred_coordinates` stay the two provenance slots.
 Assessments stay immutable and advisory. `evidence.distance_m` is stored
@@ -110,7 +112,7 @@ for missing inferred, reverse, or country text. A record with no plottable
 point remains unpublished, with assessment status `unlocated` and its raw text
 intact.
 
-## Next run
+### Historical preflight command
 
 Apply the additive assessment migration, then run the two-record Biennale.com
 preflight from the primary checkout. Start with:
