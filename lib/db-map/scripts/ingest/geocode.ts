@@ -287,6 +287,16 @@ const STREET_DIRECTIONS = new Map([
   ["EAST", "E"],
   ["WEST", "W"],
 ]);
+const HOUSE_NUMBER = String.raw`\d+[a-z]?(?:[-/–−]\d+[a-z]?)*`;
+const STANDALONE_HOUSE_NUMBER = new RegExp(`^${HOUSE_NUMBER}$`, "u");
+const LEADING_HOUSE_NUMBER = new RegExp(
+  String.raw`^(${HOUSE_NUMBER})\s+(\p{L}.*)$`,
+  "u",
+);
+const TRAILING_HOUSE_NUMBER = new RegExp(
+  String.raw`^(\p{L}.*?)\s+(${HOUSE_NUMBER})$`,
+  "u",
+);
 const NUMBERED_PREMISES =
   /^(?:building|floor|hall|pier|room|stage|suite|unit)\s+\d/u;
 
@@ -311,12 +321,23 @@ function streetAddressLine(
   address: string,
   listedCity: string | null,
   providerRoad: string | null,
+  providerPostcode: string | null,
 ) {
-  const [first = "", second = ""] = address
-    .split(",", 2)
-    .map((part) => part.trim());
+  const parts = address.split(",", 3).map((part) => part.trim());
   // A venue or unit can be listed before its street address, e.g. "Pier 17, 89 South St".
-  const line = NUMBERED_PREMISES.test(first) ? second : first;
+  const [line = "", adjacent = ""] = NUMBERED_PREMISES.test(parts[0] ?? "")
+    ? parts.slice(1)
+    : parts;
+  // Postal codes can also be standalone comma segments. An explicit street
+  // number in the street segment takes precedence over the adjacent segment.
+  if (
+    /^\p{L}/u.test(line) &&
+    STANDALONE_HOUSE_NUMBER.test(adjacent) &&
+    adjacent !== providerPostcode?.normalize("NFKC").toLowerCase() &&
+    !LEADING_HOUSE_NUMBER.test(line) &&
+    !TRAILING_HOUSE_NUMBER.test(line)
+  )
+    return `${line} ${adjacent}`;
   const city = listedCity
     ?.split(",")[0]
     ?.trim()
@@ -382,11 +403,14 @@ export function musicBrainzVenueResultIssue(
     return "venue_country_mismatch";
   const address = listed.address.normalize("NFKC").toLowerCase();
   const road = textValue(result?.road);
-  const street = streetAddressLine(address, listed.city, road);
-  const leading = /^(\d+[a-z]?(?:[-/–−]\d+[a-z]?)*)\s+(\p{L}.*)$/u.exec(street);
-  const trailing = /^(\p{L}.*?)\s+(\d+[a-z]?(?:[-/–−]\d+[a-z]?)*)$/u.exec(
-    street,
+  const street = streetAddressLine(
+    address,
+    listed.city,
+    road,
+    textValue(result?.postcode),
   );
+  const leading = LEADING_HOUSE_NUMBER.exec(street);
+  const trailing = TRAILING_HOUSE_NUMBER.exec(street);
   const listedNumber = leading?.[1] ?? trailing?.[2];
   const listedRoad = leading?.[2] ?? trailing?.[1];
   const number = textValue(result?.house_number)

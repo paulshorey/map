@@ -288,3 +288,39 @@ test("direction abbreviations keep letter-named streets distinct", () => {
     "venue_road_mismatch",
   );
 });
+
+test("comma-separated MusicBrainz house numbers remain part of the street address", () => {
+  const sala = {
+    address: "Avinguda Isaac Albéniz, 8-10, 08391 Tiana, Barcelona, Spain",
+    venue: "Sala Albéniz",
+    city: "Tiana",
+  };
+  const hit = (house_number: string) =>
+    point({
+      name: sala.venue,
+      road: "Avinguda Isaac Albéniz",
+      city: sala.city,
+      house_number,
+      postcode: "08391",
+    });
+  assert.equal(musicBrainzVenueResultIssue(sala, hit("8")), null);
+  assert.equal(
+    musicBrainzVenueResultIssue(sala, hit("99")),
+    "venue_house_number_mismatch",
+  );
+  assert.equal(
+    musicBrainzVenueResultIssue(
+      { ...sala, address: "Avinguda Isaac Albéniz, 8, 08391 Tiana" },
+      hit("99"),
+    ),
+    "venue_house_number_mismatch",
+  );
+  for (const address of [
+    "Avinguda Isaac Albéniz 8, 08391, Tiana",
+    "Avinguda Isaac Albéniz, 08391, Tiana",
+  ])
+    assert.equal(
+      musicBrainzVenueResultIssue({ ...sala, address }, hit("8")),
+      null,
+    );
+});
