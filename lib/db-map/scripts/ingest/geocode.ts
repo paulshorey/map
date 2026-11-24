@@ -318,24 +318,32 @@ function streetName(value: string) {
   return tokens.join(" ");
 }
 
+function houseNumberKey(value: string) {
+  return value.normalize("NFKC").toLowerCase().replace(/[–−]/g, "-");
+}
+
 function streetAddressLine(
   address: string,
   listedCity: string | null,
   providerRoad: string | null,
   providerPostcode: string | null,
+  providerHouseNumber: string | undefined,
 ) {
   const parts = address.split(",", 3).map((part) => part.trim());
   // A venue or unit can be listed before its street address, e.g. "Pier 17, 89 South St".
   const [line = "", adjacent = ""] = NUMBERED_PREMISES.test(parts[0] ?? "")
     ? parts.slice(1)
     : parts;
-  // A standalone postcode can occupy the adjacent segment, even when the
-  // provider has no postcode. Existing attached house numbers take precedence.
+  // A postcode-shaped segment is ambiguous. Accept it when the provider
+  // reports that same house number and does not identify it as a postcode.
+  // Existing attached house numbers take precedence.
   if (
     /^\p{L}/u.test(line) &&
     STANDALONE_HOUSE_NUMBER.test(adjacent) &&
-    !POSTCODE_SHAPE.test(adjacent) &&
-    adjacent !== providerPostcode?.normalize("NFKC").toLowerCase() &&
+    (!POSTCODE_SHAPE.test(adjacent) ||
+      houseNumberKey(adjacent) === providerHouseNumber) &&
+    (!providerPostcode ||
+      houseNumberKey(adjacent) !== houseNumberKey(providerPostcode)) &&
     !LEADING_HOUSE_NUMBER.test(line) &&
     !TRAILING_HOUSE_NUMBER.test(line)
   )
@@ -405,19 +413,19 @@ export function musicBrainzVenueResultIssue(
     return "venue_country_mismatch";
   const address = listed.address.normalize("NFKC").toLowerCase();
   const road = textValue(result?.road);
+  const houseNumber = textValue(result?.house_number);
+  const numberKey = houseNumber ? houseNumberKey(houseNumber) : undefined;
   const street = streetAddressLine(
     address,
     listed.city,
     road,
     textValue(result?.postcode),
+    numberKey,
   );
   const leading = LEADING_HOUSE_NUMBER.exec(street);
   const trailing = TRAILING_HOUSE_NUMBER.exec(street);
   const listedNumber = leading?.[1] ?? trailing?.[2];
   const listedRoad = leading?.[2] ?? trailing?.[1];
-  const number = textValue(result?.house_number)
-    ?.normalize("NFKC")
-    .toLowerCase();
   const roadMatches =
     !!road && !!listedRoad && streetName(listedRoad) === streetName(road);
   const venueMatches = linkedVenueNameAgrees(listed.venue, hit.raw_response);
@@ -428,13 +436,12 @@ export function musicBrainzVenueResultIssue(
     range &&
     Number(range[1]) < Number(range[3]) &&
     (range[2] === "–" || (venueMatches && roadMatches)) &&
-    (number === range[1] || number === range[3]);
+    (numberKey === range[1] || numberKey === range[3]);
   const houseMatches =
     !!listedNumber &&
-    !!number &&
-    (listedNumber.replace(/[–−]/g, "-") === number.replace(/[–−]/g, "-") ||
-      rangeEndpoint);
-  if (listedNumber && number && !houseMatches)
+    !!numberKey &&
+    (houseNumberKey(listedNumber) === numberKey || rangeEndpoint);
+  if (listedNumber && numberKey && !houseMatches)
     return "venue_house_number_mismatch";
   if (listedRoad && road && !roadMatches) return "venue_road_mismatch";
   if (roadMatches && houseMatches) return null;

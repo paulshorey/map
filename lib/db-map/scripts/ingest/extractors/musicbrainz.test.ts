@@ -315,6 +315,23 @@ test("comma-separated MusicBrainz house numbers remain part of the street addres
     ),
     "venue_house_number_mismatch",
   );
+  for (const houseNumber of ["1234", "10-120"]) {
+    assert.equal(
+      musicBrainzVenueResultIssue(
+        {
+          address: `Avenida Corrientes, ${houseNumber}, Buenos Aires`,
+          venue: null,
+          city: "Buenos Aires",
+        },
+        point({
+          house_number: houseNumber,
+          road: "Avenida Corrientes",
+          postcode: "C1043",
+        }),
+      ),
+      null,
+    );
+  }
   for (const address of [
     "Avinguda Isaac Albéniz 8, 08391, Tiana",
     "Avinguda Isaac Albéniz, 08391, Tiana",
