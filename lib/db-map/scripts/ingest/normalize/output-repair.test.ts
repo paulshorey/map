@@ -1,6 +1,7 @@
 import { test, afterEach, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import type { Pool } from "pg";
+import { restoreBgciSurveyFacts } from "./bgci-repair.js";
 import { callNormalizer } from "./runner.js";
 import { ingestConfig, readLlmConfig } from "../config.js";
 import { LlmError } from "../providers/llm.js";
@@ -269,4 +270,159 @@ test("normalization does not spend another request on authentication or database
     /audit database failed/,
   );
   assert.equal(requests.length, 1);
+});
+
+const gardenRow = { ...row, source_slug: "bgci" };
+const gardenPacket = {
+  source: { slug: "bgci", profile: "garden" },
+  captured: { attributes: { open_to_public: false } },
+  raw: {
+    id: 1,
+    attributes: {
+      visitors_annual: { value: 0, attribute: { units: "people" } },
+      policy_exists: { value: ["Accessibility"] },
+      collection_access: { value: ["By appointment"] },
+    },
+  },
+};
+
+test("BGCI length repair retains selected survey paths, captured facts and a linked request", async () => {
+  const evidence = [
+    {
+      field: "attributes.visitors_annual",
+      paths: ["$.raw.attributes.visitors_annual.value"],
+    },
+    {
+      field: "attributes.policy_topic",
+      paths: ["$.raw.attributes.policy_exists.value[0]"],
+    },
+    {
+      field: "attributes.open_to_public",
+      paths: ["$.captured.attributes.open_to_public"],
+    },
+  ];
+  respond(
+    "partial answer",
+    "length",
+    JSON.stringify({ record: { ...output.record, evidence } }),
+  );
+  const result = await callNormalizer(
+    db,
+    gardenRow,
+    "hash",
+    "garden",
+    "garden-v1",
+    gardenPacket,
+  );
+  assert.equal(result.compactBgciRepair, true);
+  assert.deepEqual(result.output.record.evidence, evidence);
+  const [first, second] = requests.map(
+    (request) => request.messages as { role: string; content: string }[],
+  );
+  assert.deepEqual(JSON.parse(first!.at(-1)!.content), gardenPacket);
+  assert.deepEqual(second!.slice(0, -1), first!.slice(0, -1));
+  const compact = JSON.parse(second!.at(-1)!.content);
+  assert.equal(compact.repair_context_version, "bgci-survey-repair-v1");
+  assert.deepEqual(compact.captured, gardenPacket.captured);
+  assert.deepEqual(compact.raw.attributes, {
+    visitors_annual: gardenPacket.raw.attributes.visitors_annual,
+    policy_exists: gardenPacket.raw.attributes.policy_exists,
+  });
+  const inserts = queries.filter((q) =>
+    q.sql.includes("INSERT INTO research_normalization_requests"),
+  );
+  assert.equal(inserts.length, 2);
+  assert.deepEqual(JSON.parse(String(inserts[1]!.args[10])).messages, second);
+  assert.equal(inserts[1]!.args[11], inserts[0]!.args[0]);
+});
+
+test("BGCI repair rejects evidence absent from the smaller input without a third call", async () => {
+  const evidence = [
+    {
+      field: "attributes.access",
+      paths: ["$.raw.attributes.collection_access.value[0]"],
+    },
+  ];
+  respond(
+    "{",
+    "length",
+    JSON.stringify({ record: { ...output.record, evidence } }),
+  );
+  await assert.rejects(
+    callNormalizer(db, gardenRow, "hash", "garden", "garden-v1", gardenPacket),
+    /unresolved evidence path/,
+  );
+  assert.equal(requests.length, 2);
+  assert.ok(
+    queries.some(
+      (q) =>
+        q.args.includes("failed") &&
+        q.args.some(
+          (v) =>
+            typeof v === "string" && v.includes("unresolved evidence path"),
+        ),
+    ),
+  );
+});
+
+test("ordinary BGCI success, malformed or empty output and other sources keep the full packet", async () => {
+  for (const [source, content, finish, count] of [
+    ["bgci", JSON.stringify(output), "stop", 1],
+    ["bgci", "{", "stop", 2],
+    ["bgci", "", "stop", 2],
+    ["other", "{", "length", 2],
+  ] as const) {
+    requests = [];
+    respond(content, finish);
+    await callNormalizer(
+      db,
+      { ...row, source_slug: source },
+      "hash",
+      "garden",
+      "garden-v1",
+      gardenPacket,
+    );
+    assert.equal(requests.length, count);
+    for (const request of requests) {
+      const messages = request.messages as { content: string }[];
+      assert.ok(
+        messages.some((m) => m.content === JSON.stringify(gardenPacket)),
+      );
+    }
+  }
+});
+
+test("selected BGCI survey facts keep their source paths, zero counts and captured precedence", () => {
+  const resolved = {
+    attributes: { visitors_annual: 19 },
+    fieldEvidence: {
+      "attributes.visitors_annual": ["$.captured.attributes.visitors_annual"],
+    },
+    warnings: [],
+  };
+  const raw = {
+    attributes: {
+      total_area_hectares: { value: 0.25 },
+      staff_total: { value: 0 },
+      visitors_annual: { value: 55 },
+      policy_exists: { value: ["Research", "Accessibility"] },
+    },
+  };
+  restoreBgciSurveyFacts(raw, { visitors_annual: 19 }, resolved);
+  assert.deepEqual(resolved.attributes, {
+    visitors_annual: 19,
+    total_area_hectares: 0.25,
+    staff_total: 0,
+    accessibility_policy_topic: "Accessibility",
+  });
+  assert.deepEqual(resolved.fieldEvidence, {
+    "attributes.visitors_annual": ["$.captured.attributes.visitors_annual"],
+    "attributes.total_area_hectares": [
+      "$.raw.attributes.total_area_hectares.value",
+    ],
+    "attributes.staff_total": ["$.raw.attributes.staff_total.value"],
+    "attributes.accessibility_policy_topic": [
+      "$.raw.attributes.policy_exists.value[1]",
+    ],
+  });
 });

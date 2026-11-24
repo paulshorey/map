@@ -70,7 +70,7 @@ function pathForKey(prefix: string, key: string): string {
 }
 
 /** Read a simple JSON path without eval, wildcards, inherited properties or container matches. */
-function evidenceValue(input: unknown, path: string): unknown {
+export function evidenceValue(input: unknown, path: string): unknown {
   if (!path.startsWith("$")) return undefined;
   const segments =
     path
