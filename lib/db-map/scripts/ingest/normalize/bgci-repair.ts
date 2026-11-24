@@ -35,7 +35,8 @@ export function validateRepairEvidence(
     for (const path of paths) {
       if (
         !/^\$\.(?:raw|captured|deterministic)(?:\.|\[)/.test(path) ||
-        evidenceValue(packet, path) == null
+        // JSON exposes array elements, but not JavaScript properties like length.
+        evidenceValue(packet, path, { enumerableOnly: true }) == null
       )
         throw new Error(
           `BGCI repair has an unresolved evidence path for ${field}: ${path}`,

@@ -69,8 +69,12 @@ function pathForKey(prefix: string, key: string): string {
     : `${prefix}[${JSON.stringify(key)}]`;
 }
 
-/** Read a simple JSON path without eval, wildcards, inherited properties or container matches. */
-export function evidenceValue(input: unknown, path: string): unknown {
+/** Read a simple JSON path without eval, wildcards or inherited properties. */
+export function evidenceValue(
+  input: unknown,
+  path: string,
+  { enumerableOnly = false } = {},
+): unknown {
   if (!path.startsWith("$")) return undefined;
   const segments =
     path
@@ -88,6 +92,8 @@ export function evidenceValue(input: unknown, path: string): unknown {
       return undefined;
     }
     if (!value || typeof value !== "object" || !Object.hasOwn(value, key))
+      return undefined;
+    if (enumerableOnly && !Object.prototype.propertyIsEnumerable.call(value, key))
       return undefined;
     value = (value as Record<string, unknown>)[key];
   }

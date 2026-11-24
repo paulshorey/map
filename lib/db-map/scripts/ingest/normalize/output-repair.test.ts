@@ -336,34 +336,39 @@ test("BGCI length repair retains selected survey paths, captured facts and a lin
   assert.equal(inserts[1]!.args[11], inserts[0]!.args[0]);
 });
 
-test("BGCI repair rejects evidence absent from the smaller input without a third call", async () => {
-  const evidence = [
-    {
-      field: "attributes.access",
-      paths: ["$.raw.attributes.collection_access.value[0]"],
-    },
-  ];
-  respond(
-    "{",
-    "length",
-    JSON.stringify({ record: { ...output.record, evidence } }),
-  );
-  await assert.rejects(
-    callNormalizer(db, gardenRow, "hash", "garden", "garden-v1", gardenPacket),
-    /unresolved evidence path/,
-  );
-  assert.equal(requests.length, 2);
-  assert.ok(
-    queries.some(
-      (q) =>
-        q.args.includes("failed") &&
-        q.args.some(
-          (v) =>
-            typeof v === "string" && v.includes("unresolved evidence path"),
-        ),
-    ),
-  );
-});
+for (const path of [
+  "$.raw.attributes.collection_access.value[0]",
+  "$.raw.attributes.policy_exists.value.length",
+]) {
+  test(`BGCI repair rejects missing evidence at ${path} without a third call`, async () => {
+    const evidence = [{ field: "attributes.access", paths: [path] }];
+    respond(
+      "{",
+      "length",
+      JSON.stringify({ record: { ...output.record, evidence } }),
+    );
+    await assert.rejects(
+      callNormalizer(db, gardenRow, "hash", "garden", "garden-v1", gardenPacket),
+      (error: unknown) => {
+        assert.ok(error instanceof LlmError);
+        assert.match(error.message, /unresolved evidence path/);
+        assert.equal(recordFailure(error), true);
+        return true;
+      },
+    );
+    assert.equal(requests.length, 2);
+    assert.ok(
+      queries.some(
+        (q) =>
+          q.args.includes("failed") &&
+          q.args.some(
+            (v) =>
+              typeof v === "string" && v.includes("unresolved evidence path"),
+          ),
+      ),
+    );
+  });
+}
 
 test("ordinary BGCI success, malformed or empty output and other sources keep the full packet", async () => {
   for (const [source, content, finish, count] of [
