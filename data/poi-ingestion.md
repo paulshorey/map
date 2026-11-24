@@ -628,6 +628,15 @@ legacy attempt records.
   existing observation; old captured snapshots remain available. Bump the extractor version
   for a new extraction pass. Apply the mapping-identity migration only under quiescent
   maintenance and synchronize its matching INSERT conflict target before opening admission.
+  MusicBrainz festival extractor v2 fills a missing street address from a single
+  forward event-to-place `held at` relation when the event lacks a coordinate pair.
+  The captured observation carries the linked place MBID and retains the original
+  relation. A conflicting listed city or several venue relations leave the address
+  unresolved. A point lookup must agree with the address or linked venue name.
+  A different house number is recorded as rejected evidence. A lookup by venue
+  name and city can then supply the point, followed by ordinary locality fallback.
+  Existing v1 runs resume on their original checkout. Switch versions under
+  maintenance and use a fresh run for the v2 file version. [MusicBrainz relationship definition](https://musicbrainz.org/relationship/e2c6f697-07dc-38b1-be0b-83d740165532)
 - **Normalize:** deterministic facts plus evidence-validated model interpretation. Source/URL
   coordinates are authoritative; models cannot invent coordinates, contacts, or identifiers.
   Cache inputs come from immutable captured evidence, never derived projections. Keys include model, prompt/schema/examples/profile/normalizer versions.

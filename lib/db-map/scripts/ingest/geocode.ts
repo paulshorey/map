@@ -27,6 +27,7 @@ import {
   LOCALITY_CONFLICT_M,
   capLocalityPrecision,
   forwardImplausible,
+  providerNameAgrees,
   forwardLocalityConflict,
   localityValue,
   locationReadySql,
@@ -265,6 +266,49 @@ export function listedLocality(row: GeoRow, captured: Record<string, any>) {
     country_code: textValue(captured.country_code),
     country_name: textValue(attrs.country_name) ?? textValue(hints.country),
   };
+}
+
+/** Check a precise result against the verbatim address or the linked venue name. */
+export function musicBrainzVenueResultIssue(
+  address: string,
+  venue: string | null,
+  basis: "address" | "venue",
+  hit: Pick<GeocodeHit, "precision" | "raw_response">,
+) {
+  if (hit.precision !== "point") return "venue_address_unconfirmed";
+  const street = address.trim().toLowerCase();
+  const listedNumber = /^(\d+[a-z]?(?:[-/]\d+[a-z]?)*)\s+(?=\p{L})/u.exec(
+    street,
+  )?.[1];
+  const result = hit.raw_response?.address as
+    | Record<string, unknown>
+    | undefined;
+  const number = textValue(result?.house_number)?.toLowerCase();
+  if (listedNumber && number && listedNumber !== number)
+    return "venue_house_number_mismatch";
+  const road = textValue(result?.road)?.toLowerCase();
+  if (
+    basis === "address" &&
+    listedNumber &&
+    listedNumber === number &&
+    road &&
+    street.slice(listedNumber.length).trim().split(",")[0] === road
+  )
+    return null;
+  if (venue && !forwardImplausible("name", { name: venue }, hit)) return null;
+  // A venue can use a short name ("The Meteor") for a theatre mapped as "Meteor Theatre".
+  const shortName = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/^the\s+/, "");
+  const providerName = textValue(result?.name);
+  if (venue && providerName && /\s+theat(?:re|er)$/i.test(providerName)) {
+    const core = providerName.replace(/\s+theat(?:re|er)$/i, "");
+    if (shortName(core) === shortName(venue) && providerNameAgrees(venue, core))
+      return null;
+  }
+  return "venue_address_unconfirmed";
 }
 
 /** The address candidate must be independent of reverse enrichment and LLM guesses. */
@@ -559,7 +603,7 @@ export async function runGeocode(
   if (opts.limit !== undefined) params.push(opts.limit);
   const rows = (
     await db.query(
-      `SELECT rp.id FROM research_pois rp JOIN research_sources rs ON rs.id=rp.source_id WHERE ${where} ORDER BY rp.first_seen_at${opts.limit !== undefined ? ` LIMIT $${params.length}` : ""}`,
+      `SELECT rp.id,rs.slug AS source_slug FROM research_pois rp JOIN research_sources rs ON rs.id=rp.source_id WHERE ${where} ORDER BY rp.first_seen_at${opts.limit !== undefined ? ` LIMIT $${params.length}` : ""}`,
       params,
     )
   ).rows;
@@ -705,6 +749,76 @@ export async function runGeocode(
       if (first.stop) continue;
       forwardQueryNorm = first.key;
       forward = first.hit ?? null;
+      if (
+        selected.source_slug === "musicbrainz" &&
+        attrs.musicbrainz_venue_mbid &&
+        source.address &&
+        forwardBasis === "address"
+      ) {
+        const venue = localityValue(attrs.musicbrainz_venue_name);
+        const mismatch =
+          forward &&
+          musicBrainzVenueResultIssue(
+            source.address,
+            venue,
+            "address",
+            forward,
+          );
+        if (mismatch) {
+          rejected = {
+            reason: mismatch,
+            query: q.display,
+            query_norm: first.key,
+            result: forward,
+          };
+          forward = null;
+        }
+        // A numbered unit may resolve to a different building on the same street.
+        // Try the independently supplied held-at name before falling back to the city.
+        if (!forward && venue && source.city) {
+          const listed = {
+            ...listedLocality(row, captured),
+            name: null,
+            address: null,
+            venue,
+          };
+          const venueQuery = buildQuery(listed, temporal);
+          if (
+            venueQuery &&
+            venueQuery.norm !== q.norm &&
+            basisAfterFit("venue", listed, venueQuery.display) === "venue"
+          ) {
+            const retry = await lookup(venueQuery);
+            if (retry.stop === "budget") {
+              stats.budgetHit = true;
+              break;
+            }
+            if (retry.stop) continue;
+            forwardQuery = venueQuery;
+            forwardQueryNorm = retry.key;
+            forwardBasis = "venue";
+            forward = retry.hit;
+            if (forward) {
+              const reason = musicBrainzVenueResultIssue(
+                source.address,
+                venue,
+                "venue",
+                forward,
+              );
+              if (reason) {
+                rejected = {
+                  reason,
+                  query: venueQuery.display,
+                  query_norm: retry.key,
+                  result: forward,
+                  previous: rejected,
+                };
+                forward = null;
+              }
+            }
+          }
+        }
+      }
       const cityQuery = listedCityQuery(row, captured, temporal);
       const sourcePoint =
         !suppliedCentroid &&
@@ -715,7 +829,7 @@ export async function runGeocode(
       if (
         forward &&
         cityQuery &&
-        cityQuery.norm !== q.norm &&
+        cityQuery.norm !== forwardQuery?.norm &&
         forwardLocalityConflict(
           listedLocality(row, captured).city,
           forward,
@@ -742,9 +856,10 @@ export async function runGeocode(
           // Keep the rejected paid result as evidence; it never occupies the inferred slot.
           rejected = {
             reason: "forward_locality_conflict",
-            query: q.display,
-            query_norm: first.key,
+            query: forwardQuery?.display ?? q.display,
+            query_norm: forwardQueryNorm,
             result: forward,
+            ...(rejected ? { previous: rejected } : {}),
           };
           forwardQuery = cityQuery;
           forwardBasis = "locality";

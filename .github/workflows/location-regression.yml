@@ -59,6 +59,7 @@ jobs:
           pnpm --filter @lib/db-map exec tsx --test
           scripts/ingest/pipeline-versions.test.ts
           scripts/ingest/location-resume.test.ts
+          scripts/ingest/extractors/musicbrainz.test.ts
           scripts/ingest/two-locations.test.ts
           scripts/ingest/location-review.test.ts
           scripts/ingest/normalize/generated-name.test.ts
