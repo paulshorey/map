@@ -289,6 +289,7 @@ const STREET_DIRECTIONS = new Map([
 ]);
 const HOUSE_NUMBER = String.raw`\d+[a-z]?(?:[-/–−]\d+[a-z]?)*`;
 const STANDALONE_HOUSE_NUMBER = new RegExp(`^${HOUSE_NUMBER}$`, "u");
+const POSTCODE_SHAPE = /^(?:\d{4,}|\d{2}[-–−]\d{3}|\d{3}[-–−]\d{4}|\d{5}[-–−]\d{3,4})$/u;
 const LEADING_HOUSE_NUMBER = new RegExp(
   String.raw`^(${HOUSE_NUMBER})\s+(\p{L}.*)$`,
   "u",
@@ -328,11 +329,12 @@ function streetAddressLine(
   const [line = "", adjacent = ""] = NUMBERED_PREMISES.test(parts[0] ?? "")
     ? parts.slice(1)
     : parts;
-  // Postal codes can also be standalone comma segments. An explicit street
-  // number in the street segment takes precedence over the adjacent segment.
+  // A standalone postcode can occupy the adjacent segment, even when the
+  // provider has no postcode. Existing attached house numbers take precedence.
   if (
     /^\p{L}/u.test(line) &&
     STANDALONE_HOUSE_NUMBER.test(adjacent) &&
+    !POSTCODE_SHAPE.test(adjacent) &&
     adjacent !== providerPostcode?.normalize("NFKC").toLowerCase() &&
     !LEADING_HOUSE_NUMBER.test(line) &&
     !TRAILING_HOUSE_NUMBER.test(line)

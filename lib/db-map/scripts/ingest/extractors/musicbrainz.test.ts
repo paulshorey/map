@@ -295,13 +295,13 @@ test("comma-separated MusicBrainz house numbers remain part of the street addres
     venue: "Sala Albéniz",
     city: "Tiana",
   };
-  const hit = (house_number: string) =>
+  const hit = (house_number: string, postcode?: string) =>
     point({
       name: sala.venue,
       road: "Avinguda Isaac Albéniz",
       city: sala.city,
       house_number,
-      postcode: "08391",
+      postcode,
     });
   assert.equal(musicBrainzVenueResultIssue(sala, hit("8")), null);
   assert.equal(
@@ -318,9 +318,12 @@ test("comma-separated MusicBrainz house numbers remain part of the street addres
   for (const address of [
     "Avinguda Isaac Albéniz 8, 08391, Tiana",
     "Avinguda Isaac Albéniz, 08391, Tiana",
-  ])
-    assert.equal(
-      musicBrainzVenueResultIssue({ ...sala, address }, hit("8")),
-      null,
-    );
+  ]) {
+    for (const postcode of ["08391", "08390", undefined]) {
+      assert.equal(
+        musicBrainzVenueResultIssue({ ...sala, address }, hit("8", postcode)),
+        null,
+      );
+    }
+  }
 });
