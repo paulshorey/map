@@ -281,6 +281,12 @@ const STREET_SUFFIXES = new Map([
   ["HWY", "HIGHWAY"],
 ]);
 const STREET_TYPES = new Set(STREET_SUFFIXES.values());
+const STREET_DIRECTIONS = new Map([
+  ["NORTH", "N"],
+  ["SOUTH", "S"],
+  ["EAST", "E"],
+  ["WEST", "W"],
+]);
 const NUMBERED_PREMISES =
   /^(?:building|floor|hall|pier|room|stage|suite|unit)\s+\d/u;
 
@@ -288,13 +294,16 @@ function streetName(value: string) {
   const tokens = foldTokens(value);
   const last = tokens.at(-1);
   const direction =
-    last && /^(?:N|S|E|W|NORTH|SOUTH|EAST|WEST)$/.test(last)
-      ? last[0]
+    last && (STREET_DIRECTIONS.has(last) || /^[NSEW]$/.test(last))
+      ? STREET_DIRECTIONS.get(last) ?? last
       : undefined;
   const suffixIndex = tokens.length - (direction ? 2 : 1);
   const suffix = tokens[suffixIndex];
   if (suffix) tokens[suffixIndex] = STREET_SUFFIXES.get(suffix) ?? suffix;
   if (direction) tokens[tokens.length - 1] = direction;
+  const first = tokens[0];
+  // Keep "East Street" distinct from the letter-named street "E Street".
+  if (first && suffixIndex > 1) tokens[0] = STREET_DIRECTIONS.get(first) ?? first;
   return tokens.join(" ");
 }
 

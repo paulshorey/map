@@ -234,8 +234,13 @@ test("range endpoints can agree while compound house numbers stay intact", () =>
 
 test("address prefixes and a missing comma before the city do not create false conflicts", () => {
   for (const [address, city, road, house_number] of [
-    ["422 E 6th St Austin, TX 78701", "Austin", "E 6th Street", "422"],
-    ["618 W 6th St Ste 200 Austin, TX 78701", "Austin", "W 6th Street", "618"],
+    ["422 E 6th St Austin, TX 78701", "Austin", "East 6th Street", "422"],
+    [
+      "618 W 6th St Ste 200 Austin, TX 78701",
+      "Austin",
+      "West 6th Street",
+      "618",
+    ],
     ["484 Queen Street W Toronto", "Toronto", "Queen Street West", "484"],
     ["Pier 17, 89 South St", "New York", "South Street", "89"],
   ] as const) {
@@ -271,5 +276,15 @@ test("address prefixes and a missing comma before the city do not create false c
       }),
     ),
     "venue_address_unconfirmed",
+  );
+});
+
+test("direction abbreviations keep letter-named streets distinct", () => {
+  assert.equal(
+    musicBrainzVenueResultIssue(
+      { ...meteor, address: "1 E Street" },
+      point({ road: "East Street", house_number: "1" }),
+    ),
+    "venue_road_mismatch",
   );
 });
