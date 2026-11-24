@@ -280,12 +280,58 @@ const STREET_SUFFIXES = new Map([
   ["LN", "LANE"],
   ["HWY", "HIGHWAY"],
 ]);
+const STREET_TYPES = new Set(STREET_SUFFIXES.values());
+const NUMBERED_PREMISES =
+  /^(?:building|floor|hall|pier|room|stage|suite|unit)\s+\d/u;
 
 function streetName(value: string) {
   const tokens = foldTokens(value);
-  const suffix = tokens.pop();
-  if (suffix) tokens.push(STREET_SUFFIXES.get(suffix) ?? suffix);
+  const last = tokens.at(-1);
+  const direction =
+    last && /^(?:N|S|E|W|NORTH|SOUTH|EAST|WEST)$/.test(last)
+      ? last[0]
+      : undefined;
+  const suffixIndex = tokens.length - (direction ? 2 : 1);
+  const suffix = tokens[suffixIndex];
+  if (suffix) tokens[suffixIndex] = STREET_SUFFIXES.get(suffix) ?? suffix;
+  if (direction) tokens[tokens.length - 1] = direction;
   return tokens.join(" ");
+}
+
+function streetAddressLine(
+  address: string,
+  listedCity: string | null,
+  providerRoad: string | null,
+) {
+  const [first = "", second = ""] = address
+    .split(",", 2)
+    .map((part) => part.trim());
+  // A venue or unit can be listed before its street address, e.g. "Pier 17, 89 South St".
+  const line = NUMBERED_PREMISES.test(first) ? second : first;
+  const city = listedCity
+    ?.split(",")[0]
+    ?.trim()
+    .normalize("NFKC")
+    .toLowerCase();
+  if (!city) return line;
+  const cityStart = line.lastIndexOf(` ${city}`);
+  const cityEnd = cityStart + city.length + 1;
+  if (cityStart <= 0 || (cityEnd < line.length && line[cityEnd] !== " "))
+    return line;
+  // A missing comma can put the city immediately after the street. Only trim a
+  // recognizable street ending or a road independently named by the provider.
+  const beforeCity = line
+    .slice(0, cityStart)
+    .replace(/\s+(?:ste|suite|unit)\s+\d+[a-z]?$/, "");
+  const road = beforeCity.replace(/^\d+[a-z]?(?:[-/–−]\d+[a-z]?)*\s+/, "");
+  const normalizedRoad = streetName(road);
+  const roadTokens = normalizedRoad.split(" ");
+  const last = roadTokens.at(-1);
+  const roadType = last && /^[NSEW]$/.test(last) ? roadTokens.at(-2) : last;
+  const recognizedStreet =
+    (roadType && STREET_TYPES.has(roadType)) ||
+    (providerRoad && streetName(providerRoad) === normalizedRoad);
+  return recognizedStreet ? beforeCity : line;
 }
 
 function linkedVenueNameAgrees(
@@ -326,17 +372,17 @@ export function musicBrainzVenueResultIssue(
   if (listed.country_code && country && listed.country_code !== country)
     return "venue_country_mismatch";
   const address = listed.address.normalize("NFKC").toLowerCase();
-  const street = address.split(",")[0]!.trim();
-  const leading =
-    /^(\d+[a-z]?(?:[-/–−]\d+[a-z]?)*)\s+(\p{L}.*)$/u.exec(street);
-  const trailing =
-    /^(\p{L}.*?)\s+(\d+[a-z]?(?:[-/–−]\d+[a-z]?)*)$/u.exec(street);
+  const road = textValue(result?.road);
+  const street = streetAddressLine(address, listed.city, road);
+  const leading = /^(\d+[a-z]?(?:[-/–−]\d+[a-z]?)*)\s+(\p{L}.*)$/u.exec(street);
+  const trailing = /^(\p{L}.*?)\s+(\d+[a-z]?(?:[-/–−]\d+[a-z]?)*)$/u.exec(
+    street,
+  );
   const listedNumber = leading?.[1] ?? trailing?.[2];
   const listedRoad = leading?.[2] ?? trailing?.[1];
   const number = textValue(result?.house_number)
     ?.normalize("NFKC")
     .toLowerCase();
-  const road = textValue(result?.road);
   const roadMatches =
     !!road && !!listedRoad && streetName(listedRoad) === streetName(road);
   const venueMatches = linkedVenueNameAgrees(listed.venue, hit.raw_response);

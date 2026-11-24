@@ -231,3 +231,45 @@ test("range endpoints can agree while compound house numbers stay intact", () =>
     );
   }
 });
+
+test("address prefixes and a missing comma before the city do not create false conflicts", () => {
+  for (const [address, city, road, house_number] of [
+    ["422 E 6th St Austin, TX 78701", "Austin", "E 6th Street", "422"],
+    ["618 W 6th St Ste 200 Austin, TX 78701", "Austin", "W 6th Street", "618"],
+    ["484 Queen Street W Toronto", "Toronto", "Queen Street West", "484"],
+    ["Pier 17, 89 South St", "New York", "South Street", "89"],
+  ] as const) {
+    assert.equal(
+      musicBrainzVenueResultIssue(
+        { address, venue: null, city },
+        point({ road, house_number }),
+      ),
+      null,
+      address,
+    );
+  }
+  assert.equal(
+    musicBrainzVenueResultIssue(
+      { ...meteor, address: "1 Victoria Street Hamilton" },
+      point({
+        name: "Meteor Theatre",
+        city: "Hamilton",
+        road: "Other Street",
+        house_number: "1",
+      }),
+    ),
+    "venue_road_mismatch",
+  );
+  assert.equal(
+    musicBrainzVenueResultIssue(
+      { address: "Pier 17", venue: "Pier 17", city: "New York" },
+      point({
+        name: "Pier 17",
+        city: "New York",
+        road: "South Street",
+        house_number: "89",
+      }),
+    ),
+    "venue_address_unconfirmed",
+  );
+});
