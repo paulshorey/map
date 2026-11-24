@@ -26,11 +26,15 @@ import {
   LOCATION_QUERY_VERSION,
   LOCALITY_CONFLICT_M,
   capLocalityPrecision,
+  foldTokens,
   forwardImplausible,
   forwardLocalityConflict,
+  forwardResultName,
   localityValue,
   locationReadySql,
+  providerNameAgrees,
   resolveLocation,
+  resultNamesListedCity,
   textValue,
   reverseForPrecision,
   type ReverseLocation,
@@ -265,6 +269,193 @@ export function listedLocality(row: GeoRow, captured: Record<string, any>) {
     country_code: textValue(captured.country_code),
     country_name: textValue(attrs.country_name) ?? textValue(hints.country),
   };
+}
+
+const STREET_SUFFIXES = new Map([
+  ["ST", "STREET"],
+  ["RD", "ROAD"],
+  ["AVE", "AVENUE"],
+  ["BLVD", "BOULEVARD"],
+  ["DR", "DRIVE"],
+  ["LN", "LANE"],
+  ["HWY", "HIGHWAY"],
+]);
+const STREET_TYPES = new Set(STREET_SUFFIXES.values());
+const STREET_DIRECTIONS = new Map([
+  ["NORTH", "N"],
+  ["SOUTH", "S"],
+  ["EAST", "E"],
+  ["WEST", "W"],
+]);
+const HOUSE_NUMBER = String.raw`\d+[a-z]?(?:[-/–−]\d+[a-z]?)*`;
+const STANDALONE_HOUSE_NUMBER = new RegExp(`^${HOUSE_NUMBER}$`, "u");
+const POSTCODE_SHAPE = /^(?:\d{4,}|\d{2}[-–−]\d{3}|\d{3}[-–−]\d{4}|\d{5}[-–−]\d{3,4})$/u;
+const LEADING_HOUSE_NUMBER = new RegExp(
+  String.raw`^(${HOUSE_NUMBER})\s+(\p{L}.*)$`,
+  "u",
+);
+const TRAILING_HOUSE_NUMBER = new RegExp(
+  String.raw`^(\p{L}.*?)\s+(${HOUSE_NUMBER})$`,
+  "u",
+);
+const NUMBERED_PREMISES =
+  /^(?:building|floor|hall|pier|room|stage|suite|unit)\s+\d/u;
+
+function streetName(value: string) {
+  const tokens = foldTokens(value);
+  const last = tokens.at(-1);
+  const direction =
+    last && (STREET_DIRECTIONS.has(last) || /^[NSEW]$/.test(last))
+      ? STREET_DIRECTIONS.get(last) ?? last
+      : undefined;
+  const suffixIndex = tokens.length - (direction ? 2 : 1);
+  const suffix = tokens[suffixIndex];
+  if (suffix) tokens[suffixIndex] = STREET_SUFFIXES.get(suffix) ?? suffix;
+  if (direction) tokens[tokens.length - 1] = direction;
+  const first = tokens[0];
+  // Keep "East Street" distinct from the letter-named street "E Street".
+  if (first && suffixIndex > 1) tokens[0] = STREET_DIRECTIONS.get(first) ?? first;
+  return tokens.join(" ");
+}
+
+function houseNumberKey(value: string) {
+  return value.normalize("NFKC").toLowerCase().replace(/[–−]/g, "-");
+}
+
+function streetAddressLine(
+  address: string,
+  listedCity: string | null,
+  providerRoad: string | null,
+  providerPostcode: string | null,
+  providerHouseNumber: string | undefined,
+) {
+  const parts = address.split(",", 3).map((part) => part.trim());
+  // A venue or unit can be listed before its street address, e.g. "Pier 17, 89 South St".
+  const [line = "", adjacent = ""] = NUMBERED_PREMISES.test(parts[0] ?? "")
+    ? parts.slice(1)
+    : parts;
+  // A postcode-shaped segment is ambiguous. Accept it when the provider
+  // reports that same house number and does not identify it as a postcode.
+  // Existing attached house numbers take precedence.
+  if (
+    /^\p{L}/u.test(line) &&
+    STANDALONE_HOUSE_NUMBER.test(adjacent) &&
+    (!POSTCODE_SHAPE.test(adjacent) ||
+      houseNumberKey(adjacent) === providerHouseNumber) &&
+    (!providerPostcode ||
+      houseNumberKey(adjacent) !== houseNumberKey(providerPostcode)) &&
+    !LEADING_HOUSE_NUMBER.test(line) &&
+    !TRAILING_HOUSE_NUMBER.test(line)
+  )
+    return `${line} ${adjacent}`;
+  const city = listedCity
+    ?.split(",")[0]
+    ?.trim()
+    .normalize("NFKC")
+    .toLowerCase();
+  if (!city) return line;
+  const cityStart = line.lastIndexOf(` ${city}`);
+  const cityEnd = cityStart + city.length + 1;
+  if (cityStart <= 0 || (cityEnd < line.length && line[cityEnd] !== " "))
+    return line;
+  // A missing comma can put the city immediately after the street. Only trim a
+  // recognizable street ending or a road independently named by the provider.
+  const beforeCity = line
+    .slice(0, cityStart)
+    .replace(/\s+(?:ste|suite|unit)\s+\d+[a-z]?$/, "");
+  const road = beforeCity.replace(/^\d+[a-z]?(?:[-/–−]\d+[a-z]?)*\s+/, "");
+  const normalizedRoad = streetName(road);
+  const roadTokens = normalizedRoad.split(" ");
+  const last = roadTokens.at(-1);
+  const roadType = last && /^[NSEW]$/.test(last) ? roadTokens.at(-2) : last;
+  const recognizedStreet =
+    (roadType && STREET_TYPES.has(roadType)) ||
+    (providerRoad && streetName(providerRoad) === normalizedRoad);
+  return recognizedStreet ? beforeCity : line;
+}
+
+function linkedVenueNameAgrees(
+  venue: string | null,
+  raw: GeocodeHit["raw_response"],
+) {
+  const providerName = forwardResultName(raw);
+  if (!venue || !providerName) return false;
+  const shortName = (value: string) =>
+    foldTokens(value).join(" ").replace(/^THE /, "");
+  // A venue can use a short name ("The Meteor") for a theatre mapped as "Meteor Theatre".
+  const theatreName = providerName.replace(/\s+theat(?:re|er)$/i, "");
+  return [providerName, theatreName].some(
+    (name) =>
+      shortName(name) === shortName(venue) && providerNameAgrees(venue, name),
+  );
+}
+
+/** A linked venue needs corroboration, even when the provider describes the result as a point. */
+export function musicBrainzVenueResultIssue(
+  listed: {
+    address: string;
+    venue: string | null;
+    city: string | null;
+    country_code?: string | null;
+  },
+  hit: Pick<GeocodeHit, "precision" | "raw_response" | "city" | "country_code">,
+) {
+  const unconfirmed = "venue_address_unconfirmed";
+  if (hit.precision !== "point" || hit.raw_response?.class === "highway")
+    return unconfirmed;
+  const result = hit.raw_response?.address as
+    | Record<string, unknown>
+    | undefined;
+  const country = countryToCode(
+    hit.country_code ?? textValue(result?.country_code),
+  );
+  if (listed.country_code && country && listed.country_code !== country)
+    return "venue_country_mismatch";
+  const address = listed.address.normalize("NFKC").toLowerCase();
+  const road = textValue(result?.road);
+  const houseNumber = textValue(result?.house_number);
+  const numberKey = houseNumber ? houseNumberKey(houseNumber) : undefined;
+  const street = streetAddressLine(
+    address,
+    listed.city,
+    road,
+    textValue(result?.postcode),
+    numberKey,
+  );
+  const leading = LEADING_HOUSE_NUMBER.exec(street);
+  const trailing = TRAILING_HOUSE_NUMBER.exec(street);
+  const listedNumber = leading?.[1] ?? trailing?.[2];
+  const listedRoad = leading?.[2] ?? trailing?.[1];
+  const roadMatches =
+    !!road && !!listedRoad && streetName(listedRoad) === streetName(road);
+  const venueMatches = linkedVenueNameAgrees(listed.venue, hit.raw_response);
+  const range = /^(\d+)([-–])(\d+)$/.exec(listedNumber ?? "");
+  // A dash can express a range or an indivisible number (e.g. 52-19 Flushing Ave).
+  // Endpoints of a plain hyphenated range require the named venue on the same road.
+  const rangeEndpoint =
+    range &&
+    Number(range[1]) < Number(range[3]) &&
+    (range[2] === "–" || (venueMatches && roadMatches)) &&
+    (numberKey === range[1] || numberKey === range[3]);
+  const houseMatches =
+    !!listedNumber &&
+    !!numberKey &&
+    (houseNumberKey(listedNumber) === numberKey || rangeEndpoint);
+  if (listedNumber && numberKey && !houseMatches)
+    return "venue_house_number_mismatch";
+  if (listedRoad && road && !roadMatches) return "venue_road_mismatch";
+  if (roadMatches && houseMatches) return null;
+
+  if (!venueMatches) return unconfirmed;
+  // A namesake with no address agreement needs both a comparable listed address
+  // and an explicit city match. For other address formats require a matching road.
+  if (roadMatches) return null;
+  if (resultNamesListedCity(listed.city, hit) !== true) return unconfirmed;
+  const roadTokens = road ? foldTokens(road).join(" ") : "";
+  const addressContainsRoad =
+    roadTokens &&
+    ` ${foldTokens(address).join(" ")} `.includes(` ${roadTokens} `);
+  return listedNumber || addressContainsRoad ? null : unconfirmed;
 }
 
 /** The address candidate must be independent of reverse enrichment and LLM guesses. */
@@ -559,7 +750,7 @@ export async function runGeocode(
   if (opts.limit !== undefined) params.push(opts.limit);
   const rows = (
     await db.query(
-      `SELECT rp.id FROM research_pois rp JOIN research_sources rs ON rs.id=rp.source_id WHERE ${where} ORDER BY rp.first_seen_at${opts.limit !== undefined ? ` LIMIT $${params.length}` : ""}`,
+      `SELECT rp.id,rs.slug AS source_slug FROM research_pois rp JOIN research_sources rs ON rs.id=rp.source_id WHERE ${where} ORDER BY rp.first_seen_at${opts.limit !== undefined ? ` LIMIT $${params.length}` : ""}`,
       params,
     )
   ).rows;
@@ -705,6 +896,66 @@ export async function runGeocode(
       if (first.stop) continue;
       forwardQueryNorm = first.key;
       forward = first.hit ?? null;
+      if (
+        selected.source_slug === "musicbrainz" &&
+        attrs.musicbrainz_venue_mbid &&
+        source.address &&
+        forwardBasis === "address"
+      ) {
+        const venue = localityValue(attrs.musicbrainz_venue_name);
+        const listedVenue = { ...source, address: source.address, venue };
+        const mismatch =
+          forward && musicBrainzVenueResultIssue(listedVenue, forward);
+        if (mismatch) {
+          rejected = {
+            reason: mismatch,
+            query: q.display,
+            query_norm: first.key,
+            result: forward,
+          };
+          forward = null;
+        }
+        // A numbered unit may resolve to a different building on the same street.
+        // Try the independently supplied held-at name before falling back to the city.
+        if (!forward && venue && source.city) {
+          const listed = {
+            ...listedLocality(row, captured),
+            name: null,
+            address: null,
+            venue,
+          };
+          const venueQuery = buildQuery(listed, temporal);
+          if (
+            venueQuery &&
+            venueQuery.norm !== q.norm &&
+            basisAfterFit("venue", listed, venueQuery.display) === "venue"
+          ) {
+            const retry = await lookup(venueQuery);
+            if (retry.stop === "budget") {
+              stats.budgetHit = true;
+              break;
+            }
+            if (retry.stop) continue;
+            forwardQuery = venueQuery;
+            forwardQueryNorm = retry.key;
+            forwardBasis = "venue";
+            forward = retry.hit;
+            if (forward) {
+              const reason = musicBrainzVenueResultIssue(listedVenue, forward);
+              if (reason) {
+                rejected = {
+                  reason,
+                  query: venueQuery.display,
+                  query_norm: retry.key,
+                  result: forward,
+                  previous: rejected,
+                };
+                forward = null;
+              }
+            }
+          }
+        }
+      }
       const cityQuery = listedCityQuery(row, captured, temporal);
       const sourcePoint =
         !suppliedCentroid &&
@@ -715,7 +966,7 @@ export async function runGeocode(
       if (
         forward &&
         cityQuery &&
-        cityQuery.norm !== q.norm &&
+        cityQuery.norm !== forwardQuery?.norm &&
         forwardLocalityConflict(
           listedLocality(row, captured).city,
           forward,
@@ -742,9 +993,10 @@ export async function runGeocode(
           // Keep the rejected paid result as evidence; it never occupies the inferred slot.
           rejected = {
             reason: "forward_locality_conflict",
-            query: q.display,
-            query_norm: first.key,
+            query: forwardQuery?.display ?? q.display,
+            query_norm: forwardQueryNorm,
             result: forward,
+            ...(rejected ? { previous: rejected } : {}),
           };
           forwardQuery = cityQuery;
           forwardBasis = "locality";
@@ -827,7 +1079,7 @@ export async function runGeocode(
             forward: {
               query_version: LOCATION_QUERY_VERSION,
               country_filter: forwardCountry,
-              query: q?.display ?? null,
+              query: forwardQuery?.display ?? null,
               query_basis: forwardBasis,
               query_norm: forwardQueryNorm,
               state: !q ? "no_query" : "unresolved",

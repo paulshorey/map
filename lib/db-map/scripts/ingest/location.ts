@@ -40,7 +40,7 @@ export const localityValue = (v: unknown): string | null => {
     : null;
 };
 
-const foldTokens = (s: string) =>
+export const foldTokens = (s: string) =>
   s
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -203,6 +203,18 @@ export function providerNameAgrees(listedName: string, providerName: string) {
   );
 }
 
+export function forwardResultName(
+  raw: Record<string, unknown> | null | undefined,
+) {
+  const address = raw?.address as Record<string, unknown> | undefined;
+  // LocationIQ may store the feature's name under its category key.
+  return (
+    ["name", "amenity", "tourism", "shop", "leisure", "building", "historic", "office"]
+      .map((key) => textValue(address?.[key]))
+      .find(Boolean) ?? null
+  );
+}
+
 /**
  * Why a forward result cannot stand for the listed text, or null when it can. A lookup of only
  * region/country text ("England", "East Africa", "USA / Mexico") locates at most a region: a
@@ -266,23 +278,7 @@ export function forwardImplausible(
     } else return "name_result_mismatch";
   }
   if (basis === "name" && hit.precision === "point") {
-    const address = hit.raw_response?.address as
-      | Record<string, unknown>
-      | undefined;
-    // LocationIQ may store the feature's name under its category key instead of `name`.
-    const providerName =
-      [
-        "name",
-        "amenity",
-        "tourism",
-        "shop",
-        "leisure",
-        "building",
-        "historic",
-        "office",
-      ]
-        .map((key) => textValue(address?.[key]))
-        .find(Boolean) ?? null;
+    const providerName = forwardResultName(hit.raw_response);
     const name = textValue(listed.name);
     if (!name || !providerName || !providerNameAgrees(name, providerName))
       return "name_result_mismatch";
