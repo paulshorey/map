@@ -275,7 +275,7 @@ test("normalization does not spend another request on authentication or database
 const gardenRow = { ...row, source_slug: "bgci" };
 const gardenPacket = {
   source: { slug: "bgci", profile: "garden" },
-  captured: { attributes: { open_to_public: false } },
+  captured: { phone: null, attributes: { open_to_public: false } },
   raw: {
     id: 1,
     attributes: {
@@ -299,6 +299,10 @@ test("BGCI length repair retains selected survey paths, captured facts and a lin
     {
       field: "attributes.open_to_public",
       paths: ["$.captured.attributes.open_to_public"],
+    },
+    {
+      field: "phone",
+      paths: ["$.captured.phone"],
     },
   ];
   respond(
