@@ -87,6 +87,7 @@ function inferredRank(
       hints?: { city?: unknown; location?: unknown } | null;
     };
     forward?: {
+      query_basis?: unknown;
       result?: Parameters<typeof forwardLocalityConflict>[1];
       rejected?: unknown;
       fallback_from?: unknown;
@@ -101,10 +102,13 @@ function inferredRank(
   const listedAddress = localityValue(v?.listed?.address);
   const result = v?.forward?.result;
   const confirmation = v?.forward?.city_confirmation?.result;
-  // After a rejected or missed venue/address lookup, the stored result is the listed city's
-  // (or country's) own lookup: the venue-conflict test does not apply to it (Nagoya → 名古屋市
-  // is the accepted answer), and it earns no address priority.
-  const cityFallback = !!v?.forward?.rejected || !!v?.forward?.fallback_from;
+  // A rejected attempt can precede a confirmed venue. Use the final query's
+  // basis, and retain the rejection heuristic for artifacts with no basis.
+  const basis = v?.forward?.query_basis;
+  const cityFallback =
+    basis === "locality" ||
+    !!v?.forward?.fallback_from ||
+    (basis == null && !!v?.forward?.rejected);
   const conflict =
     !cityFallback &&
     !!result &&
@@ -118,7 +122,7 @@ function inferredRank(
     );
   return [
     conflict ? 0 : 1,
-    listedAddress && !cityFallback ? 1 : 0,
+    listedAddress && !cityFallback && (basis === "address" || basis == null) ? 1 : 0,
     PRECISION_RANK[p.precision] ?? PRECISION_RANK.point!,
   ];
 }
@@ -208,8 +212,11 @@ export function locationSpecificity(
       forward?.query_basis === "address" && !localityValue(v?.listed?.address)
         ? "locality"
         : forward?.query_basis;
-    // A rejected venue/address hit leaves the listed city's own lookup.
-    if (basis !== "locality" && !forward?.rejected && !forward?.fallback_from)
+    if (
+      basis !== "locality" &&
+      !forward?.fallback_from &&
+      (basis != null || !forward?.rejected)
+    )
       return "precise";
   }
   return "general";

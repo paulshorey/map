@@ -26,12 +26,15 @@ import {
   LOCATION_QUERY_VERSION,
   LOCALITY_CONFLICT_M,
   capLocalityPrecision,
+  foldTokens,
   forwardImplausible,
-  providerNameAgrees,
   forwardLocalityConflict,
+  forwardResultName,
   localityValue,
   locationReadySql,
+  providerNameAgrees,
   resolveLocation,
+  resultNamesListedCity,
   textValue,
   reverseForPrecision,
   type ReverseLocation,
@@ -268,47 +271,103 @@ export function listedLocality(row: GeoRow, captured: Record<string, any>) {
   };
 }
 
-/** Check a precise result against the verbatim address or the linked venue name. */
-export function musicBrainzVenueResultIssue(
-  address: string,
+const STREET_SUFFIXES = new Map([
+  ["ST", "STREET"],
+  ["RD", "ROAD"],
+  ["AVE", "AVENUE"],
+  ["BLVD", "BOULEVARD"],
+  ["DR", "DRIVE"],
+  ["LN", "LANE"],
+  ["HWY", "HIGHWAY"],
+]);
+
+function streetName(value: string) {
+  const tokens = foldTokens(value);
+  const suffix = tokens.pop();
+  if (suffix) tokens.push(STREET_SUFFIXES.get(suffix) ?? suffix);
+  return tokens.join(" ");
+}
+
+function linkedVenueNameAgrees(
   venue: string | null,
-  basis: "address" | "venue",
-  hit: Pick<GeocodeHit, "precision" | "raw_response">,
+  raw: GeocodeHit["raw_response"],
 ) {
-  if (hit.precision !== "point") return "venue_address_unconfirmed";
-  const street = address.trim().toLowerCase();
-  const listedNumber = /^(\d+[a-z]?(?:[-/]\d+[a-z]?)*)\s+(?=\p{L})/u.exec(
-    street,
-  )?.[1];
+  const providerName = forwardResultName(raw);
+  if (!venue || !providerName) return false;
+  const shortName = (value: string) =>
+    foldTokens(value).join(" ").replace(/^THE /, "");
+  // A venue can use a short name ("The Meteor") for a theatre mapped as "Meteor Theatre".
+  const theatreName = providerName.replace(/\s+theat(?:re|er)$/i, "");
+  return [providerName, theatreName].some(
+    (name) =>
+      shortName(name) === shortName(venue) && providerNameAgrees(venue, name),
+  );
+}
+
+/** A linked venue needs corroboration, even when the provider describes the result as a point. */
+export function musicBrainzVenueResultIssue(
+  listed: {
+    address: string;
+    venue: string | null;
+    city: string | null;
+    country_code?: string | null;
+  },
+  hit: Pick<GeocodeHit, "precision" | "raw_response" | "city" | "country_code">,
+) {
+  const unconfirmed = "venue_address_unconfirmed";
+  if (hit.precision !== "point" || hit.raw_response?.class === "highway")
+    return unconfirmed;
   const result = hit.raw_response?.address as
     | Record<string, unknown>
     | undefined;
-  const number = textValue(result?.house_number)?.toLowerCase();
-  if (listedNumber && number && listedNumber !== number)
+  const country = countryToCode(
+    hit.country_code ?? textValue(result?.country_code),
+  );
+  if (listed.country_code && country && listed.country_code !== country)
+    return "venue_country_mismatch";
+  const address = listed.address.normalize("NFKC").toLowerCase();
+  const street = address.split(",")[0]!.trim();
+  const leading =
+    /^(\d+[a-z]?(?:[-/–−]\d+[a-z]?)*)\s+(\p{L}.*)$/u.exec(street);
+  const trailing =
+    /^(\p{L}.*?)\s+(\d+[a-z]?(?:[-/–−]\d+[a-z]?)*)$/u.exec(street);
+  const listedNumber = leading?.[1] ?? trailing?.[2];
+  const listedRoad = leading?.[2] ?? trailing?.[1];
+  const number = textValue(result?.house_number)
+    ?.normalize("NFKC")
+    .toLowerCase();
+  const road = textValue(result?.road);
+  const roadMatches =
+    !!road && !!listedRoad && streetName(listedRoad) === streetName(road);
+  const venueMatches = linkedVenueNameAgrees(listed.venue, hit.raw_response);
+  const range = /^(\d+)([-–])(\d+)$/.exec(listedNumber ?? "");
+  // A dash can express a range or an indivisible number (e.g. 52-19 Flushing Ave).
+  // Endpoints of a plain hyphenated range require the named venue on the same road.
+  const rangeEndpoint =
+    range &&
+    Number(range[1]) < Number(range[3]) &&
+    (range[2] === "–" || (venueMatches && roadMatches)) &&
+    (number === range[1] || number === range[3]);
+  const houseMatches =
+    !!listedNumber &&
+    !!number &&
+    (listedNumber.replace(/[–−]/g, "-") === number.replace(/[–−]/g, "-") ||
+      rangeEndpoint);
+  if (listedNumber && number && !houseMatches)
     return "venue_house_number_mismatch";
-  const road = textValue(result?.road)?.toLowerCase();
-  if (
-    basis === "address" &&
-    listedNumber &&
-    listedNumber === number &&
-    road &&
-    street.slice(listedNumber.length).trim().split(",")[0] === road
-  )
-    return null;
-  if (venue && !forwardImplausible("name", { name: venue }, hit)) return null;
-  // A venue can use a short name ("The Meteor") for a theatre mapped as "Meteor Theatre".
-  const shortName = (value: string) =>
-    value
-      .trim()
-      .toLowerCase()
-      .replace(/^the\s+/, "");
-  const providerName = textValue(result?.name);
-  if (venue && providerName && /\s+theat(?:re|er)$/i.test(providerName)) {
-    const core = providerName.replace(/\s+theat(?:re|er)$/i, "");
-    if (shortName(core) === shortName(venue) && providerNameAgrees(venue, core))
-      return null;
-  }
-  return "venue_address_unconfirmed";
+  if (listedRoad && road && !roadMatches) return "venue_road_mismatch";
+  if (roadMatches && houseMatches) return null;
+
+  if (!venueMatches) return unconfirmed;
+  // A namesake with no address agreement needs both a comparable listed address
+  // and an explicit city match. For other address formats require a matching road.
+  if (roadMatches) return null;
+  if (resultNamesListedCity(listed.city, hit) !== true) return unconfirmed;
+  const roadTokens = road ? foldTokens(road).join(" ") : "";
+  const addressContainsRoad =
+    roadTokens &&
+    ` ${foldTokens(address).join(" ")} `.includes(` ${roadTokens} `);
+  return listedNumber || addressContainsRoad ? null : unconfirmed;
 }
 
 /** The address candidate must be independent of reverse enrichment and LLM guesses. */
@@ -756,14 +815,9 @@ export async function runGeocode(
         forwardBasis === "address"
       ) {
         const venue = localityValue(attrs.musicbrainz_venue_name);
+        const listedVenue = { ...source, address: source.address, venue };
         const mismatch =
-          forward &&
-          musicBrainzVenueResultIssue(
-            source.address,
-            venue,
-            "address",
-            forward,
-          );
+          forward && musicBrainzVenueResultIssue(listedVenue, forward);
         if (mismatch) {
           rejected = {
             reason: mismatch,
@@ -799,12 +853,7 @@ export async function runGeocode(
             forwardBasis = "venue";
             forward = retry.hit;
             if (forward) {
-              const reason = musicBrainzVenueResultIssue(
-                source.address,
-                venue,
-                "venue",
-                forward,
-              );
+              const reason = musicBrainzVenueResultIssue(listedVenue, forward);
               if (reason) {
                 rejected = {
                   reason,
@@ -942,7 +991,7 @@ export async function runGeocode(
             forward: {
               query_version: LOCATION_QUERY_VERSION,
               country_filter: forwardCountry,
-              query: q?.display ?? null,
+              query: forwardQuery?.display ?? null,
               query_basis: forwardBasis,
               query_norm: forwardQueryNorm,
               state: !q ? "no_query" : "unresolved",

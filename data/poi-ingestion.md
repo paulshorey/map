@@ -632,9 +632,10 @@ legacy attempt records.
   forward event-to-place `held at` relation when the event lacks a coordinate pair.
   The captured observation carries the linked place MBID and retains the original
   relation. A conflicting listed city or several venue relations leave the address
-  unresolved. A point lookup must agree with the address or linked venue name.
-  A different house number is recorded as rejected evidence. A lookup by venue
-  name and city can then supply the point, followed by ordinary locality fallback.
+  unresolved. A point lookup needs a matching street and house number, or a matching
+  venue name corroborated by the listed address or city. A conflicting house number,
+  street or country is retained as rejected evidence. A lookup by venue name and
+  city can then supply a precise point, followed by ordinary locality fallback.
   Existing v1 runs resume on their original checkout. Switch versions under
   maintenance and use a fresh run for the v2 file version. [MusicBrainz relationship definition](https://musicbrainz.org/relationship/e2c6f697-07dc-38b1-be0b-83d740165532)
 - **Normalize:** deterministic facts plus evidence-validated model interpretation. Source/URL

@@ -51,7 +51,7 @@ afterEach(() => {
   else process.env.LOCATIONIQ_API_KEY = oldKey;
 });
 
-function fixture(captured: any = source) {
+function fixture(captured: any = source, sourceSlug?: string) {
   const row = {
     id: "poi",
     name: "Festival",
@@ -75,7 +75,7 @@ function fixture(captured: any = source) {
     release() {},
     async query(sql: string, args: any[] = []) {
       if (sql.startsWith("SELECT rp.id"))
-        return { rows: activated ? [] : [{ id: row.id }] };
+        return { rows: activated ? [] : [{ id: row.id, source_slug: sourceSlug }] };
       if (sql.startsWith("SELECT rp.*,o.captured")) return { rows: [row] };
       if (sql.startsWith("SELECT slug"))
         return { rows: [{ slug: "music_festival" }] };
@@ -1586,8 +1586,13 @@ test("location specificity flags POIs that rest only on country, region or city"
       query_basis: "venue",
       rejected: { reason: "x" },
     }),
+    "precise",
+    "a confirmed venue can follow a rejected address point",
+  );
+  assert.equal(
+    spec(null, point("inferred", "point"), { rejected: { reason: "x" } }),
     "general",
-    "the city fallback after a rejected venue hit",
+    "older fallbacks with no basis use the rejection marker",
   );
   assert.equal(
     spec(null, point("inferred", "point"), {}),
@@ -1605,6 +1610,119 @@ test("location specificity flags POIs that rest only on country, region or city"
     "an artifact that stored `address` for a hint label is read as locality at rebuild",
   );
 });
+
+for (const outcome of ["venue", "locality", "unlocated"] as const) {
+  test(`MusicBrainz linked address rejection followed by ${outcome} preserves query evidence`, async () => {
+    const f = fixture(
+      {
+        name: "Hamtown Smakdown 2018, Day 1",
+        address: "1 Victoria Street, Hamilton, New Zealand 3204",
+        city: "Hamilton",
+        country_code: "NZ",
+        attributes: {
+          musicbrainz_venue_mbid: "565357f7-9b84-4206-b180-f892c1ea0c3f",
+          musicbrainz_venue_name: "The Meteor",
+        },
+      },
+      "musicbrainz",
+    );
+    Object.assign(f.row, {
+      lat: null,
+      lng: null,
+      coordinate_source: null,
+      coordinate_precision: null,
+    });
+    const addressQuery =
+      "1 Victoria Street, Hamilton, New Zealand 3204, Hamilton, NZ";
+    const venueQuery = "The Meteor, Hamilton, NZ";
+    const queries: string[] = [];
+    process.env.LOCATIONIQ_API_KEY = "fixture";
+    globalThis.fetch = async (input) => {
+      const query = new URL(String(input)).searchParams.get("q")!;
+      queries.push(query);
+      const place = {
+        lat: "-37.79",
+        lon: "175.29",
+        class: "amenity",
+        type: "theatre",
+        address: {
+          name: "Meteor Theatre",
+          road: "Victoria Street",
+          city: "Hamilton",
+          country_code: "nz",
+        },
+      };
+      if (query === addressQuery)
+        return Response.json([
+          { ...place, address: { ...place.address, house_number: "1/657" } },
+        ]);
+      if (query === venueQuery && outcome !== "unlocated")
+        return Response.json([
+          outcome === "venue"
+            ? place
+            : { ...place, address: { ...place.address, road: "Other Street" } },
+        ]);
+      if (query === "Hamilton, NZ" && outcome === "locality")
+        return Response.json([
+          {
+            ...place,
+            class: "place",
+            type: "city",
+            address: { city: "Hamilton" },
+          },
+        ]);
+      return Response.json({ error: "Unable to geocode" }, { status: 404 });
+    };
+
+    const stopped = await runGeocode(f.db, { ...opts, geocodeLimit: 1 });
+    assert.equal(stopped.budgetHit, true);
+    assert.equal(Boolean(f.activated), false);
+    assert.equal(Boolean(f.unresolved), false);
+    assert.deepEqual(queries, [addressQuery]);
+    const resumed = await runGeocode(f.db, { ...opts, geocodeLimit: 3 });
+    assert.equal(resumed.cacheHits, 1);
+    assert.deepEqual(queries, [
+      addressQuery,
+      venueQuery,
+      ...(outcome === "venue"
+        ? []
+        : [
+            "Hamilton, NZ",
+            ...(outcome === "unlocated" ? ["New Zealand"] : []),
+          ]),
+    ]);
+    const evidence = f.activated ?? f.unresolved;
+    assert.ok(evidence);
+    const forward = evidence.forward;
+    assert.equal(
+      forward.query,
+      outcome === "locality" ? "Hamilton, NZ" : venueQuery,
+    );
+    assert.equal(
+      forward.query_basis,
+      outcome === "locality" ? "locality" : "venue",
+    );
+    assert.equal(
+      forward.query_norm,
+      forwardCacheKey(forward.query.toLowerCase(), "NZ"),
+    );
+    const addressRejection =
+      outcome === "locality" ? forward.rejected.previous : forward.rejected;
+    assert.equal(addressRejection.reason, "venue_house_number_mismatch");
+    assert.equal(addressRejection.query, addressQuery);
+    if (outcome === "unlocated") {
+      assert.equal(resumed.unresolved, 1);
+      assert.equal(f.activated, null);
+    } else {
+      assert.equal(resumed.resolved, 1);
+      assert.ok(f.activated);
+      assert.equal(
+        f.activated.coordinate_evidence.inferred_coordinates.precision,
+        outcome === "venue" ? "point" : "city",
+      );
+    }
+  });
+}
 
 test("an address miss without any point falls back to the listed city, flagged as such", async () => {
   // BGCI record 1: "Estudio Floristico ..., CUERNAVACA Morelos, Mexico" misses.
