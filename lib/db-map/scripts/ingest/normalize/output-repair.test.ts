@@ -212,10 +212,14 @@ test("normalization repair retains a working JSON-object fallback and remains bo
           );
         return Response.json({
           model: ingestConfig.llm.model,
-          choices: [{
-            message: { content: requests.length === 2 ? content : repairContent },
-            finish_reason: requests.length === 2 ? finish : "stop",
-          }],
+          choices: [
+            {
+              message: {
+                content: requests.length === 2 ? content : repairContent,
+              },
+              finish_reason: requests.length === 2 ? finish : "stop",
+            },
+          ],
           usage: { prompt_tokens: 1, completion_tokens: 1 },
         });
       };
@@ -227,7 +231,11 @@ test("normalization repair retains a working JSON-object fallback and remains bo
           return true;
         });
       } else assert.equal((await answer).output.record.record_id, "fixture");
-      assert.equal(requests.length, 3, "one capability fallback plus one output repair");
+      assert.equal(
+        requests.length,
+        3,
+        "one capability fallback plus one output repair",
+      );
       assert.deepEqual(
         requests.slice(1).map((request) => request.response_format),
         [{ type: "json_object" }, { type: "json_object" }],
@@ -237,9 +245,12 @@ test("normalization repair retains a working JSON-object fallback and remains bo
       );
       assert.equal(inserts.length, 3);
       assert.equal(inserts[2]!.args[11], inserts[1]!.args[0]);
-      assert.deepEqual(JSON.parse(String(inserts[2]!.args[10])).response_format, {
-        type: "json_object",
-      });
+      assert.deepEqual(
+        JSON.parse(String(inserts[2]!.args[10])).response_format,
+        {
+          type: "json_object",
+        },
+      );
     }
   }
 });
@@ -275,7 +286,11 @@ test("normalization does not spend another request on authentication or database
 const gardenRow = { ...row, source_slug: "bgci" };
 const gardenPacket = {
   source: { slug: "bgci", profile: "garden" },
-  captured: { phone: null, attributes: { open_to_public: false } },
+  captured: {
+    name: "Camp A",
+    phone: null,
+    attributes: { open_to_public: false },
+  },
   raw: {
     id: 1,
     attributes: {
@@ -288,6 +303,7 @@ const gardenPacket = {
 
 test("BGCI length repair retains selected survey paths, captured facts and a linked request", async () => {
   const evidence = [
+    { field: "display_name", paths: ["$.captured.name", '$["captured"].name'] },
     {
       field: "attributes.visitors_annual",
       paths: ["$.raw.attributes.visitors_annual.value"],
@@ -319,7 +335,17 @@ test("BGCI length repair retains selected survey paths, captured facts and a lin
     gardenPacket,
   );
   assert.equal(result.compactBgciRepair, true);
-  assert.deepEqual(result.output.record.evidence, evidence);
+  assert.deepEqual(result.output.record.evidence, [
+    { field: "display_name", paths: ["$.captured.name", "$.captured.name"] },
+    ...evidence.slice(1),
+  ]);
+  const success = queries.find(
+    ({ sql, args }) => sql.includes("response_json") && args[2] === "succeeded",
+  );
+  assert.deepEqual(
+    JSON.parse(String(success?.args[3])).record.evidence,
+    evidence,
+  );
   const [first, second] = requests.map(
     (request) => request.messages as { role: string; content: string }[],
   );
@@ -343,6 +369,8 @@ test("BGCI length repair retains selected survey paths, captured facts and a lin
 for (const path of [
   "$.raw.attributes.collection_access.value[0]",
   "$.raw.attributes.policy_exists.value.length",
+  '$["raw"].attributes.policy_exists.value["length"]',
+  '$["source"].slug',
 ]) {
   test(`BGCI repair rejects missing evidence at ${path} without a third call`, async () => {
     const evidence = [{ field: "attributes.access", paths: [path] }];
@@ -352,7 +380,14 @@ for (const path of [
       JSON.stringify({ record: { ...output.record, evidence } }),
     );
     await assert.rejects(
-      callNormalizer(db, gardenRow, "hash", "garden", "garden-v1", gardenPacket),
+      callNormalizer(
+        db,
+        gardenRow,
+        "hash",
+        "garden",
+        "garden-v1",
+        gardenPacket,
+      ),
       (error: unknown) => {
         assert.ok(error instanceof LlmError);
         assert.match(error.message, /unresolved evidence path/);

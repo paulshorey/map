@@ -28,7 +28,7 @@ import {
   buildDeterministicFacts,
   type DeterministicInput,
 } from "./deterministic.js";
-import { bgciRepairPacket, restoreBgciSurveyFacts, validateRepairEvidence } from "./bgci-repair.js";
+import { bgciRepairPacket, normalizeRepairEvidence, restoreBgciSurveyFacts } from "./bgci-repair.js";
 import { fewShotMessages } from "./examples.js";
 import { getNormalizationProfile } from "./profiles.js";
 import { NORMALIZATION_SYSTEM_PROMPT } from "./prompt.js";
@@ -454,14 +454,16 @@ export async function callNormalizer(
       repairValidating = true;
       repairParsed = parseJsonContent(repairResult.content);
       const repaired = parseNormalizationOutput(repairParsed, row.id);
-      if (compactPacket) validateRepairEvidence(compactPacket, repaired.record.evidence);
+      const output = compactPacket
+        ? { record: { ...repaired.record, evidence: normalizeRepairEvidence(compactPacket, repaired.record.evidence) } }
+        : repaired;
       repairValidating = false;
       await finishRequest(db, repairId, repairResult, repairParsed);
       await db.query(
         `UPDATE research_normalization_requests SET status='repaired' WHERE id=$1`,
         [repairId],
       );
-      return { output: repaired, result: repairResult, requestId: repairId, compactBgciRepair: Boolean(compactPacket) };
+      return { output, result: repairResult, requestId: repairId, compactBgciRepair: Boolean(compactPacket) };
     } catch (repairError) {
       await finishRequest(
         db,

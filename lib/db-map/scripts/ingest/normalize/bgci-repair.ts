@@ -1,4 +1,8 @@
-import { evidenceValue } from "./attributes.js";
+import {
+  evidenceValue,
+  formatEvidencePath,
+  parseEvidencePath,
+} from "./attributes.js";
 import type { ResolvedNormalization } from "./resolve.js";
 import type { NormalizationEvidence } from "./contracts.js";
 
@@ -27,22 +31,28 @@ export function bgciRepairPacket(packet: Record<string, unknown>) {
   };
 }
 
-export function validateRepairEvidence(
+export function normalizeRepairEvidence(
   packet: Record<string, unknown>,
   evidence: NormalizationEvidence[],
-) {
-  for (const { field, paths } of evidence) {
-    for (const path of paths) {
+): NormalizationEvidence[] {
+  return evidence.map(({ field, paths }) => ({
+    field,
+    paths: paths.map((path) => {
+      const segments = parseEvidencePath(path);
+      const root = segments?.[0];
       if (
-        !/^\$\.(?:raw|captured|deterministic)(?:\.|\[)/.test(path) ||
+        !segments ||
+        segments.length < 2 ||
+        (root !== "raw" && root !== "captured" && root !== "deterministic") ||
         // JSON exposes array elements, but not JavaScript properties like length.
-        evidenceValue(packet, path, { enumerableOnly: true }) === undefined
+        evidenceValue(packet, segments, { enumerableOnly: true }) === undefined
       )
         throw new Error(
           `BGCI repair has an unresolved evidence path for ${field}: ${path}`,
         );
-    }
-  }
+      return formatEvidencePath(segments);
+    }),
+  }));
 }
 
 /** Preserve selected scalar survey answers even when the model summarizes or omits them. */

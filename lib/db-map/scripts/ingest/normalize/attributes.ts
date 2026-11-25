@@ -69,28 +69,39 @@ function pathForKey(prefix: string, key: string): string {
     : `${prefix}[${JSON.stringify(key)}]`;
 }
 
-/** Read a simple JSON path without eval, wildcards or inherited properties. */
-export function evidenceValue(
-  input: unknown,
-  path: string,
-  { enumerableOnly = false } = {},
-): unknown {
+export function parseEvidencePath(path: string): (string | number)[] | undefined {
   if (!path.startsWith("$")) return undefined;
   const segments =
     path
       .slice(1)
       .match(/\.[A-Za-z_][A-Za-z0-9_]*|\[\d+\]|\["(?:[^"\\]|\\.)*"\]/g) ?? [];
   if (segments.join("") !== path.slice(1)) return undefined;
+  try {
+    return segments.map((segment) =>
+      segment.startsWith(".") ? segment.slice(1) : JSON.parse(segment.slice(1, -1)),
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+export function formatEvidencePath(segments: readonly (string | number)[]): string {
+  return segments.reduce<string>(
+    (path, key) => typeof key === "number" ? `${path}[${key}]` : pathForKey(path, key),
+    "$",
+  );
+}
+
+/** Read a simple JSON path without eval, wildcards or inherited properties. */
+export function evidenceValue(
+  input: unknown,
+  path: string | readonly (string | number)[],
+  { enumerableOnly = false } = {},
+): unknown {
+  const segments = typeof path === "string" ? parseEvidencePath(path) : path;
+  if (!segments) return undefined;
   let value = input;
-  for (const segment of segments) {
-    let key: string | number;
-    try {
-      key = segment.startsWith(".")
-        ? segment.slice(1)
-        : JSON.parse(segment.slice(1, -1));
-    } catch {
-      return undefined;
-    }
+  for (const key of segments) {
     if (!value || typeof value !== "object" || !Object.hasOwn(value, key))
       return undefined;
     if (enumerableOnly && !Object.prototype.propertyIsEnumerable.call(value, key))
