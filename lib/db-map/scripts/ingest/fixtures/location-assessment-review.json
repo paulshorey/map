@@ -98,7 +98,7 @@
         }
       },
       "expected_status": "needs_review",
-      "expected_reason": "coordinate_candidates_disagree",
+      "expected_reason": "missing_or_stale_coordinate_evidence",
       "canonical_id": "9ee28140-a256-4981-94a5-9cc8c5b61fc5",
       "build_id": "3c615999-e33b-4758-a891-dcf41d3ec67e",
       "logical_path": "data/poi/art-fairs/biennials/biennale_com.json"
