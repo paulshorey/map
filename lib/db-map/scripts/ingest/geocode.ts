@@ -32,6 +32,7 @@ import {
   forwardResultName,
   localityValue,
   locationReadySql,
+  MUSICBRAINZ_VENUE_POLICY,
   providerNameAgrees,
   resolveLocation,
   resultNamesListedCity,
@@ -781,6 +782,11 @@ export async function runGeocode(
     ).rows[0];
     const captured = row.captured ?? {},
       attrs = captured.attributes ?? {};
+    const linkedMusicBrainzVenue =
+      selected.source_slug === "musicbrainz" && Boolean(attrs.musicbrainz_venue_mbid);
+    const venuePolicy = linkedMusicBrainzVenue
+      ? { musicbrainz_venue_policy: MUSICBRAINZ_VENUE_POLICY }
+      : {};
     const source = {
       country_code:
         countryToCode(captured.country_code) ??
@@ -909,8 +915,7 @@ export async function runGeocode(
       forwardQueryNorm = first.key;
       forward = first.hit ?? null;
       if (
-        selected.source_slug === "musicbrainz" &&
-        attrs.musicbrainz_venue_mbid &&
+        linkedMusicBrainzVenue &&
         source.address &&
         forwardBasis === "address"
       ) {
@@ -1079,7 +1084,16 @@ export async function runGeocode(
       }
       if (forward) forward = capLocalityPrecision(forwardBasis, forward);
     } else stats.noQuery++;
-    if (!validPoint({ lat, lng })) {
+    // The previous linked-venue rejection may have left a city fallback bound to
+    // this normalization. Promote only a confirmed point over that inferred city.
+    const promotedVenue =
+      linkedMusicBrainzVenue &&
+      coordinateSource === "geocode" &&
+      coordinatePrecision === "city" &&
+      row.attributes?.location_enrichment?.forward?.rejected?.reason ===
+        "venue_address_unconfirmed" &&
+      forward?.precision === "point";
+    if (!validPoint({ lat, lng }) || promotedVenue) {
       if (!forward) {
         stats.unresolved++;
         // Every lookup finished (budget/provider stops exit above): no plausible point exists.
@@ -1189,6 +1203,7 @@ export async function runGeocode(
       resolved.warnings.push("location_fields_incomplete");
     const metadata = {
       version: LOCATION_VERSION,
+      ...venuePolicy,
       normalization_id: row.active_normalization_id,
       point: { lat, lng },
       forward_query_norm: forwardQueryNorm,
@@ -1233,6 +1248,7 @@ export async function runGeocode(
         ? { forward_city_confirmation: cityConfirmation }
         : {}),
       version: LOCATION_VERSION,
+      ...venuePolicy,
       coordinate_evidence: coordinateEvidence,
     });
     await canonicalLane.run(() =>
@@ -1271,7 +1287,7 @@ export async function runGeocode(
             rejected: rejected as never,
           }),
         );
-        // This artifact certifies enrichment of the original point; it never substitutes a nearby object's point.
+        // Compare the original coordinates so a concurrent projection change cannot be overwritten.
         const activated = await client.query(
           `UPDATE research_pois SET lat=$11,lng=$12,coordinate_source=$13,coordinate_precision=$14,geocode_query_norm=$15,country_code=$2,city=$3,region=$4,address=$5,active_geocode_id=$6,
         attributes=(COALESCE(attributes,'{}'::jsonb)-'location_unresolved')||jsonb_build_object('location_enrichment',$7::jsonb),
