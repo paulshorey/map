@@ -31,6 +31,18 @@ for (const c of packet.cases)
     }
   });
 
+test("current evidence still rejects the Venice Biennale candidate disagreement", () => {
+  const c = packet.cases.find(
+    (entry: { case_id: string }) => entry.case_id === "57e6df368458c8f77728",
+  );
+  assert.ok(c);
+  const input = structuredClone(c.input) as AssessmentInput;
+  input.validation!.version = LOCATION_VERSION;
+  const assessment = assessLocation(input);
+  assert.equal(assessment.status, "needs_review");
+  assert.ok(assessment.reasons.includes("coordinate_candidates_disagree"));
+});
+
 export function fixtureInput(): AssessmentInput {
   const source = {
     lat: 30,
