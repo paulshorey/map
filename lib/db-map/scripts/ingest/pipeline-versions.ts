@@ -12,7 +12,7 @@ export const PIPELINE_VERSIONS = {
   prompt: PROMPT_VERSION,
   schema: SCHEMA_VERSION,
   examples: EXAMPLES_VERSION,
-  // v5: reverse fields come from the offline gazetteer, not the provider (location-v10).
+  // v5: reverse fields come from the offline gazetteer, not the provider (location-v11).
   geocode: "locationiq-location-v5",
   embedding: "jina-match-v1",
   matcher: "matcher-v4",

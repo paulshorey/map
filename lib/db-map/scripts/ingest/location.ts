@@ -2,7 +2,7 @@
 import { countryToCode } from "./normalize/country.js";
 import { haversineMeters } from "./match/geo.js";
 import { validPoint } from "../../lib/ingestion/location-points.js";
-export const LOCATION_VERSION = "location-v10";
+export const LOCATION_VERSION = "location-v11";
 export const LOCATION_GEOCODER_VERSION = "locationiq-location-v5";
 export const LOCATION_CACHE_VERSION = "location-v2";
 export const LOCATION_QUERY_VERSION = "listed-location-v1";
