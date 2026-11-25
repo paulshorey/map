@@ -12,6 +12,7 @@ import { roughGuidesExtractor } from "./extractors/rough-guides.js";
 import { criticalStagesExtractor } from "./extractors/critical-stages.js";
 import { artFairsListExtractor } from "./extractors/artfairslist.js";
 import { thatFestivalSiteExtractor } from "./extractors/thatfestivalsite.js";
+import { musicBrainzExtractor } from "./extractors/musicbrainz.js";
 import {
   ridbFacilitiesExtractor,
   osmCampgroundsExtractor,
@@ -249,10 +250,12 @@ const FESTIVAL_SOURCES: SourceDefinition[] = [
   },
   {
     meta: { slug: "musicbrainz", name: "MusicBrainz", trust: 85 },
+    extractor: musicBrainzExtractor,
     files: [
       {
         pattern: "data/poi/music-festivals/apis/musicbrainz_festivals_*.json",
         category: "music_festival",
+        extractorVersion: "2",
       },
     ],
     normalizationProfile: "event",
