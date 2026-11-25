@@ -450,7 +450,19 @@ export function musicBrainzVenueResultIssue(
   // A namesake with no address agreement needs both a comparable listed address
   // and an explicit city match. For other address formats require a matching road.
   if (roadMatches) return null;
-  if (resultNamesListedCity(listed.city, hit) !== true) return unconfirmed;
+  const city = localityValue(listed.city);
+  const cityName = city ? foldTokens(city.split(",")[0]!).join(" ") : "";
+  // A venue can be returned under a central district, with the enclosing
+  // city in the provider's county field. Require both labels and the country.
+  const centralDistrictAndCity =
+    !!cityName &&
+    !!country &&
+    country === listed.country_code &&
+    foldTokens(textValue(result?.city) ?? "").join(" ") ===
+      `${cityName} CENTRAL` &&
+    foldTokens(textValue(result?.county) ?? "").join(" ") === `${cityName} CITY`;
+  if (!centralDistrictAndCity && resultNamesListedCity(listed.city, hit) !== true)
+    return unconfirmed;
   const roadTokens = road ? foldTokens(road).join(" ") : "";
   const addressContainsRoad =
     roadTokens &&

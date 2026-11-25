@@ -344,3 +344,40 @@ test("comma-separated MusicBrainz house numbers remain part of the street addres
     }
   }
 });
+
+test("linked venue corroborates a central district with the enclosing city and country", () => {
+  const location = {
+    name: "Meteor Theatre",
+    city: "Hamilton Central",
+    county: "Hamilton City",
+    country_code: "nz",
+  };
+  assert.equal(musicBrainzVenueResultIssue(meteor, point(location)), null);
+  for (const changes of [
+    { county: undefined },
+    { county: "Waikato County" },
+    { county: "Hamilton County" },
+    { city: "Cambridge" },
+    { country_code: undefined },
+    { name: "Other Theatre" },
+  ]) {
+    assert.equal(
+      musicBrainzVenueResultIssue(meteor, point({ ...location, ...changes })),
+      "venue_address_unconfirmed",
+    );
+  }
+  assert.equal(
+    musicBrainzVenueResultIssue(
+      meteor,
+      point({ ...location, country_code: "us" }),
+    ),
+    "venue_country_mismatch",
+  );
+  assert.equal(
+    musicBrainzVenueResultIssue(
+      meteor,
+      point({ ...location, house_number: "1/657" }),
+    ),
+    "venue_house_number_mismatch",
+  );
+});
