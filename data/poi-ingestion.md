@@ -485,10 +485,14 @@ After that repair, malformed JSON or invalid normalization fields become a quara
 record-validation issue. Provider/authentication and audit/database failures retain their
 global recovery or stop behavior; they are never relabeled as a bad record.
 For BGCI GardenSearch, a provider `finish_reason` of `length` can select
-`bgci-survey-repair-v1` for that repair. The recorded request retains all captured
-fields and the original area, visitors, staff and policy survey entries. Other survey
-entries and the truncated reply are omitted from the retry. Each cited path must
-resolve in the reduced packet. The resolver preserves numeric survey facts and an
+`bgci-survey-repair-v2` for that repair. The recorded request retains all captured
+fields and the original area, visitors, staff, policy, organization type and education
+resources survey entries. The last two help distinguish a visitor destination from an
+institution. Other survey entries and the truncated reply are omitted from the retry.
+Each cited path must resolve in the reduced packet. Classification may also cite the
+declared category as context alongside source evidence. Candidate IDs and array
+positions stay stable. The retry omits candidate path hints that do not resolve.
+The resolver preserves numeric survey facts and an
 explicit Accessibility policy topic with paths into the original source. The policy
 topic records what the garden says its policy covers.
 Successful first-pass artifacts keep their cache identity. A previously excluded

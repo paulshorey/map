@@ -28,7 +28,7 @@ import {
   buildDeterministicFacts,
   type DeterministicInput,
 } from "./deterministic.js";
-import { bgciRepairPacket, normalizeRepairEvidence, restoreBgciSurveyFacts } from "./bgci-repair.js";
+import { BGCI_REPAIR_INSTRUCTIONS, bgciRepairPacket, normalizeRepairEvidence, restoreBgciSurveyFacts } from "./bgci-repair.js";
 import { fewShotMessages } from "./examples.js";
 import { getNormalizationProfile } from "./profiles.js";
 import { NORMALIZATION_SYSTEM_PROMPT } from "./prompt.js";
@@ -414,7 +414,8 @@ export async function callNormalizer(
       : null;
     // Restart from the projected source. The partial answer can cite omitted survey fields.
     const repairMessages: ChatMessage[] = compactPacket ? [
-      ...messages.slice(0, -1),
+      { role: "system", content: NORMALIZATION_SYSTEM_PROMPT + "\n\n" + BGCI_REPAIR_INSTRUCTIONS },
+      ...messages.slice(1, -1),
       { role: "user", content: JSON.stringify(compactPacket) },
     ] : [
       ...messages,
