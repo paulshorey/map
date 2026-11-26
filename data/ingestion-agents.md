@@ -50,6 +50,11 @@ require the primary checkout.
 
 For diagnosis by failure class, see the [troubleshooting table](poi-ingestion.md#troubleshooting-and-optimization).
 
+After moving to a new host, reconcile copied queue and job journals against the
+database before trusting any saved process information. Use the saved queue ID and
+current file coverage when deciding where to continue. A checked-in import plan
+records its original selection and can differ from the saved queue.
+
 ## Whole-file imports
 
 ```sh
@@ -76,6 +81,31 @@ When the queue stops as `needs_attention`, use the [status steps](#inspect-inges
 to identify the earliest failed stage and any open issues. Resume the original scope once the
 cause is understood and cleared. A repeat needs a code or data fix. Check the file fingerprint,
 extractor and checkpoint compatibility before resuming.
+
+The queue can continue a failed connectivity run only when its own recovery
+recorded permission for that retry. For a failed run whose queue is already stopped
+without that permission, use the same-run command from `ingest:status` after
+diagnosis. The next file may start once current whole-file coverage is complete.
+
+For a background handoff, first start the diagnosed same-run recovery with
+`ingest:supervise start -- --resume <run-id> --unlimited`. Confirm that the new
+execution holds its source and full-import locks. Then
+`ingest:import-queue resume --queue <queue-id>` can wait behind that worker.
+Look for the acknowledgement `waiting for a plain import to finish`. The queue
+checks the entry's current coverage and continuation rules after the lock is released.
+
+The queue holds a PostgreSQL session lock even while waiting behind a standalone
+import. A disconnect releases that ownership. Check both the queue worker log
+and the standalone execution before resuming. If the standalone import was
+unaffected, let it finish, confirm current whole-file coverage and then resume
+the saved queue. A changed extractor needs a new file version and run.
+
+Before a location-version change, replay an existing artifact from a private
+fixture database through the managed entry point. A global location-version bump
+can trip the source staleness guard before geocoding starts and make an otherwise
+ready-to-verify file require re-ingestion. For a narrow correction, demonstrate
+that the affected artifact recomputes from cached provider responses and then
+becomes reusable.
 
 ## Bounded checks: smoke
 
