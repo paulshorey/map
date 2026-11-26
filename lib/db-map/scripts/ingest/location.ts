@@ -3,6 +3,7 @@ import { countryToCode } from "./normalize/country.js";
 import { haversineMeters } from "./match/geo.js";
 import { validPoint } from "../../lib/ingestion/location-points.js";
 export const LOCATION_VERSION = "location-v10";
+export const MUSICBRAINZ_VENUE_POLICY = "linked-venue-locality-v1";
 export const LOCATION_GEOCODER_VERSION = "locationiq-location-v5";
 export const LOCATION_CACHE_VERSION = "location-v2";
 export const LOCATION_QUERY_VERSION = "listed-location-v1";
@@ -326,7 +327,10 @@ export function locationReadySql(alias = "rp"): string {
     AND EXISTS(SELECT 1 FROM research_poi_geocodes lg WHERE lg.id=${alias}.active_geocode_id
       AND lg.normalization_id=${alias}.active_normalization_id AND lg.provider_version='${LOCATION_GEOCODER_VERSION}'
       AND lg.validation->'coordinate_evidence'=${alias}.attributes->'location_enrichment'->'coordinate_evidence'
-      AND jsonb_typeof(lg.validation->'coordinate_evidence')='object'))`;
+      AND jsonb_typeof(lg.validation->'coordinate_evidence')='object'
+      -- Only the old linked-venue corroboration rejection needs evaluation again.
+      AND (lg.validation->'forward'->'rejected'->>'reason' IS DISTINCT FROM 'venue_address_unconfirmed'
+        OR lg.validation->>'musicbrainz_venue_policy'='${MUSICBRAINZ_VENUE_POLICY}')))`;
 }
 /**
  * A reverse lookup is only as specific as the point it was taken from. A country or
