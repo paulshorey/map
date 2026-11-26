@@ -636,6 +636,11 @@ legacy attempt records.
   venue name corroborated by the listed address or city. A conflicting house number,
   street or country is retained as rejected evidence. A lookup by venue name and
   city can then supply a precise point, followed by ordinary locality fallback.
+  A linked-venue policy change can recheck a prior `venue_address_unconfirmed`
+  rejection using the cached provider responses. For Hamilton, the regression
+  starts with a v10 city marker and checks both outcomes through the map query.
+  A confirmed venue replaces the city marker. A rejected namesake keeps the city
+  evidence. A repeat run reuses the refreshed artifact in either case.
   Existing v1 runs resume on their original checkout. Switch versions under
   maintenance and use a fresh run for the v2 file version. [MusicBrainz relationship definition](https://musicbrainz.org/relationship/e2c6f697-07dc-38b1-be0b-83d740165532)
 - **Normalize:** deterministic facts plus evidence-validated model interpretation. Source/URL

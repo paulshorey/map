@@ -804,6 +804,23 @@ export async function runGeocode(
       lng: number | null = row.lng;
     let coordinateSource = row.coordinate_source,
       coordinatePrecision = row.coordinate_precision;
+    const previousLocation = row.attributes?.location_enrichment;
+    const previousForward = previousLocation?.forward;
+    const recheckingVenue =
+      linkedMusicBrainzVenue &&
+      coordinateSource === "geocode" &&
+      previousLocation?.normalization_id === row.active_normalization_id &&
+      previousLocation?.point?.lat === lat &&
+      previousLocation?.point?.lng === lng &&
+      previousForward?.rejected?.reason === "venue_address_unconfirmed";
+    const venueFallback =
+      recheckingVenue &&
+      previousForward.query_basis === "locality" &&
+      previousForward.result?.lat === lat &&
+      previousForward.result?.lng === lng &&
+      previousForward.result?.precision === coordinatePrecision
+        ? previousForward
+        : null;
     // A supplied point that repeats a published country centroid locates only the country.
     // The listed country may live only in location hints (thatfestivalsite), as for lookups.
     const listedCountry =
@@ -1039,6 +1056,23 @@ export async function runGeocode(
         rejected = rejected ? { ...current, previous: rejected } : current;
         forward = null;
       }
+      // A namesake can still fail the updated venue check. Retain the accepted
+      // locality hit bound to this record instead of erasing its inferred evidence.
+      if (!forward && venueFallback) {
+        const localityQuery = [
+          cityQuery,
+          forwardCountry ? countryOnlyQuery(forwardCountry) : null,
+        ].find(
+          (query) => query && forwardCacheKey(query.norm, forwardCountry) === venueFallback.query_norm,
+        );
+        if (localityQuery) {
+          forward = venueFallback.result;
+          forwardBasis = "locality";
+          forwardQuery = localityQuery;
+          forwardQueryNorm = venueFallback.query_norm;
+          fallbackFrom = venueFallback.fallback_from ?? null;
+        }
+      }
       // No plausible result and no point at all: fall back to the listed city, then the
       // recognized country, so the record still publishes as a general location. A record
       // with a supplied or retained point keeps it.
@@ -1084,14 +1118,11 @@ export async function runGeocode(
       }
       if (forward) forward = capLocalityPrecision(forwardBasis, forward);
     } else stats.noQuery++;
-    // The previous linked-venue rejection may have left a city fallback bound to
-    // this normalization. Promote only a confirmed point over that inferred city.
+    // Only a confirmed venue or address can replace a previously inferred locality.
     const promotedVenue =
-      linkedMusicBrainzVenue &&
-      coordinateSource === "geocode" &&
+      recheckingVenue &&
       coordinatePrecision === "city" &&
-      row.attributes?.location_enrichment?.forward?.rejected?.reason ===
-        "venue_address_unconfirmed" &&
+      (forwardBasis === "venue" || forwardBasis === "address") &&
       forward?.precision === "point";
     if (!validPoint({ lat, lng }) || promotedVenue) {
       if (!forward) {

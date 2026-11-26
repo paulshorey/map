@@ -15,6 +15,8 @@ import { rebuildCanonicalPoi } from "./merge.js";
 import { runMatch } from "./match.js";
 import { collapseDuplicateCanonicals } from "./match/canonicals.js";
 import { verifyLineage } from "./verify.js";
+import { assertSourceCurrent } from "./staleness.js";
+import { getNormalizationProfile } from "./normalize/profiles.js";
 import { PIPELINE_VERSIONS } from "./pipeline-versions.js";
 import { deriveForwardPrecision } from "../../lib/ingestion/geocode-precision.js";
 import { runGeocode, listedQuery, forwardCacheKey } from "./geocode.js";
@@ -30,7 +32,7 @@ const connection = process.env.MAP_LOCATION_ASSESSMENT_TEST_URL;
 test(
   "real artifact, matching, publication, API and resume gates (isolated PostgreSQL)",
   { skip: !connection },
-  async () => {
+  async (t) => {
     const url = new URL(connection!);
     assert.ok(["127.0.0.1", "localhost", "[::1]"].includes(url.hostname));
     assert.equal(url.pathname, "/map_location_assessment_test");
@@ -201,6 +203,239 @@ test(
         );
         return { id, observation, normalization, geocode, validation };
       }
+      await client.query("SAVEPOINT musicbrainz_refresh");
+      await t.test(
+        "refresh a v10 MusicBrainz city fallback and reuse the published venue",
+        async () => {
+          const id = randomUUID(),
+            observation = randomUUID(),
+            normalization = randomUUID(),
+            geocode = randomUUID();
+          const city = { lat: -37.7878809, lng: 175.281788 };
+          const venue = { lat: -37.792338, lng: 175.287484 };
+          const captured = {
+            name: "Hamtown Smakdown 2018, Day 1",
+            address: "1 Victoria Street, Hamilton, New Zealand 3204",
+            city: "Hamilton",
+            country_code: "NZ",
+            attributes: {
+              musicbrainz_venue_name: "The Meteor",
+              musicbrainz_venue_mbid: "565357f7-9b84-4206-b180-f892c1ea0c3f",
+            },
+          };
+          const cityQuery = "Hamilton, NZ";
+          const cityHit = {
+            ...city,
+            precision: "city",
+            country_code: "NZ",
+            raw_response: { address: { city: "Hamilton", country_code: "nz" } },
+          };
+          const previous = {
+            version: "location-v10",
+            normalization_id: normalization,
+            point: city,
+            coordinate_evidence: {
+              source_coordinates: null,
+              inferred_coordinates: {
+                ...city,
+                kind: "inferred",
+                origin: "listed_address_geocode",
+                precision: "city",
+                query: cityQuery,
+                label: "Hamilton",
+              },
+            },
+            forward: {
+              query_version: LOCATION_QUERY_VERSION,
+              query_basis: "locality",
+              query: cityQuery,
+              query_norm: forwardCacheKey(cityQuery.toLowerCase(), "NZ"),
+              result: cityHit,
+              fallback_from: { reason: "rejected", query: captured.address },
+              rejected: { reason: "venue_address_unconfirmed" },
+            },
+          };
+          await client.query(
+            `INSERT INTO canonical_categories(slug,display_name,is_active,is_temporal)
+           VALUES('music_festival','Music festival',true,true)
+           ON CONFLICT(slug) DO UPDATE SET is_active=true,is_temporal=true`,
+          );
+          await client.query(
+            `WITH source AS (INSERT INTO research_sources(slug,name) VALUES('musicbrainz','MusicBrainz')
+             ON CONFLICT(slug) DO UPDATE SET name=EXCLUDED.name RETURNING id)
+           INSERT INTO research_pois(id,source_id,source_record_id,name,name_normalized,raw,lat,lng,
+             coordinate_source,coordinate_precision,category_slugs,is_poi,normalization_state,country_code,city,address,attributes)
+           SELECT $1::uuid,source.id,$1::text,$2,$2,'{}',$3,$4,'geocode','city',ARRAY['music_festival'],
+             true,'active','NZ','Hamilton',$5,$6 FROM source`,
+            [
+              id,
+              captured.name,
+              city.lat,
+              city.lng,
+              captured.address,
+              { location_enrichment: previous },
+            ],
+          );
+          await client.query(
+            `INSERT INTO research_poi_observations(id,research_poi_id,raw_content_hash,raw,captured)
+           VALUES($1::uuid,$2,$1::text,'{}',$3)`,
+            [observation, id, captured],
+          );
+          await client.query(
+            `INSERT INTO research_poi_normalizations(id,research_poi_id,observation_id,input_hash,normalizer_version,profile_version,status,is_poi)
+           VALUES($1::uuid,$2,$3,$1::text,$4,$5,'accepted',true)`,
+            [
+              normalization,
+              id,
+              observation,
+              PIPELINE_VERSIONS.normalizer,
+              getNormalizationProfile("event").version,
+            ],
+          );
+          await client.query(
+            `INSERT INTO research_poi_geocodes(id,normalization_id,input_hash,provider,provider_version,lat,lng,precision,status,validation)
+           VALUES($1::uuid,$2,$1::text,'locationiq',$3,$4,$5,'city','resolved',$6)`,
+            [
+              geocode,
+              normalization,
+              LOCATION_GEOCODER_VERSION,
+              city.lat,
+              city.lng,
+              previous,
+            ],
+          );
+          await client.query(
+            "UPDATE research_pois SET active_observation_id=$2,active_normalization_id=$3,active_geocode_id=$4 WHERE id=$1",
+            [id, observation, normalization, geocode],
+          );
+          const poiState = async () =>
+            (
+              await client.query(
+                "SELECT lat,lng,coordinate_precision,active_geocode_id,canonical_poi_id,attributes FROM research_pois WHERE id=$1",
+                [id],
+              )
+            ).rows[0];
+          await assertSourceCurrent(db, "musicbrainz");
+          await runMatch(db, matchOptions(id), { requested: false, count: 0 });
+          const canonicalId = (await poiState()).canonical_poi_id;
+          const publishedMarkers = async () => {
+            const map = (await listPoisGeoJson(db, {
+              west: 175.27,
+              east: 175.3,
+              south: -37.8,
+              north: -37.78,
+              category: "music_festival",
+              limit: 10,
+              isWorldView: false,
+            })) as {
+              features: Array<{
+                properties: { id: string };
+                geometry: { coordinates: number[] };
+              }>;
+            };
+            return map.features
+              .filter((feature) => feature.properties.id === canonicalId)
+              .map((feature) => feature.geometry.coordinates);
+          };
+          assert.deepEqual(await publishedMarkers(), [[city.lng, city.lat]]);
+
+          // All three saved queries must suffice, including the independent city confirmation.
+          for (const [query, coords, precision, address] of [
+            [
+              `${captured.address}, ${cityQuery}`,
+              city,
+              "point",
+              { house_number: "1/657", road: "Victoria Street" },
+            ],
+            [
+              `The Meteor, ${cityQuery}`,
+              venue,
+              "point",
+              {
+                amenity: "Meteor Theatre",
+                city: "Hamilton Central",
+                county: "Hamilton City",
+              },
+            ],
+            [cityQuery, city, "city", { city: "Hamilton" }],
+          ] as const) {
+            const hit = {
+              country_code: "NZ",
+              raw_response: { address: { ...address, country_code: "nz" } },
+            };
+            await client.query(
+              `INSERT INTO research_geocode_cache(query_norm,lat,lng,precision,provider,payload)
+             VALUES($1,$2,$3,$4,'locationiq',$5)`,
+              [
+                forwardCacheKey(query.toLowerCase(), "NZ"),
+                coords.lat,
+                coords.lng,
+                precision,
+                { hit },
+              ],
+            );
+          }
+          const opts = {
+            recordId: id,
+            limit: 1,
+            geocodeLimit: 0,
+            throttleMs: 0,
+            dryRun: false,
+          };
+          // A still-unconfirmed namesake also gets rechecked. Keep its accepted city evidence.
+          await client.query("SAVEPOINT other_theatre");
+          await client.query(
+            `UPDATE research_geocode_cache SET payload=jsonb_set(payload,'{hit,raw_response,address,amenity}',to_jsonb('Other Theatre'::text))
+           WHERE query_norm=$1`,
+            [forwardCacheKey(`the meteor, ${cityQuery.toLowerCase()}`, "NZ")],
+          );
+          assert.equal((await runGeocode(db, opts)).resolved, 1);
+          const fallback = (await poiState()).attributes.location_enrichment;
+          assert.equal(
+            fallback.forward.rejected.reason,
+            "venue_address_unconfirmed",
+          );
+          assert.equal(fallback.forward.query_basis, "locality");
+          const retained = fallback.coordinate_evidence.inferred_coordinates;
+          assert.deepEqual(
+            [retained.lat, retained.lng, retained.precision],
+            [city.lat, city.lng, "city"],
+          );
+          assert.deepEqual(await publishedMarkers(), [[city.lng, city.lat]]);
+          assert.equal((await runGeocode(db, opts)).selected, 0);
+          await client.query("ROLLBACK TO SAVEPOINT other_theatre");
+
+          const first = await runGeocode(db, opts);
+          assert.deepEqual(
+            [first.resolved, first.cacheHits, first.apiCalls],
+            [1, 3, 0],
+          );
+          const updated = await poiState();
+          assert.deepEqual(
+            [updated.lat, updated.lng, updated.coordinate_precision],
+            [venue.lat, venue.lng, "point"],
+          );
+          assert.notEqual(updated.active_geocode_id, geocode);
+          assert.equal(
+            updated.attributes.location_enrichment.forward.rejected.reason,
+            "venue_house_number_mismatch",
+          );
+          assert.equal(updated.canonical_poi_id, canonicalId);
+          assert.deepEqual(await publishedMarkers(), [[venue.lng, venue.lat]]);
+
+          const again = await runGeocode(db, opts);
+          assert.deepEqual(
+            [again.selected, again.cacheHits, again.apiCalls],
+            [0, 0, 0],
+          );
+          assert.equal(
+            (await poiState()).active_geocode_id,
+            updated.active_geocode_id,
+          );
+        },
+      );
+      await client.query("ROLLBACK TO SAVEPOINT musicbrainz_refresh");
+
       const f = await seed("Accepted campground", 30, -97);
       const first = await ensureLocationAssessment(asClient, f.id);
       assert.equal(first.status, "accepted");
