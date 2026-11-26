@@ -9,6 +9,11 @@ owns human setup and full-run commands. [AGENTS.md](../AGENTS.md) owns agent exe
 budgets and working rules. The [database guide](../lib/db-map/AGENTS.md) maps implementation
 files. Keep pipeline facts here rather than copying them into both entry points.
 
+For a new fixture database, run the ingestion taxonomy seed after migration:
+`pnpm --filter @lib/db-map ingest:taxonomy:seed`. Publication looks up the ingest
+category in `canonical_categories`; the optional sample POI seed requires that
+taxonomy as well.
+
 ## Operating model
 
 Humans usually launch long imports manually. Agents own development, debugging and operation
@@ -479,6 +484,22 @@ also remains the format for output repair. A failed repair never starts another 
 After that repair, malformed JSON or invalid normalization fields become a quarantined
 record-validation issue. Provider/authentication and audit/database failures retain their
 global recovery or stop behavior; they are never relabeled as a bad record.
+For BGCI GardenSearch, a provider `finish_reason` of `length` can select
+`bgci-survey-repair-v2` for that repair. The recorded request retains all captured
+fields and the original area, visitors, staff, policy, organization type and education
+resources survey entries. The last two help distinguish a visitor destination from an
+institution. Other survey entries and the truncated reply are omitted from the retry.
+Each cited path must resolve in the reduced packet. Classification may also cite the
+declared category as context alongside source evidence. Candidate IDs and array
+positions stay stable. The retry omits candidate path hints that do not resolve.
+The resolver preserves numeric survey facts and an
+explicit Accessibility policy topic with paths into the original source. The policy
+topic records what the garden says its policy covers.
+Successful first-pass artifacts keep their cache identity. A previously excluded
+BGCI record requires a new reviewed run pinned to its source ID. The prior exclusion
+remains part of the run history. Follow [managed maintenance](#process-control-and-maintenance)
+before changing worker code or repairing shared records.
+
 Matching now requests a strict two-field JSON schema (`same_place`, `reason`) and validates
 both fields in code. It allows 512 final-answer tokens initially and 1,024 for its one output
 repair, plus the configured thinking allowance. A second invalid match becomes an explicit

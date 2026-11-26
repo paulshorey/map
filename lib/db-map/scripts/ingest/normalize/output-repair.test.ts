@@ -1,7 +1,10 @@
 import { test, afterEach, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import type { Pool } from "pg";
-import { callNormalizer } from "./runner.js";
+import { restoreBgciSurveyFacts } from "./bgci-repair.js";
+import { callNormalizer, requestPacket } from "./runner.js";
+import { buildDeterministicFacts } from "./deterministic.js";
+import { evidenceValue } from "./attributes.js";
 import { ingestConfig, readLlmConfig } from "../config.js";
 import { LlmError } from "../providers/llm.js";
 import { recordFailure } from "../record-scheduler.js";
@@ -211,10 +214,14 @@ test("normalization repair retains a working JSON-object fallback and remains bo
           );
         return Response.json({
           model: ingestConfig.llm.model,
-          choices: [{
-            message: { content: requests.length === 2 ? content : repairContent },
-            finish_reason: requests.length === 2 ? finish : "stop",
-          }],
+          choices: [
+            {
+              message: {
+                content: requests.length === 2 ? content : repairContent,
+              },
+              finish_reason: requests.length === 2 ? finish : "stop",
+            },
+          ],
           usage: { prompt_tokens: 1, completion_tokens: 1 },
         });
       };
@@ -226,7 +233,11 @@ test("normalization repair retains a working JSON-object fallback and remains bo
           return true;
         });
       } else assert.equal((await answer).output.record.record_id, "fixture");
-      assert.equal(requests.length, 3, "one capability fallback plus one output repair");
+      assert.equal(
+        requests.length,
+        3,
+        "one capability fallback plus one output repair",
+      );
       assert.deepEqual(
         requests.slice(1).map((request) => request.response_format),
         [{ type: "json_object" }, { type: "json_object" }],
@@ -236,9 +247,12 @@ test("normalization repair retains a working JSON-object fallback and remains bo
       );
       assert.equal(inserts.length, 3);
       assert.equal(inserts[2]!.args[11], inserts[1]!.args[0]);
-      assert.deepEqual(JSON.parse(String(inserts[2]!.args[10])).response_format, {
-        type: "json_object",
-      });
+      assert.deepEqual(
+        JSON.parse(String(inserts[2]!.args[10])).response_format,
+        {
+          type: "json_object",
+        },
+      );
     }
   }
 });
@@ -269,4 +283,307 @@ test("normalization does not spend another request on authentication or database
     /audit database failed/,
   );
   assert.equal(requests.length, 1);
+});
+
+const gardenRow = { ...row, source_slug: "bgci" };
+const gardenPacket = {
+  source: { slug: "bgci", profile: "garden" },
+  ingest_category: "botanical_garden",
+  captured: {
+    name: "Camp A",
+    phone: null,
+    attributes: { open_to_public: false },
+  },
+  raw: {
+    id: 1,
+    attributes: {
+      visitors_annual: { value: 0, attribute: { units: "people" } },
+      policy_exists: { value: ["Accessibility"] },
+      collection_access: { value: ["By appointment"] },
+    },
+  },
+};
+
+test("BGCI length repair retains selected survey paths, captured facts and a linked request", async () => {
+  const evidence = [
+    { field: "display_name", paths: ["$.captured.name", '$["captured"].name'] },
+    {
+      field: "attributes.visitors_annual",
+      paths: ["$.raw.attributes.visitors_annual.value"],
+    },
+    {
+      field: "attributes.policy_topic",
+      paths: ["$.raw.attributes.policy_exists.value[0]"],
+    },
+    {
+      field: "attributes.open_to_public",
+      paths: ["$.captured.attributes.open_to_public"],
+    },
+    {
+      field: "phone",
+      paths: ["$.captured.phone"],
+    },
+  ];
+  respond(
+    "partial answer",
+    "length",
+    JSON.stringify({ record: { ...output.record, evidence } }),
+  );
+  const result = await callNormalizer(
+    db,
+    gardenRow,
+    "hash",
+    "garden",
+    "garden-v1",
+    gardenPacket,
+  );
+  assert.equal(result.compactBgciRepair, true);
+  assert.deepEqual(result.output.record.evidence, [
+    { field: "display_name", paths: ["$.captured.name", "$.captured.name"] },
+    ...evidence.slice(1),
+  ]);
+  const success = queries.find(
+    ({ sql, args }) => sql.includes("response_json") && args[2] === "succeeded",
+  );
+  assert.deepEqual(
+    JSON.parse(String(success?.args[3])).record.evidence,
+    evidence,
+  );
+  const [first, second] = requests.map(
+    (request) => request.messages as { role: string; content: string }[],
+  );
+  assert.deepEqual(JSON.parse(first!.at(-1)!.content), gardenPacket);
+  assert.ok(second![0]!.content.startsWith(first![0]!.content));
+  assert.match(second![0]!.content, /allowed_category_slugs/);
+  assert.deepEqual(second!.slice(1, -1), first!.slice(1, -1));
+  const compact = JSON.parse(second!.at(-1)!.content);
+  assert.equal(compact.repair_context_version, "bgci-survey-repair-v2");
+  assert.deepEqual(compact.captured, gardenPacket.captured);
+  assert.deepEqual(compact.raw.attributes, {
+    visitors_annual: gardenPacket.raw.attributes.visitors_annual,
+    policy_exists: gardenPacket.raw.attributes.policy_exists,
+  });
+  const inserts = queries.filter((q) =>
+    q.sql.includes("INSERT INTO research_normalization_requests"),
+  );
+  assert.equal(inserts.length, 2);
+  assert.deepEqual(JSON.parse(String(inserts[1]!.args[10])).messages, second);
+  assert.equal(inserts[1]!.args[11], inserts[0]!.args[0]);
+});
+
+test("production garden packets preserve classification evidence and advertise resolvable candidate paths", async () => {
+  for (const { gardenType, resources, isPoi } of [
+    {
+      gardenType: "Botanic Garden/Arboretum",
+      resources: ["Visitor centre", "Guided tours"],
+      isPoi: true,
+    },
+    { gardenType: "Gene/Seed Bank", resources: [], isPoi: false },
+  ]) {
+    const raw = {
+      attributes: {
+        organisation_type: { value: [gardenType] },
+        education_resources: { value: resources },
+        internal_contact: { value: "removed@example.org" },
+      },
+      email_public: "kept@example.org",
+    };
+    const captured = {
+      name: "Fixture garden",
+      description: null,
+      website: null,
+      source_url: null,
+      phone: null,
+      email: null,
+      address: null,
+      city: null,
+      region: null,
+      country_code: null,
+      lat: 50,
+      lng: 14,
+      attributes: {},
+      raw,
+      sourceIsPoiHint: null,
+    };
+    const source = {
+      ...gardenRow,
+      ...captured,
+      source_record_id: "1",
+      ingest_category: "botanical_garden",
+    };
+    const facts = buildDeterministicFacts(captured);
+    const packet = requestPacket(source, "garden", facts);
+    const paths = [
+      "$.ingest_category",
+      '$["allowed_category_slugs"][0]',
+      "$.raw.attributes.organisation_type.value[0]",
+      ...(resources.length
+        ? ["$.raw.attributes.education_resources.value[0]"]
+        : []),
+    ];
+    const evidence = [{ field: "is_poi", paths }];
+    requests = [];
+    respond(
+      "{",
+      "length",
+      JSON.stringify({ record: { ...output.record, is_poi: isPoi, evidence } }),
+    );
+    const result = await callNormalizer(
+      db,
+      source,
+      "hash",
+      "garden",
+      "garden-v1",
+      packet,
+    );
+    assert.equal(requests.length, 2);
+    assert.equal(result.output.record.is_poi, isPoi);
+    assert.deepEqual(result.output.record.evidence[0]?.paths, [
+      "$.ingest_category",
+      "$.allowed_category_slugs[0]",
+      ...paths.slice(2),
+    ]);
+
+    const lastUserMessage = (requests[1]!.messages as { content: string }[]).at(
+      -1,
+    )!;
+    const compact = JSON.parse(lastUserMessage.content);
+    assert.deepEqual(compact.raw.attributes, {
+      organisation_type: raw.attributes.organisation_type,
+      education_resources: raw.attributes.education_resources,
+    });
+    assert.equal(facts.coordinateCandidates.length, 1);
+    assert.deepEqual(compact.deterministic.coordinateCandidates, [
+      { id: facts.coordinateCandidates[0]!.id, value: { lat: 50, lng: 14 } },
+    ]);
+    assert.deepEqual(
+      [compact.deterministic.lat, compact.deterministic.lng],
+      [50, 14],
+    );
+    assert.equal(facts.emailCandidates.length, 2);
+    assert.deepEqual(compact.deterministic.emailCandidates, [
+      { id: facts.emailCandidates[0]!.id, value: "removed@example.org" },
+      facts.emailCandidates[1],
+    ]);
+    for (const key of [
+      "coordinateCandidates",
+      "urlCandidates",
+      "phoneCandidates",
+      "emailCandidates",
+    ]) {
+      for (const candidate of compact.deterministic[key]) {
+        if (!Object.hasOwn(candidate, "path")) continue;
+        assert.notEqual(
+          evidenceValue(compact, candidate.path, { enumerableOnly: true }),
+          undefined,
+        );
+      }
+    }
+  }
+});
+
+for (const path of [
+  "$.raw.attributes.collection_access.value[0]",
+  "$.raw.attributes.policy_exists.value.length",
+  '$["raw"].attributes.policy_exists.value["length"]',
+  '$["source"].slug',
+  "$.ingest_category",
+]) {
+  test(`BGCI repair rejects missing evidence at ${path} without a third call`, async () => {
+    const evidence = [{ field: "attributes.access", paths: [path] }];
+    respond(
+      "{",
+      "length",
+      JSON.stringify({ record: { ...output.record, evidence } }),
+    );
+    await assert.rejects(
+      callNormalizer(
+        db,
+        gardenRow,
+        "hash",
+        "garden",
+        "garden-v1",
+        gardenPacket,
+      ),
+      (error: unknown) => {
+        assert.ok(error instanceof LlmError);
+        assert.match(error.message, /unresolved evidence path/);
+        assert.equal(recordFailure(error), true);
+        return true;
+      },
+    );
+    assert.equal(requests.length, 2);
+    assert.ok(
+      queries.some(
+        (q) =>
+          q.args.includes("failed") &&
+          q.args.some(
+            (v) =>
+              typeof v === "string" && v.includes("unresolved evidence path"),
+          ),
+      ),
+    );
+  });
+}
+
+test("ordinary BGCI success, malformed or empty output and other sources keep the full packet", async () => {
+  for (const [source, content, finish, count] of [
+    ["bgci", JSON.stringify(output), "stop", 1],
+    ["bgci", "{", "stop", 2],
+    ["bgci", "", "stop", 2],
+    ["other", "{", "length", 2],
+  ] as const) {
+    requests = [];
+    respond(content, finish);
+    await callNormalizer(
+      db,
+      { ...row, source_slug: source },
+      "hash",
+      "garden",
+      "garden-v1",
+      gardenPacket,
+    );
+    assert.equal(requests.length, count);
+    for (const request of requests) {
+      const messages = request.messages as { content: string }[];
+      assert.ok(
+        messages.some((m) => m.content === JSON.stringify(gardenPacket)),
+      );
+    }
+  }
+});
+
+test("selected BGCI survey facts keep their source paths, zero counts and captured precedence", () => {
+  const resolved = {
+    attributes: { visitors_annual: 19 },
+    fieldEvidence: {
+      "attributes.visitors_annual": ["$.captured.attributes.visitors_annual"],
+    },
+    warnings: [],
+  };
+  const raw = {
+    attributes: {
+      total_area_hectares: { value: 0.25 },
+      staff_total: { value: 0 },
+      visitors_annual: { value: 55 },
+      policy_exists: { value: ["Research", "Accessibility"] },
+    },
+  };
+  restoreBgciSurveyFacts(raw, { visitors_annual: 19 }, resolved);
+  assert.deepEqual(resolved.attributes, {
+    visitors_annual: 19,
+    total_area_hectares: 0.25,
+    staff_total: 0,
+    accessibility_policy_topic: "Accessibility",
+  });
+  assert.deepEqual(resolved.fieldEvidence, {
+    "attributes.visitors_annual": ["$.captured.attributes.visitors_annual"],
+    "attributes.total_area_hectares": [
+      "$.raw.attributes.total_area_hectares.value",
+    ],
+    "attributes.staff_total": ["$.raw.attributes.staff_total.value"],
+    "attributes.accessibility_policy_topic": [
+      "$.raw.attributes.policy_exists.value[1]",
+    ],
+  });
 });

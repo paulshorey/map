@@ -62,6 +62,7 @@ jobs:
           scripts/ingest/extractors/musicbrainz.test.ts
           scripts/ingest/two-locations.test.ts
           scripts/ingest/location-review.test.ts
+          scripts/ingest/normalize/output-repair.test.ts
           scripts/ingest/normalize/generated-name.test.ts
           scripts/ingest/match/generated-name.test.ts
           scripts/ingest/precision-metadata.test.ts

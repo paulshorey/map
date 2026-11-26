@@ -28,6 +28,7 @@ import {
   buildDeterministicFacts,
   type DeterministicInput,
 } from "./deterministic.js";
+import { BGCI_REPAIR_INSTRUCTIONS, bgciRepairPacket, normalizeRepairEvidence, restoreBgciSurveyFacts } from "./bgci-repair.js";
 import { fewShotMessages } from "./examples.js";
 import { getNormalizationProfile } from "./profiles.js";
 import { NORMALIZATION_SYSTEM_PROMPT } from "./prompt.js";
@@ -337,6 +338,7 @@ export async function callNormalizer(
   output: LlmNormalizationOutput;
   result: ChatResult;
   requestId: string;
+  compactBgciRepair: boolean;
 }> {
   const messages: ChatMessage[] = [
     { role: "system", content: NORMALIZATION_SYSTEM_PROMPT },
@@ -399,7 +401,7 @@ export async function callNormalizer(
     const output = parseNormalizationOutput(parsed, row.id);
     validating = false;
     await finishRequest(db, requestId, result, parsed);
-    return { output, result, requestId };
+    return { output, result, requestId, compactBgciRepair: false };
   } catch (error) {
     await finishRequest(db, requestId, result, parsed, error);
     const incompleteOutput = error instanceof LlmError && !error.status && !error.retryable &&
@@ -407,7 +409,15 @@ export async function callNormalizer(
     result ??= incompleteOutput ? error.result ?? null : null;
     if (!result || (!validating && !incompleteOutput)) throw error;
 
-    const repairMessages: ChatMessage[] = [
+    const compactPacket = incompleteOutput && result.finishReason === "length" && row.source_slug === "bgci"
+      ? bgciRepairPacket(packet)
+      : null;
+    // Restart from the projected source. The partial answer can cite omitted survey fields.
+    const repairMessages: ChatMessage[] = compactPacket ? [
+      { role: "system", content: NORMALIZATION_SYSTEM_PROMPT + "\n\n" + BGCI_REPAIR_INSTRUCTIONS },
+      ...messages.slice(1, -1),
+      { role: "user", content: JSON.stringify(compactPacket) },
+    ] : [
       ...messages,
       ...(result.content ? [{ role: "assistant" as const, content: result.content }] : []),
       {
@@ -445,13 +455,16 @@ export async function callNormalizer(
       repairValidating = true;
       repairParsed = parseJsonContent(repairResult.content);
       const repaired = parseNormalizationOutput(repairParsed, row.id);
+      const output = compactPacket
+        ? { record: { ...repaired.record, evidence: normalizeRepairEvidence(compactPacket, repaired.record.evidence) } }
+        : repaired;
       repairValidating = false;
       await finishRequest(db, repairId, repairResult, repairParsed);
       await db.query(
         `UPDATE research_normalization_requests SET status='repaired' WHERE id=$1`,
         [repairId],
       );
-      return { output: repaired, result: repairResult, requestId: repairId };
+      return { output, result: repairResult, requestId: repairId, compactBgciRepair: Boolean(compactPacket) };
     } catch (repairError) {
       await finishRequest(
         db,
@@ -1030,6 +1043,7 @@ export async function runHybridNormalize(
 
       let output: LlmNormalizationOutput | null = null;
       let requestId: string | null = null;
+      let compactBgciRepair = false;
       if (!opts.noLlm && deterministic.hardIsPoi !== false) {
         const completion = await callNormalizer(
           db,
@@ -1041,6 +1055,7 @@ export async function runHybridNormalize(
         );
         output = completion.output;
         requestId = completion.requestId;
+        compactBgciRepair = completion.compactBgciRepair;
         stats.llmRequests++;
         stats.costUsd += completion.result.usage.estimatedCost ?? 0;
       }
@@ -1051,6 +1066,7 @@ export async function runHybridNormalize(
         ingestCategory: row.ingest_category,
         profile,
       });
+      if (compactBgciRepair) restoreBgciSurveyFacts(captured.raw, captured.attributes, resolved);
       const normalizationId = await insertNormalization(
         db,
         row,
