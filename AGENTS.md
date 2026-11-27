@@ -138,13 +138,6 @@ If something goes wrong, stop the affected operation and report the relevant fin
 data, and logs. Redact secrets and private content.
 When unsure, research before deciding: search the web for current techniques and best practices.
 
-# Improve your instructions
-
-Before you finish, note where you struggled and which instructions, tools, or skills
-were missing or wrong, and fix them: this file, the project docs, and
-`.agents/skills/` for this project, `~/.agents` for every project. Without access to
-`~/.agents`, as a cloud agent or reviewer, suggest the fixes in your reply instead.
-
 # Next steps
 
 Consider what was recently done, what is in progress, and how it serves the goal.
